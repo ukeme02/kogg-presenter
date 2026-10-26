@@ -113,6 +113,8 @@ function fillChapters() {
   const book = bible.books[+$('bookSelect').value];
   $('chapterSelect').innerHTML = book.chapters.map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
   fillVerses();
+  renderBookChips($('bookSearch').value);
+  renderChapterChips();
 }
 function fillVerses() {
   const book = bible.books[+$('bookSelect').value];
@@ -154,6 +156,50 @@ $('translationSelect').addEventListener('change', () => {
   const file = $('translationSelect').value;
   LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: file }));
   loadBible(file).then(updateScripturePreview);
+});
+
+/* Scripture picker chips — tap-first navigation */
+function renderBookChips(filter) {
+  if (!bible) return;
+  const f = (filter || '').trim().toLowerCase();
+  const box = $('bookChips');
+  box.innerHTML = bible.books
+    .map((b, i) => ({ b, i }))
+    .filter(({ b }) => !f || b.name.toLowerCase().includes(f))
+    .map(({ b, i }) => `<button data-i="${i}" class="${i === +$('bookSelect').value ? 'selected' : ''}">${esc(b.name)}</button>`)
+    .join('');
+}
+function renderChapterChips() {
+  if (!bible) return;
+  const book = bible.books[+$('bookSelect').value];
+  $('chapterHeading').textContent = `Chapter — ${book.name}`;
+  const cur = +$('chapterSelect').value;
+  $('chapterChips').innerHTML = book.chapters
+    .map((_, i) => `<button data-c="${i + 1}" class="${i + 1 === cur ? 'selected' : ''}">${i + 1}</button>`)
+    .join('');
+  $('chapterWrap').hidden = false;
+}
+$('bookChips').addEventListener('click', e => {
+  const chip = e.target.closest('button[data-i]');
+  if (!chip) return;
+  $('bookSelect').value = chip.dataset.i;
+  fillChapters();
+  renderBookChips($('bookSearch').value);
+});
+$('chapterChips').addEventListener('click', e => {
+  const chip = e.target.closest('button[data-c]');
+  if (!chip) return;
+  $('chapterSelect').value = chip.dataset.c;
+  fillVerses();
+  renderChapterChips();
+  updateScripturePreview();
+});
+$('bookSearch').addEventListener('input', () => renderBookChips($('bookSearch').value));
+$('btnWholeChapter').addEventListener('click', () => {
+  const count = $('verseTo').options.length;
+  $('verseFrom').value = 1;
+  $('verseTo').value = count;
+  updateScripturePreview();
 });
 
 $('btnGoScripture').addEventListener('click', () => {

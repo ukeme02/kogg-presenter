@@ -191,3 +191,15 @@ body.light .quickgo-results { border-color: #c9d2e0; box-shadow: 0 10px 30px rgb
 
 /* Account tab */
 #authSignedIn p { margin-bottom: 10px; }
+
+/* Scripture picker chips */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.chip-grid button {
+  padding: 7px 12px;
+  font-size: 13.5px;
+  border-radius: 999px;
+  background: var(--panel2);
+  border: 1px solid #3a4356;
+}
+.chip-grid button.selected { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.chip-grid.small button { padding: 5px 10px; font-size: 13px; min-width: 38px; }

@@ -23,9 +23,15 @@
     <button id="btnNext" class="ctrl" title="Next (Right arrow)">▶</button>
   </div>
   <div class="quick-actions">
+    <button id="btnFontSizeDown" class="ctrl" title="Smaller text (current theme)">A−</button>
+    <button id="btnFontSizeUp" class="ctrl" title="Bigger text (current theme)">A+</button>
+    <button id="btnAlign" class="ctrl" title="Toggle text alignment">⬌</button>
+    <button id="btnSpeak" class="ctrl" title="Speak scriptures aloud and auto-advance (AI voice)">🔊 Speak</button>
     <button id="btnBlank" class="ctrl warn" title="Blank screen (B)">Blank</button>
     <button id="btnLogo" class="ctrl" title="Logo screen (L)">Logo</button>
     <button id="btnOpenDisplay" class="ctrl primary" title="Open output screen">Output</button>
+    <button id="btnTheme" class="ctrl" title="Toggle light/dark operator mode">🌙</button>
+    <a class="about-link" href="landing.html" target="_blank" title="About / download page">About</a>
   </div>
 </header>
 
@@ -42,6 +48,13 @@
   <section id="tab-scripture" class="tab-panel active">
     <div class="card">
       <h2>Scripture</h2>
+      <div class="row">
+        <label>Translation<br><select id="translationSelect">
+          <option value="data/kjv.json">KJV — King James Version</option>
+          <option value="data/web.json">WEB — World English Bible</option>
+          <option value="data/asv.json">ASV — American Standard</option>
+        </select></label>
+      </div>
       <div class="row">
         <label>Book<br><select id="bookSelect"></select></label>
         <label>Chapter<br><select id="chapterSelect"></select></label>
@@ -133,6 +146,22 @@
             <option value="Arial, sans-serif">Sans</option>
             <option value="'Times New Roman', serif">Times</option>
             <option value="Verdana, sans-serif">Verdana</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label>Text alignment<br>
+          <select id="themeAlign">
+            <option value="center">Center</option>
+            <option value="left">Left</option>
+          </select>
+        </label>
+        <label>Font weight<br>
+          <select id="themeWeight">
+            <option value="400">Regular</option>
+            <option value="600">Semi-bold</option>
+            <option value="700">Bold</option>
+            <option value="300">Light</option>
           </select>
         </label>
       </div>

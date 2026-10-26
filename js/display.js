@@ -28,6 +28,8 @@ function applyTheme(state) {
   textEl.style.fontFamily = t.font;
   labelEl.style.fontFamily = t.font;
   textEl.style.fontSize = t.fontSize + 'vh';
+  textEl.style.textAlign = t.align || 'center';
+  textEl.style.fontWeight = t.weight || '400';
   return t;
 }
 
@@ -60,6 +62,7 @@ function render(state) {
     applyLogoTheme(state);
   }
   renderLowerThird(state.lowerThird);
+  speakCurrent(state);
 }
 
 function renderLowerThird(lt) {
@@ -101,10 +104,36 @@ setInterval(() => {
 }, 500);
 
 /* sync */
-if ('BroadcastChannel' in window) {
-  new BroadcastChannel('kogg-presenter').onmessage = e => render(e.data);
+const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
+if (channel) {
+  channel.onmessage = e => {
+    if (e.data && e.data.type) return;   // messages from other displays, not state
+    render(e.data);
+  };
 }
 window.addEventListener('storage', e => { if (e.key === 'cp_live') render(getLive()); });
+
+/* ---------- AI speech engine (lives on the output machine so the room hears it) ---------- */
+let lastSpokenToken = null;
+function speakCurrent(state) {
+  if (!('speechSynthesis' in window)) return;
+  if (!state.speak || state.mode !== 'normal' || !state.slides.length) {
+    speechSynthesis.cancel();
+    lastSpokenToken = null;
+    return;
+  }
+  const slide = state.slides[state.index];
+  const token = `${state.index}|${slide.text}`;
+  if (token === lastSpokenToken) return;      // same slide re-rendered — don't repeat
+  lastSpokenToken = token;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(`${slide.label}. ${slide.text}`);
+  u.rate = 0.95;
+  u.pitch = 1;
+  u.onend = () => { if (channel && state.speak) channel.postMessage({ type: 'speakDone' }); };
+  u.onerror = () => { if (channel && state.speak) channel.postMessage({ type: 'speakDone' }); };
+  speechSynthesis.speak(u);
+}
 if (!OVERLAY) document.addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   else document.documentElement.requestFullscreen().catch(() => {});

@@ -46,12 +46,14 @@ let live = LS.get(K.live, { mode: 'logo', slides: [], index: 0, lowerThird: { on
 let editingSongId = null;
 
 const DEFAULT_THEMES = [
-  { id: 't1', name: 'Sunset',      bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 },
-  { id: 't2', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 },
-  { id: 't3', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 },
-  { id: 't4', name: 'Plain Black', bg: 'linear-gradient(135deg,#000000,#434343)',          bgImage: '', textColor: '#ffffff', font: 'Arial, sans-serif', fontSize: 7 },
+  { id: 't1', name: 'Sunset',      bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' },
+  { id: 't2', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' },
+  { id: 't3', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' },
+  { id: 't4', name: 'Plain Black', bg: 'linear-gradient(135deg,#000000,#434343)',          bgImage: '', textColor: '#ffffff', font: 'Arial, sans-serif', fontSize: 7, align: 'center', weight: '400' },
 ];
 if (!themes || !themes.length) { themes = DEFAULT_THEMES; LS.set(K.themes, themes); }
+// ensure older saved themes have the new fields
+themes = themes.map(t => Object.assign({ align: 'center', weight: '400' }, t));
 let currentThemeId = LS.get(K.settings, {}).currentThemeId || themes[0].id;
 
 const $ = id => document.getElementById(id);
@@ -65,6 +67,14 @@ function pushLive(patch = {}) {
   if (channel) channel.postMessage(live);
   renderPreview();
 }
+// messages coming back from the output screen (speech engine lives there)
+if (channel) channel.onmessage = e => {
+  const msg = e.data;
+  if (msg && msg.type === 'speakDone' && live.speak && live.mode === 'normal'
+      && live.index < live.slides.length - 1) {
+    pushLive({ index: live.index + 1 });
+  }
+};
 
 /* ---------- preview ---------- */
 function renderPreview() {
@@ -90,9 +100,9 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 /* =========================================================
    SCRIPTURE
 ========================================================= */
-async function loadBible() {
+async function loadBible(file) {
   $('scripturePreview').textContent = 'Loading Bible…';
-  const res = await fetch('data/kjv.json');
+  const res = await fetch(file);
   bible = await res.json();
   const bookSel = $('bookSelect');
   bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${b.name}</option>`).join('');
@@ -140,6 +150,11 @@ $('bookSelect').addEventListener('change', fillChapters);
 $('chapterSelect').addEventListener('change', fillVerses);
 $('verseFrom').addEventListener('change', updateScripturePreview);
 $('verseTo').addEventListener('change', updateScripturePreview);
+$('translationSelect').addEventListener('change', () => {
+  const file = $('translationSelect').value;
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: file }));
+  loadBible(file).then(updateScripturePreview);
+});
 
 $('btnGoScripture').addEventListener('click', () => {
   const r = currentScriptureRange();
@@ -356,6 +371,8 @@ function loadThemeForm() {
   $('themeTextColor').value = t.textColor;
   $('themeFontSize').value = t.fontSize;
   $('themeFont').value = t.font;
+  $('themeAlign').value = t.align || 'center';
+  $('themeWeight').value = t.weight || '400';
   const opt = [...$('themeBg').options].find(o => o.value === t.bg);
   $('themeBg').value = opt ? t.bg : (t.bgImage ? 'image' : $('themeBg').options[0].value);
 }
@@ -374,7 +391,7 @@ $('themeBgImage').addEventListener('change', () => {
 });
 $('btnNewTheme').addEventListener('click', () => {
   const t = { id: uid(), name: 'New Theme', bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
-              bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 };
+              bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' };
   themes.push(t);
   LS.set(K.themes, themes);
   currentThemeId = t.id;
@@ -394,6 +411,8 @@ $('btnSaveTheme').addEventListener('click', () => {
   t.textColor = $('themeTextColor').value;
   t.fontSize = +$('themeFontSize').value || 7;
   t.font = $('themeFont').value;
+  t.align = $('themeAlign').value;
+  t.weight = $('themeWeight').value;
   const bgVal = $('themeBg').value;
   if (bgVal === 'image') { if (!t.bgImage) alert('Pick a custom image file first.'); }
   else t.bg = bgVal;
@@ -431,6 +450,46 @@ $('btnCountdown').addEventListener('click', () => {
   pushLive({ mode: 'countdown', until: Date.now() + mins * 60000 });
 });
 $('btnEndCountdown').addEventListener('click', () => pushLive({ mode: 'normal' }));
+
+/* AI speech — the output screen does the talking, we just toggle and auto-advance */
+$('btnSpeak').addEventListener('click', () => {
+  pushLive({ speak: !live.speak });
+  $('btnSpeak').classList.toggle('active', !!live.speak);
+  flash($('btnSpeak'), live.speak ? 'Speaking ✓' : 'Stopped');
+});
+
+/* Quick font size / alignment on the current theme */
+function patchTheme(patch) {
+  const t = themeById(currentThemeId);
+  Object.assign(t, patch);
+  LS.set(K.themes, themes);
+  pushLive({ themeId: currentThemeId });
+}
+$('btnFontSizeUp').addEventListener('click', () => {
+  const t = themeById(currentThemeId);
+  patchTheme({ fontSize: Math.min(15, (+t.fontSize || 7) + 0.5) });
+  flash($('btnFontSizeUp'), `A+ ${t.fontSize}`);
+});
+$('btnFontSizeDown').addEventListener('click', () => {
+  const t = themeById(currentThemeId);
+  patchTheme({ fontSize: Math.max(3, (+t.fontSize || 7) - 0.5) });
+  flash($('btnFontSizeDown'), `A− ${t.fontSize}`);
+});
+$('btnAlign').addEventListener('click', () => {
+  const t = themeById(currentThemeId);
+  const nextAlign = (t.align === 'left') ? 'center' : 'left';
+  patchTheme({ align: nextAlign });
+  flash($('btnAlign'), nextAlign === 'left' ? '⬅ Left' : '⬌ Center');
+});
+
+/* Light / dark operator mode */
+function applyOperatorTheme(light) {
+  document.body.classList.toggle('light', light);
+  $('btnTheme').textContent = light ? '☀' : '🌙';
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { light }));
+}
+$('btnTheme').addEventListener('click', () =>
+  applyOperatorTheme(!document.body.classList.contains('light')));
 
 /* Lower thirds */
 $('btnLtShow').addEventListener('click', () => {
@@ -486,6 +545,9 @@ function flash(btn, msg) {
 }
 
 /* ---------- init ---------- */
+const savedSettings = LS.get(K.settings, {});
+if (savedSettings.currentTranslation) $('translationSelect').value = savedSettings.currentTranslation;
+if (savedSettings.light) applyOperatorTheme(true);
 renderSongList();
 renderService();
 renderPlans();
@@ -493,4 +555,4 @@ renderPreview();
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
-loadBible().then(updateScripturePreview);
+loadBible($('translationSelect').value).then(updateScripturePreview);

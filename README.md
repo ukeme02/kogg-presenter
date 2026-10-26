@@ -9,9 +9,13 @@ browser, and can be packaged for Windows, iOS, and desktop.
 
 | Feature | Details |
 |---|---|
-| Scripture display | Full offline KJV Bible (public domain, 66 books / 31,102 verses) in `data/kjv.json` |
+| Scripture display | **Three offline Bibles** — KJV, WEB, ASV (public domain, 66 books each) with a translation picker |
 | Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
 | Web lyrics import | Paste any lyrics-page URL → text is fetched, cleaned and saved locally (offline after that) |
+| AI voice | One tap: the projector machine speaks each slide and **auto-advances** through the passage (Web Speech API — no cloud, no keys) |
+| Typography | Font, size (+/− live in the top bar), weight and text alignment per theme |
+| Light/dark | Operator console has light and dark modes |
+| Landing page | `landing.html` — public page explaining the app with install/download steps |
 | Service plan | Ordered queue of songs + scriptures, named plans save/load, whole-service live mode |
 | Live output | `display.html` — clean full-screen projector view, synced instantly with the operator |
 | Themes | 14 gradient backgrounds + custom background images, text color, font, font size |

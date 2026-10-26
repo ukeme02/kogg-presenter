@@ -1,14 +1,17 @@
 /* KOGG Presenter service worker — offline-first */
-const CACHE = 'kogg-presenter-v2';
+const CACHE = 'kogg-presenter-v3';
 const ASSETS = [
   './',
   './index.html',
   './display.html',
+  './landing.html',
   './css/app.css',
   './css/display.css',
   './js/app.js',
   './js/display.js',
   './data/kjv.json',
+  './data/web.json',
+  './data/asv.json',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/icon-maskable.svg',

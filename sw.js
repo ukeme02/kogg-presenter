@@ -1,5 +1,5 @@
 /* KOGG Presenter service worker — offline-first */
-const CACHE = 'kogg-presenter-v3';
+const CACHE = 'kogg-presenter-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const ASSETS = [
   './css/display.css',
   './js/app.js',
   './js/display.js',
+  './js/sync.js',
+  './js/supabase-config.js',
   './data/kjv.json',
   './data/web.json',
   './data/asv.json',

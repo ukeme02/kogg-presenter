@@ -427,6 +427,184 @@ $('btnApplyTheme').addEventListener('click', () => {
 });
 
 /* =========================================================
+   QUICK GO — fastest path from thought to projector
+========================================================= */
+const BOOK_ABBR = {
+  gen:'genesis', ex:'exodus', exod:'exodus', lev:'leviticus', lv:'leviticus', num:'numbers', nm:'numbers',
+  deut:'deuteronomy', dt:'deuteronomy', josh:'joshua', judg:'judges', jg:'judges',
+  ru:'ruth', rut:'ruth', '1sa':'1 samuel','2sa':'2 samuel','1sam':'1 samuel','2sam':'2 samuel',
+  '1k':'1 kings','2k':'2 kings','1ki':'1 kings','2ki':'2 kings','1ch':'1 chronicles','2ch':'2 chronicles',
+  ezr:'ezra', neh:'nehemiah', est:'esther', job:'job',
+  ps:'psalms', psa:'psalms', psalm:'psalms', psalms:'psalms', pr:'proverbs', prov:'proverbs',
+  ecc:'ecclesiastes', eccl:'ecclesiastes', sos:'song of solomon', song:'song of solomon',
+  isa:'isaiah', is:'isaiah', jer:'jeremiah', lam:'lamentations', ezek:'ezekiel', eze:'ezekiel',
+  dan:'daniel', hos:'hosea', joel:'joel', amos:'amos', am:'amos', oba:'obadiah', jon:'jonah',
+  mic:'micah', nah:'nahum', hab:'habakkuk', zep:'zephaniah', hag:'haggai', zec:'zechariah', mal:'malachi',
+  matt:'matthew', mt:'matthew', mk:'mark', mrk:'mark', lk:'luke', luk:'luke', jn:'john', john:'john',
+  act:'acts', acts:'acts', rom:'romans', ro:'romans',
+  '1co':'1 corinthians','2co':'2 corinthians','1cor':'1 corinthians','2cor':'2 corinthians',
+  gal:'galatians', eph:'ephesians', php:'philippians', phil:'philippians', col:'colossians',
+  '1th':'1 thessalonians','2th':'2 thessalonians','1ti':'1 timothy','2ti':'2 timothy',
+  tit:'titus', phm:'philemon', heb:'hebrews', jas:'james', james:'james',
+  '1pe':'1 peter','2pe':'2 peter','1pt':'1 peter','2pt':'2 peter',
+  '1jn':'1 john','2jn':'2 john','3jn':'3 john', jud:'jude', jude:'jude', rev:'revelation', rv:'revelation',
+};
+function normKey(s) { return s.toLowerCase().replace(/[.\s]/g, ''); }
+
+function parseQuickRef(q) {
+  const m = q.trim().toLowerCase().match(/^([1-3]?\s?[a-z.\s]+?)\s*(\d+)?\s*(?:[:.]\s*(\d+))?(?:\s*-\s*(\d+))?$/);
+  if (!m) return null;
+  const key = normKey(m[1]);
+  let bookIdx = bible ? bible.books.findIndex(b => normKey(b.name) === key) : -1;
+  if (bookIdx < 0 && BOOK_ABBR[key]) bookIdx = bible ? bible.books.findIndex(b => normKey(b.name) === BOOK_ABBR[key]) : -1;
+  if (bookIdx < 0 && bible) {
+    const candidates = bible.books.map((b, i) => ({ i, n: normKey(b.name) }))
+      .filter(b => b.n.startsWith(key) && key.length >= 2);
+    if (candidates.length === 1) bookIdx = candidates[0].i;
+  }
+  if (bookIdx < 0) return null;
+  const ch = m[2] ? +m[2] : 1;
+  const vFrom = m[3] ? +m[3] : 1;
+  const vTo = m[4] ? +m[4] : vFrom;
+  return { bookIdx, ch, vFrom: Math.min(vFrom, vTo), vTo: Math.max(vFrom, vTo) };
+}
+function goLiveScripture(r) {
+  const book = bible.books[r.bookIdx];
+  const ref = `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`;
+  pushLive({ mode: 'normal', slides: scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo), index: 0, title: ref, themeId: currentThemeId });
+  // keep the scripture tab in sync so the operator sees what's live
+  $('bookSelect').value = r.bookIdx; fillChapters();
+  $('chapterSelect').value = r.ch; fillVerses();
+  $('verseFrom').value = r.vFrom; $('verseTo').value = r.vTo;
+  updateScripturePreview();
+}
+function quickGoLive(item) {
+  if (item.type === 'scripture') goLiveScripture(item.ref);
+  else pushLive({ mode: 'normal', slides: songToSlides(item.song), index: 0, title: item.song.title, themeId: currentThemeId });
+  $('quickGoResults').hidden = true;
+  $('quickGo').value = '';
+}
+function quickSearch(q) {
+  const out = [];
+  if (!q.trim()) return out;
+  const ref = parseQuickRef(q);
+  if (ref && bible) {
+    const book = bible.books[ref.bookIdx];
+    const r = ref;
+    out.push({
+      type: 'scripture', icon: '📖',
+      label: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`,
+      snippet: (book.chapters[r.ch - 1][r.vFrom - 1] || '').slice(0, 80),
+      ref,
+    });
+  }
+  const ql = q.trim().toLowerCase();
+  songs.filter(s => s.title.toLowerCase().includes(ql))
+    .slice(0, 5)
+    .forEach(s => out.push({ type: 'song', icon: '🎵', label: s.title, snippet: (s.author || 'song'), song: s }));
+  return out.slice(0, 7);
+}
+function renderQuickResults() {
+  const q = $('quickGo').value;
+  const items = quickSearch(q);
+  const box = $('quickGoResults');
+  if (!items.length) { box.hidden = true; return; }
+  box.innerHTML = items.map((it, i) => `
+    <div class="quickgo-item" data-i="${i}">
+      <span class="quickgo-icon">${it.icon}</span>
+      <span><b>${esc(it.label)}</b><br><span class="item-meta">${esc(it.snippet || '')}</span></span>
+    </div>`).join('');
+  box.hidden = false;
+  box.dataset.count = items.length;
+  box._items = items;
+}
+$('quickGo').addEventListener('input', renderQuickResults);
+$('quickGo').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const box = $('quickGoResults');
+    const items = (box._items && !box.hidden) ? box._items : quickSearch($('quickGo').value);
+    if (items.length) quickGoLive(items[0]);
+  } else if (e.key === 'Escape') {
+    $('quickGoResults').hidden = true;
+  }
+});
+$('quickGoResults').addEventListener('click', e => {
+  const item = e.target.closest('.quickgo-item');
+  if (!item) return;
+  const items = $('quickGoResults')._items || [];
+  const chosen = items[+item.dataset.i];
+  if (chosen) quickGoLive(chosen);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.quickgo')) $('quickGoResults').hidden = true;
+});
+
+/* =========================================================
+   ACCOUNT / CLOUD SYNC
+========================================================= */
+function syncUI() {
+  const cfgOk = window.KOGGSync && window.KOGGSync.configured;
+  $('authNotConfigured').hidden = !!cfgOk;
+  $('authForm').hidden = !cfgOk || !!window._koggUser;
+  $('authSignedIn').hidden = !cfgOk || !window._koggUser;
+  if (window._koggUser) $('authWho').textContent = `Signed in as ${window._koggUser.email}`;
+}
+async function refreshUser() {
+  if (!(window.KOGGSync && window.KOGGSync.configured)) { syncUI(); return; }
+  try {
+    window._koggUser = await window.KOGGSync.currentUser();
+  } catch { window._koggUser = null; }
+  syncUI();
+}
+$('btnSignUp').addEventListener('click', async () => {
+  const status = $('authStatus');
+  status.textContent = 'Creating account…';
+  try {
+    await window.KOGGSync.signUp($('authEmail').value.trim(), $('authPassword').value);
+    status.textContent = 'Account created. If email confirmation is on, check your inbox, then sign in.';
+  } catch (err) { status.textContent = 'Sign up failed: ' + err.message; }
+});
+$('btnSignIn').addEventListener('click', async () => {
+  const status = $('authStatus');
+  status.textContent = 'Signing in…';
+  try {
+    await window.KOGGSync.signIn($('authEmail').value.trim(), $('authPassword').value);
+    await refreshUser();
+    status.textContent = window._koggUser ? 'Signed in ✓ — pulling your library…' : 'Signed in.';
+    if (window._koggUser) await pullCloud(true);
+  } catch (err) { status.textContent = 'Sign in failed: ' + err.message; }
+});
+$('btnSignOut').addEventListener('click', async () => {
+  try { await window.KOGGSync.signOut(); } catch {}
+  window._koggUser = null;
+  syncUI();
+});
+async function pushCloud() {
+  try {
+    await window.KOGGSync.push();
+    flash($('btnPushCloud'), 'Pushed ✓');
+  } catch (err) { alert('Push failed: ' + err.message); }
+}
+async function pullCloud(silent) {
+  try {
+    const data = await window.KOGGSync.pull();
+    if (!data) { if (!silent) flash($('btnPullCloud'), 'Cloud empty'); return; }
+    if (data.songs) { songs = data.songs; LS.set(K.songs, songs); }
+    if (data.themes && data.themes.length) { themes = data.themes; LS.set(K.themes, themes); }
+    if (data.plans) LS.set(K.plans, data.plans);
+    if (data.settings && data.settings.currentThemeId) {
+      currentThemeId = data.settings.currentThemeId;
+      LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentThemeId }));
+    }
+    renderSongList(); renderPlans(); renderThemesTab();
+    if (!silent) flash($('btnPullCloud'), 'Pulled ✓');
+  } catch (err) { if (!silent) alert('Pull failed: ' + err.message); }
+}
+$('btnPushCloud').addEventListener('click', pushCloud);
+$('btnPullCloud').addEventListener('click', () => pullCloud(false));
+refreshUser();
+
+/* =========================================================
    GLOBAL CONTROLS
 ========================================================= */
 function next() { if (live.mode === 'normal' && live.index < live.slides.length - 1) pushLive({ index: live.index + 1 }); }
@@ -435,9 +613,34 @@ $('btnNext').addEventListener('click', next);
 $('btnPrev').addEventListener('click', prev);
 $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
 $('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
-$('btnOpenDisplay').addEventListener('click', () => window.open('display.html', 'cp_display'));
+$('btnOpenDisplay').addEventListener('click', openDisplayWindow);
+
+/* Open the output window directly on the extended screen when one exists.
+   Uses the Window Management API (Chrome/Edge) — asks permission once. */
+async function openDisplayWindow() {
+  let features = '';
+  let usedScreenApi = false;
+  try {
+    if ('getScreenDetails' in window) {
+      const details = await window.getScreenDetails();
+      const cur = details.currentScreen;
+      const other = details.screens.find(s =>
+        s.left !== cur.left || s.top !== cur.top);
+      if (other) {
+        features = `left=${other.left},top=${other.top},width=${other.width},height=${other.height}`;
+        usedScreenApi = true;
+      }
+    }
+  } catch { /* permission denied — fall through to normal window */ }
+  const w = window.open('display.html', 'kogg_display', features || undefined);
+  try { w.focus(); } catch {}
+  if (!usedScreenApi) {
+    $('previewNow').textContent = 'Tip: on the output window press F11; or Win+Shift+→ to send it to the projector.';
+  }
+}
 document.addEventListener('keydown', e => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+  if (e.key === '/') { e.preventDefault(); $('quickGo').focus(); return; }
   if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
   else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
   else if (e.key.toLowerCase() === 'b') $('btnBlank').click();

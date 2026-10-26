@@ -13,6 +13,9 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
 | Web lyrics import | Paste any lyrics-page URL → text is fetched, cleaned and saved locally (offline after that) |
 | AI voice | One tap: the projector machine speaks each slide and **auto-advances** through the passage (Web Speech API — no cloud, no keys) |
+| Quick Go | Type `jn 3:16-17`, `ps 23` or a song name in the top bar, hit Enter — it's live. Press `/` to focus from anywhere |
+| Extended screen | Output window opens straight onto the second monitor (Chrome/Edge Window Management API — allow once) |
+| Cloud sync | Free Supabase account: songs, themes and plans follow you to any PC or phone |
 | Typography | Font, size (+/− live in the top bar), weight and text alignment per theme |
 | Light/dark | Operator console has light and dark modes |
 | Landing page | `landing.html` — public page explaining the app with install/download steps |
@@ -48,6 +51,32 @@ npx serve .
 2. **Laptop + projector** — open `display.html` in a Chrome window dragged to the projector screen
    and `index.html` on your laptop screen. Both windows stay in sync automatically (same browser).
    Press F11 on the display window.
+
+## Enable cloud sync (5 minutes, free)
+
+Accounts and library sync use [Supabase](https://supabase.com)'s free tier (no credit card):
+
+1. Create a project at supabase.com (any name, e.g. `kogg-presenter`).
+2. In the SQL Editor run:
+
+   ```sql
+   create table if not exists libraries (
+     user_id uuid primary key references auth.users on delete cascade,
+     data jsonb not null default '{}'::jsonb,
+     updated_at timestamptz not null default now()
+   );
+   alter table libraries enable row level security;
+   create policy "own library" on libraries
+     for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+   ```
+
+3. In Project Settings → API copy the **Project URL** and the **anon public key**.
+4. Paste both into `js/supabase-config.js`, deploy, done. The Account tab (and the signup card on
+   the landing page) come alive: sign up, sign in on any device, **Push/Pull** your library.
+   Data is protected by row-level security — only you can read or write your row. The anon key
+   is safe to ship publicly.
+
+Everything else in the app works without any of this — sync is purely optional.
 
 ## Pair with OBS Studio
 

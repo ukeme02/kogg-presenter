@@ -35,14 +35,14 @@
 <div class="hero">
   <img src="icons/icon.svg" alt="KOGG Presenter logo">
   <h1>KOGG Presenter</h1>
-  <p>The light, free church presentation app. Scriptures and lyrics on the big screen —
-     with an AI voice that reads and auto-advances, lower thirds, and a transparent OBS overlay.
-     No subscriptions. No installs. Works offline.</p>
+  <p>The world's first portable, browser-based church presenter. Scriptures and lyrics on the big screen in seconds —
+     with an AI voice that reads and auto-advances, lower thirds, and a transparent OBS overlay that barely touches your CPU.
+     No subscriptions. No installs. Works offline. Sign in on any computer and your whole library is there.</p>
   <a class="btn" href="index.html">Open the App →</a>
   <a class="btn ghost" href="https://github.com/ukeme02/kogg-presenter">View Source (GitHub)</a>
   <div style="margin-top:18px">
     <span class="tag">100% free</span><span class="tag">offline-first</span><span class="tag">~20 KB app</span>
-    <span class="tag">no account needed</span><span class="tag">3 Bible versions</span>
+    <span class="tag">no account needed</span><span class="tag">3 Bible versions</span><span class="tag">cloud sync</span>
   </div>
 </div>
 
@@ -56,7 +56,23 @@
     <div class="card"><h3>📺 Lower thirds</h3><p>Animated name/title banners for speakers — perfect over video in your livestream.</p></div>
     <div class="card"><h3>🎛️ OBS-ready</h3><p>A transparent browser-source URL drops slide text and lower thirds on top of your OBS scenes. Zero plugins.</p></div>
     <div class="card"><h3>🗓️ Service plans</h3><p>Queue songs and scriptures in order, save named plans, run the whole service from one screen or your phone.</p></div>
+    <div class="card"><h3>☁️ Your library follows you</h3><p>Create a free account and your songs, themes and service plans sync to any PC or phone you sign in on.</p></div>
     <div class="card"><h3>⏱️ Countdown &amp; clock</h3><p>Pre-service countdown timer with clock for the big screen.</p></div>
+  </div>
+
+  <h2>Create your free account</h2>
+  <div class="steps">
+    <p style="margin-bottom:14px">One account, every device. Your library is stored under your account and pulled down whenever you sign in.</p>
+    <div id="landingAuthCfg" style="display:none">
+      <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <input id="lEmail" type="email" placeholder="you@church.org" style="flex:2;min-width:220px;padding:11px;border-radius:8px;border:1px solid #3a4356;background:#252b38;color:#e8eaf0">
+        <input id="lPass" type="password" placeholder="password (min. 6)" style="flex:1;min-width:160px;padding:11px;border-radius:8px;border:1px solid #3a4356;background:#252b38;color:#e8eaf0">
+        <button id="lSignUp" style="padding:11px 22px;border-radius:8px;border:none;background:#4f8cff;color:#fff;font-weight:700;cursor:pointer">Sign Up Free</button>
+        <button id="lSignIn" style="padding:11px 22px;border-radius:8px;border:1px solid #3a4356;background:#252b38;color:#e8eaf0;cursor:pointer">Sign In</button>
+      </div>
+      <p id="lStatus" style="color:#9aa3b5;font-size:14px"></p>
+    </div>
+    <p id="landingAuthNone" style="color:#9aa3b5;font-size:14px">Accounts open as soon as cloud sync is enabled on this deployment — see README → “Enable cloud sync”. The app itself works fully without an account.</p>
   </div>
 
   <h2>How to get it</h2>
@@ -76,9 +92,34 @@
   <h2>Why another presentation app?</h2>
   <p style="color:var(--muted)">ProPresenter costs ~$29/month. EasyWorship ~$299. OpenLP and Quelea are free but need a desktop
   install and aren't phone-friendly. KOGG Presenter takes the best ideas — slide-based lyrics, verse-by-verse
-  scriptures, lower thirds, OBS output — and runs them anywhere a browser runs, free, offline, operated from your phone.
-  Light on purpose: ~20 KB of code, no frameworks, no tracking, no accounts.</p>
+  scriptures, lower thirds, OBS output — and runs them anywhere a browser runs, free, offline, operated from your phone,
+  with your library synced to your account. Light on purpose: ~20 KB of code, no frameworks, no tracking —
+  the OBS overlay runs on the same browser engine you already have, so your CPU stays cool.</p>
 </main>
 <footer>KOGG Presenter — free and open source under the MIT license · KJV, WEB and ASV are public domain</footer>
+<script src="js/supabase-config.js"></script>
+<script src="js/sync.js"></script>
+<script>
+(function () {
+  if (!(window.KOGGSync && window.KOGGSync.configured)) return;
+  document.getElementById('landingAuthCfg').style.display = 'block';
+  document.getElementById('landingAuthNone').style.display = 'none';
+  const status = document.getElementById('lStatus');
+  document.getElementById('lSignUp').addEventListener('click', async () => {
+    status.textContent = 'Creating account…';
+    try {
+      await window.KOGGSync.signUp(document.getElementById('lEmail').value.trim(), document.getElementById('lPass').value);
+      status.textContent = 'Account created ✓ — check your inbox if confirmation is required, then open the app and sign in.';
+    } catch (err) { status.textContent = 'Sign up failed: ' + err.message; }
+  });
+  document.getElementById('lSignIn').addEventListener('click', async () => {
+    status.textContent = 'Signing in…';
+    try {
+      await window.KOGGSync.signIn(document.getElementById('lEmail').value.trim(), document.getElementById('lPass').value);
+      status.textContent = 'Signed in ✓ — open the app and go to the Account tab to pull your library.';
+    } catch (err) { status.textContent = 'Sign in failed: ' + err.message; }
+  });
+})();
+</script>
 </body>
 </html>

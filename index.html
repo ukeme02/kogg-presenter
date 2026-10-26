@@ -22,6 +22,10 @@
     </div>
     <button id="btnNext" class="ctrl" title="Next (Right arrow)">▶</button>
   </div>
+  <div class="quickgo">
+    <input id="quickGo" type="search" autocomplete="off" placeholder="Quick Go — try: jn 3:16-17, ps 23, or a song name…  ( / to focus )">
+    <div id="quickGoResults" class="quickgo-results" hidden></div>
+  </div>
   <div class="quick-actions">
     <button id="btnFontSizeDown" class="ctrl" title="Smaller text (current theme)">A−</button>
     <button id="btnFontSizeUp" class="ctrl" title="Bigger text (current theme)">A+</button>
@@ -40,6 +44,7 @@
   <button class="tab" data-tab="songs">Songs</button>
   <button class="tab" data-tab="service">Service</button>
   <button class="tab" data-tab="themes">Themes</button>
+  <button class="tab" data-tab="account">Account</button>
   <button class="tab" data-tab="tools">Tools</button>
 </nav>
 
@@ -192,6 +197,37 @@
     </div>
   </section>
 
+  <!-- ACCOUNT -->
+  <section id="tab-account" class="tab-panel">
+    <div class="card">
+      <h2>Account &amp; Cloud Sync</h2>
+      <p class="hint">Sign in and your songs, themes and service plans follow you to any PC or phone. Bibles are built into the app — they're always there, even offline. Sync uses a free Supabase project and only runs when you're online.</p>
+      <div id="authNotConfigured" class="hint" style="color:var(--warn)">
+        Cloud sync isn't configured on this deployment yet. See README → “Enable cloud sync” (5-minute free setup with Supabase).
+      </div>
+      <div id="authForm">
+        <div class="row">
+          <label style="flex:2">Email<br><input id="authEmail" type="email" placeholder="you@church.org"></label>
+          <label style="flex:1">Password<br><input id="authPassword" type="password" placeholder="min. 6 characters"></label>
+        </div>
+        <div class="row">
+          <button id="btnSignIn" class="primary">Sign In</button>
+          <button id="btnSignUp">Create Account</button>
+        </div>
+        <div id="authStatus" class="hint"></div>
+      </div>
+      <div id="authSignedIn" hidden>
+        <p id="authWho" class="hint"></p>
+        <div class="row">
+          <button id="btnPushCloud" class="primary">⬆ Push Library to Cloud</button>
+          <button id="btnPullCloud">⬇ Pull Library from Cloud</button>
+          <button id="btnSignOut">Sign Out</button>
+        </div>
+        <p class="hint">Push uploads your songs, themes and plans. Pull replaces the local library with the cloud copy — export a backup first if unsure (Tools tab).</p>
+      </div>
+    </div>
+  </section>
+
   <!-- TOOLS -->
   <section id="tab-tools" class="tab-panel">
     <div class="card">
@@ -241,6 +277,8 @@
   </section>
 </main>
 
+<script src="js/supabase-config.js"></script>
+<script src="js/sync.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

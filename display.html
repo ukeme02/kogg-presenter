@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KOGG Presenter — Output</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/display.css">
+</head>
+<body>
+<div id="screen">
+  <div id="slideLabel"></div>
+  <div id="slideText"></div>
+  <div id="countdown">
+    <div id="countdownTime">00:00</div>
+    <div id="clock"></div>
+  </div>
+  <div id="logoScreen">
+    <svg viewBox="0 0 100 100" width="120" height="120" aria-hidden="true">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="3"/>
+      <path d="M50 22 v44 M32 38 h36" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <div id="logoName">KOGG Presenter</div>
+  </div>
+  <div id="blankScreen"></div>
+  <div id="lowerThird" class="lt-hidden">
+    <div id="ltBox">
+      <div id="ltLine1"></div>
+      <div id="ltLine2"></div>
+    </div>
+  </div>
+</div>
+<script src="js/display.js"></script>
+</body>
+</html>

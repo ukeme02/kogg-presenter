@@ -1,0 +1,105 @@
+html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
+body.overlay { background: transparent !important; }
+body.overlay #screen { background: transparent !important; }
+#screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  cursor: none;
+}
+
+#slideText {
+  font-family: Georgia, serif;
+  font-size: 7vh;
+  line-height: 1.35;
+  text-align: center;
+  padding: 6vh 8vw;
+  text-shadow: 0 2px 10px rgba(0,0,0,.55);
+  max-width: 100%;
+  max-height: 88vh;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+#slideLabel {
+  position: fixed;
+  bottom: 3.5vh;
+  left: 4vw;
+  font-family: Georgia, serif;
+  font-size: 3vh;
+  opacity: .85;
+  text-shadow: 0 1px 6px rgba(0,0,0,.6);
+}
+
+#countdown, #logoScreen, #blankScreen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-size: cover;
+  background-position: center;
+}
+#countdown.on, #logoScreen.on, #blankScreen.on { display: flex; }
+
+#countdownTime {
+  font-family: Georgia, serif;
+  font-size: 22vh;
+  font-weight: 700;
+  text-shadow: 0 2px 14px rgba(0,0,0,.5);
+}
+#clock { font-size: 5vh; opacity: .75; margin-top: 2vh; }
+
+#logoScreen { color: #fff; background: #111; }
+#logoScreen svg { opacity: .9; }
+#logoName { font-family: Georgia, serif; font-size: 5vh; margin-top: 3vh; letter-spacing: .06em; }
+
+#blankScreen { background: #000; }
+
+/* Lower third — animated name/title banner */
+#lowerThird {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 9vh;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+#lowerThird.lt-hidden { display: none; }
+#ltBox {
+  background: linear-gradient(90deg, rgba(0,0,0,.85), rgba(20,30,60,.85));
+  border-left: 6px solid #4f8cff;
+  border-radius: 6px;
+  padding: 1.6vh 4vw;
+  text-align: left;
+  box-shadow: 0 4px 24px rgba(0,0,0,.45);
+  max-width: 80vw;
+}
+#ltLine1 {
+  font-family: Georgia, serif;
+  font-size: 5.5vh;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0,0,0,.5);
+}
+#ltLine2 {
+  font-family: Georgia, serif;
+  font-size: 3.4vh;
+  color: #cdd6e8;
+  margin-top: .6vh;
+}
+#lowerThird.lt-animate #ltBox {
+  animation: lt-slide .5s ease-out;
+}
+@keyframes lt-slide {
+  from { transform: translateX(-8vw); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}

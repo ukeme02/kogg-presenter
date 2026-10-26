@@ -1,0 +1,496 @@
+/* KOGG Presenter — operator logic */
+'use strict';
+
+/* ---------- storage helpers ---------- */
+const LS = {
+  get(key, fallback) {
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch { return fallback; }
+  },
+  set(key, value) { localStorage.setItem(key, JSON.stringify(value)); },
+};
+const K = { songs: 'cp_songs', themes: 'cp_themes', service: 'cp_service',
+            settings: 'cp_settings', live: 'cp_live', plans: 'cp_plans' };
+
+/* ---------- shared slide helpers (kept in sync with display.js) ---------- */
+function songToSlides(song) {
+  return String(song.lyrics || '')
+    .split(/\n\s*\n/)
+    .map(block => block.trim())
+    .filter(Boolean)
+    .map(block => {
+      let label = song.title;
+      let text = block;
+      const m = text.match(/^\[([^\]]+)\]\s*\n?/);
+      if (m) { label = `${song.title} — ${m[1]}`; text = text.slice(m[0].length).trim(); }
+      return { text, label };
+    });
+}
+function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
+  const book = books[bookIdx];
+  const slides = [];
+  for (let v = vFrom; v <= vTo; v++) {
+    const text = book.chapters[chFrom - 1][v - 1];
+    if (text == null) break;
+    slides.push({ text, label: `${book.name} ${chFrom}:${v}` });
+  }
+  return slides;
+}
+
+/* ---------- state ---------- */
+let bible = null;            // {translation, books:[{name, chapters:[[...]]}]}
+let songs = LS.get(K.songs, []);
+let themes = LS.get(K.themes, null);
+let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
+let live = LS.get(K.live, { mode: 'logo', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });
+let editingSongId = null;
+
+const DEFAULT_THEMES = [
+  { id: 't1', name: 'Sunset',      bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 },
+  { id: 't2', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 },
+  { id: 't3', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 },
+  { id: 't4', name: 'Plain Black', bg: 'linear-gradient(135deg,#000000,#434343)',          bgImage: '', textColor: '#ffffff', font: 'Arial, sans-serif', fontSize: 7 },
+];
+if (!themes || !themes.length) { themes = DEFAULT_THEMES; LS.set(K.themes, themes); }
+let currentThemeId = LS.get(K.settings, {}).currentThemeId || themes[0].id;
+
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+/* ---------- sync to display ---------- */
+const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
+function pushLive(patch = {}) {
+  live = Object.assign({}, live, patch);
+  LS.set(K.live, live);
+  if (channel) channel.postMessage(live);
+  renderPreview();
+}
+
+/* ---------- preview ---------- */
+function renderPreview() {
+  const now = live.mode === 'normal' ? live.slides[live.index] : null;
+  $('previewNow').textContent = live.mode === 'blank' ? '— BLANK —'
+    : live.mode === 'logo' ? '— LOGO —'
+    : live.mode === 'countdown' ? '— COUNTDOWN —'
+    : now ? `${now.label} — ${now.text}` : 'Ready';
+  $('previewNext').textContent = live.mode === 'normal' && live.slides[live.index + 1]
+    ? `${live.slides[live.index + 1].label} — ${live.slides[live.index + 1].text}` : '—';
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+  document.querySelectorAll('.tab-panel').forEach(p =>
+    p.classList.toggle('active', p.id === 'tab-' + t.dataset.tab));
+  if (t.dataset.tab === 'songs') renderSongList();
+  if (t.dataset.tab === 'service') renderService();
+  if (t.dataset.tab === 'themes') renderThemesTab();
+}));
+
+/* =========================================================
+   SCRIPTURE
+========================================================= */
+async function loadBible() {
+  $('scripturePreview').textContent = 'Loading Bible…';
+  const res = await fetch('data/kjv.json');
+  bible = await res.json();
+  const bookSel = $('bookSelect');
+  bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${b.name}</option>`).join('');
+  fillChapters();
+  $('scripturePreview').textContent = `Loaded ${bible.translation} — ${bible.books.length} books (offline).`;
+}
+function fillChapters() {
+  const book = bible.books[+$('bookSelect').value];
+  $('chapterSelect').innerHTML = book.chapters.map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
+  fillVerses();
+}
+function fillVerses() {
+  const book = bible.books[+$('bookSelect').value];
+  const ch = +$('chapterSelect').value;
+  const count = book.chapters[ch - 1].length;
+  const opts = Array.from({ length: count }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
+  $('verseFrom').innerHTML = opts;
+  $('verseTo').innerHTML = opts;
+  $('verseFrom').value = 1;
+  $('verseTo').value = 1;
+}
+function currentScriptureRange() {
+  return {
+    bookIdx: +$('bookSelect').value,
+    ch: +$('chapterSelect').value,
+    vFrom: Math.min(+$('verseFrom').value, +$('verseTo').value),
+    vTo: Math.max(+$('verseFrom').value, +$('verseTo').value),
+  };
+}
+function updateScripturePreview() {
+  if (!bible) return;
+  const r = currentScriptureRange();
+  const book = bible.books[r.bookIdx];
+  const lines = [];
+  for (let v = r.vFrom; v <= r.vTo; v++) {
+    const t = book.chapters[r.ch - 1][v - 1];
+    if (t == null) break;
+    lines.push(`${v} ${t}`);
+  }
+  const title = `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`;
+  $('scripturePreview').textContent = title + '\n\n' + lines.join('\n');
+  $('scripturePreview').dataset.title = title;
+}
+$('bookSelect').addEventListener('change', fillChapters);
+$('chapterSelect').addEventListener('change', fillVerses);
+$('verseFrom').addEventListener('change', updateScripturePreview);
+$('verseTo').addEventListener('change', updateScripturePreview);
+
+$('btnGoScripture').addEventListener('click', () => {
+  const r = currentScriptureRange();
+  const book = bible.books[r.bookIdx];
+  const slides = scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo);
+  pushLive({ mode: 'normal', slides, index: 0, title: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`, themeId: currentThemeId });
+});
+$('btnAddScripture').addEventListener('click', () => {
+  const r = currentScriptureRange();
+  const book = bible.books[r.bookIdx];
+  service.push({
+    id: uid(), type: 'scripture',
+    title: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`,
+    slides: scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo),
+  });
+  LS.set(K.service, service);
+  flash($('btnAddScripture'), 'Added ✓');
+});
+
+/* =========================================================
+   SONGS
+========================================================= */
+function renderSongList() {
+  const q = $('songSearch').value.trim().toLowerCase();
+  const list = songs.filter(s =>
+    !q || s.title.toLowerCase().includes(q) || (s.author || '').toLowerCase().includes(q));
+  $('songList').innerHTML = list.map(s => `
+    <li data-id="${s.id}">
+      <span class="item-title">${esc(s.title)} <span class="item-meta">${esc(s.author || '')}</span></span>
+      <button data-act="live">▶ Live</button>
+      <button data-act="add">+ Service</button>
+      <button data-act="edit">Edit</button>
+      <button data-act="del" class="danger">✕</button>
+    </li>`).join('') || '<li><span class="item-meta">No songs yet — tap “+ New Song”.</span></li>';
+}
+$('songList').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const id = btn.closest('li').dataset.id;
+  const song = songs.find(s => s.id === id);
+  const act = btn.dataset.act;
+  if (act === 'live') {
+    pushLive({ mode: 'normal', slides: songToSlides(song), index: 0, title: song.title, themeId: currentThemeId });
+  } else if (act === 'add') {
+    service.push({ id: uid(), type: 'song', title: song.title, slides: songToSlides(song) });
+    LS.set(K.service, service);
+    flash(btn, 'Added ✓');
+  } else if (act === 'edit') {
+    openSongEditor(song);
+  } else if (act === 'del') {
+    if (confirm(`Delete song “${song.title}”?`)) {
+      songs = songs.filter(s => s.id !== id);
+      LS.set(K.songs, songs);
+      renderSongList();
+    }
+  }
+});
+function openSongEditor(song) {
+  editingSongId = song ? song.id : null;
+  $('songEditorTitle').textContent = song ? 'Edit Song' : 'New Song';
+  $('songTitle').value = song ? song.title : '';
+  $('songAuthor').value = song ? (song.author || '') : '';
+  $('songLyrics').value = song ? song.lyrics : '';
+  $('songEditor').hidden = false;
+  updateSongSlidesPreview();
+  $('songEditor').scrollIntoView({ behavior: 'smooth' });
+}
+$('btnNewSong').addEventListener('click', () => openSongEditor(null));
+$('btnCancelSong').addEventListener('click', () => { $('songEditor').hidden = true; });
+$('songLyrics').addEventListener('input', updateSongSlidesPreview);
+function updateSongSlidesPreview() {
+  const song = { title: $('songTitle').value || 'Untitled', lyrics: $('songLyrics').value };
+  const slides = songToSlides(song);
+  $('songSlidesPreview').textContent = slides.length
+    ? slides.map((s, i) => `Slide ${i + 1} [${s.label}]\n${s.text}`).join('\n\n———\n\n')
+    : 'Slides preview…';
+}
+$('btnSaveSong').addEventListener('click', () => {
+  const title = $('songTitle').value.trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  const song = { id: editingSongId || uid(), title, author: $('songAuthor').value.trim(), lyrics: $('songLyrics').value };
+  if (editingSongId) songs = songs.map(s => s.id === editingSongId ? song : s);
+  else songs.push(song);
+  LS.set(K.songs, songs);
+  $('songEditor').hidden = true;
+  renderSongList();
+});
+$('btnLiveSong').addEventListener('click', () => {
+  const song = { title: $('songTitle').value || 'Untitled', lyrics: $('songLyrics').value };
+  pushLive({ mode: 'normal', slides: songToSlides(song), index: 0, title: song.title, themeId: currentThemeId });
+});
+$('songSearch').addEventListener('input', renderSongList);
+
+/* ---------- web lyrics import ---------- */
+function cleanFetchedText(md) {
+  return md
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')          // images
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')       // links -> text
+    .replace(/^#{1,6}\s*/gm, '')                    // markdown headings
+    .replace(/^>\s?/gm, '')                         // blockquotes
+    .replace(/[*_`]{1,3}/g, '')                     // emphasis marks
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+$('btnFetchWeb').addEventListener('click', async () => {
+  const url = $('webUrl').value.trim();
+  const status = $('webImportStatus');
+  if (!url) { status.textContent = 'Paste a URL first.'; return; }
+  status.textContent = 'Fetching…';
+  try {
+    const res = await fetch('https://r.jina.ai/' + url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = cleanFetchedText(await res.text());
+    if (!text) throw new Error('empty page');
+    openSongEditor(null);
+    if (!$('songTitle').value) {
+      const m = text.split('\n').find(l => l.trim().length > 2);
+      if (m) $('songTitle').value = m.trim().slice(0, 60);
+    }
+    $('songLyrics').value = text;
+    updateSongSlidesPreview();
+    status.textContent = 'Fetched ✓ — review the text, fix the title, then Save Song. It is now stored locally.';
+    $('songEditor').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    status.textContent = 'Could not fetch that page (' + err.message + '). Open the page, copy the lyrics, and paste them into a New Song instead.';
+  }
+});
+
+/* =========================================================
+   SERVICE PLAN
+========================================================= */
+function renderService() {
+  $('serviceList').innerHTML = service.map((item, i) => `
+    <li data-id="${item.id}">
+      <span class="item-meta">${i + 1}</span>
+      <span class="item-title">${esc(item.title)} <span class="item-meta">(${item.slides.length} slide${item.slides.length === 1 ? '' : 's'})</span></span>
+      <button data-act="live">▶</button>
+      <button data-act="up">▲</button>
+      <button data-act="down">▼</button>
+      <button data-act="del" class="danger">✕</button>
+    </li>`).join('') || '<li><span class="item-meta">Service is empty — add scriptures and songs.</span></li>';
+}
+$('serviceList').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const id = btn.closest('li').dataset.id;
+  const i = service.findIndex(s => s.id === id);
+  const act = btn.dataset.act;
+  if (act === 'live') {
+    pushLive({ mode: 'normal', slides: service[i].slides, index: 0, title: service[i].title, themeId: currentThemeId });
+  } else if (act === 'up' && i > 0) {
+    [service[i - 1], service[i]] = [service[i], service[i - 1]];
+  } else if (act === 'down' && i < service.length - 1) {
+    [service[i + 1], service[i]] = [service[i], service[i + 1]];
+  } else if (act === 'del') {
+    service.splice(i, 1);
+  } else return;
+  LS.set(K.service, service);
+  renderService();
+});
+$('btnLiveService').addEventListener('click', () => {
+  if (!service.length) { alert('Service is empty.'); return; }
+  pushLive({ mode: 'normal', slides: service.flatMap(i => i.slides), index: 0, title: 'Service', themeId: currentThemeId });
+});
+$('btnClearService').addEventListener('click', () => {
+  if (confirm('Clear the whole service plan?')) { service = []; LS.set(K.service, service); renderService(); }
+});
+
+/* Named plans */
+function renderPlans() {
+  const plans = LS.get(K.plans, {});
+  $('planSelect').innerHTML = Object.keys(plans).map(n => `<option>${esc(n)}</option>`).join('');
+}
+$('btnSavePlan').addEventListener('click', () => {
+  const name = $('planName').value.trim();
+  if (!name) { alert('Enter a plan name first.'); return; }
+  const plans = LS.get(K.plans, {});
+  plans[name] = service;
+  LS.set(K.plans, plans);
+  renderPlans();
+  $('planSelect').value = name;
+  flash($('btnSavePlan'), 'Saved ✓');
+});
+$('btnLoadPlan').addEventListener('click', () => {
+  const name = $('planSelect').value;
+  if (!name) return;
+  const plans = LS.get(K.plans, {});
+  service = plans[name] || [];
+  LS.set(K.service, service);
+  renderService();
+});
+$('btnDeletePlan').addEventListener('click', () => {
+  const name = $('planSelect').value;
+  if (!name) return;
+  if (!confirm(`Delete plan “${name}”?`)) return;
+  const plans = LS.get(K.plans, {});
+  delete plans[name];
+  LS.set(K.plans, plans);
+  renderPlans();
+});
+
+/* =========================================================
+   THEMES
+========================================================= */
+function themeById(id) { return themes.find(t => t.id === id) || themes[0]; }
+function renderThemesTab() {
+  $('themeSelect').innerHTML = themes.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  $('themeSelect').value = currentThemeId;
+  loadThemeForm();
+}
+function loadThemeForm() {
+  const t = themeById($('themeSelect').value);
+  $('themeName').value = t.name;
+  $('themeTextColor').value = t.textColor;
+  $('themeFontSize').value = t.fontSize;
+  $('themeFont').value = t.font;
+  const opt = [...$('themeBg').options].find(o => o.value === t.bg);
+  $('themeBg').value = opt ? t.bg : (t.bgImage ? 'image' : $('themeBg').options[0].value);
+}
+$('themeSelect').addEventListener('change', loadThemeForm);
+$('themeBgImage').addEventListener('change', () => {
+  const file = $('themeBgImage').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const t = themeById($('themeSelect').value);
+    t.bgImage = reader.result;   // dataURL
+    LS.set(K.themes, themes);
+    flash($('themeBgImage'), 'Image loaded ✓');
+  };
+  reader.readAsDataURL(file);
+});
+$('btnNewTheme').addEventListener('click', () => {
+  const t = { id: uid(), name: 'New Theme', bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
+              bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7 };
+  themes.push(t);
+  LS.set(K.themes, themes);
+  currentThemeId = t.id;
+  renderThemesTab();
+});
+$('btnDeleteTheme').addEventListener('click', () => {
+  if (themes.length <= 1) { alert('Keep at least one theme.'); return; }
+  themes = themes.filter(t => t.id !== $('themeSelect').value);
+  currentThemeId = themes[0].id;
+  LS.set(K.themes, themes);
+  LS.set(K.settings, { currentThemeId });
+  renderThemesTab();
+});
+$('btnSaveTheme').addEventListener('click', () => {
+  const t = themeById($('themeSelect').value);
+  t.name = $('themeName').value.trim() || t.name;
+  t.textColor = $('themeTextColor').value;
+  t.fontSize = +$('themeFontSize').value || 7;
+  t.font = $('themeFont').value;
+  const bgVal = $('themeBg').value;
+  if (bgVal === 'image') { if (!t.bgImage) alert('Pick a custom image file first.'); }
+  else t.bg = bgVal;
+  LS.set(K.themes, themes);
+  flash($('btnSaveTheme'), 'Saved ✓');
+});
+$('btnApplyTheme').addEventListener('click', () => {
+  currentThemeId = $('themeSelect').value;
+  LS.set(K.settings, { currentThemeId });
+  pushLive({ themeId: currentThemeId });
+  flash($('btnApplyTheme'), 'Applied ✓');
+});
+
+/* =========================================================
+   GLOBAL CONTROLS
+========================================================= */
+function next() { if (live.mode === 'normal' && live.index < live.slides.length - 1) pushLive({ index: live.index + 1 }); }
+function prev() { if (live.mode === 'normal' && live.index > 0) pushLive({ index: live.index - 1 }); }
+$('btnNext').addEventListener('click', next);
+$('btnPrev').addEventListener('click', prev);
+$('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
+$('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
+$('btnOpenDisplay').addEventListener('click', () => window.open('display.html', 'cp_display'));
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  else if (e.key.toLowerCase() === 'b') $('btnBlank').click();
+  else if (e.key.toLowerCase() === 'l') $('btnLogo').click();
+});
+
+/* Countdown */
+$('btnCountdown').addEventListener('click', () => {
+  const mins = +$('countdownMinutes').value || 5;
+  pushLive({ mode: 'countdown', until: Date.now() + mins * 60000 });
+});
+$('btnEndCountdown').addEventListener('click', () => pushLive({ mode: 'normal' }));
+
+/* Lower thirds */
+$('btnLtShow').addEventListener('click', () => {
+  pushLive({ lowerThird: { on: true, l1: $('ltLine1').value.trim(), l2: $('ltLine2').value.trim() } });
+  flash($('btnLtShow'), 'Shown ✓');
+});
+$('btnLtHide').addEventListener('click', () => {
+  pushLive({ lowerThird: { on: false, l1: $('ltLine1').value.trim(), l2: $('ltLine2').value.trim() } });
+});
+
+/* OBS overlay URL */
+function obsOverlayUrl() {
+  return new URL('display.html?overlay=1', location.href).href;
+}
+$('obsUrl').value = obsOverlayUrl();
+$('btnCopyObs').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(obsOverlayUrl()); flash($('btnCopyObs'), 'Copied ✓'); }
+  catch { $('obsUrl').select(); document.execCommand('copy'); flash($('btnCopyObs'), 'Copied ✓'); }
+});
+
+/* Backup / restore */
+$('btnExport').addEventListener('click', () => {
+  const data = { exported: new Date().toISOString(), songs, themes, service, plans: LS.get(K.plans, {}) };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'kogg-presenter-backup.json';
+  a.click();
+});
+$('btnImport').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', () => {
+  const file = $('importFile').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      if (d.songs) { songs = songs.concat(d.songs.filter(s => !songs.some(x => x.id === s.id))); LS.set(K.songs, songs); }
+      if (d.plans) LS.set(K.plans, Object.assign(LS.get(K.plans, {}), d.plans));
+      alert('Import complete.');
+      renderSongList(); renderPlans();
+    } catch { alert('Invalid backup file.'); }
+  };
+  reader.readAsText(file);
+});
+
+/* ---------- misc ---------- */
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function flash(btn, msg) {
+  const old = btn.textContent;
+  btn.textContent = msg;
+  setTimeout(() => { btn.textContent = old; }, 1200);
+}
+
+/* ---------- init ---------- */
+renderSongList();
+renderService();
+renderPlans();
+renderPreview();
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+loadBible().then(updateScripturePreview);

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KOGG Presenter — Operator</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="icons/icon.svg" alt="">
+    <span>KOGG Presenter</span>
+  </div>
+  <div class="live-controls">
+    <button id="btnPrev" class="ctrl" title="Previous (Left arrow)">◀</button>
+    <div class="preview">
+      <div id="previewNow" class="preview-box now">Ready</div>
+      <div id="previewNext" class="preview-box next">—</div>
+    </div>
+    <button id="btnNext" class="ctrl" title="Next (Right arrow)">▶</button>
+  </div>
+  <div class="quick-actions">
+    <button id="btnBlank" class="ctrl warn" title="Blank screen (B)">Blank</button>
+    <button id="btnLogo" class="ctrl" title="Logo screen (L)">Logo</button>
+    <button id="btnOpenDisplay" class="ctrl primary" title="Open output screen">Output</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="scripture">Scripture</button>
+  <button class="tab" data-tab="songs">Songs</button>
+  <button class="tab" data-tab="service">Service</button>
+  <button class="tab" data-tab="themes">Themes</button>
+  <button class="tab" data-tab="tools">Tools</button>
+</nav>
+
+<main>
+  <!-- SCRIPTURE -->
+  <section id="tab-scripture" class="tab-panel active">
+    <div class="card">
+      <h2>Scripture</h2>
+      <div class="row">
+        <label>Book<br><select id="bookSelect"></select></label>
+        <label>Chapter<br><select id="chapterSelect"></select></label>
+      </div>
+      <div class="row">
+        <label>From verse<br><select id="verseFrom"></select></label>
+        <label>To verse<br><select id="verseTo"></select></label>
+      </div>
+      <div id="scripturePreview" class="preview-text"></div>
+      <div class="row">
+        <button id="btnGoScripture" class="primary">▶ Go Live</button>
+        <button id="btnAddScripture">+ Add to Service</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SONGS -->
+  <section id="tab-songs" class="tab-panel">
+    <div class="card">
+      <h2>Song Library</h2>
+      <div class="row">
+        <input id="songSearch" type="search" placeholder="Search songs…">
+        <button id="btnNewSong" class="primary">+ New Song</button>
+      </div>
+      <ul id="songList" class="item-list"></ul>
+    </div>
+    <div class="card">
+      <h2>🌐 Import Lyrics from the Web</h2>
+      <p class="hint">Paste a page with lyrics (e.g. a lyrics site). The text is fetched and stored locally — after that it works offline.</p>
+      <div class="row">
+        <input id="webUrl" type="url" placeholder="https://… lyrics page URL">
+        <button id="btnFetchWeb" class="primary">Fetch</button>
+      </div>
+      <div id="webImportStatus" class="hint"></div>
+    </div>
+    <div class="card" id="songEditor" hidden>
+      <h2 id="songEditorTitle">New Song</h2>
+      <div class="row">
+        <label style="flex:2">Title<br><input id="songTitle" type="text" placeholder="Amazing Grace"></label>
+        <label style="flex:1">Author<br><input id="songAuthor" type="text" placeholder="John Newton"></label>
+      </div>
+      <label>Lyrics — separate slides with a blank line. A line like [Verse 1] or [Chorus] becomes the slide label.<br>
+        <textarea id="songLyrics" rows="10" placeholder="[Verse 1]&#10;Amazing grace, how sweet the sound&#10;That saved a wretch like me&#10;&#10;[Chorus]&#10;…"></textarea>
+      </label>
+      <div id="songSlidesPreview" class="preview-text"></div>
+      <div class="row">
+        <button id="btnSaveSong" class="primary">Save Song</button>
+        <button id="btnLiveSong">▶ Go Live (preview)</button>
+        <button id="btnCancelSong">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICE -->
+  <section id="tab-service" class="tab-panel">
+    <div class="card">
+      <h2>Service Plan</h2>
+      <div class="row">
+        <input id="planName" type="text" placeholder="Plan name (e.g. Sunday 26 Oct)">
+        <button id="btnSavePlan">Save Plan</button>
+        <select id="planSelect"></select>
+        <button id="btnLoadPlan">Load</button>
+        <button id="btnDeletePlan" class="danger">Delete</button>
+      </div>
+      <ul id="serviceList" class="item-list"></ul>
+      <div class="row">
+        <button id="btnLiveService" class="primary">▶ Start Service Live</button>
+        <button id="btnClearService" class="danger">Clear All</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- THEMES -->
+  <section id="tab-themes" class="tab-panel">
+    <div class="card">
+      <h2>Output Themes</h2>
+      <div class="row">
+        <label>Theme<br><select id="themeSelect"></select></label>
+        <button id="btnNewTheme">+ New</button>
+        <button id="btnDeleteTheme" class="danger">Delete</button>
+      </div>
+      <div class="row">
+        <label>Name<br><input id="themeName" type="text"></label>
+        <label>Text color<br><input id="themeTextColor" type="color"></label>
+        <label>Font size (vh)<br><input id="themeFontSize" type="number" min="3" max="15" step="0.5"></label>
+        <label>Font<br>
+          <select id="themeFont">
+            <option value="Georgia, serif">Serif</option>
+            <option value="Arial, sans-serif">Sans</option>
+            <option value="'Times New Roman', serif">Times</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label>Background<br><select id="themeBg">
+          <option value="linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)">Sunset</option>
+          <option value="linear-gradient(135deg,#0f2027,#203a43,#2c5364)">Deep Blue</option>
+          <option value="linear-gradient(135deg,#134e5e,#71b280)">Emerald</option>
+          <option value="linear-gradient(135deg,#42275a,#734b6d)">Purple</option>
+          <option value="linear-gradient(135deg,#000000,#434343)">Black</option>
+          <option value="linear-gradient(135deg,#3a1c71,#d76d77,#ffaf7b)">Dawn</option>
+          <option value="linear-gradient(135deg,#0b486b,#f56217)">Fire &amp; Ice</option>
+          <option value="linear-gradient(135deg,#16222a,#3a6073)">Slate</option>
+          <option value="linear-gradient(135deg,#1d4350,#a43931)">Copper Sea</option>
+          <option value="linear-gradient(135deg,#2b5876,#4e4376)">Night Sky</option>
+          <option value="linear-gradient(135deg,#603813,#b29f94)">Desert</option>
+          <option value="linear-gradient(135deg,#232526,#414345)">Charcoal</option>
+          <option value="linear-gradient(135deg,#00467f,#a5cc82)">Spring</option>
+          <option value="linear-gradient(135deg,#870000,#190a05)">Crimson</option>
+          <option value="image">Custom image…</option>
+        </select></label>
+        <label>Custom image<br><input id="themeBgImage" type="file" accept="image/*"></label>
+      </div>
+      <div class="row">
+        <button id="btnSaveTheme" class="primary">Save Theme</button>
+        <button id="btnApplyTheme">Apply to Live</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section id="tab-tools" class="tab-panel">
+    <div class="card">
+      <h2>Lower Thirds (names &amp; titles)</h2>
+      <div class="row">
+        <label style="flex:1">Main line<br><input id="ltLine1" type="text" placeholder="Pastor John Smith"></label>
+        <label style="flex:1">Sub line<br><input id="ltLine2" type="text" placeholder="Senior Pastor"></label>
+      </div>
+      <div class="row">
+        <button id="btnLtShow" class="primary">Show Lower Third</button>
+        <button id="btnLtHide">Hide</button>
+      </div>
+      <p class="hint">Shows as an animated banner over the bottom of the output — perfect as an OBS overlay.</p>
+    </div>
+    <div class="card">
+      <h2>Countdown</h2>
+      <div class="row">
+        <label>Minutes<br><input id="countdownMinutes" type="number" min="1" max="120" value="5"></label>
+        <button id="btnCountdown" class="primary">Start Countdown</button>
+        <button id="btnEndCountdown">Stop</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Backup &amp; Restore</h2>
+      <div class="row">
+        <button id="btnExport">Export Library (JSON)</button>
+        <button id="btnImport">Import Library</button>
+        <input id="importFile" type="file" accept="application/json" hidden>
+      </div>
+    </div>
+    <div class="card">
+      <h2>How the output works</h2>
+      <p><b>Output</b> opens <code>display.html</code> — the clean full-screen view for your projector.</p>
+      <p>• <b>Phone/tablet → projector:</b> mirror or cast the output screen (HDMI adapter or Chromecast), press ▶ Output, then rotate your phone to the display when you connect.</p>
+      <p>• <b>Laptop + projector:</b> open <code>display.html</code> in a Chrome window on the projector screen and this operator page on your laptop screen — they stay in sync automatically (same browser). Press F11 for full screen.</p>
+      <p>• Keyboard shortcuts: <b>←/→</b> slides, <b>B</b> blank, <b>L</b> logo, <b>Esc</b> back to normal.</p>
+    </div>
+    <div class="card">
+      <h2>Pair with OBS Studio</h2>
+      <p>Add a <b>Browser Source</b> in OBS and paste this URL — it shows only the text and lower third with a <b>transparent background</b>, layered over your video or slides:</p>
+      <div class="row">
+        <input id="obsUrl" readonly>
+        <button id="btnCopyObs">Copy URL</button>
+      </div>
+      <p class="hint">Recommended OBS browser source settings: 1920×1080, FPS 30. Use the same URL in a second scene if you also want a fullscreen slide output (without <code>?overlay=1</code>).</p>
+    </div>
+  </section>
+</main>
+
+<script src="js/app.js"></script>
+</body>
+</html>

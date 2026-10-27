@@ -9,7 +9,9 @@ browser, and can be packaged for Windows, iOS, and desktop.
 
 | Feature | Details |
 |---|---|
-| Scripture display | **Five offline Bibles** — KJV, BSB (Berean Standard) and **KJV with Strong's numbers** by default, plus WEB and ASV. Tap vers­es to pick a range, one-tap chapter navigation |
+| Scripture display | **Five offline Bibles** — KJV, BSB (Berean Standard) and **KJV with Strong's numbers** by default, plus WEB and ASV. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly |
+| Quick jump | In the Scripture deck type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
+| Memory dock | Every scripture you put live stays in the session Memory dock — tap to re-show during the sermon (clears on reload) |
 | Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
 | Starter hymns | 34 public-domain hymns bundled (`data/hymns.json`) — added on first run, or via the **+ Starter Hymns** button |
 | Church logo | Tools tab → upload once; it shows on the Logo screen and follows your sync account |

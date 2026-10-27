@@ -188,35 +188,50 @@ function fillVerses() {
   $('verseTo').innerHTML = opts(count);
   $('verseFrom').value = 1;
   $('verseTo').value = count;          // default range = whole chapter
-  renderVerseList();
+  renderVerseDots();
 }
 function opts(n) { return Array.from({ length: n }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join(''); }
 
-/* ---------- tap-to-live verse list (Tecarta-style navigation) ----------
-   Verse mode (default):  tap a verse → it's live, immediately.
-   Range mode:            tap first verse, tap last verse → range goes live.
-   Chapter mode:          tap a chapter → whole chapter goes live. */
+/* ---------- tap-to-live verse dots (number circles) ----------
+   Verse mode (default):  tap a number → that verse is live, instantly.
+   Range mode:            tap the first number, tap the last → range goes live.
+   Chapter mode:          tap a chapter number in the Chapters dock — whole chapter live. */
 let verseMode = 'verse';
 let liveRef = null;    // {bookIdx, ch, vFrom, vTo} currently on the projector
 
-function renderVerseList() {
+function renderVerseDots() {
   if (!bible) return;
   const book = bible.books[+$('bookSelect').value];
   const ch = +$('chapterSelect').value;
-  const list = $('verseList');
-  if (verseMode === 'chapter') { list.innerHTML = ''; list.hidden = true; return; }
-  list.hidden = false;
-  list.innerHTML = book.chapters[ch - 1].map((t, i) => {
+  const dots = $('verseDots');
+  if (verseMode === 'chapter') { dots.innerHTML = ''; return; }
+  dots.innerHTML = book.chapters[ch - 1].map((_, i) => {
     const v = i + 1;
     const liveHere = liveRef && liveRef.bookIdx === +$('bookSelect').value &&
                      liveRef.ch === ch && v >= liveRef.vFrom && v <= liveRef.vTo;
-    return `<button class="verse-row${liveHere ? ' live' : ''}" data-v="${v}">` +
-           `<span class="vn">${v}</span><span class="vt">${esc(stripStrongs(t))}</span></button>`;
+    return `<button class="dot-dot${liveHere ? ' live' : ''}" data-v="${v}" title="Go live — verse ${v}">${v}</button>`;
   }).join('');
+  renderLiveText();
+}
+function renderLiveText() {
+  const box = $('liveText');
+  if (verseMode === 'chapter') { box.innerHTML = ''; return; }
+  if (!liveRef || liveRef.bookIdx !== +$('bookSelect').value || liveRef.ch !== +$('chapterSelect').value) {
+    box.innerHTML = '<span class="dim">No verse live in this chapter yet — tap a number.</span>';
+    return;
+  }
+  const book = bible.books[liveRef.bookIdx];
+  const parts = [];
+  for (let v = liveRef.vFrom; v <= Math.min(liveRef.vTo, liveRef.vFrom + 40); v++) {
+    const t = stripStrongs(book.chapters[liveRef.ch - 1][v - 1] || '');
+    parts.push(`<b>${v}</b> ${esc(t)}`);
+  }
+  const ref = book.name + ' ' + liveRef.ch + (liveRef.vTo > liveRef.vFrom ? ':' + liveRef.vFrom + '-' + liveRef.vTo : ':' + liveRef.vFrom);
+  box.innerHTML = `<div class="live-ref">${esc(ref)}</div>${parts.join(' ')}`;
 }
 function scrollLiveIntoView() {
   setTimeout(() => {
-    const el = $('verseList').querySelector('.verse-row.live');
+    const el = $('verseDots').querySelector('.dot-dot.live');
     if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }, 60);
 }
@@ -224,19 +239,19 @@ function setVerseMode(m) {
   verseMode = m;
   document.querySelectorAll('#pickMode button').forEach(b =>
     b.classList.toggle('active', b.dataset.mode === m));
-  $('modeHint').textContent = m === 'verse' ? 'Tap a verse — it goes live instantly.'
-    : m === 'range' ? 'Tap the first verse, then the last — that range goes live.'
-    : 'Tap a chapter number above — the whole chapter goes live.';
+  $('modeHint').textContent = m === 'verse' ? 'Tap a number — live instantly.'
+    : m === 'range' ? 'Tap the first number, then the last — that range goes live.'
+    : 'Tap a chapter number — the whole chapter goes live.';
   LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { verseMode: m }));
-  renderVerseList();
+  renderVerseDots();
 }
 document.querySelectorAll('#pickMode button').forEach(b =>
   b.addEventListener('click', () => setVerseMode(b.dataset.mode)));
 
-$('verseList').addEventListener('click', e => {
-  const row = e.target.closest('button[data-v]');
-  if (!row || verseMode === 'chapter') return;
-  const v = +row.dataset.v;
+$('verseDots').addEventListener('click', e => {
+  const dot = e.target.closest('button[data-v]');
+  if (!dot || verseMode === 'chapter') return;
+  const v = +dot.dataset.v;
   const bi = +$('bookSelect').value, ch = +$('chapterSelect').value;
   if (verseMode === 'verse') {
     goLiveScripture({ bookIdx: bi, ch, vFrom: v, vTo: v });
@@ -245,8 +260,8 @@ $('verseList').addEventListener('click', e => {
   // range mode: first tap stores the start, second tap completes the range
   if (!rangeStart) {
     rangeStart = v;
-    row.classList.add('live');
-    $('modeHint').textContent = `Start: verse ${v} — now tap the last verse.`;
+    dot.classList.add('live');
+    $('modeHint').textContent = `Start: verse ${v} — now tap the last number.`;
   } else {
     goLiveScripture({ bookIdx: bi, ch, vFrom: Math.min(rangeStart, v), vTo: Math.max(rangeStart, v) });
     rangeStart = 0;
@@ -271,26 +286,27 @@ $('translationSelect').addEventListener('change', () => {
   loadBible(file);
 });
 
-/* Scripture picker chips — tap-first navigation */
+/* Scripture docks — Books / Chapters / Verses / Memory on one page */
 function renderBookChips(filter) {
   if (!bible) return;
-  const f = (filter || '').trim().toLowerCase();
+  // only the letter part filters — "jn 3:16" filters books, not "jn 3:16" itself
+  const f = (filter || '').replace(/[\d:.\-\s]+$/, '').trim().toLowerCase();
   const box = $('bookChips');
-  box.innerHTML = bible.books
+  const list = bible.books
     .map((b, i) => ({ b, i }))
-    .filter(({ b }) => !f || b.name.toLowerCase().includes(f))
+    .filter(({ b }) => !f || b.name.toLowerCase().includes(f) || normKey(b.name).includes(normKey(f)));
+  box.innerHTML = list
     .map(({ b, i }) => `<button data-i="${i}" class="${i === +$('bookSelect').value ? 'selected' : ''}">${esc(b.name)}</button>`)
     .join('');
+  $('bookCount').textContent = f ? `${list.length} match${list.length === 1 ? '' : 'es'}` : '';
 }
 function renderChapterChips() {
   if (!bible) return;
   const book = bible.books[+$('bookSelect').value];
-  $('chapterHeading').textContent = `Chapter — ${book.name}`;
   const cur = +$('chapterSelect').value;
   $('chapterChips').innerHTML = book.chapters
-    .map((_, i) => `<button data-c="${i + 1}" class="${i + 1 === cur ? 'selected' : ''}">${i + 1}</button>`)
+    .map((_, i) => `<button data-c="${i + 1}" class="dot-dot${i + 1 === cur ? ' selected' : ''}">${i + 1}</button>`)
     .join('');
-  $('chapterWrap').hidden = false;
 }
 function chapterLive(bi, ch) {
   const book = bible.books[bi];
@@ -336,28 +352,160 @@ $('btnNextChapter').addEventListener('click', () => {
   }
   if (verseMode === 'chapter') chapterLive(+$('bookSelect').value, +$('chapterSelect').value);
 });
-$('bookSearch').addEventListener('input', () => renderBookChips($('bookSearch').value));
 
-/* books grid is optional — verses stay open either way */
-function refreshBookGrid() {
-  const show = LS.get(K.settings, {}).booksGrid !== false;
-  $('bookSearchRow').hidden = !show;
-  $('bookChips').hidden = !show;
-  $('btnBooksToggle').textContent = show ? 'Hide books' : 'Show books';
-  document.body.classList.toggle('books-hidden', !show);
+/* ---------- Memory dock — this session's live scriptures ---------- */
+const memory = [];   // [{ref, r, translation}] — newest first; lives only until reload
+function refOf(r) {
+  const book = bible.books[r.bookIdx];
+  return `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`;
 }
-$('btnBooksToggle').addEventListener('click', () => {
-  const s = LS.get(K.settings, {});
-  s.booksGrid = (s.booksGrid !== false) ? false : true;   // current shown -> hide, else show
-  LS.set(K.settings, s);
-  refreshBookGrid();
+function shortRef(r) {
+  const name = bible.books[r.bookIdx].name;
+  const ab = name.split(' ').map(w =>
+    w.length <= 3 ? w : w.slice(0, /^\d/.test(name) ? 2 : 3).replace(/\.+$/, '')).join('');
+  return `${ab} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`;
+}
+function pushMemory(r) {
+  const entry = { ref: refOf(r), short: shortRef(r), r: Object.assign({}, r), translation: $('translationSelect').value };
+  const dup = memory.findIndex(m => m.translation === entry.translation &&
+    m.r.bookIdx === entry.r.bookIdx && m.r.ch === entry.r.ch &&
+    m.r.vFrom === entry.r.vFrom && m.r.vTo === entry.r.vTo);
+  if (dup >= 0) memory.unshift(memory.splice(dup, 1)[0]);
+  else memory.unshift(entry);
+  if (memory.length > 14) memory.pop();
+  renderMemory();
+}
+function renderMemory() {
+  const box = $('memoryChips');
+  box.innerHTML = memory.length ? memory.map((m, i) =>
+    `<button data-m="${i}" class="mem-chip${liveRef && m.r.bookIdx === liveRef.bookIdx && m.r.ch === liveRef.ch &&
+      m.r.vFrom === liveRef.vFrom && m.r.vTo === liveRef.vTo ? ' live' : ''}" title="${esc(m.ref)}">${esc(m.short)}</button>`
+  ).join('') : '<span class="dim">Nothing live yet this session.</span>';
+}
+$('memoryChips').addEventListener('click', async e => {
+  const chip = e.target.closest('button[data-m]');
+  if (!chip) return;
+  const m = memory[+chip.dataset.m];
+  if ($('translationSelect').value !== m.translation) {
+    $('translationSelect').value = m.translation;
+    LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: m.translation }));
+    await loadBible(m.translation);
+  }
+  goLiveScripture(Object.assign({}, m.r));
+});
+$('btnMemoryClear').addEventListener('click', () => { memory.length = 0; renderMemory(); });
+
+/* ---------- Quick jump — type "jn 3:16": book completes on 1-2 letters,
+   chapter and verse jump in automatically as you type ---------- */
+
+function suggestBook(q) {
+  const key = normKey(q.replace(/^[\d.\-\s]+/, '').replace(/[^a-z ]/g, ''));
+  if (!key) return [];
+  const out = bible.books
+    .map((b, i) => ({ i, k: normKey(b.name) }))
+    .filter(o => o.k.startsWith(key) || o.k.includes(key))
+    .map(o => o.i);
+  if (!out.length && BOOK_ABBR[key] !== undefined) {
+    const idx = bible.books.findIndex(b => normKey(b.name) === BOOK_ABBR[key]);
+    if (idx >= 0) out.push(idx);
+  }
+  return out.slice(0, 6);
+}
+function commitJump(q) {
+  const s = (q || '').trim().toLowerCase();
+  if (!s) return;
+  const lm = s.match(/^[1-3]?\s*[a-z.\- ]+/);
+  const letters = lm ? lm[0] : '';
+  const cands = suggestBook(letters.trim() || s);
+  if (!cands.length) return;
+  const bi = cands[0];
+  // "3", "3:16", "3 16", "3.16", "3:16-18"
+  const dm = s.slice(letters.length).trim().match(/^(\d+)\s*[:.]?\s*(?:(\d+)\s*(?:-\s*(\d+))?)?$/);
+  if (!dm) {   // book name only → move the docks, don't go live
+    if (bi !== +$('bookSelect').value) {
+      $('bookSelect').value = bi; fillChapters(); renderBookChips($('bookSearch').value);
+      $('quickBookSug').hidden = true;
+    }
+    return;
+  }
+  const book = bible.books[bi];
+  const ch = Math.min(+dm[1], book.chapters.length);
+  const vCount = book.chapters[ch - 1].length;
+  if (!dm[2]) {  // chapter typed → land the docks on the chapter
+    if (bi !== +$('bookSelect').value || ch !== +$('chapterSelect').value) {
+      $('bookSelect').value = bi;
+      fillChapters();
+      $('chapterSelect').value = ch;
+      fillVerses();
+      renderChapterChips();
+      renderBookChips($('bookSearch').value);
+    }
+    $('quickBookSug').hidden = true;
+    return;
+  }
+  // verse typed → live, instantly
+  const vTo = dm[3] ? Math.min(+dm[3], vCount) : Math.min(+dm[2], vCount);
+  goLiveScripture({ bookIdx: bi, ch, vFrom: Math.min(+dm[2], vTo), vTo: Math.max(+dm[2], vTo) });
+  $('quickBookSug').hidden = true;
+  renderBookGhost();
+}
+let bookSearchTimer = null;
+function renderBookGhost() {
+  const q = $('bookSearch').value;
+  const letters = (q.match(/^[^0-9:]*/) || [''])[0].replace(/\s+/g, ' ');
+  const cands = suggestBook(letters.trim().length ? letters.trim() : (normKey(letters) || ''));
+  const ghost = $('bookGhost'), sug = $('quickBookSug');
+  if (!cands.length) { ghost.textContent = ''; sug.hidden = true; return; }
+  const first = bible.books[cands[0]];
+  // faint full-name completion, only while typing a unique pure-letter prefix
+  const typingLetters = !/[0-9:]/.test(q);
+  const key = normKey(letters.trim());
+  ghost.textContent = (typingLetters && cands.length === 1 && key.length >= 1 &&
+                       normKey(first.name).startsWith(key)
+    ? first.name : '');
+  // more than one match → a clickable suggestion row
+  sug.hidden = !(typingLetters && key.length >= 1 && cands.length > 1);
+  if (!sug.hidden) {
+    sug.innerHTML = cands.map(i =>
+      `<button data-s="${i}"><span class="quickgo-icon">📖</span>${esc(bible.books[i].name)}</button>`).join('');
+  }
+}
+$('bookSearch').addEventListener('input', () => {
+  renderBookChips($('bookSearch').value);
+  renderBookGhost();
+  clearTimeout(bookSearchTimer);
+  bookSearchTimer = setTimeout(() => commitJump($('bookSearch').value), 320);
+});
+$('bookSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    clearTimeout(bookSearchTimer);
+    commitJump($('bookSearch').value);
+  } else if (e.key === 'Escape') {
+    $('bookSearch').value = '';
+    renderBookChips('');
+    renderBookGhost();
+    $('quickBookSug').hidden = true;
+  }
+});
+$('quickBookSug').addEventListener('click', e => {
+  const b = e.target.closest('button[data-s]');
+  if (!b) return;
+  $('bookSearch').value = bible.books[+b.dataset.s].name + ' ';
+  $('quickBookSug').hidden = true;
+  renderBookChips($('bookSearch').value);
+  renderBookGhost();
+  $('bookSearch').focus();
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.quickjump')) $('quickBookSug').hidden = true;
 });
 
 /* ---------- adjustable panes: drag the gaps, lock when it fits ---------- */
 const PANES = {
-  books:    { el: () => $('bookChips'),    def: 150 },
-  chapters: { el: () => $('chapterChips'), def: 110 },
-  verses:   { el: () => $('verseList'),    def: 240 },
+  books:    { el: () => $('bookChips'),    def: 260 },
+  chapters: { el: () => $('chapterChips'), def: 220 },
+  verses:   { el: () => $('verseDots'),    def: 320 },
 };
 function applyPanes() {
   const h = LS.get(K.settings, {}).paneHeights || {};
@@ -435,7 +583,7 @@ function searchSelect(bi, ci, vi) {
   fillVerses();
   $('verseFrom').value = vi + 1;
   $('verseTo').value = vi + 1;
-  renderVerseList();
+  renderVerseDots();
 }
 function renderBibleSearch() {
   const q = $('bibleSearch').value;
@@ -833,8 +981,9 @@ function goLiveScripture(r) {
   fillVerses();
   $('verseFrom').value = r.vFrom;
   $('verseTo').value = r.vTo;
-  renderVerseList();
+  renderVerseDots();
   scrollLiveIntoView();
+  pushMemory(r);
 }
 function quickGoLive(item) {
   if (item.type === 'scripture') goLiveScripture(item.ref);
@@ -1202,7 +1351,7 @@ function startVoice() {
     };
     rec.onend = () => {
       if (voiceOn) { try { rec.start(); } catch {} }   // keep the mic open
-      else $('btnVoice').classList.remove('active');
+      else voiceBtnSync(false);
     };
     rec.onerror = e => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
@@ -1213,7 +1362,7 @@ function startVoice() {
     };
     rec.start();
     voiceOn = true;
-    $('btnVoice').classList.add('active');
+    voiceBtnSync(true);
     flash($('btnVoice'), 'Listening…');
   } catch (err) {
     alert('Could not start voice control: ' + err.message);
@@ -1224,6 +1373,11 @@ function stopVoice() {
   try { if (rec) rec.stop(); } catch {}
 }
 $('btnVoice').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
+$('btnVoice2').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
+function voiceBtnSync(on) {
+  $('btnVoice').classList.toggle('active', on);
+  $('btnVoice2').classList.toggle('active', on);
+}
 
 /* Quick font size / alignment on the current theme */
 function patchTheme(patch) {
@@ -1406,6 +1560,7 @@ renderSongList();
 renderService();
 renderPlans();
 renderPreview();
+renderMemory();
 window.__koggBoot = true;
 refreshSyncBadge();
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
@@ -1413,7 +1568,5 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 loadBible($('translationSelect').value);
 setVerseMode(savedSettings.verseMode || 'verse');
-refreshBookGrid();
 initSplitters();
-applyPanes();
 refreshLock();

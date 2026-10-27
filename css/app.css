@@ -94,7 +94,7 @@ label { font-size: 13px; color: var(--muted); line-height: 1.7; }
 }
 .tab.active { color: var(--text); border-bottom-color: var(--accent); }
 
-main { flex: 1; padding: 14px; max-width: 900px; width: 100%; margin: 0 auto; }
+main { flex: 1; padding: 14px; max-width: 1400px; width: 100%; margin: 0 auto; }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
@@ -192,6 +192,132 @@ body.light details.group { background: #eef1f7; }
 
 .hint { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 6px 0; }
 
+/* Scripture deck — docks that rescale to one page */
+.scripture-deck { display: flex; flex-direction: column; gap: 12px; min-height: calc(100vh - 190px); }
+.dock {
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+.dock-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+.dock-head .seg { margin-left: auto; }
+.dock-head-hint { font-weight: 400; font-size: 12px; }
+.dock-foot { display: flex; gap: 8px; margin-top: 10px; flex: 0 0 auto; }
+.dock-foot .ctrl { padding: 8px 12px; }
+.dock-foot #btnAddScripture { margin-left: auto; font-size: 13px; }
+.mini-clear { padding: 4px 10px !important; font-size: 12px !important; border: none; background: transparent; color: var(--muted); }
+.scroll { flex: 1 1 auto; min-height: 0; }
+.chip-grid.scroll,
+.memory-list.scroll { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; min-height: 0; margin: 0; }
+.dock.toolbar { flex-direction: row; gap: 10px; align-items: center; padding: 10px 12px; }
+.dock.toolbar select { width: auto; min-width: 170px; flex: 0 0 auto; }
+.quickjump { position: relative; flex: 1; }
+.quickjump input { position: relative; z-index: 1; font-size: 14px; }
+.quickjump #bookGhost {
+  position: absolute;
+  z-index: 3;
+  left: 13px;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--muted);
+  opacity: .55;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.quickgo-results.jump-sug { z-index: 55; padding: 4px; }
+.jump-sug button { display: flex; width: 100%; gap: 10px; align-items: center; border: none; background: transparent; padding: 9px 12px; text-align: left; border-radius: 8px; }
+.jump-sug button:hover { background: var(--panel2); }
+
+.docks {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.55fr .75fr 1.3fr .85fr;
+  gap: 12px;
+  min-height: 380px;
+}
+.docks .dock { min-height: 320px; }
+
+/* numbered circles — chapters and verses */
+.chip-grid.dots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 4px;
+  align-content: flex-start;
+  justify-items: stretch;
+}
+.dot-dot {
+  width: 100%;
+  height: 32px;
+  padding: 0;
+  min-width: 0;
+  border-radius: 999px;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dot-dot.selected, .dot-dot.live { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+
+/* Memory dock */
+.memory-list { display: flex; flex-direction: column; gap: 6px; padding: 2px; }
+.mem-chip { text-align: left; font-size: 13px; padding: 9px 12px; line-height: 1.3; }
+.mem-chip.live { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.dock-hint { margin-top: 8px; flex: 0 0 auto; font-size: 12px; }
+.dim { color: var(--muted); font-size: 13px; }
+
+/* live verse text under the verse dots */
+.live-text {
+  background: var(--panel2);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  overflow-y: auto;
+  margin-top: 10px;
+  flex: 0 0 auto;
+  max-height: 34vh;
+}
+.live-text .live-ref { font-weight: 700; color: var(--accent); font-size: 12px; margin-bottom: 4px; }
+
+/* full-text search dock */
+details.dock-search { max-height: 46vh; overflow-y: auto; }
+details.dock-search > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+details.dock-search > summary::-webkit-details-marker { display: none; }
+details.dock-search[open] > summary { margin-bottom: 10px; }
+
+@media (max-width: 1100px) {
+  .docks { grid-template-columns: 1fr 1fr; }
+  .scripture-deck { min-height: 0; }
+}
+@media (max-width: 640px) {
+  .docks { grid-template-columns: 1fr; }
+  .docks .dock { min-height: 0; }
+  #dock-books .chip-grid.scroll { max-height: 34vh; }
+  #dock-chapters .chip-grid.scroll, #dock-verses .chip-grid.scroll { max-height: 30vh; }
+}
+
 /* Light operator mode */
 body.light { --bg: #f2f4f8; --panel: #ffffff; --panel2: #e9edf4; --text: #1c2230; --muted: #5b6474; --accent: #2f6bff; }
 body.light .topbar, body.light .tabs { box-shadow: 0 2px 8px rgba(20,30,60,.08); }
@@ -265,9 +391,6 @@ body.light .quickgo-results { border-color: #c9d2e0; box-shadow: 0 10px 30px rgb
 .chip-grid.small button { padding: 5px 10px; font-size: 13px; min-width: 38px; }
 .chip-grid button.endpoint { background: var(--panel2); border-color: var(--accent); font-weight: 700; }
 
-/* keep long chip lists compact instead of flooding the page */
-#bookChips, #chapterChips { max-height: 26vh; overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
-
 /* drag handles between sections — visible when the layout is unlocked */
 .splitter {
   height: 12px;
@@ -290,28 +413,6 @@ body.books-hidden .splitter[data-key="books"] { display: none; }
 .seg button:hover { background: transparent; }
 .seg button.active:hover { background: var(--accent); }
 
-/* tap-to-live verse list */
-.verse-list { max-height: 48vh; overflow-y: auto; overscroll-behavior: contain; margin-top: 6px; padding-right: 4px; }
-.verse-row {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  text-align: left;
-  align-items: flex-start;
-  background: var(--panel2);
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 4px;
-}
-.verse-row:hover { background: #313a4c; }
-.verse-row .vn { color: var(--accent); font-weight: 700; min-width: 26px; text-align: right; font-size: 13px; padding-top: 2px; }
-.verse-row .vt { color: var(--text); line-height: 1.55; font-size: 14px; }
-.verse-row.live {
-  border-color: var(--accent);
-  background: rgba(79,140,255,.16);
-  box-shadow: inset 3px 0 0 var(--accent);
-}
 .livedot { color: var(--danger); font-size: 13px; font-weight: 700; white-space: nowrap; }
 
 /* full-text Bible search results */

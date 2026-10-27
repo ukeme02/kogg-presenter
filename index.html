@@ -60,12 +60,11 @@
 </nav>
 
 <main>
-  <!-- SCRIPTURE -->
+  <!-- SCRIPTURE — docked one-page deck -->
   <section id="tab-scripture" class="tab-panel active">
-    <div class="card">
-      <h2>Scripture</h2>
-      <div class="row" style="align-items:end">
-        <label style="flex:1">Translation<br><select id="translationSelect">
+    <div class="scripture-deck">
+      <div class="dock toolbar">
+        <select id="translationSelect" title="Translation">
           <optgroup label="Base Bibles">
             <option value="data/kjv.json">KJV — King James Version</option>
             <option value="data/bsb.json">BSB — Berean Standard Bible</option>
@@ -75,43 +74,66 @@
             <option value="data/web.json">WEB — World English Bible</option>
             <option value="data/asv.json">ASV — American Standard</option>
           </optgroup>
-        </select></label>
-        <button id="btnBooksToggle">Hide books</button>
+        </select>
+        <div class="quickjump">
+          <input id="bookSearch" type="search" autocomplete="off"
+                 placeholder="Quick jump — jn 3:16, ps 23:1-4, rom 8  (book → chapter → verse)  ( / to focus )">
+          <span id="bookGhost"></span>
+          <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
+        </div>
         <span id="liveRef" class="livedot" hidden></span>
       </div>
-      <div class="row" id="bookSearchRow">
-        <label style="flex:1">Find a book<br><input id="bookSearch" type="search" placeholder="Type or tap — e.g. John, Cor, Sam…"></label>
-      </div>
-      <div id="bookChips" class="chip-grid"></div>
-      <div id="chapterWrap" hidden>
-        <div class="row" style="align-items:center">
-          <h2 style="font-size:14px;color:var(--muted);flex:1" id="chapterHeading">Chapter</h2>
-          <div class="seg" id="pickMode">
-            <button data-mode="verse">Verse</button>
-            <button data-mode="range">Range</button>
-            <button data-mode="chapter">Chapter</button>
+
+      <div class="docks">
+        <div class="dock" id="dock-books">
+          <div class="dock-head"><span>Books</span><span class="dock-head-hint" id="bookCount"></span></div>
+          <div id="bookChips" class="chip-grid scroll"></div>
+        </div>
+
+        <div class="dock" id="dock-chapters">
+          <div class="dock-head"><span>Chapters</span></div>
+          <div id="chapterChips" class="chip-grid dots scroll"></div>
+          <div class="dock-foot">
+            <button id="btnPrevChapter" title="Previous chapter">◀</button>
+            <button id="btnNextChapter" title="Next chapter">▶</button>
+            <button id="btnAddScripture" title="Add the current selection to the service plan">+ Service</button>
           </div>
         </div>
-        <div id="chapterChips" class="chip-grid"></div>
-        <div class="row" style="margin-top:10px">
-          <button id="btnPrevChapter" title="Previous chapter">◀</button>
-          <button id="btnNextChapter" title="Next chapter">▶</button>
-          <button id="btnAddScripture">+ Add to Service</button>
+
+        <div class="dock" id="dock-verses">
+          <div class="dock-head">
+            <span>Verses</span>
+            <div class="seg" id="pickMode">
+              <button data-mode="verse">Verse</button>
+              <button data-mode="range">Range</button>
+              <button data-mode="chapter">Chapter</button>
+            </div>
+          </div>
+          <div id="verseDots" class="chip-grid dots scroll"></div>
+          <div id="liveText" class="live-text"></div>
+          <p id="modeHint" class="hint"></p>
         </div>
-        <div id="verseList" class="verse-list"></div>
-        <p id="modeHint" class="hint"></p>
+
+        <div class="dock" id="dock-memory">
+          <div class="dock-head"><span>Memory</span><button id="btnMemoryClear" class="mini-clear" title="Clear memory (session only)">✕</button></div>
+          <div id="memoryChips" class="scroll memory-list"></div>
+          <p class="hint dock-hint">This session's scriptures — tap any to flip back during the sermon.</p>
+        </div>
       </div>
-      <div class="row" style="margin-top:14px;align-items:end">
-        <label style="flex:1">Search the whole Bible — words you remember (quotes = exact phrase)<br>
-          <input id="bibleSearch" type="search" autocomplete="off" placeholder='e.g. sheep hear my voice  or  "no man cometh to the Father"'></label>
-        <button id="btnVoiceSearch" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
-      </div>
-      <div id="bibleResults" class="search-results" hidden></div>
-      <select id="verseFrom" hidden></select>
-      <select id="verseTo" hidden></select>
-      <select id="bookSelect" hidden></select>
-      <select id="chapterSelect" hidden></select>
+
+      <details class="dock dock-search">
+        <summary>Search the whole Bible — words you remember (quotes = exact phrase)</summary>
+        <div class="row">
+          <input id="bibleSearch" type="search" autocomplete="off" placeholder='e.g. sheep hear my voice  or  "no man cometh to the Father"'>
+          <button id="btnVoiceSearch" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
+        </div>
+        <div id="bibleResults" class="search-results" hidden></div>
+      </details>
     </div>
+    <select id="verseFrom" hidden></select>
+    <select id="verseTo" hidden></select>
+    <select id="bookSelect" hidden></select>
+    <select id="chapterSelect" hidden></select>
   </section>
 
   <!-- SONGS -->
@@ -367,6 +389,7 @@
 </main>
 
 <div class="float-nav">
+  <button id="btnVoice2" class="voice-float" title="Voice control (🎤 Speak) — navigate by voice">🎤</button>
   <button id="btnFloatPrev" title="Previous slide (←)">◀</button>
   <button id="btnFloatNext" class="primary" title="Next slide (→ or space)">Next ▶</button>
 </div>

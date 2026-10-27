@@ -81,7 +81,7 @@ textarea { resize: vertical; }
 label { font-size: 13px; color: var(--muted); line-height: 1.7; }
 
 /* Tabs */
-.tabs { display: flex; background: var(--panel); overflow-x: auto; }
+.tabs { display: flex; flex-wrap: wrap; background: var(--panel); }
 .tab {
   border: none;
   border-radius: 0;
@@ -105,6 +105,55 @@ main { flex: 1; padding: 14px; max-width: 900px; width: 100%; margin: 0 auto; }
   margin-bottom: 14px;
 }
 .card h2 { font-size: 17px; margin-bottom: 12px; }
+
+/* "⋯" overflow menu in the top bar — keeps the bar to Blank / Logo / Output / ⋯ */
+.more-wrap { position: relative; }
+.more-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 250px;
+  background: var(--panel2);
+  border: 1px solid #3a4356;
+  border-radius: 12px;
+  box-shadow: 0 12px 34px rgba(0,0,0,.55);
+  padding: 10px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+body.light .more-menu { border-color: #c9d2e0; box-shadow: 0 12px 34px rgba(20,30,60,.18); }
+.more-menu .about-link { display: block; text-align: center; }
+.more-group { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); padding: 2px 4px; }
+.more-flex { display: flex; gap: 6px; }
+.more-flex .ctrl { flex: 1; padding: 10px 6px; white-space: nowrap; }
+
+/* collapsible groups inside a card (Tools tab) */
+details.group { border: 1px solid #3a4356; border-radius: 10px; margin-bottom: 10px; background: var(--panel2); }
+details.group:last-child { margin-bottom: 0; }
+details.group > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 14px;
+  font-weight: 600;
+  font-size: 14.5px;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+details.group[open] > summary { border-bottom: 1px solid #3a4356; }
+details.group > summary::-webkit-details-marker { display: none; }
+details.group > summary::after { content: '+'; margin-left: auto; color: var(--muted); font-size: 17px; }
+details.group[open] > summary::after { content: '−'; }
+details.group > *:not(summary) { padding: 4px 14px 14px; }
+.group-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+details.plan-fold { margin-bottom: 10px; }
+details.plan-fold > summary { list-style: none; cursor: pointer; font-size: 13px; color: var(--muted); }
+details.plan-fold > summary::-webkit-details-marker { display: none; }
+body.light details.group, body.light details.plan-fold { border-color: #c9d2e0; }
+body.light details.group[open] > summary { border-bottom-color: #c9d2e0; }
+body.light details.group { background: #eef1f7; }
 .row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 10px; }
 .row > label { flex: 1; min-width: 130px; }
 .row > button { flex: 0 0 auto; }

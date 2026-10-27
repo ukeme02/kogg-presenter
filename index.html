@@ -27,31 +27,35 @@
     <div id="quickGoResults" class="quickgo-results" hidden></div>
   </div>
   <div class="quick-actions">
-    <button id="btnFontSizeDown" class="ctrl" title="Smaller text (current theme)">A−</button>
-    <button id="btnFontSizeUp" class="ctrl" title="Bigger text (current theme)">A+</button>
-    <button id="btnAlign" class="ctrl" title="Toggle text alignment">⬌</button>
-    <button id="btnLock" class="ctrl" title="Layout: unlocked — drag the gaps between sections to resize, tap to lock">🔓</button>
     <button id="btnBlank" class="ctrl warn" title="Blank screen (B)">Blank</button>
     <button id="btnLogo" class="ctrl" title="Logo screen (L)">Logo</button>
     <button id="btnOpenDisplay" class="ctrl primary" title="Open output screen">Output</button>
-    <button id="btnTheme" class="ctrl" title="Toggle light/dark operator mode">🌙</button>
-    <a class="about-link" href="landing.html" target="_blank" title="About / download page">About</a>
-  </div>
-  <div class="cmdbar">
-    <div class="quickgo">
-      <input id="quickGo" type="search" autocomplete="off" placeholder="Quick Go — try: jn 3:16-17, ps 23, or a song name…  ( / to focus )">
-      <div id="quickGoResults" class="quickgo-results" hidden></div>
+    <div class="more-wrap">
+      <button id="btnMore" class="ctrl" title="More tools — text size, alignment, voice, theme, account">⋯</button>
+      <div id="moreMenu" class="more-menu" hidden>
+        <div class="more-group">Text on screen</div>
+        <div class="more-flex">
+          <button id="btnFontSizeDown" class="ctrl" title="Smaller text (current theme)">A−</button>
+          <button id="btnFontSizeUp" class="ctrl" title="Bigger text (current theme)">A+</button>
+          <button id="btnAlign" class="ctrl" title="Toggle text alignment">⬌</button>
+        </div>
+        <div class="more-group">Console</div>
+        <div class="more-flex">
+          <button id="btnVoice" class="ctrl" title="Voice control — navigate by speaking (Chrome/Edge, online)">🎤 Speak</button>
+          <button id="btnTheme" class="ctrl" title="Toggle light/dark operator mode">🌙</button>
+          <button id="btnLock" class="ctrl" title="Layout: unlocked — drag the gaps between sections to resize, tap to lock">🔓</button>
+        </div>
+        <a class="about-link" href="landing.html" target="_blank" title="About / download page">About &amp; download</a>
+      </div>
     </div>
-    <button id="btnVoice" class="ctrl" title="Voice control — navigate by speaking (Chrome/Edge, online)">🎤 Speak</button>
   </div>
 </header>
 
 <nav class="tabs">
   <button class="tab active" data-tab="scripture">Scripture</button>
-  <button class="tab" data-tab="songs">Songs</button>
+  <button class="tab" data-tab="songs">Lyrics</button>
   <button class="tab" data-tab="service">Service</button>
   <button class="tab" data-tab="themes">Themes</button>
-  <button class="tab" data-tab="account">Account</button>
   <button class="tab" data-tab="tools">Tools</button>
 </nav>
 
@@ -152,13 +156,18 @@
   <section id="tab-service" class="tab-panel">
     <div class="card">
       <h2>Service Plan</h2>
-      <div class="row">
-        <input id="planName" type="text" placeholder="Plan name (e.g. Sunday 26 Oct)">
-        <button id="btnSavePlan">Save Plan</button>
-        <select id="planSelect"></select>
-        <button id="btnLoadPlan">Load</button>
-        <button id="btnDeletePlan" class="danger">Delete</button>
-      </div>
+      <details class="plan-fold">
+        <summary>Save / load plans</summary>
+        <div class="row">
+          <input id="planName" type="text" placeholder="Plan name (e.g. Sunday 26 Oct)">
+          <button id="btnSavePlan">Save Plan</button>
+        </div>
+        <div class="row" style="align-items:center">
+          <select id="planSelect"></select>
+          <button id="btnLoadPlan">Load</button>
+          <button id="btnDeletePlan" class="danger">Delete</button>
+        </div>
+      </details>
       <ul id="serviceList" class="item-list"></ul>
       <div class="row">
         <button id="btnLiveService" class="primary">▶ Start Service Live</button>
@@ -234,110 +243,125 @@
     </div>
   </section>
 
-  <!-- ACCOUNT -->
-  <section id="tab-account" class="tab-panel">
-    <div class="card">
-      <h2>Account &amp; Cloud Sync</h2>
-      <p class="hint">One account keeps your library on every device you sign in on. Everything still works without an account.</p>
-      <div id="authNotConfigured" class="hint" style="color:var(--warn)">
-        Cloud sync isn't configured on this deployment yet. See README → “Enable cloud sync” (5-minute free setup with Supabase).
-      </div>
-      <div id="authForm">
-        <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS, and only you can ever read your library.</div>
-        <div class="row">
-          <label style="flex:2">Email (for sign-in and password reset only — never shared)<br><input id="authEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
-        </div>
-        <div class="row">
-          <label style="flex:2">Password<br><input id="authPassword" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
-          <button id="btnShowPass" type="button" title="Show or hide password">Show</button>
-        </div>
-        <div class="row" style="align-items:center">
-          <button id="btnSignIn" class="primary">Sign In</button>
-          <button id="btnSignUp">Create Account</button>
-          <button id="btnForgot" type="button" class="linklike">Forgot password?</button>
-        </div>
-        <div id="authStatus" class="hint"></div>
-      </div>
-      <div id="authSignedIn" hidden>
-        <p id="authWho" class="hint"></p>
-        <div class="row">
-          <button id="btnPushCloud" class="primary">⬆ Push Library to Cloud</button>
-          <button id="btnPullCloud">⬇ Pull Library from Cloud</button>
-          <button id="btnSignOut">Sign Out</button>
-        </div>
-        <p id="syncBadge" class="hint"></p>
-        <p class="hint">Your library syncs automatically while you're signed in — songs, themes, plans and your logo arrive on any device you sign in on. Push/Pull remain here for manual control.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- TOOLS -->
+  <!-- TOOLS (grouped, collapsible) -->
   <section id="tab-tools" class="tab-panel">
+
     <div class="card">
-      <h2>Lower Thirds (names &amp; titles)</h2>
-      <div class="row">
-        <label style="flex:1">Main line<br><input id="ltLine1" type="text" placeholder="Pastor John Smith"></label>
-        <label style="flex:1">Sub line<br><input id="ltLine2" type="text" placeholder="Senior Pastor"></label>
-      </div>
-      <div class="row">
-        <button id="btnLtShow" class="primary">Show Lower Third</button>
-        <button id="btnLtHide">Hide</button>
-      </div>
-      <p class="hint">Shows as an animated banner over the bottom of the output — perfect as an OBS overlay.</p>
+      <details class="group" open>
+        <summary>☁️ Account &amp; Cloud Sync</summary>
+        <p class="hint">One account keeps your library on every device you sign in on. Everything still works without an account.</p>
+        <div id="authNotConfigured" class="hint" style="color:var(--warn)">
+          Cloud sync isn't configured on this deployment yet. See README → “Enable cloud sync” (5-minute free setup with Supabase).
+        </div>
+        <div id="authForm">
+          <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS, and only you can ever read your library.</div>
+          <div class="row">
+            <label style="flex:2">Email (for sign-in and password reset only — never shared)<br><input id="authEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
+          </div>
+          <div class="row">
+            <label style="flex:2">Password<br><input id="authPassword" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+            <button id="btnShowPass" type="button" title="Show or hide password">Show</button>
+          </div>
+          <div class="row" style="align-items:center">
+            <button id="btnSignIn" class="primary">Sign In</button>
+            <button id="btnSignUp">Create Account</button>
+            <button id="btnForgot" type="button" class="linklike">Forgot password?</button>
+          </div>
+          <div id="authStatus" class="hint"></div>
+        </div>
+        <div id="authSignedIn" hidden>
+          <p id="authWho" class="hint"></p>
+          <div class="row">
+            <button id="btnPushCloud" class="primary">⬆ Push Library to Cloud</button>
+            <button id="btnPullCloud">⬇ Pull Library from Cloud</button>
+            <button id="btnSignOut">Sign Out</button>
+          </div>
+          <p id="syncBadge" class="hint"></p>
+          <p class="hint">Your library syncs automatically while you're signed in — songs, themes, plans and your logo arrive on any device you sign in on. Push/Pull remain here for manual control.</p>
+        </div>
+      </details>
     </div>
+
     <div class="card">
-      <h2>Countdown</h2>
-      <div class="row">
-        <label>Minutes<br><input id="countdownMinutes" type="number" min="1" max="120" value="5"></label>
-        <button id="btnCountdown" class="primary">Start Countdown</button>
-        <button id="btnEndCountdown">Stop</button>
-      </div>
+      <div class="group-label">Live tools</div>
+      <details class="group">
+        <summary>Lower Thirds (names &amp; titles)</summary>
+        <div class="row">
+          <label style="flex:1">Main line<br><input id="ltLine1" type="text" placeholder="Pastor John Smith"></label>
+          <label style="flex:1">Sub line<br><input id="ltLine2" type="text" placeholder="Senior Pastor"></label>
+        </div>
+        <div class="row">
+          <button id="btnLtShow" class="primary">Show Lower Third</button>
+          <button id="btnLtHide">Hide</button>
+        </div>
+        <p class="hint">Shows as an animated banner over the bottom of the output — perfect as an OBS overlay.</p>
+      </details>
+      <details class="group">
+        <summary>Countdown</summary>
+        <div class="row">
+          <label>Minutes<br><input id="countdownMinutes" type="number" min="1" max="120" value="5"></label>
+          <button id="btnCountdown" class="primary">Start Countdown</button>
+          <button id="btnEndCountdown">Stop</button>
+        </div>
+      </details>
     </div>
+
     <div class="card">
-      <h2>Church Logo</h2>
-      <p class="hint">Your picture shows on the <b>Logo</b> screen (and replaces the app placeholder). Stored on this device and synced with your account.</p>
-      <div class="row">
-        <label style="flex:1">Logo image<br><input id="logoFile" type="file" accept="image/*"></label>
-        <button id="btnLogoClear">Remove Logo</button>
-      </div>
-      <div id="logoStatus" class="hint"></div>
+      <div class="group-label">Branding &amp; appearance</div>
+      <details class="group">
+        <summary>Church Logo</summary>
+        <p class="hint">Your picture shows on the <b>Logo</b> screen (and replaces the app placeholder). Stored on this device and synced with your account.</p>
+        <div class="row">
+          <label style="flex:1">Logo image<br><input id="logoFile" type="file" accept="image/*"></label>
+          <button id="btnLogoClear">Remove Logo</button>
+        </div>
+        <div id="logoStatus" class="hint"></div>
+      </details>
+      <details class="group">
+        <summary>Strong's Numbers (KJV with Strong's)</summary>
+        <div class="row">
+          <button id="btnStrongs" class="primary">Numbers ON</button>
+          <p class="hint">Show or hide the small word numbers on the projector when the "KJV with Strong's" translation is live.</p>
+        </div>
+      </details>
     </div>
+
     <div class="card">
-      <h2>Strong's Numbers (KJV with Strong's)</h2>
-      <div class="row">
-        <button id="btnStrongs" class="primary">Numbers ON</button>
-        <p class="hint">Show or hide the small word numbers on the projector when the "KJV with Strong's" translation is live.</p>
-      </div>
+      <div class="group-label">Extra</div>
+      <details class="group">
+        <summary>Voice Control</summary>
+        <p class="hint">Open the <b>⋯ menu</b> in the top bar and tap <b>🎤 Speak</b>, then just talk. Commands: <b>"next", "previous", "blank", "logo"</b>, or a scripture like
+          <b>"John three sixteen"</b> / <b>"Psalms twenty-three"</b>, or a song title. Say <b>"stop listening"</b> to turn it off.
+          Voice input uses the Web Speech API — works in Chrome/Edge and needs an internet connection (browser limitation, not KOGG).</p>
+      </details>
+      <details class="group">
+        <summary>Backup &amp; Restore</summary>
+        <div class="row">
+          <button id="btnExport">Export Library (JSON)</button>
+          <button id="btnImport">Import Library</button>
+          <input id="importFile" type="file" accept="application/json" hidden>
+        </div>
+      </details>
     </div>
+
     <div class="card">
-      <h2>Voice Control</h2>
-      <p class="hint">Tap <b>🎤 Voice</b> in the top bar and speak. Commands: <b>"next", "previous", "blank", "logo"</b>, or a scripture like
-        <b>"John three sixteen"</b> / <b>"Psalms twenty-three"</b>, or a song title. Say <b>"stop listening"</b> to turn it off.
-        Voice input uses the Web Speech API — works in Chrome/Edge and needs an internet connection (browser limitation, not KOGG).</p>
-    </div>
-    <div class="card">
-      <h2>Backup &amp; Restore</h2>
-      <div class="row">
-        <button id="btnExport">Export Library (JSON)</button>
-        <button id="btnImport">Import Library</button>
-        <input id="importFile" type="file" accept="application/json" hidden>
-      </div>
-    </div>
-    <div class="card">
-      <h2>How the output works</h2>
-      <p><b>Output</b> opens <code>display.html</code> — the clean full-screen view for your projector.</p>
-      <p>• <b>Phone/tablet → projector:</b> mirror or cast the output screen (HDMI adapter or Chromecast), press ▶ Output, then rotate your phone to the display when you connect.</p>
-      <p>• <b>Laptop + projector:</b> open <code>display.html</code> in a Chrome window on the projector screen and this operator page on your laptop screen — they stay in sync automatically (same browser). Press F11 for full screen.</p>
-      <p>• Keyboard shortcuts: <b>←/→</b> slides, <b>B</b> blank, <b>L</b> logo, <b>Esc</b> back to normal.</p>
-    </div>
-    <div class="card">
-      <h2>Pair with OBS Studio</h2>
-      <p>Add a <b>Browser Source</b> in OBS and paste this URL — it shows only the text and lower third with a <b>transparent background</b>, layered over your video or slides:</p>
-      <div class="row">
-        <input id="obsUrl" readonly>
-        <button id="btnCopyObs">Copy URL</button>
-      </div>
-      <p class="hint">Recommended OBS browser source settings: 1920×1080, FPS 30. Use the same URL in a second scene if you also want a fullscreen slide output (without <code>?overlay=1</code>).</p>
+      <div class="group-label">Help</div>
+      <details class="group">
+        <summary>How the output works</summary>
+        <p><b>Output</b> opens <code>display.html</code> — the clean full-screen view for your projector.</p>
+        <p>• <b>Phone/tablet → projector:</b> mirror or cast the output screen (HDMI adapter or Chromecast), press ▶ Output, then rotate your phone to the display when you connect.</p>
+        <p>• <b>Laptop + projector:</b> open <code>display.html</code> in a Chrome window on the projector screen and this operator page on your laptop screen — they stay in sync automatically (same browser). Press F11 for full screen.</p>
+        <p>• Keyboard shortcuts: <b>←/→</b> slides, <b>B</b> blank, <b>L</b> logo, <b>Esc</b> back to normal.</p>
+      </details>
+      <details class="group">
+        <summary>Pair with OBS Studio</summary>
+        <p>Add a <b>Browser Source</b> in OBS and paste this URL — it shows only the text and lower third with a <b>transparent background</b>, layered over your video or slides:</p>
+        <div class="row">
+          <input id="obsUrl" readonly>
+          <button id="btnCopyObs">Copy URL</button>
+        </div>
+        <p class="hint">Recommended OBS browser source settings: 1920×1080, FPS 30. Use the same URL in a second scene if you also want a fullscreen slide output (without <code>?overlay=1</code>).</p>
+      </details>
     </div>
   </section>
 </main>

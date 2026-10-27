@@ -150,6 +150,14 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   if (t.dataset.tab === 'themes') renderThemesTab();
 }));
 
+/* ---------- "⋯" overflow menu ---------- */
+$('btnMore').addEventListener('click', () => {
+  $('moreMenu').hidden = !$('moreMenu').hidden;
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.more-wrap')) $('moreMenu').hidden = true;
+});
+
 /* =========================================================
    SCRIPTURE
 ========================================================= */

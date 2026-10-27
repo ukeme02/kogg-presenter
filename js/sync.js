@@ -49,21 +49,39 @@
     await client.auth.signOut();
   }
 
-  function libraryPayload() {
+  async function resetPassword(email) {
+    const client = await getClient();
+    const { error } = await client.auth.resetPasswordForEmail(email);
+    if (error) throw error;
+  }
+
+  async function libraryPayload() {
     const get = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
-    return {
+    const payload = {
       songs: get('cp_songs') || [],
       themes: get('cp_themes') || [],
       plans: get('cp_plans') || {},
       settings: get('cp_settings') || {},
+      assets: {},
     };
+    // upload the actual image data (IndexedDB assets) that the library references
+    if (window.KOGGAssets) {
+      const ids = new Set();
+      if (payload.settings.logoId) ids.add(payload.settings.logoId);
+      (payload.themes || []).forEach(t => { if (t.bgImageId) ids.add(t.bgImageId); });
+      for (const id of ids) {
+        const v = await window.KOGGAssets.get(id).catch(() => null);
+        if (v) payload.assets[id] = v;
+      }
+    }
+    return payload;
   }
 
   async function push() {
     const client = await getClient();
     const user = await currentUser();
     if (!user) throw new Error('not-signed-in');
-    const payload = libraryPayload();
+    const payload = await libraryPayload();
     const { error } = await client.from('libraries').upsert({
       user_id: user.id, data: payload, updated_at: new Date().toISOString(),
     });
@@ -80,5 +98,5 @@
     return data ? data.data : null;
   }
 
-  window.KOGGSync = { configured, getClient, currentUser, signUp, signIn, signOut, push, pull, libraryPayload };
+  window.KOGGSync = { configured, getClient, currentUser, signUp, signIn, signOut, resetPassword, push, pull, libraryPayload };
 })();

@@ -7,14 +7,47 @@ const textEl = $('slideText');
 const labelEl = $('slideLabel');
 const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS transparent mode
 
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function plain(s) { return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/ {2,}/g, ' '); }
+function strongsHtml(s) {
+  // escape first, then turn the [G1234]/[H1234] markers into <sup> tags
+  return esc(String(s)).replace(/\[(G|H)(\d{1,5})]/g, '<sup>$2</sup>').replace(/ {2,}/g, ' ');
+}
+
 function themeById(themes, id) { return themes.find(t => t.id === id) || themes[0]; }
 function getThemes() {
   try { const t = JSON.parse(localStorage.getItem('cp_themes')); if (t && t.length) return t; } catch {}
-  return [{ id: 't1', name: 'Default', bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#fff', font: 'Georgia, serif', fontSize: 7 }];
+  return [{ id: 't1', name: 'Black', bg: '#000000', bgImage: '', textColor: '#fff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, weight: '700' }];
 }
 function getLive() {
   try { return JSON.parse(localStorage.getItem('cp_live')) || { mode: 'logo', slides: [], index: 0 }; }
   catch { return { mode: 'logo', slides: [], index: 0 }; }
+}
+function getSettings() {
+  try { return JSON.parse(localStorage.getItem('cp_settings')) || {}; }
+  catch { return {}; }
+}
+
+/* Big images (church logo, theme backgrounds) live in IndexedDB via js/idb.js;
+   the theme/settings keys only carry an asset id. Cache + re-apply when resolved. */
+const bgCache = new Map();   // assetId -> dataURL
+function themeBgUrl(t) {
+  if (t.bgImageId) {
+    if (bgCache.has(t.bgImageId)) return bgCache.get(t.bgImageId);
+    preloadBg(t.bgImageId);
+    return '';
+  }
+  return t.bgImage;
+}
+async function preloadBg(id) {
+  if (!window.KOGGAssets || bgCache.has(id)) return;
+  const v = await window.KOGGAssets.get(id);
+  if (v) {
+    bgCache.set(id, v);
+    const state = getLive();       // re-render with the image
+    applyTheme(state);
+    applyBackdrops(state);
+  }
 }
 
 function applyTheme(state) {
@@ -22,31 +55,44 @@ function applyTheme(state) {
   if (OVERLAY) {
     screenEl.style.background = 'transparent';   // OBS composites over video
   } else {
-    screenEl.style.background = t.bgImage ? `url("${t.bgImage}") center/cover no-repeat` : t.bg;
+    const url = themeBgUrl(t);
+    screenEl.style.background = url ? `url("${url}") center/cover no-repeat` : t.bg;
   }
   screenEl.style.color = t.textColor;
   textEl.style.fontFamily = t.font;
   labelEl.style.fontFamily = t.font;
   textEl.style.fontSize = t.fontSize + 'vh';
   textEl.style.textAlign = t.align || 'center';
-  textEl.style.fontWeight = t.weight || '400';
+  textEl.style.fontWeight = t.weight || '700';
   return t;
 }
 
 function fitText() {
-  // shrink until the text fits vertically
+  // scale the text up OR down until it comfortably fills the screen
+  const vhPx = window.innerHeight;
+  const box = textEl.clientHeight;
   let size = parseFloat(getComputedStyle(textEl).fontSize);
-  let guard = 40;
-  while (guard-- > 0 && (textEl.scrollHeight > textEl.clientHeight || textEl.scrollWidth > textEl.clientWidth) && size > 12) {
-    size -= 2;
-    textEl.style.fontSize = size + 'px';
+  const apply = s => { textEl.style.fontSize = s + 'px'; };
+  const fits = () =>
+    textEl.scrollHeight <= box - 1 && textEl.scrollWidth <= textEl.clientWidth + 1;
+
+  let guard = 80;
+  // shrink first if it overflows
+  while (!fits() && size > 24 && guard-- > 0) { size -= 2; apply(size); }
+  // then grow until it fills ~92% of the box (or can't grow safely)
+  while (guard-- > 0) {
+    if (textEl.scrollHeight >= box * 0.92 || size >= vhPx * 0.42) break;
+    const next = size + 2;
+    apply(next);
+    if (!fits()) { apply(size); break; }   // overshot — step back
+    size = next;
   }
 }
 
 function render(state) {
   const blankOn = state.mode === 'blank' && !OVERLAY;   // "blank" means show nothing in OBS overlay mode
   $('countdown').classList.toggle('on', state.mode === 'countdown' && !OVERLAY);
-  $('logoScreen').classList.toggle('on', state.mode === 'logo' && !OVERLAY);
+  renderLogo(state);
   $('blankScreen').classList.toggle('on', blankOn);
   const showSlide = state.mode === 'normal' && state.slides.length > 0;
   textEl.style.display = showSlide ? '' : 'none';
@@ -54,15 +100,34 @@ function render(state) {
   if (state.mode === 'normal') {
     const t = applyTheme(state);
     const slide = state.slides[state.index] || { text: '', label: '' };
-    textEl.textContent = slide.text;
-    labelEl.textContent = slide.label;
+    const withNums = state.strongsOn !== false && /\[(?:G|H)\d{1,5}]/.test(slide.text);
+    textEl.innerHTML = withNums ? strongsHtml(slide.text) : esc(plain(slide.text));
+    labelEl.textContent = plain(slide.label);
     textEl.style.fontSize = t.fontSize + 'vh';
     requestAnimationFrame(fitText);
   } else if (!OVERLAY) {
-    applyLogoTheme(state);
+    applyBackdrops(state);
   }
   renderLowerThird(state.lowerThird);
-  speakCurrent(state);
+}
+
+/* church logo screen — custom logo image if the operator uploaded one */
+let logoToken = 0;
+async function renderLogo(state) {
+  const on = state.mode === 'logo' && !OVERLAY;
+  $('logoScreen').classList.toggle('on', on);
+  if (!on) return;
+  const token = ++logoToken;
+  const s = getSettings();
+  let src = '';
+  if (s.logoId && window.KOGGAssets) src = (await window.KOGGAssets.get(s.logoId)) || '';
+  if (!src && s.logoImage) src = s.logoImage;
+  if (token !== logoToken) return;   // superseded by a newer render
+  const img = $('logoImg');
+  const svg = $('logoSvg');
+  if (src) { img.src = src; img.hidden = false; svg.hidden = true; }
+  else { img.hidden = true; svg.hidden = false; }
+  $('logoName').textContent = s.logoName || 'KOGG Presenter';
 }
 
 function renderLowerThird(lt) {
@@ -79,11 +144,12 @@ function renderLowerThird(lt) {
   }
 }
 
-function applyLogoTheme(state) {
+function applyBackdrops(state) {
   const t = themeById(getThemes(), state.themeId);
   if (OVERLAY) return;
   if (state.mode === 'countdown') {
-    $('countdown').style.background = t.bgImage ? `url("${t.bgImage}") center/cover no-repeat` : t.bg;
+    const url = themeBgUrl(t);
+    $('countdown').style.background = url ? `url("${url}") center/cover no-repeat` : t.bg;
     $('countdown').style.color = t.textColor;
   }
 }
@@ -113,27 +179,6 @@ if (channel) {
 }
 window.addEventListener('storage', e => { if (e.key === 'cp_live') render(getLive()); });
 
-/* ---------- AI speech engine (lives on the output machine so the room hears it) ---------- */
-let lastSpokenToken = null;
-function speakCurrent(state) {
-  if (!('speechSynthesis' in window)) return;
-  if (!state.speak || state.mode !== 'normal' || !state.slides.length) {
-    speechSynthesis.cancel();
-    lastSpokenToken = null;
-    return;
-  }
-  const slide = state.slides[state.index];
-  const token = `${state.index}|${slide.text}`;
-  if (token === lastSpokenToken) return;      // same slide re-rendered — don't repeat
-  lastSpokenToken = token;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(`${slide.label}. ${slide.text}`);
-  u.rate = 0.95;
-  u.pitch = 1;
-  u.onend = () => { if (channel && state.speak) channel.postMessage({ type: 'speakDone' }); };
-  u.onerror = () => { if (channel && state.speak) channel.postMessage({ type: 'speakDone' }); };
-  speechSynthesis.speak(u);
-}
 if (!OVERLAY) document.addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   else document.documentElement.requestFullscreen().catch(() => {});

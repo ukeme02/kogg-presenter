@@ -7,12 +7,24 @@ const LS = {
     try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
     catch { return fallback; }
   },
-  set(key, value) { localStorage.setItem(key, JSON.stringify(value)); },
+  set(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+    // library changes mark the cloud copy out of date (auto-sync — see CLOUD section)
+    if (window.__koggBoot &&
+        (key === K.songs || key === K.themes || key === K.service || key === K.plans)) scheduleSync();
+  },
 };
 const K = { songs: 'cp_songs', themes: 'cp_themes', service: 'cp_service',
             settings: 'cp_settings', live: 'cp_live', plans: 'cp_plans' };
 
 /* ---------- shared slide helpers (kept in sync with display.js) ---------- */
+function stripStrongs(s) {
+  return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/\s{2,}/g, ' ');
+}
+function withStrongsHtml(s) {
+  // escape first, then turn [G12]/[H1234] markers into <sup> numbers
+  return esc(String(s)).replace(/\[(G|H)(\d{1,5})]/g, '<sup>$2</sup>').replace(/ {2,}/g, ' ');
+}
 function songToSlides(song) {
   return String(song.lyrics || '')
     .split(/\n\s*\n/)
@@ -39,6 +51,7 @@ function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
 
 /* ---------- state ---------- */
 let bible = null;            // {translation, books:[{name, chapters:[[...]]}]}
+let searchIndex = [];        // flat plain-text verse index for the Bible search
 let songs = LS.get(K.songs, []);
 let themes = LS.get(K.themes, null);
 let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
@@ -46,35 +59,70 @@ let live = LS.get(K.live, { mode: 'logo', slides: [], index: 0, lowerThird: { on
 let editingSongId = null;
 
 const DEFAULT_THEMES = [
-  { id: 't1', name: 'Sunset',      bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' },
-  { id: 't2', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' },
-  { id: 't3', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' },
-  { id: 't4', name: 'Plain Black', bg: 'linear-gradient(135deg,#000000,#434343)',          bgImage: '', textColor: '#ffffff', font: 'Arial, sans-serif', fontSize: 7, align: 'center', weight: '400' },
+  { id: 't1', name: 'Black',       bg: '#000000',                                          bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
+  { id: 't2', name: 'Sunset',      bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
+  { id: 't3', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
+  { id: 't4', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
 ];
 if (!themes || !themes.length) { themes = DEFAULT_THEMES; LS.set(K.themes, themes); }
-// ensure older saved themes have the new fields
-themes = themes.map(t => Object.assign({ align: 'center', weight: '400' }, t));
+// migrate older saved themes to the new default scripture font (only untouched defaults)
+const DEFAULT_FONT = "'Nunito Sans Expanded', Georgia, serif";
+themes = themes.map(t => {
+  t = Object.assign({ align: 'center', weight: '400' }, t);
+  if (t.font === 'Georgia, serif') t.font = DEFAULT_FONT;
+  if (t.weight === '400' || t.weight === undefined) t.weight = '700';
+  // the default theme (t1) was Sunset until Oct 2026 — switch untouched copies to Black
+  if (t.id === 't1' && t.name === 'Sunset' &&
+      t.bg === 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)' && !t.bgImage && !t.bgImageId) {
+    t.name = 'Black'; t.bg = '#000000';
+  }
+  return t;
+});
+LS.set(K.themes, themes);
 let currentThemeId = LS.get(K.settings, {}).currentThemeId || themes[0].id;
 
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
+/* ---------- image assets (IndexedDB, inline fallback) ---------- */
+/* Anything bigger than ~160KB is stored in IndexedDB (js/idb.js) so it never
+   blows the localStorage quota. Keys inside themes/settings only carry the id. */
+const ASSET_INLINE_LIMIT = 160 * 1024;
+async function storeImage(dataURL, prefix) {
+  if (dataURL.length <= ASSET_INLINE_LIMIT) return dataURL;
+  const id = `${prefix}-${uid()}`;
+  const ok = window.KOGGAssets ? await window.KOGGAssets.put(id, dataURL) : false;
+  return ok ? { id } : dataURL;
+}
+function themeSave() { LS.set(K.themes, themes); }
+
+/* one-time migration: existing big inline images move into IndexedDB */
+(async function migrateImagesToIdb() {
+  if (!window.KOGGAssets) return;
+  let changed = false;
+  for (const t of themes) {
+    if (t.bgImage && t.bgImage.length > ASSET_INLINE_LIMIT) {
+      const id = 'bg-' + uid();
+      if (await window.KOGGAssets.put(id, t.bgImage)) { t.bgImageId = id; t.bgImage = ''; changed = true; }
+    }
+  }
+  const s = LS.get(K.settings, {});
+  if (s.logoImage && s.logoImage.length > ASSET_INLINE_LIMIT) {
+    const id = 'logo-' + uid();
+    if (await window.KOGGAssets.put(id, s.logoImage)) { s.logoId = id; s.logoImage = ''; changed = true; }
+  }
+  if (changed) { themeSave(); LS.set(K.settings, s); }
+})();
+
 /* ---------- sync to display ---------- */
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
 function pushLive(patch = {}) {
   live = Object.assign({}, live, patch);
+  live.strongsOn = LS.get(K.settings, {}).strongsOn !== false;
   LS.set(K.live, live);
   if (channel) channel.postMessage(live);
   renderPreview();
 }
-// messages coming back from the output screen (speech engine lives there)
-if (channel) channel.onmessage = e => {
-  const msg = e.data;
-  if (msg && msg.type === 'speakDone' && live.speak && live.mode === 'normal'
-      && live.index < live.slides.length - 1) {
-    pushLive({ index: live.index + 1 });
-  }
-};
 
 /* ---------- preview ---------- */
 function renderPreview() {
@@ -85,6 +133,11 @@ function renderPreview() {
     : now ? `${now.label} — ${now.text}` : 'Ready';
   $('previewNext').textContent = live.mode === 'normal' && live.slides[live.index + 1]
     ? `${live.slides[live.index + 1].label} — ${live.slides[live.index + 1].text}` : '—';
+  // live indicator in the Scripture tab ("🔴 John 3:16")
+  const lr = $('liveRef');
+  const showing = live.mode === 'normal' && live.title;
+  lr.textContent = showing ? '🔴 ' + live.title : '';
+  lr.hidden = !showing;
 }
 
 /* ---------- tabs ---------- */
@@ -101,13 +154,16 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
    SCRIPTURE
 ========================================================= */
 async function loadBible(file) {
-  $('scripturePreview').textContent = 'Loading Bible…';
   const res = await fetch(file);
   bible = await res.json();
+  // flat index of plain-verse text for fast full-text search (all 66 books)
+  searchIndex = [];
+  bible.books.forEach((b, bi) => b.chapters.forEach((ch, ci) => ch.forEach((t, vi) => {
+    searchIndex.push({ bi, ci, vi, s: stripStrongs(t).toLowerCase() });
+  })));
   const bookSel = $('bookSelect');
   bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${b.name}</option>`).join('');
   fillChapters();
-  $('scripturePreview').textContent = `Loaded ${bible.translation} — ${bible.books.length} books (offline).`;
 }
 function fillChapters() {
   const book = bible.books[+$('bookSelect').value];
@@ -120,12 +176,77 @@ function fillVerses() {
   const book = bible.books[+$('bookSelect').value];
   const ch = +$('chapterSelect').value;
   const count = book.chapters[ch - 1].length;
-  const opts = Array.from({ length: count }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
-  $('verseFrom').innerHTML = opts;
-  $('verseTo').innerHTML = opts;
+  $('verseFrom').innerHTML = opts(count);
+  $('verseTo').innerHTML = opts(count);
   $('verseFrom').value = 1;
-  $('verseTo').value = 1;
+  $('verseTo').value = count;          // default range = whole chapter
+  renderVerseList();
 }
+function opts(n) { return Array.from({ length: n }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join(''); }
+
+/* ---------- tap-to-live verse list (Tecarta-style navigation) ----------
+   Verse mode (default):  tap a verse → it's live, immediately.
+   Range mode:            tap first verse, tap last verse → range goes live.
+   Chapter mode:          tap a chapter → whole chapter goes live. */
+let verseMode = 'verse';
+let liveRef = null;    // {bookIdx, ch, vFrom, vTo} currently on the projector
+
+function renderVerseList() {
+  if (!bible) return;
+  const book = bible.books[+$('bookSelect').value];
+  const ch = +$('chapterSelect').value;
+  const list = $('verseList');
+  if (verseMode === 'chapter') { list.innerHTML = ''; list.hidden = true; return; }
+  list.hidden = false;
+  list.innerHTML = book.chapters[ch - 1].map((t, i) => {
+    const v = i + 1;
+    const liveHere = liveRef && liveRef.bookIdx === +$('bookSelect').value &&
+                     liveRef.ch === ch && v >= liveRef.vFrom && v <= liveRef.vTo;
+    return `<button class="verse-row${liveHere ? ' live' : ''}" data-v="${v}">` +
+           `<span class="vn">${v}</span><span class="vt">${esc(stripStrongs(t))}</span></button>`;
+  }).join('');
+}
+function scrollLiveIntoView() {
+  setTimeout(() => {
+    const el = $('verseList').querySelector('.verse-row.live');
+    if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 60);
+}
+function setVerseMode(m) {
+  verseMode = m;
+  document.querySelectorAll('#pickMode button').forEach(b =>
+    b.classList.toggle('active', b.dataset.mode === m));
+  $('modeHint').textContent = m === 'verse' ? 'Tap a verse — it goes live instantly.'
+    : m === 'range' ? 'Tap the first verse, then the last — that range goes live.'
+    : 'Tap a chapter number above — the whole chapter goes live.';
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { verseMode: m }));
+  renderVerseList();
+}
+document.querySelectorAll('#pickMode button').forEach(b =>
+  b.addEventListener('click', () => setVerseMode(b.dataset.mode)));
+
+$('verseList').addEventListener('click', e => {
+  const row = e.target.closest('button[data-v]');
+  if (!row || verseMode === 'chapter') return;
+  const v = +row.dataset.v;
+  const bi = +$('bookSelect').value, ch = +$('chapterSelect').value;
+  if (verseMode === 'verse') {
+    goLiveScripture({ bookIdx: bi, ch, vFrom: v, vTo: v });
+    return;
+  }
+  // range mode: first tap stores the start, second tap completes the range
+  if (!rangeStart) {
+    rangeStart = v;
+    row.classList.add('live');
+    $('modeHint').textContent = `Start: verse ${v} — now tap the last verse.`;
+  } else {
+    goLiveScripture({ bookIdx: bi, ch, vFrom: Math.min(rangeStart, v), vTo: Math.max(rangeStart, v) });
+    rangeStart = 0;
+  }
+});
+let rangeStart = 0;
+
+/* what's currently selected (used by "+ Add to Service") */
 function currentScriptureRange() {
   return {
     bookIdx: +$('bookSelect').value,
@@ -134,28 +255,12 @@ function currentScriptureRange() {
     vTo: Math.max(+$('verseFrom').value, +$('verseTo').value),
   };
 }
-function updateScripturePreview() {
-  if (!bible) return;
-  const r = currentScriptureRange();
-  const book = bible.books[r.bookIdx];
-  const lines = [];
-  for (let v = r.vFrom; v <= r.vTo; v++) {
-    const t = book.chapters[r.ch - 1][v - 1];
-    if (t == null) break;
-    lines.push(`${v} ${t}`);
-  }
-  const title = `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`;
-  $('scripturePreview').textContent = title + '\n\n' + lines.join('\n');
-  $('scripturePreview').dataset.title = title;
-}
 $('bookSelect').addEventListener('change', fillChapters);
 $('chapterSelect').addEventListener('change', fillVerses);
-$('verseFrom').addEventListener('change', updateScripturePreview);
-$('verseTo').addEventListener('change', updateScripturePreview);
 $('translationSelect').addEventListener('change', () => {
   const file = $('translationSelect').value;
   LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: file }));
-  loadBible(file).then(updateScripturePreview);
+  loadBible(file);
 });
 
 /* Scripture picker chips — tap-first navigation */
@@ -179,34 +284,216 @@ function renderChapterChips() {
     .join('');
   $('chapterWrap').hidden = false;
 }
+function chapterLive(bi, ch) {
+  const book = bible.books[bi];
+  goLiveScripture({ bookIdx: bi, ch, vFrom: 1, vTo: book.chapters[ch - 1].length });
+}
 $('bookChips').addEventListener('click', e => {
   const chip = e.target.closest('button[data-i]');
   if (!chip) return;
   $('bookSelect').value = chip.dataset.i;
   fillChapters();
   renderBookChips($('bookSearch').value);
+  scrollLiveIntoView();
 });
 $('chapterChips').addEventListener('click', e => {
   const chip = e.target.closest('button[data-c]');
   if (!chip) return;
-  $('chapterSelect').value = chip.dataset.c;
+  const bi = +$('bookSelect').value, ch = +chip.dataset.c;
+  if (verseMode === 'chapter') { chapterLive(bi, ch); return; }   // tap = whole chapter live
+  $('chapterSelect').value = ch;
   fillVerses();
   renderChapterChips();
-  updateScripturePreview();
+});
+$('btnPrevChapter').addEventListener('click', () => {
+  const cur = +$('chapterSelect').value;
+  if (cur > 1) {
+    $('chapterSelect').value = cur - 1;
+    fillVerses(); renderChapterChips();
+  } else if ($('bookSelect').value > 0) {
+    $('bookSelect').value = $('bookSelect').value - 0 - 1;
+    fillChapters();
+  }
+  if (verseMode === 'chapter') chapterLive(+$('bookSelect').value, +$('chapterSelect').value);
+});
+$('btnNextChapter').addEventListener('click', () => {
+  const cur = +$('chapterSelect').value;
+  const total = bible.books[+$('bookSelect').value].chapters.length;
+  if (cur < total) {
+    $('chapterSelect').value = cur + 1;
+    fillVerses(); renderChapterChips();
+  } else if ($('bookSelect').value < bible.books.length - 1) {
+    $('bookSelect').value = +$('bookSelect').value + 1;
+    fillChapters();
+  }
+  if (verseMode === 'chapter') chapterLive(+$('bookSelect').value, +$('chapterSelect').value);
 });
 $('bookSearch').addEventListener('input', () => renderBookChips($('bookSearch').value));
-$('btnWholeChapter').addEventListener('click', () => {
-  const count = $('verseTo').options.length;
-  $('verseFrom').value = 1;
-  $('verseTo').value = count;
-  updateScripturePreview();
+
+/* books grid is optional — verses stay open either way */
+function refreshBookGrid() {
+  const show = LS.get(K.settings, {}).booksGrid !== false;
+  $('bookSearchRow').hidden = !show;
+  $('bookChips').hidden = !show;
+  $('btnBooksToggle').textContent = show ? 'Hide books' : 'Show books';
+  document.body.classList.toggle('books-hidden', !show);
+}
+$('btnBooksToggle').addEventListener('click', () => {
+  const s = LS.get(K.settings, {});
+  s.booksGrid = (s.booksGrid !== false) ? false : true;   // current shown -> hide, else show
+  LS.set(K.settings, s);
+  refreshBookGrid();
 });
 
-$('btnGoScripture').addEventListener('click', () => {
-  const r = currentScriptureRange();
-  const book = bible.books[r.bookIdx];
-  const slides = scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo);
-  pushLive({ mode: 'normal', slides, index: 0, title: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`, themeId: currentThemeId });
+/* ---------- adjustable panes: drag the gaps, lock when it fits ---------- */
+const PANES = {
+  books:    { el: () => $('bookChips'),    def: 150 },
+  chapters: { el: () => $('chapterChips'), def: 110 },
+  verses:   { el: () => $('verseList'),    def: 240 },
+};
+function applyPanes() {
+  const h = LS.get(K.settings, {}).paneHeights || {};
+  for (const [key, p] of Object.entries(PANES)) {
+    const el = p.el(); if (!el) continue;
+    if (h[key]) { el.style.maxHeight = h[key] + 'px'; el.style.height = h[key] + 'px'; }
+  }
+}
+function initSplitters() {
+  for (const [key, p] of Object.entries(PANES)) {
+    const el = p.el(); if (!el) continue;
+    const sp = document.createElement('div');
+    sp.className = 'splitter';
+    sp.dataset.key = key;
+    sp.title = 'Drag to resize this section';
+    el.parentNode.insertBefore(sp, el);
+    sp.addEventListener('pointerdown', ev => {
+      ev.preventDefault();
+      const startH = el.getBoundingClientRect().height;
+      const startY = ev.clientY;
+      const move = e => {
+        const h = Math.max(56, Math.min(window.innerHeight * 0.72, startH + (e.clientY - startY)));
+        el.style.maxHeight = h + 'px'; el.style.height = h + 'px';
+      };
+      const up = () => {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        const s = LS.get(K.settings, {});
+        s.paneHeights = Object.assign({}, s.paneHeights, { [key]: Math.round(el.getBoundingClientRect().height) });
+        LS.set(K.settings, s);
+      };
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up);
+    });
+  }
+}
+function refreshLock() {
+  const locked = !!LS.get(K.settings, {}).panesLocked;
+  document.body.classList.toggle('panes-locked', locked);
+  $('btnLock').textContent = locked ? '🔒' : '🔓';
+  $('btnLock').title = locked ? 'Layout locked ✓ — tap to unlock and resize the sections'
+    : 'Layout unlocked — drag the grey gaps between sections, then tap to lock';
+}
+$('btnLock').addEventListener('click', () => {
+  const s = LS.get(K.settings, {});
+  s.panesLocked = !s.panesLocked;
+  LS.set(K.settings, s);
+  refreshLock();
+});
+
+/* ---------- full-text Bible search (find verses by remembered words/phrase) ---------- */
+let searchTimer = null;
+function searchBible(q, limit = 60) {
+  const raw = q.trim();
+  if (!raw || !searchIndex.length) return [];
+  // quoted text = strict phrase; otherwise every word must appear (order-free)
+  const phrase = /^".*"$/s.test(raw);
+  const searchable = phrase ? raw.slice(1, -1).toLowerCase() : raw.toLowerCase();
+  const words = phrase ? [searchable] : searchable.split(/\s+/).filter(Boolean);
+  const out = [];
+  for (let i = 0; i < searchIndex.length; i++) {
+    const it = searchIndex[i];
+    if (words.every(w => it.s.includes(w))) {
+      out.push(it);
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
+}
+function searchSelect(bi, ci, vi) {
+  // sync the main picker with a search hit, then show the verse in context
+  $('bookSelect').value = bi;
+  fillChapters();
+  $('chapterSelect').value = ci + 1;
+  fillVerses();
+  $('verseFrom').value = vi + 1;
+  $('verseTo').value = vi + 1;
+  renderVerseList();
+}
+function renderBibleSearch() {
+  const q = $('bibleSearch').value;
+  const box = $('bibleResults');
+  if (!q.trim()) { box.hidden = true; box.innerHTML = ''; return; }
+  const hits = searchBible(q, 60);
+  box.innerHTML = hits.length
+    ? hits.map(h => {
+        const book = bible.books[h.bi];
+        const verse = stripStrongs(book.chapters[h.ci][h.vi]);
+        return `<div class="search-item" data-bi="${h.bi}" data-ci="${h.ci}" data-vi="${h.vi}">
+          <span class="search-ref">${esc(book.name)} ${h.ci + 1}:${h.vi + 1}</span>
+          <span class="search-text">${esc(verse)}</span>
+          <button class="primary" data-go="1">▶ Go</button>
+        </div>`;
+      }).join('') + (hits.length === 60 ? '<div class="search-none">Showing the first 60 matches — add a word to narrow it.</div>' : '')
+    : `<div class="search-none">No verses match “${esc(q)}” in ${bible.translation}. Try fewer or different words.</div>`;
+  box.hidden = false;
+}
+$('bibleSearch').addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderBibleSearch, 250);
+});
+$('bibleSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const hits = searchBible($('bibleSearch').value, 1);
+    if (hits.length) {
+      searchSelect(hits[0].bi, hits[0].ci, hits[0].vi);
+      goLiveScripture({ bookIdx: hits[0].bi, ch: hits[0].ci + 1, vFrom: hits[0].vi + 1, vTo: hits[0].vi + 1 });
+      $('bibleResults').hidden = true;
+    }
+  } else if (e.key === 'Escape') {
+    $('bibleResults').hidden = true;
+  }
+});
+
+/* speak straight into the Bible search bar */
+$('btnVoiceSearch').addEventListener('click', () => {
+  if (!SR) { alert('Voice input needs Chrome or Edge (Web Speech API), online.'); return; }
+  const btn = $('btnVoiceSearch');
+  try {
+    const r1 = new SR();
+    r1.lang = navigator.language || 'en-US';
+    r1.interimResults = false;
+    r1.maxAlternatives = 1;
+    btn.classList.add('active');
+    flash(btn, 'Listening…');
+    r1.onresult = e => {
+      const text = e.results[0][0].transcript.trim();
+      $('bibleSearch').value = text;
+      renderBibleSearch();
+      flash(btn, 'Heard ✓');
+    };
+    r1.onerror = () => flash(btn, 'Mic error');
+    r1.onend = () => btn.classList.remove('active');
+    r1.start();
+  } catch (err) { flash(btn, 'Mic failed'); }
+});
+$('bibleResults').addEventListener('click', e => {
+  const row = e.target.closest('.search-item');
+  if (!row) return;
+  const bi = +row.dataset.bi, ci = +row.dataset.ci, vi = +row.dataset.vi;
+  // tap = live now (the chapter list opens underneath for context tweaks)
+  searchSelect(bi, ci, vi);
+  goLiveScripture({ bookIdx: bi, ch: ci + 1, vFrom: vi + 1, vTo: vi + 1 });
+  $('bibleResults').hidden = true;
 });
 $('btnAddScripture').addEventListener('click', () => {
   const r = currentScriptureRange();
@@ -427,17 +714,19 @@ $('themeBgImage').addEventListener('change', () => {
   const file = $('themeBgImage').files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     const t = themeById($('themeSelect').value);
-    t.bgImage = reader.result;   // dataURL
-    LS.set(K.themes, themes);
+    const stored = await storeImage(reader.result, 'bg');
+    if (typeof stored === 'string') { t.bgImage = stored; delete t.bgImageId; }
+    else { t.bgImageId = stored.id; t.bgImage = ''; }
+    themeSave();
     flash($('themeBgImage'), 'Image loaded ✓');
   };
   reader.readAsDataURL(file);
 });
 $('btnNewTheme').addEventListener('click', () => {
   const t = { id: uid(), name: 'New Theme', bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
-              bgImage: '', textColor: '#ffffff', font: 'Georgia, serif', fontSize: 7, align: 'center', weight: '400' };
+              bgImage: '', textColor: '#ffffff', font: DEFAULT_FONT, fontSize: 7, align: 'center', weight: '700' };
   themes.push(t);
   LS.set(K.themes, themes);
   currentThemeId = t.id;
@@ -467,9 +756,19 @@ $('btnSaveTheme').addEventListener('click', () => {
 });
 $('btnApplyTheme').addEventListener('click', () => {
   currentThemeId = $('themeSelect').value;
-  LS.set(K.settings, { currentThemeId });
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentThemeId }));
   pushLive({ themeId: currentThemeId });
   flash($('btnApplyTheme'), 'Applied ✓');
+});
+$('btnResetThemes').addEventListener('click', () => {
+  if (!confirm('Restore the four default themes (Black, Sunset, Deep Blue, Emerald)? Custom themes will be replaced.')) return;
+  themes = DEFAULT_THEMES.map(t => Object.assign({}, t));
+  currentThemeId = 't1';
+  LS.set(K.themes, themes);
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentThemeId }));
+  renderThemesTab();
+  pushLive({ themeId: currentThemeId });
+  flash($('btnResetThemes'), 'Reset ✓');
 });
 
 /* =========================================================
@@ -518,11 +817,16 @@ function goLiveScripture(r) {
   const book = bible.books[r.bookIdx];
   const ref = `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`;
   pushLive({ mode: 'normal', slides: scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo), index: 0, title: ref, themeId: currentThemeId });
+  liveRef = r;
   // keep the scripture tab in sync so the operator sees what's live
-  $('bookSelect').value = r.bookIdx; fillChapters();
-  $('chapterSelect').value = r.ch; fillVerses();
-  $('verseFrom').value = r.vFrom; $('verseTo').value = r.vTo;
-  updateScripturePreview();
+  $('bookSelect').value = r.bookIdx;
+  fillChapters();
+  $('chapterSelect').value = r.ch;
+  fillVerses();
+  $('verseFrom').value = r.vFrom;
+  $('verseTo').value = r.vTo;
+  renderVerseList();
+  scrollLiveIntoView();
 }
 function quickGoLive(item) {
   if (item.type === 'scripture') goLiveScripture(item.ref);
@@ -540,7 +844,7 @@ function quickSearch(q) {
     out.push({
       type: 'scripture', icon: '📖',
       label: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`,
-      snippet: (book.chapters[r.ch - 1][r.vFrom - 1] || '').slice(0, 80),
+      snippet: stripStrongs(book.chapters[r.ch - 1][r.vFrom - 1] || '').slice(0, 80),
       ref,
     });
   }
@@ -588,12 +892,53 @@ document.addEventListener('click', e => {
 /* =========================================================
    ACCOUNT / CLOUD SYNC
 ========================================================= */
+/* Auto-sync: library changes schedule a push ~15s later (when signed in online).
+   Manual Push/Pull remain available in the Account tab. */
+let syncTimer = null;
+function syncDirty() { return !!LS.get(K.settings, {}).dirtyLibrary; }
+function markDirty() {
+  const s = LS.get(K.settings, {});
+  if (!s.dirtyLibrary) { s.dirtyLibrary = true; LS.set(K.settings, s); }
+  scheduleSync();
+}
+function scheduleSync() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(autoSync, 15000);
+  refreshSyncBadge();
+}
+function autoSync() {
+  if (!(window.KOGGSync && window.KOGGSync.configured && window._koggUser && navigator.onLine)) return;
+  if (!syncDirty()) { refreshSyncBadge(); return; }
+  window.KOGGSync.push()
+    .then(() => {
+      const s = LS.get(K.settings, {});
+      s.dirtyLibrary = false;
+      LS.set(K.settings, s);
+    })
+    .catch(() => { })   // failed push retries on the next change
+    .then(refreshSyncBadge);
+}
+function clearDirty() {
+  const s = LS.get(K.settings, {});
+  if (s.dirtyLibrary) { s.dirtyLibrary = false; LS.set(K.settings, s); }
+  refreshSyncBadge();
+}
+function refreshSyncBadge() {
+  const badge = $('syncBadge');
+  if (!badge) return;
+  if (!window._koggUser) { badge.textContent = ''; return; }
+  badge.textContent = !syncDirty() ? '✓ Cloud copy is up to date'
+    : navigator.onLine ? '• Changes not yet synced — auto-push in a moment (or tap Push)'
+    : '• Not synced yet — you are offline; sync resumes when back online (Push works too)';
+}
+
 function syncUI() {
   const cfgOk = window.KOGGSync && window.KOGGSync.configured;
   $('authNotConfigured').hidden = !!cfgOk;
   $('authForm').hidden = !cfgOk || !!window._koggUser;
   $('authSignedIn').hidden = !cfgOk || !window._koggUser;
   if (window._koggUser) $('authWho').textContent = `Signed in as ${window._koggUser.email}`;
+  refreshSyncBadge();
 }
 async function refreshUser() {
   if (!(window.KOGGSync && window.KOGGSync.configured)) { syncUI(); return; }
@@ -601,7 +946,27 @@ async function refreshUser() {
     window._koggUser = await window.KOGGSync.currentUser();
   } catch { window._koggUser = null; }
   syncUI();
+  // signed in → the library keeps itself up to date without anyone pressing a button
+  if (window._koggUser && navigator.onLine) {
+    if (syncDirty()) scheduleSync();
+    pullCloud(true);   // silent merge: songs, themes, plans, settings, logo
+  }
 }
+$('btnShowPass').addEventListener('click', () => {
+  const p = $('authPassword');
+  p.type = p.type === 'password' ? 'text' : 'password';
+  $('btnShowPass').textContent = p.type === 'password' ? 'Show' : 'Hide';
+});
+$('btnForgot').addEventListener('click', async () => {
+  const status = $('authStatus');
+  const email = $('authEmail').value.trim();
+  if (!email) { status.textContent = 'Type your account email first, then tap Forgot password.'; return; }
+  status.textContent = 'Sending a reset link…';
+  try {
+    await window.KOGGSync.resetPassword(email);
+    status.textContent = '✓ Reset link sent to ' + email + '. Follow it in your mail app, then sign in with the new password.';
+  } catch (err) { status.textContent = 'Password reset failed: ' + err.message; }
+});
 $('btnSignUp').addEventListener('click', async () => {
   const status = $('authStatus');
   status.textContent = 'Creating account…';
@@ -616,8 +981,13 @@ $('btnSignIn').addEventListener('click', async () => {
   try {
     await window.KOGGSync.signIn($('authEmail').value.trim(), $('authPassword').value);
     await refreshUser();
-    status.textContent = window._koggUser ? 'Signed in ✓ — pulling your library…' : 'Signed in.';
-    if (window._koggUser) await pullCloud(true);
+    if (window._koggUser) {
+      status.textContent = 'Signed in ✓ — your songs, themes and plans are syncing…';
+      await pullCloud(true);
+      status.textContent = 'Signed in ✓ — everything synced.';
+    } else {
+      status.textContent = 'Signed in.';
+    }
   } catch (err) { status.textContent = 'Sign in failed: ' + err.message; }
 });
 $('btnSignOut').addEventListener('click', async () => {
@@ -629,20 +999,47 @@ async function pushCloud() {
   try {
     await window.KOGGSync.push();
     flash($('btnPushCloud'), 'Pushed ✓');
+    clearDirty();
   } catch (err) { alert('Push failed: ' + err.message); }
 }
 async function pullCloud(silent) {
   try {
     const data = await window.KOGGSync.pull();
     if (!data) { if (!silent) flash($('btnPullCloud'), 'Cloud empty'); return; }
-    if (data.songs) { songs = data.songs; LS.set(K.songs, songs); }
-    if (data.themes && data.themes.length) { themes = data.themes; LS.set(K.themes, themes); }
-    if (data.plans) LS.set(K.plans, data.plans);
-    if (data.settings && data.settings.currentThemeId) {
-      currentThemeId = data.settings.currentThemeId;
-      LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentThemeId }));
+    if (data.assets && window.KOGGAssets) {
+      for (const [id, v] of Object.entries(data.assets)) {
+        if (v) await window.KOGGAssets.put(id, v);
+      }
+    }
+    // songs merge: cloud-only songs are added, local songs and edits stay put —
+    // nothing local is ever deleted by a pull
+    if (data.songs) {
+      const ids = new Set(songs.map(s => s.id));
+      const fresh = data.songs.filter(s => s.id && !ids.has(s.id));
+      if (fresh.length) { songs = songs.concat(fresh); LS.set(K.songs, songs); }
+    }
+    if (data.themes && data.themes.length) {
+      const mineIds = new Set(themes.map(t => t.id));
+      const freshThemes = data.themes.filter(t => !mineIds.has(t.id));
+      if (freshThemes.length) { themes = themes.concat(freshThemes); LS.set(K.themes, themes); }
+    }
+    if (data.plans) LS.set(K.plans, Object.assign({}, LS.get(K.plans, {}), data.plans));
+    if (data.settings) {
+      const merged = Object.assign({}, LS.get(K.settings, {}), data.settings);
+      delete merged.dirtyLibrary;
+      LS.set(K.settings, merged);
+      if (merged.currentThemeId && themes.some(t => t.id === merged.currentThemeId)) {
+        currentThemeId = merged.currentThemeId;
+      }
+      if (merged.currentTranslation && merged.currentTranslation !== $('translationSelect').value) {
+        $('translationSelect').value = merged.currentTranslation;
+        loadBible(merged.currentTranslation);
+      }
+      refreshLogoStatus();
+      refreshStrongsBtn();
     }
     renderSongList(); renderPlans(); renderThemesTab();
+    pushLive({});   // refresh the display (logo/strongs may have changed)
     if (!silent) flash($('btnPullCloud'), 'Pulled ✓');
   } catch (err) { if (!silent) alert('Pull failed: ' + err.message); }
 }
@@ -657,6 +1054,8 @@ function next() { if (live.mode === 'normal' && live.index < live.slides.length 
 function prev() { if (live.mode === 'normal' && live.index > 0) pushLive({ index: live.index - 1 }); }
 $('btnNext').addEventListener('click', next);
 $('btnPrev').addEventListener('click', prev);
+$('btnFloatNext').addEventListener('click', next);
+$('btnFloatPrev').addEventListener('click', prev);
 $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
 $('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
 $('btnOpenDisplay').addEventListener('click', openDisplayWindow);
@@ -700,12 +1099,123 @@ $('btnCountdown').addEventListener('click', () => {
 });
 $('btnEndCountdown').addEventListener('click', () => pushLive({ mode: 'normal' }));
 
-/* AI speech — the output screen does the talking, we just toggle and auto-advance */
-$('btnSpeak').addEventListener('click', () => {
-  pushLive({ speak: !live.speak });
-  $('btnSpeak').classList.toggle('active', !!live.speak);
-  flash($('btnSpeak'), live.speak ? 'Speaking ✓' : 'Stopped');
-});
+/* Voice control — navigate the service by speaking (Web Speech API) */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let voiceOn = false;
+let rec = null;
+const NUMWORDS = {
+  one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15,
+  sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+  twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+  hundred: 100, first: 1, second: 2, third: 3,
+};
+const NAV_WORDS = ['next', 'forward', 'advance', 'back', 'previous', 'blank', 'black',
+  'logo', 'stop', 'listening', 'amen', 'go', 'live', 'clear'];
+
+function numberize(words) {
+  // turn spoken number words into digits: "twenty three" -> "23"
+  const out = [];
+  let acc = 0;
+  const flush = () => { if (acc) { out.push(String(acc)); acc = 0; } };
+  for (const w of words) {
+    let n = null;
+    if (NUMWORDS[w] != null && !NAV_WORDS.includes(w)) n = NUMWORDS[w];
+    else if (/^\d+$/.test(w)) n = +w;
+    if (n == null) { flush(); out.push(w); continue; }
+    if (n === 100) { acc = (acc || 1) * 100; continue; }
+    if (n >= 10 && n % 10 === 0) { flush(); acc = n; continue; }
+    acc += n;
+  }
+  flush();
+  return out;
+}
+
+function voiceShow(text) { flash($('btnVoice'), '→ ' + text); }
+
+function processVoice(raw) {
+  const said = raw.toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').trim();
+  if (!said) return;
+  const words = said.split(/\s+/).filter(w => w !== 'please' && w !== 'the' && w !== 'to' && w);
+
+  // navigation commands
+  const joined = words.join(' ');
+  if (/next|forward|advance/.test(joined)) { next(); voiceShow('Next ▶'); return; }
+  if (/previous|back/.test(joined)) { prev(); voiceShow('◀ Previous'); return; }
+  if (/blank|black|hide/.test(joined)) { $('btnBlank').click(); voiceShow('Blank'); return; }
+  if (/logo/.test(joined)) { $('btnLogo').click(); voiceShow('Logo'); return; }
+  if (/stop listening|stop voice|voice off/.test(joined)) { stopVoice(); voiceShow('Off'); return; }
+
+  // scripture reference — "john three sixteen", "go psalms twenty three 1-5"
+  if (bible) {
+    const cands = numberize(words.filter(w => w !== 'chapter' && w !== 'and' && w !== 'go' && w !== 'live' && w !== 'scripture' && w !== 'read'));
+    for (let start = 0; start < cands.length; start++) {
+      for (let len = cands.length - start; len >= 2; len--) {
+        const cand = cands.slice(start, start + len).join(' ');
+        const ref = parseQuickRef(cand);
+        if (ref) {
+          const book = bible.books[ref.bookIdx];
+          const ok = cands[start + len - 1].match(/\d/) || cand.split(' ').length > 1;
+          if (ok) {
+            goLiveScripture(ref);
+            voiceShow(`${book.name} ${ref.ch}:${ref.vFrom}-${ref.vTo}`);
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  // song titles
+  const ql = words.join(' ');
+  const matches = songs.filter(s => s.title.toLowerCase().includes(ql) || ql.includes(s.title.toLowerCase()));
+  if (matches.length === 1) {
+    pushLive({ mode: 'normal', slides: songToSlides(matches[0]), index: 0, title: matches[0].title, themeId: currentThemeId });
+    voiceShow('♪ ' + matches[0].title);
+    return;
+  }
+  voiceShow(said.slice(0, 18));
+}
+
+function startVoice() {
+  if (!SR) {
+    alert('Voice control needs Chrome or Edge (Web Speech API). Voice input also requires an internet connection.');
+    return;
+  }
+  try {
+    rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = false;
+    rec.lang = navigator.language || 'en-US';
+    rec.onresult = e => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) processVoice(e.results[i][0].transcript);
+      }
+    };
+    rec.onend = () => {
+      if (voiceOn) { try { rec.start(); } catch {} }   // keep the mic open
+      else $('btnVoice').classList.remove('active');
+    };
+    rec.onerror = e => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        stopVoice();
+        flash($('btnVoice'), 'Mic blocked');
+        alert('Microphone permission denied — allow mic access to use voice control.\nNote: voice input needs an internet connection in Chrome/Edge.');
+      }
+    };
+    rec.start();
+    voiceOn = true;
+    $('btnVoice').classList.add('active');
+    flash($('btnVoice'), 'Listening…');
+  } catch (err) {
+    alert('Could not start voice control: ' + err.message);
+  }
+}
+function stopVoice() {
+  voiceOn = false;
+  try { if (rec) rec.stop(); } catch {}
+}
+$('btnVoice').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
 
 /* Quick font size / alignment on the current theme */
 function patchTheme(patch) {
@@ -748,6 +1258,83 @@ $('btnLtShow').addEventListener('click', () => {
 $('btnLtHide').addEventListener('click', () => {
   pushLive({ lowerThird: { on: false, l1: $('ltLine1').value.trim(), l2: $('ltLine2').value.trim() } });
 });
+
+/* Strong's numbers on the projector */
+function strongsOn() { return LS.get(K.settings, {}).strongsOn !== false; }
+function refreshStrongsBtn() { $('btnStrongs').textContent = strongsOn() ? 'Numbers ON' : 'Numbers OFF'; }
+$('btnStrongs').addEventListener('click', () => {
+  const settings = LS.get(K.settings, {});
+  settings.strongsOn = !strongsOn();
+  LS.set(K.settings, settings);
+  const btn = $('btnStrongs');
+refreshStrongsBtn();
+
+/* ---------- church logo (Logo screen + countdown) ---------- */
+function refreshLogoStatus() {
+  const s = LS.get(K.settings, {});
+  $('logoStatus').textContent = (s.logoId || s.logoImage)
+    ? `Logo set — shows on the Logo screen.`
+    : 'No logo yet — the app placeholder is used.';
+}
+$('logoFile').addEventListener('change', () => {
+  const file = $('logoFile').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const settings = LS.get(K.settings, {});
+    const stored = await storeImage(reader.result, 'logo');
+    if (typeof stored === 'string') {
+      settings.logoImage = stored; settings.logoId = '';
+    } else {
+      settings.logoId = stored.id; settings.logoImage = '';
+    }
+    settings.logoName = file.name.replace(/\.[a-z0-9]+$/i, '').slice(0, 40);
+    LS.set(K.settings, settings);
+    markDirty();
+    pushLive({});
+    refreshLogoStatus();
+    flash($('btnLogoClear'), 'Logo saved ✓');
+  };
+  reader.readAsDataURL(file);
+});
+$('btnLogoClear').addEventListener('click', () => {
+  const settings = LS.get(K.settings, {});
+  settings.logoImage = '';
+  settings.logoId = '';
+  settings.logoName = '';
+  LS.set(K.settings, settings);
+  markDirty();
+  refreshLogoStatus();
+  flash($('btnLogoClear'), 'Removed ✓');
+});
+refreshLogoStatus();
+
+/* ---------- starter hymns (bundled, all in the public domain) ---------- */
+async function addStarterHymns() {
+  let added = 0;
+  try {
+    const res = await fetch('data/hymns.json');
+    const pack = await res.json();
+    const have = new Set(songs.map(s => s.title.toLowerCase()));
+    for (const h of (pack.hymns || [])) {
+      if (have.has(h.title.toLowerCase())) continue;
+      songs.push({ id: uid(), title: h.title, author: h.author || '', lyrics: h.lyrics });
+      have.add(h.title.toLowerCase());
+      added++;
+    }
+    if (added) LS.set(K.songs, songs);
+    renderSongList();
+  } catch { /* offline — first-run seeding retries next visit once cached */ }
+  return added;
+}
+$('btnStarterHymns').addEventListener('click', async () => {
+  const n = await addStarterHymns();
+  flash($('btnStarterHymns'), n ? `+${n} hymns ✓` : 'No new ones ✓');
+});
+  pushLive({ themeId: currentThemeId });
+  flash(btn, strongsOn() ? 'Shown ✓' : 'Hidden ✓');
+});
+refreshStrongsBtn();
 
 /* OBS overlay URL */
 function obsOverlayUrl() {
@@ -794,14 +1381,31 @@ function flash(btn, msg) {
 }
 
 /* ---------- init ---------- */
+window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
 const savedSettings = LS.get(K.settings, {});
 if (savedSettings.currentTranslation) $('translationSelect').value = savedSettings.currentTranslation;
 if (savedSettings.light) applyOperatorTheme(true);
+
+/* first run: quietly add the bundled public-domain starter hymns */
+(async function seedStarterHymns() {
+  if (savedSettings.starterSeeded) return;
+  const n = await addStarterHymns();
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { starterSeeded: true }));
+  if (n) refreshSyncBadge();
+})();
+
 renderSongList();
 renderService();
 renderPlans();
 renderPreview();
+window.__koggBoot = true;
+refreshSyncBadge();
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
-loadBible($('translationSelect').value).then(updateScripturePreview);
+loadBible($('translationSelect').value);
+setVerseMode(savedSettings.verseMode || 'verse');
+refreshBookGrid();
+initSplitters();
+applyPanes();
+refreshLock();

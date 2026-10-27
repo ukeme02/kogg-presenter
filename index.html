@@ -30,12 +30,19 @@
     <button id="btnFontSizeDown" class="ctrl" title="Smaller text (current theme)">A−</button>
     <button id="btnFontSizeUp" class="ctrl" title="Bigger text (current theme)">A+</button>
     <button id="btnAlign" class="ctrl" title="Toggle text alignment">⬌</button>
-    <button id="btnSpeak" class="ctrl" title="Speak scriptures aloud and auto-advance (AI voice)">🔊 Speak</button>
+    <button id="btnLock" class="ctrl" title="Layout: unlocked — drag the gaps between sections to resize, tap to lock">🔓</button>
     <button id="btnBlank" class="ctrl warn" title="Blank screen (B)">Blank</button>
     <button id="btnLogo" class="ctrl" title="Logo screen (L)">Logo</button>
     <button id="btnOpenDisplay" class="ctrl primary" title="Open output screen">Output</button>
     <button id="btnTheme" class="ctrl" title="Toggle light/dark operator mode">🌙</button>
     <a class="about-link" href="landing.html" target="_blank" title="About / download page">About</a>
+  </div>
+  <div class="cmdbar">
+    <div class="quickgo">
+      <input id="quickGo" type="search" autocomplete="off" placeholder="Quick Go — try: jn 3:16-17, ps 23, or a song name…  ( / to focus )">
+      <div id="quickGoResults" class="quickgo-results" hidden></div>
+    </div>
+    <button id="btnVoice" class="ctrl" title="Voice control — navigate by speaking (Chrome/Edge, online)">🎤 Speak</button>
   </div>
 </header>
 
@@ -53,36 +60,53 @@
   <section id="tab-scripture" class="tab-panel active">
     <div class="card">
       <h2>Scripture</h2>
-      <div class="row">
-        <label>Translation<br><select id="translationSelect">
-          <option value="data/kjv.json">KJV — King James Version</option>
-          <option value="data/web.json">WEB — World English Bible</option>
-          <option value="data/asv.json">ASV — American Standard</option>
+      <div class="row" style="align-items:end">
+        <label style="flex:1">Translation<br><select id="translationSelect">
+          <optgroup label="Base Bibles">
+            <option value="data/kjv.json">KJV — King James Version</option>
+            <option value="data/bsb.json">BSB — Berean Standard Bible</option>
+            <option value="data/kjvs.json">KJV with Strong's</option>
+          </optgroup>
+          <optgroup label="More translations">
+            <option value="data/web.json">WEB — World English Bible</option>
+            <option value="data/asv.json">ASV — American Standard</option>
+          </optgroup>
         </select></label>
+        <button id="btnBooksToggle">Hide books</button>
+        <span id="liveRef" class="livedot" hidden></span>
       </div>
-      <div class="row">
+      <div class="row" id="bookSearchRow">
         <label style="flex:1">Find a book<br><input id="bookSearch" type="search" placeholder="Type or tap — e.g. John, Cor, Sam…"></label>
       </div>
       <div id="bookChips" class="chip-grid"></div>
       <div id="chapterWrap" hidden>
-        <div class="row" style="margin-top:10px">
-          <h2 style="font-size:14px;color:var(--muted)" id="chapterHeading">Chapter</h2>
+        <div class="row" style="align-items:center">
+          <h2 style="font-size:14px;color:var(--muted);flex:1" id="chapterHeading">Chapter</h2>
+          <div class="seg" id="pickMode">
+            <button data-mode="verse">Verse</button>
+            <button data-mode="range">Range</button>
+            <button data-mode="chapter">Chapter</button>
+          </div>
         </div>
         <div id="chapterChips" class="chip-grid"></div>
+        <div class="row" style="margin-top:10px">
+          <button id="btnPrevChapter" title="Previous chapter">◀</button>
+          <button id="btnNextChapter" title="Next chapter">▶</button>
+          <button id="btnAddScripture">+ Add to Service</button>
+        </div>
+        <div id="verseList" class="verse-list"></div>
+        <p id="modeHint" class="hint"></p>
       </div>
-      <div class="row" style="margin-top:12px">
-        <label>From verse<br><select id="verseFrom"></select></label>
-        <label>To verse<br><select id="verseTo"></select></label>
-        <button id="btnWholeChapter" title="Select all verses in the chapter">Whole chapter</button>
+      <div class="row" style="margin-top:14px;align-items:end">
+        <label style="flex:1">Search the whole Bible — words you remember (quotes = exact phrase)<br>
+          <input id="bibleSearch" type="search" autocomplete="off" placeholder='e.g. sheep hear my voice  or  "no man cometh to the Father"'></label>
+        <button id="btnVoiceSearch" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
       </div>
-      <!-- hidden state carriers used by the picker chips -->
+      <div id="bibleResults" class="search-results" hidden></div>
+      <select id="verseFrom" hidden></select>
+      <select id="verseTo" hidden></select>
       <select id="bookSelect" hidden></select>
       <select id="chapterSelect" hidden></select>
-      <div id="scripturePreview" class="preview-text"></div>
-      <div class="row">
-        <button id="btnGoScripture" class="primary">▶ Go Live</button>
-        <button id="btnAddScripture">+ Add to Service</button>
-      </div>
     </div>
   </section>
 
@@ -93,6 +117,7 @@
       <div class="row">
         <input id="songSearch" type="search" placeholder="Search songs…">
         <button id="btnNewSong" class="primary">+ New Song</button>
+        <button id="btnStarterHymns" title="Adds a pack of public-domain hymns (skips ones you already have)">+ Starter Hymns</button>
       </div>
       <ul id="songList" class="item-list"></ul>
     </div>
@@ -157,6 +182,7 @@
         <label>Font size (vh)<br><input id="themeFontSize" type="number" min="3" max="15" step="0.5"></label>
         <label>Font<br>
           <select id="themeFont">
+            <option value="'Nunito Sans Expanded', Georgia, serif">Nunito Sans Expanded</option>
             <option value="Georgia, serif">Serif</option>
             <option value="Arial, sans-serif">Sans</option>
             <option value="'Times New Roman', serif">Times</option>
@@ -186,7 +212,7 @@
           <option value="linear-gradient(135deg,#0f2027,#203a43,#2c5364)">Deep Blue</option>
           <option value="linear-gradient(135deg,#134e5e,#71b280)">Emerald</option>
           <option value="linear-gradient(135deg,#42275a,#734b6d)">Purple</option>
-          <option value="linear-gradient(135deg,#000000,#434343)">Black</option>
+          <option value="#000000">Black</option>
           <option value="linear-gradient(135deg,#3a1c71,#d76d77,#ffaf7b)">Dawn</option>
           <option value="linear-gradient(135deg,#0b486b,#f56217)">Fire &amp; Ice</option>
           <option value="linear-gradient(135deg,#16222a,#3a6073)">Slate</option>
@@ -203,6 +229,7 @@
       <div class="row">
         <button id="btnSaveTheme" class="primary">Save Theme</button>
         <button id="btnApplyTheme">Apply to Live</button>
+        <button id="btnResetThemes" title="Restores Black, Sunset, Deep Blue and Emerald and makes Black the output default">Reset to Default Themes</button>
       </div>
     </div>
   </section>
@@ -211,18 +238,23 @@
   <section id="tab-account" class="tab-panel">
     <div class="card">
       <h2>Account &amp; Cloud Sync</h2>
-      <p class="hint">Sign in and your songs, themes and service plans follow you to any PC or phone. Bibles are built into the app — they're always there, even offline. Sync uses a free Supabase project and only runs when you're online.</p>
+      <p class="hint">One account keeps your library on every device you sign in on. Everything still works without an account.</p>
       <div id="authNotConfigured" class="hint" style="color:var(--warn)">
         Cloud sync isn't configured on this deployment yet. See README → “Enable cloud sync” (5-minute free setup with Supabase).
       </div>
       <div id="authForm">
+        <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS, and only you can ever read your library.</div>
         <div class="row">
-          <label style="flex:2">Email<br><input id="authEmail" type="email" placeholder="you@church.org"></label>
-          <label style="flex:1">Password<br><input id="authPassword" type="password" placeholder="min. 6 characters"></label>
+          <label style="flex:2">Email (for sign-in and password reset only — never shared)<br><input id="authEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
         </div>
         <div class="row">
+          <label style="flex:2">Password<br><input id="authPassword" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+          <button id="btnShowPass" type="button" title="Show or hide password">Show</button>
+        </div>
+        <div class="row" style="align-items:center">
           <button id="btnSignIn" class="primary">Sign In</button>
           <button id="btnSignUp">Create Account</button>
+          <button id="btnForgot" type="button" class="linklike">Forgot password?</button>
         </div>
         <div id="authStatus" class="hint"></div>
       </div>
@@ -233,7 +265,8 @@
           <button id="btnPullCloud">⬇ Pull Library from Cloud</button>
           <button id="btnSignOut">Sign Out</button>
         </div>
-        <p class="hint">Push uploads your songs, themes and plans. Pull replaces the local library with the cloud copy — export a backup first if unsure (Tools tab).</p>
+        <p id="syncBadge" class="hint"></p>
+        <p class="hint">Your library syncs automatically while you're signed in — songs, themes, plans and your logo arrive on any device you sign in on. Push/Pull remain here for manual control.</p>
       </div>
     </div>
   </section>
@@ -259,6 +292,28 @@
         <button id="btnCountdown" class="primary">Start Countdown</button>
         <button id="btnEndCountdown">Stop</button>
       </div>
+    </div>
+    <div class="card">
+      <h2>Church Logo</h2>
+      <p class="hint">Your picture shows on the <b>Logo</b> screen (and replaces the app placeholder). Stored on this device and synced with your account.</p>
+      <div class="row">
+        <label style="flex:1">Logo image<br><input id="logoFile" type="file" accept="image/*"></label>
+        <button id="btnLogoClear">Remove Logo</button>
+      </div>
+      <div id="logoStatus" class="hint"></div>
+    </div>
+    <div class="card">
+      <h2>Strong's Numbers (KJV with Strong's)</h2>
+      <div class="row">
+        <button id="btnStrongs" class="primary">Numbers ON</button>
+        <p class="hint">Show or hide the small word numbers on the projector when the "KJV with Strong's" translation is live.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Voice Control</h2>
+      <p class="hint">Tap <b>🎤 Voice</b> in the top bar and speak. Commands: <b>"next", "previous", "blank", "logo"</b>, or a scripture like
+        <b>"John three sixteen"</b> / <b>"Psalms twenty-three"</b>, or a song title. Say <b>"stop listening"</b> to turn it off.
+        Voice input uses the Web Speech API — works in Chrome/Edge and needs an internet connection (browser limitation, not KOGG).</p>
     </div>
     <div class="card">
       <h2>Backup &amp; Restore</h2>
@@ -287,7 +342,13 @@
   </section>
 </main>
 
+<div class="float-nav">
+  <button id="btnFloatPrev" title="Previous slide (←)">◀</button>
+  <button id="btnFloatNext" class="primary" title="Next slide (→ or space)">Next ▶</button>
+</div>
+
 <script src="js/supabase-config.js"></script>
+<script src="js/idb.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/app.js"></script>
 </body>

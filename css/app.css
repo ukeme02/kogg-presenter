@@ -191,6 +191,17 @@ body.light .quickgo-results { border-color: #c9d2e0; box-shadow: 0 10px 30px rgb
 
 /* Account tab */
 #authSignedIn p { margin-bottom: 10px; }
+.safe-strip {
+  background: rgba(74, 227, 170, .08);
+  border: 1px solid rgba(74, 227, 170, .3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  line-height: 1.55;
+}
+.linklike { background: transparent; border: none; color: var(--accent2); text-decoration: underline; padding: 10px 6px; font-weight: 600; }
 
 /* Scripture picker chips */
 .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
@@ -203,3 +214,108 @@ body.light .quickgo-results { border-color: #c9d2e0; box-shadow: 0 10px 30px rgb
 }
 .chip-grid button.selected { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
 .chip-grid.small button { padding: 5px 10px; font-size: 13px; min-width: 38px; }
+.chip-grid button.endpoint { background: var(--panel2); border-color: var(--accent); font-weight: 700; }
+
+/* keep long chip lists compact instead of flooding the page */
+#bookChips, #chapterChips { max-height: 26vh; overflow-y: auto; overscroll-behavior: contain; padding: 2px; }
+
+/* drag handles between sections — visible when the layout is unlocked */
+.splitter {
+  height: 12px;
+  margin: 2px 0 6px;
+  border-radius: 6px;
+  cursor: row-resize;
+  max-width: 210px;
+  background: repeating-linear-gradient(to bottom, #3a4356 0 2px, transparent 2px 6px);
+  touch-action: none;
+}
+.splitter:hover { background: repeating-linear-gradient(to bottom, var(--accent) 0 2px, transparent 2px 6px); }
+body.panes-locked .splitter { display: none; }
+body.books-hidden .splitter[data-key="books"] { display: none; }
+
+/* segmented mode control — Verse / Range / Chapter */
+.seg { display: inline-flex; border: 1px solid #3a4356; border-radius: 999px; overflow: hidden; background: var(--panel2); }
+.seg button { border: none; background: transparent; border-radius: 0; padding: 7px 16px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.seg button + button { border-left: 1px solid #3a4356; }
+.seg button.active { background: var(--accent); color: #fff; font-weight: 700; }
+.seg button:hover { background: transparent; }
+.seg button.active:hover { background: var(--accent); }
+
+/* tap-to-live verse list */
+.verse-list { max-height: 48vh; overflow-y: auto; overscroll-behavior: contain; margin-top: 6px; padding-right: 4px; }
+.verse-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  align-items: flex-start;
+  background: var(--panel2);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+}
+.verse-row:hover { background: #313a4c; }
+.verse-row .vn { color: var(--accent); font-weight: 700; min-width: 26px; text-align: right; font-size: 13px; padding-top: 2px; }
+.verse-row .vt { color: var(--text); line-height: 1.55; font-size: 14px; }
+.verse-row.live {
+  border-color: var(--accent);
+  background: rgba(79,140,255,.16);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.livedot { color: var(--danger); font-size: 13px; font-weight: 700; white-space: nowrap; }
+
+/* full-text Bible search results */
+.search-results {
+  max-height: 40vh;
+  overflow-y: auto;
+  border: 1px solid #3a4356;
+  border-radius: 10px;
+  margin: 8px 0 10px;
+  background: var(--panel2);
+}
+body.light .search-results { border-color: #c9d2e0; }
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(128,140,170,.14);
+  cursor: pointer;
+}
+.search-item:last-child { border-bottom: none; }
+.search-item:hover { background: rgba(79,140,255,.08); }
+.search-ref { flex: 0 0 auto; font-weight: 700; font-size: 13px; color: var(--accent); min-width: 110px; }
+.search-text { flex: 1; font-size: 13.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-item button { padding: 6px 12px; font-size: 13px; flex: 0 0 auto; }
+.search-none { padding: 12px; color: var(--muted); font-size: 13.5px; }
+
+/* Go Live row stays reachable at the bottom while scrolling long chip lists */
+.row.sticky-actions {
+  position: sticky;
+  bottom: 8px;
+  z-index: 5;
+  margin: 10px -16px -16px;
+  padding: 10px 16px 14px;
+  background: linear-gradient(to top, var(--panel) 72%, transparent);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.row.sticky-actions button { box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+
+/* always-visible live controls — advance the service from anywhere */
+.float-nav {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 10px;
+  z-index: 40;
+}
+.float-nav button {
+  border-radius: 999px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(0,0,0,.45);
+}
+.float-nav button.primary { padding-left: 30px; padding-right: 30px; }

@@ -1,3 +1,12 @@
+@font-face {
+  font-family: 'Nunito Sans Expanded';
+  font-style: normal;
+  font-stretch: 125%;
+  font-weight: 200 1000;
+  src: url('../fonts/NunitoSans-Variable.woff2') format('woff2-variations');
+  font-display: swap;
+}
+
 html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
 body.overlay { background: transparent !important; }
 body.overlay #screen { background: transparent !important; }
@@ -14,8 +23,9 @@ body.overlay #screen { background: transparent !important; }
 }
 
 #slideText {
-  font-family: Georgia, serif;
+  font-family: 'Nunito Sans Expanded', Georgia, serif;
   font-size: 7vh;
+  font-weight: 700;
   line-height: 1.35;
   text-align: center;
   padding: 6vh 8vw;
@@ -26,11 +36,18 @@ body.overlay #screen { background: transparent !important; }
   white-space: pre-wrap;
 }
 
+#slideText sup {
+  font-size: .32em;
+  font-weight: 400;
+  opacity: .75;
+  margin-left: .08em;
+}
+
 #slideLabel {
   position: fixed;
   bottom: 3.5vh;
   left: 4vw;
-  font-family: Georgia, serif;
+  font-family: 'Nunito Sans Expanded', Georgia, serif;
   font-size: 3vh;
   opacity: .85;
   text-shadow: 0 1px 6px rgba(0,0,0,.6);
@@ -49,7 +66,7 @@ body.overlay #screen { background: transparent !important; }
 #countdown.on, #logoScreen.on, #blankScreen.on { display: flex; }
 
 #countdownTime {
-  font-family: Georgia, serif;
+  font-family: 'Nunito Sans Expanded', Georgia, serif;
   font-size: 22vh;
   font-weight: 700;
   text-shadow: 0 2px 14px rgba(0,0,0,.5);
@@ -58,7 +75,8 @@ body.overlay #screen { background: transparent !important; }
 
 #logoScreen { color: #fff; background: #111; }
 #logoScreen svg { opacity: .9; }
-#logoName { font-family: Georgia, serif; font-size: 5vh; margin-top: 3vh; letter-spacing: .06em; }
+#logoImg { max-height: 45vh; max-width: 60vw; object-fit: contain; }
+#logoName { font-family: 'Nunito Sans Expanded', Georgia, serif; font-size: 5vh; margin-top: 3vh; letter-spacing: .06em; }
 
 #blankScreen { background: #000; }
 
@@ -83,7 +101,7 @@ body.overlay #screen { background: transparent !important; }
   max-width: 80vw;
 }
 #ltLine1 {
-  font-family: Georgia, serif;
+  font-family: 'Nunito Sans Expanded', Georgia, serif;
   font-size: 5.5vh;
   font-weight: 700;
   color: #fff;
@@ -91,7 +109,7 @@ body.overlay #screen { background: transparent !important; }
   text-shadow: 0 2px 8px rgba(0,0,0,.5);
 }
 #ltLine2 {
-  font-family: Georgia, serif;
+  font-family: 'Nunito Sans Expanded', Georgia, serif;
   font-size: 3.4vh;
   color: #cdd6e8;
   margin-top: .6vh;

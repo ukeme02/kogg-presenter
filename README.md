@@ -9,14 +9,16 @@ browser, and can be packaged for Windows, iOS, and desktop.
 
 | Feature | Details |
 |---|---|
-| Scripture display | **Three offline Bibles** — KJV, WEB, ASV (public domain, 66 books each) with a translation picker |
+| Scripture display | **Five offline Bibles** — KJV, BSB (Berean Standard) and **KJV with Strong's numbers** by default, plus WEB and ASV. Tap vers­es to pick a range, one-tap chapter navigation |
 | Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
+| Starter hymns | 34 public-domain hymns bundled (`data/hymns.json`) — added on first run, or via the **+ Starter Hymns** button |
+| Church logo | Tools tab → upload once; it shows on the Logo screen and follows your sync account |
 | Web lyrics import | Paste any lyrics-page URL → text is fetched, cleaned and saved locally (offline after that) |
-| AI voice | One tap: the projector machine speaks each slide and **auto-advances** through the passage (Web Speech API — no cloud, no keys) |
+| Voice control | One tap: speak commands — "next", "previous", "blank", "logo", or "John three sixteen" — the console obeys (Web Speech API, Chrome/Edge, online) |
 | Quick Go | Type `jn 3:16-17`, `ps 23` or a song name in the top bar, hit Enter — it's live. Press `/` to focus from anywhere |
 | Extended screen | Output window opens straight onto the second monitor (Chrome/Edge Window Management API — allow once) |
-| Cloud sync | Free Supabase account: songs, themes and plans follow you to any PC or phone |
-| Typography | Font, size (+/− live in the top bar), weight and text alignment per theme |
+| Cloud sync | Free Supabase account: songs, themes, plans **and your logo/background images** follow you to any PC or phone. Changes auto-push when you're signed in online; the Account tab shows synced/unsynced status |
+| Typography | **Nunito Sans Expanded Bold** by default; font, size (+/− live in the top bar), weight and text alignment per theme |
 | Light/dark | Operator console has light and dark modes |
 | Landing page | `landing.html` — public page explaining the app with install/download steps |
 | Service plan | Ordered queue of songs + scriptures, named plans save/load, whole-service live mode |
@@ -155,12 +157,13 @@ Same as Windows: install the PWA from Chrome/Edge/Brave. PWABuilder can also emi
 ## Project structure
 
 ```
-church-presenter/
+kogg-presenter/
 ├── index.html          operator console
 ├── display.html        projector output screen
 ├── css/                app.css (operator), display.css (output)
-├── js/                 app.js (operator), display.js (output)
-├── data/kjv.json       offline KJV Bible (public domain)
+├── js/                 app.js (operator), display.js (output), sync.js, idb.js (image assets)
+├── data/               offline Bibles: kjv.json, bsb.json, kjvs.json (Strong's), web.json, asv.json + hymns.json
+├── fonts/              Nunito Sans variable font (local, works offline)
 ├── icons/              SVG app icons
 ├── manifest.webmanifest  PWA manifest
 └── sw.js               service worker (offline cache)
@@ -169,18 +172,17 @@ church-presenter/
 ## Roadmap ideas
 
 - Cross-device remote control (phone → laptop display) via a small WebRTC/WebSocket relay
-- More translations (WEB, ASV — also public domain) with a translation picker
 - Quick full-text Bible search; bookmarks; verse-of-the-day
 - Announcement slides with auto-rotation
 - Stage/confidence view showing the worship team what's next
 - OpenLyrics import; import songs in bulk from CSV/text
-- Cloud sync of the library (free tier of Firebase/Supabase) for shared song databases
 - Native dual-display (different content on phone screen vs HDMI) would require the native
   Kotlin route — current design keeps one codebase instead
 
 ## Licensing notes
 
 - KJV text: public domain.
+- Bundled hymn texts: all in the public domain (authors died well before 1930) — safe to distribute.
 - All code here: yours — no dependencies, no licenses to track.
 - If you add modern translations (NIV, ESV, etc.), you must obtain permission from their
   publishers (they grant free church-use licenses) — WEB/ASV/KJV need nothing.

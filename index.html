@@ -81,17 +81,18 @@
           <span id="bookGhost"></span>
           <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
         </div>
+        <button id="btnVoiceJump" title="Speak a scripture — Chrome/Edge, online">🎤</button>
         <span id="liveRef" class="livedot" hidden></span>
       </div>
 
       <div class="docks">
-        <div class="dock" id="dock-books">
-          <div class="dock-head"><span>Books</span><span class="dock-head-hint" id="bookCount"></span></div>
-          <div id="bookChips" class="chip-grid scroll"></div>
+        <div class="dock" data-dock="books">
+          <div class="dock-head"><span class="grip">⠿ Books</span><span class="dock-head-hint" id="bookCount"></span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div id="bookChips" class="chip-grid books scroll"></div>
         </div>
 
-        <div class="dock" id="dock-chapters">
-          <div class="dock-head"><span>Chapters</span></div>
+        <div class="dock" data-dock="chapters">
+          <div class="dock-head"><span class="grip">⠿ Chapters</span><button class="span-btn" title="Size: small / wide">Span</button></div>
           <div id="chapterChips" class="chip-grid dots scroll"></div>
           <div class="dock-foot">
             <button id="btnPrevChapter" title="Previous chapter">◀</button>
@@ -100,9 +101,9 @@
           </div>
         </div>
 
-        <div class="dock" id="dock-verses">
+        <div class="dock" data-dock="verses">
           <div class="dock-head">
-            <span>Verses</span>
+            <span class="grip">⠿ Verses</span>
             <div class="seg" id="pickMode">
               <button data-mode="verse">Verse</button>
               <button data-mode="range">Range</button>
@@ -110,13 +111,17 @@
             </div>
           </div>
           <div id="verseDots" class="chip-grid dots scroll"></div>
-          <div id="liveText" class="live-text"></div>
           <p id="modeHint" class="hint"></p>
         </div>
 
-        <div class="dock" id="dock-memory">
-          <div class="dock-head"><span>Memory</span><button id="btnMemoryClear" class="mini-clear" title="Clear memory (session only)">✕</button></div>
-          <div id="memoryChips" class="scroll memory-list"></div>
+        <div class="dock" data-dock="text">
+          <div class="dock-head"><span class="grip">⠿ On the projector</span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div id="liveText" class="live-text scroll"></div>
+        </div>
+
+        <div class="dock" data-dock="memory">
+          <div class="dock-head"><span class="grip">⠿ Memory</span><button id="btnMemoryClear" class="mini-clear" title="Clear memory (session only)">✕</button><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div id="memoryChips" class="scroll memory-grid"></div>
           <p class="hint dock-hint">This session's scriptures — tap any to flip back during the sermon.</p>
         </div>
       </div>

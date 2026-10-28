@@ -287,18 +287,52 @@ $('translationSelect').addEventListener('change', () => {
 });
 
 /* Scripture docks — Books / Chapters / Verses / Memory on one page */
+
+/* book classification — color groups within the two testaments */
+const BOOK_ABBS = ['GEN','EXO','LEV','NUM','DEU','JOS','JDG','RUT','1SA','2SA','1KI','2KI','1CH','2CH','EZR','NEH','EST','JOB','PSA','PRO','ECC','SNG','ISA','JER','LAM','EZK','DAN','HOS','JOL','AMO','OBA','JON','MIC','NAH','HAB','ZEP','HAG','ZEC','MAL','MAT','MRK','LUK','JHN','ACT','ROM','1CO','2CO','GAL','EPH','PHP','COL','1TH','2TH','1TI','2TI','TIT','PHM','HEB','JAS','1PE','2PE','1JN','2JN','3JN','JUD','REV'];
+const BOOK_GROUPS_OT = [
+  { key: 'torah',  label: 'Moses / Torah',    from: 0,  to: 4 },
+  { key: 'othist', label: 'History',          from: 5,  to: 9 },
+  { key: 'poetry', label: 'Wisdom & Poetry',  from: 10, to: 13 },
+  { key: 'major',  label: 'Major Prophets',   from: 14, to: 16 },
+  { key: 'minor',  label: 'Minor Prophets',   from: 17, to: 21 },
+];
+const BOOK_GROUPS_NT = [
+  { key: 'gospels', label: 'Gospels',         from: 22, to: 25 },
+  { key: 'acts',    label: 'History',         from: 26, to: 26 },
+  { key: 'epist',   label: "Paul's Letters",  from: 27, to: 39 },
+  { key: 'general', label: 'General Letters', from: 40, to: 44 },
+  { key: 'rev',     label: 'Prophecy',        from: 45, to: 45 },
+];
 function renderBookChips(filter) {
   if (!bible) return;
   // only the letter part filters — "jn 3:16" filters books, not "jn 3:16" itself
-  const f = (filter || '').replace(/[\d:.\-\s]+$/, '').trim().toLowerCase();
+  const f = (filter || '').replace(/^[\d.\s\-]+/, '').replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const fk = normKey(f);
+  const matches = i => !f || bible.books[i].name.toLowerCase().includes(f) ||
+                       normKey(bible.books[i].name).includes(fk);
   const box = $('bookChips');
-  const list = bible.books
-    .map((b, i) => ({ b, i }))
-    .filter(({ b }) => !f || b.name.toLowerCase().includes(f) || normKey(b.name).includes(normKey(f)));
-  box.innerHTML = list
-    .map(({ b, i }) => `<button data-i="${i}" class="${i === +$('bookSelect').value ? 'selected' : ''}">${esc(b.name)}</button>`)
-    .join('');
-  $('bookCount').textContent = f ? `${list.length} match${list.length === 1 ? '' : 'es'}` : '';
+  let html = '', total = 0;
+  const sect = (title, groups) => {
+    let secHtml = `<div class="book-sec">${title}</div>`;
+    let found = false;
+    for (const g of groups) {
+      const chips = [];
+      for (let i = g.from; i <= g.to && i < bible.books.length; i++) {
+        if (!matches(i)) continue;
+        if (i >= bible.books.length) break;
+        total++;
+        found = true;
+        chips.push(`<button data-i="${i}" class="book-chip g-${g.key}${i === +$('bookSelect').value ? ' selected' : ''}" title="${esc(bible.books[i].name)}">${BOOK_ABBS[i] || esc(bible.books[i].name)}</button>`);
+      }
+      if (chips.length) secHtml += `<div class="book-group"><span class="book-label">${esc(g.label)}</span>${chips.join('')}</div>`;
+    }
+    if (found) html += secHtml;
+  };
+  sect('Old Testament', BOOK_GROUPS_OT);
+  sect('New Testament', BOOK_GROUPS_NT);
+  box.innerHTML = html;
+  $('bookCount').textContent = f ? `${total} match${total === 1 ? '' : 'es'}` : 'OT · NT — tap a book';
 }
 function renderChapterChips() {
   if (!bible) return;
@@ -372,12 +406,16 @@ function pushMemory(r) {
     m.r.vFrom === entry.r.vFrom && m.r.vTo === entry.r.vTo);
   if (dup >= 0) memory.unshift(memory.splice(dup, 1)[0]);
   else memory.unshift(entry);
-  if (memory.length > 14) memory.pop();
   renderMemory();
 }
 function renderMemory() {
   const box = $('memoryChips');
-  box.innerHTML = memory.length ? memory.map((m, i) =>
+  const n = memory.length;
+  box.classList.remove('m-md', 'm-sm', 'm-xs');
+  if (n > 60) box.classList.add('m-xs');
+  else if (n > 24) box.classList.add('m-sm');
+  else if (n > 8) box.classList.add('m-md');
+  box.innerHTML = n ? memory.map((m, i) =>
     `<button data-m="${i}" class="mem-chip${liveRef && m.r.bookIdx === liveRef.bookIdx && m.r.ch === liveRef.ch &&
       m.r.vFrom === liveRef.vFrom && m.r.vTo === liveRef.vTo ? ' live' : ''}" title="${esc(m.ref)}">${esc(m.short)}</button>`
   ).join('') : '<span class="dim">Nothing live yet this session.</span>';
@@ -506,6 +544,7 @@ const PANES = {
   books:    { el: () => $('bookChips'),    def: 260 },
   chapters: { el: () => $('chapterChips'), def: 220 },
   verses:   { el: () => $('verseDots'),    def: 320 },
+  text:     { el: () => $('liveText'),     def: 260 },
 };
 function applyPanes() {
   const h = LS.get(K.settings, {}).paneHeights || {};
@@ -555,6 +594,65 @@ $('btnLock').addEventListener('click', () => {
   LS.set(K.settings, s);
   refreshLock();
 });
+
+/* ---------- docks: drag to reposition, Span button to resize, lock to freeze ---------- */
+let dockSpans = LS.get(K.settings, {}).dockSpans || {};
+function applyDocks() {
+  const grid = document.querySelector('.docks');
+  if (!grid || !LS.get(K.settings, {}).dockOrder) return;
+  (LS.get(K.settings, {}).dockOrder || []).forEach(key => {
+    const el = grid.querySelector(`.dock[data-dock="${key}"]`);
+    if (el) grid.appendChild(el);
+  });
+  document.querySelectorAll('.docks .dock').forEach(d =>
+    d.classList.toggle('wide', dockSpans[d.dataset.dock] === 2));
+}
+function saveDocks() {
+  const s = LS.get(K.settings, {});
+  s.dockOrder = [...document.querySelectorAll('.docks .dock')].map(d => d.dataset.dock);
+  s.dockSpans = dockSpans;
+  LS.set(K.settings, s);
+}
+document.querySelectorAll('.docks .dock .span-btn').forEach(b =>
+  b.addEventListener('click', () => {
+    const dock = b.closest('.dock');
+    const key = dock.dataset.dock;
+    dockSpans[key] = (dockSpans[key] === 2) ? 1 : 2;
+    dock.classList.toggle('wide', dockSpans[key] === 2);
+    saveDocks();
+    refreshLock();
+  }));
+function initDockDrag() {
+  document.querySelectorAll('.docks .dock').forEach(dock => {
+    const head = dock.querySelector('.dock-head');
+    head.addEventListener('pointerdown', e => {
+      // drags only from the grip text area; buttons and pick-mode stay clickable
+      if (e.target.closest('button, .seg') || !e.target.closest('.grip')) return;
+      if (LS.get(K.settings, {}).panesLocked) return;
+      e.preventDefault();
+      const grid = document.querySelector('.docks');
+      dock.classList.add('dragging');
+      const move = ev => {
+        const target = [...grid.querySelectorAll('.dock:not(.dragging)')].find(other => {
+          const r = other.getBoundingClientRect();
+          return ev.clientX >= r.left - 16 && ev.clientX <= r.right + 16 &&
+                 ev.clientY >= r.top - 18 && ev.clientY <= r.bottom + 18;
+        });
+        if (!target) return;
+        const r = target.getBoundingClientRect();
+        grid.insertBefore(dock, ev.clientX < r.left + r.width / 2 ? target : target.nextSibling);
+      };
+      const up = () => {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        dock.classList.remove('dragging');
+        saveDocks();
+      };
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up);
+    });
+  });
+}
 
 /* ---------- full-text Bible search (find verses by remembered words/phrase) ---------- */
 let searchTimer = null;
@@ -635,6 +733,33 @@ $('btnVoiceSearch').addEventListener('click', () => {
       const text = e.results[0][0].transcript.trim();
       $('bibleSearch').value = text;
       renderBibleSearch();
+      flash(btn, 'Heard ✓');
+    };
+    r1.onerror = () => flash(btn, 'Mic error');
+    r1.onend = () => btn.classList.remove('active');
+    r1.start();
+  } catch (err) { flash(btn, 'Mic failed'); }
+});
+/* speak straight into the Quick jump bar — "John three sixteen" jumps live */
+$('btnVoiceJump').addEventListener('click', () => {
+  if (!SR) { alert('Voice input needs Chrome or Edge (Web Speech API), online.'); return; }
+  const btn = $('btnVoiceJump');
+  try {
+    const r1 = new SR();
+    r1.lang = navigator.language || 'en-US';
+    r1.interimResults = false;
+    r1.maxAlternatives = 1;
+    btn.classList.add('active');
+    flash(btn, '…');
+    r1.onresult = e => {
+      const text = e.results[0][0].transcript.trim().toLowerCase()
+        .replace(/^(read|go(?:\s+to)?|show|open|find|turn to)\s+/, '');
+      const words = text.split(/\s+/).filter(w =>
+        w !== 'and' && w !== 'chapter' && w !== 'verse' && w !== 'verses' && w !== 'please');
+      $('bookSearch').value = numberize(words).join(' ');
+      commitJump($('bookSearch').value);
+      renderBookChips($('bookSearch').value);
+      renderBookGhost();
       flash(btn, 'Heard ✓');
     };
     r1.onerror = () => flash(btn, 'Mic error');
@@ -986,7 +1111,21 @@ function goLiveScripture(r) {
   pushMemory(r);
 }
 function quickGoLive(item) {
-  if (item.type === 'scripture') goLiveScripture(item.ref);
+  if (item.type === 'scripture') {
+    goLiveScripture(item.ref);
+    // put the scripture deck in the operator's hands right after the jump
+    document.querySelector('.tab[data-tab="scripture"]')?.click();
+  }
+  else if (item.type === 'service') {
+    const i = service.findIndex(s => s.id === item.id);
+    if (i >= 0) pushLive({ mode: 'normal', slides: service[i].slides, index: 0, title: service[i].title, themeId: currentThemeId });
+  }
+  else if (item.type === 'plan') {
+    const plans = LS.get(K.plans, {});
+    service = plans[item.label] || [];
+    LS.set(K.service, service);
+    renderService();
+  }
   else pushLive({ mode: 'normal', slides: songToSlides(item.song), index: 0, title: item.song.title, themeId: currentThemeId });
   $('quickGoResults').hidden = true;
   $('quickGo').value = '';
@@ -1009,7 +1148,18 @@ function quickSearch(q) {
   songs.filter(s => s.title.toLowerCase().includes(ql))
     .slice(0, 5)
     .forEach(s => out.push({ type: 'song', icon: '🎵', label: s.title, snippet: (s.author || 'song'), song: s }));
-  return out.slice(0, 7);
+  // every deck feeds Quick Go: service plan items …
+  service.filter(it => it.title.toLowerCase().includes(ql))
+    .slice(0, 4)
+    .forEach(it => out.push({ type: 'service', icon: '🧩', label: it.title,
+      snippet: `${it.type === 'song' ? 'Song' : 'Scripture'} in the plan — ${it.slides.length} slides`, id: it.id }));
+  // … and saved plans
+  const plans = LS.get(K.plans, {});
+  Object.keys(plans).filter(n => n.toLowerCase().includes(ql))
+    .slice(0, 3)
+    .forEach(name => out.push({ type: 'plan', icon: '📋', label: name,
+      snippet: `Plan — ${(plans[name] || []).length} items, loads to the Service deck`, plan: name }));
+  return out.slice(0, 9);
 }
 function renderQuickResults() {
   const q = $('quickGo').value;
@@ -1568,5 +1718,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 loadBible($('translationSelect').value);
 setVerseMode(savedSettings.verseMode || 'verse');
+applyDocks();
 initSplitters();
+initDockDrag();
 refreshLock();

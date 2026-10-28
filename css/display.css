@@ -36,13 +36,6 @@ body.overlay #screen { background: transparent !important; }
   white-space: pre-wrap;
 }
 
-#slideText sup {
-  font-size: .32em;
-  font-weight: 400;
-  opacity: .75;
-  margin-left: .08em;
-}
-
 #slideLabel {
   position: fixed;
   bottom: 3.5vh;
@@ -79,6 +72,49 @@ body.overlay #screen { background: transparent !important; }
 #logoName { font-family: 'Nunito Sans Expanded', Georgia, serif; font-size: 5vh; margin-top: 3vh; letter-spacing: .06em; }
 
 #blankScreen { background: #000; }
+
+/* Strong's word card — a tap in the operator console puts the meaning
+   of a marked word on screen. Styled with the live theme via JS. */
+#strongsCard {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 78vw;
+  max-height: 88vh;
+  overflow: hidden;
+  text-shadow: 0 2px 12px rgba(0,0,0,.55);
+  font-family: 'Nunito Sans Expanded', Georgia, serif;
+}
+#strongsCard.on { display: flex; }
+#strongsCard .sc-top {
+  display: flex;
+  align-items: baseline;
+  gap: 1.6vh;
+  margin-bottom: 1vh;
+}
+#strongsCard .sc-num {
+  font-size: 9vh;
+  font-weight: 700;
+  line-height: 1;
+  opacity: .55;
+  letter-spacing: .02em;
+}
+#strongsCard .sc-lang { font-size: 2.6vh; opacity: .75; text-transform: uppercase; letter-spacing: .22em; }
+#strongsCard .sc-word { font-size: 8vh; font-weight: 700; line-height: 1.25; }
+#strongsCard .sc-word.rtl { direction: rtl; unicode-bidi: isolate; }
+#strongsCard .sc-translit { font-size: 3.4vh; font-style: italic; opacity: .8; margin-top: .6vh; }
+#strongsCard .sc-def {
+  font-size: 3.6vh;
+  line-height: 1.5;
+  margin-top: 1.6vh;
+  max-width: 66vw;
+}
+#strongsCard .sc-kjv, #strongsCard .sc-deriv { font-size: 2.5vh; opacity: .78; margin-top: 1vh; max-width: 66vw; }
+#strongsCard .sc-kjv b, #strongsCard .sc-deriv b { font-weight: 700; }
+#strongsCard .sc-ref { font-size: 2.6vh; margin-top: 1.8vh; opacity: .9; }
+#strongsCard .sc-verse { display: block; font-size: 2.2vh; opacity: .75; margin-top: .8vh; font-style: italic; max-width: 66vw; }
+#strongsCard .sc-hint { font-size: 1.9vh; opacity: .5; margin-top: 2.4vh; letter-spacing: .04em; }
 
 /* Lower third — animated name/title banner */
 #lowerThird {

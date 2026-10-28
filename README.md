@@ -9,7 +9,9 @@ browser, and can be packaged for Windows, iOS, and desktop.
 
 | Feature | Details |
 |---|---|
-| Scripture display | **Five offline Bibles** — KJV, BSB (Berean Standard) and **KJV with Strong's numbers** by default, plus WEB and ASV. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly |
+| Scripture display | **Five offline Bibles out of the box** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, **NIV** and **NLT** (WEB and ASV still included). One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
+| Add versions | Tools tab → **Scripture versions**: import your own Bible JSON in Sync/Local Mode; it is stored in the device (IndexedDB) and appears in the translation list everywhere |
+| Strong's tap-to-define | In the KJV Strong's Bible, word numbers appear in the **"On the projector" preview only** — the congregation never sees them. Tap a number and the word's Hebrew/Greek meaning (original word, transliteration, definition, KJV usage) takes the projector screen; tap the same number again to flip back to the verse. Toggle off in Tools → Strong's numbers |
 | Quick jump | In the Scripture deck type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
 | Memory dock | Every scripture you put live stays in the session Memory dock — tap to re-show during the sermon (clears on reload) |
 | Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
@@ -165,7 +167,7 @@ kogg-presenter/
 ├── display.html        projector output screen
 ├── css/                app.css (operator), display.css (output)
 ├── js/                 app.js (operator), display.js (output), sync.js, idb.js (image assets)
-├── data/               offline Bibles: kjv.json, bsb.json, kjvs.json (Strong's), web.json, asv.json + hymns.json
+├── data/               offline Bibles: kjv.json, bsb.json, kjvs.json (Strong's), niv.json, nlt.json, web.json, asv.json + hymns.json, strongs.json (lexicon)
 ├── fonts/              Nunito Sans variable font (local, works offline)
 ├── icons/              SVG app icons
 ├── manifest.webmanifest  PWA manifest
@@ -184,8 +186,13 @@ kogg-presenter/
 
 ## Licensing notes
 
-- KJV text: public domain.
+- KJV, WEB, ASV texts: public domain. BSB (Berean Standard Bible): free to use and redistribute.
+- Strong's lexicon data: public domain (OpenScriptures).
+- **NIV** © Biblica and **NLT** © Tyndale House Foundation are bundled in this repository for
+  personal/church use — both grant free use of Scripture quotations in non-commercial settings.
+  If you redistribute this app commercially or at scale, check each translation's current policy
+  (`www.biblica.com`, `www.tyndale.com`) first.
 - Bundled hymn texts: all in the public domain (authors died well before 1930) — safe to distribute.
 - All code here: yours — no dependencies, no licenses to track.
-- If you add modern translations (NIV, ESV, etc.), you must obtain permission from their
-  publishers (they grant free church-use licenses) — WEB/ASV/KJV need nothing.
+- Adding any further translations (ESV, etc.) requires permission from their publishers — they
+  grant free church-use licenses.

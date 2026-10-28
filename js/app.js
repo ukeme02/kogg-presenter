@@ -22,8 +22,8 @@ function stripStrongs(s) {
   return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/\s{2,}/g, ' ');
 }
 function withStrongsHtml(s) {
-  // escape first, then turn [G12]/[H1234] markers into <sup> numbers
-  return esc(String(s)).replace(/\[(G|H)(\d{1,5})]/g, '<sup>$2</sup>').replace(/ {2,}/g, ' ');
+  // escape first, then turn [G12]/[H1234] markers into clickable <sup> numbers (preview only)
+  return esc(String(s)).replace(/\[(G|H)(\d{1,5})]/g, '<sup class="sn" data-sn="$1$2" title="Tap — meaning on screen">$2</sup>').replace(/ {2,}/g, ' ');
 }
 function songToSlides(song) {
   return String(song.lyrics || '')
@@ -119,20 +119,14 @@ const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-pres
 function pushLive(patch = {}) {
   live = Object.assign({}, live, patch);
   live.strongsOn = LS.get(K.settings, {}).strongsOn !== false;
+  if (patch.slides !== undefined) { live.strongsShowing = false; live.strongsCard = null; }   // new content → the word card closes
   LS.set(K.live, live);
   if (channel) channel.postMessage(live);
   renderPreview();
 }
 
-/* ---------- preview ---------- */
+/* ---------- live indicator ---------- */
 function renderPreview() {
-  const now = live.mode === 'normal' ? live.slides[live.index] : null;
-  $('previewNow').textContent = live.mode === 'blank' ? '— BLANK —'
-    : live.mode === 'logo' ? '— LOGO —'
-    : live.mode === 'countdown' ? '— COUNTDOWN —'
-    : now ? `${now.label} — ${now.text}` : 'Ready';
-  $('previewNext').textContent = live.mode === 'normal' && live.slides[live.index + 1]
-    ? `${live.slides[live.index + 1].label} — ${live.slides[live.index + 1].text}` : '—';
   // live indicator in the Scripture tab ("🔴 John 3:16")
   const lr = $('liveRef');
   const showing = live.mode === 'normal' && live.title;
@@ -162,8 +156,17 @@ document.addEventListener('click', e => {
    SCRIPTURE
 ========================================================= */
 async function loadBible(file) {
-  const res = await fetch(file);
-  bible = await res.json();
+  let data = null;
+  if (file.startsWith('idb:')) {
+    // custom version added in Tools — text lives in IndexedDB
+    const raw = window.KOGGAssets ? await window.KOGGAssets.get(file.slice(4)) : null;
+    if (!raw) { flash($('translationSelect'), 'Version missing'); return; }
+    try { data = JSON.parse(raw); } catch { flash($('translationSelect'), 'Version corrupt'); return; }
+  } else {
+    const res = await fetch(file);
+    data = await res.json();
+  }
+  bible = data;
   // flat index of plain-verse text for fast full-text search (all 66 books)
   searchIndex = [];
   bible.books.forEach((b, bi) => b.chapters.forEach((ch, ci) => ch.forEach((t, vi) => {
@@ -221,14 +224,54 @@ function renderLiveText() {
     return;
   }
   const book = bible.books[liveRef.bookIdx];
+  const hasStrongs = /\[(?:G|H)\d{1,5}]/.test(book.chapters[liveRef.ch - 1][liveRef.vFrom - 1] || '');
+  const showNums = hasStrongs && strongsOn();   // numbers stay while the card shows — second tap flips back
   const parts = [];
   for (let v = liveRef.vFrom; v <= Math.min(liveRef.vTo, liveRef.vFrom + 40); v++) {
-    const t = stripStrongs(book.chapters[liveRef.ch - 1][v - 1] || '');
-    parts.push(`<b>${v}</b> ${esc(t)}`);
+    const raw = book.chapters[liveRef.ch - 1][v - 1] || '';
+    const t = showNums ? withStrongsHtml(raw) : esc(stripStrongs(raw));
+    parts.push(`<b>${v}</b> ${t}`);
   }
   const ref = book.name + ' ' + liveRef.ch + (liveRef.vTo > liveRef.vFrom ? ':' + liveRef.vFrom + '-' + liveRef.vTo : ':' + liveRef.vFrom);
-  box.innerHTML = `<div class="live-ref">${esc(ref)}</div>${parts.join(' ')}`;
+  const liveOnProjector = live.strongsShowing && live.strongsCard ? '<span class="lt-note">word meaning on screen — tap the number again to flip back</span>' : '';
+  box.innerHTML = `<div class="live-ref">${esc(ref)}${showNums ? '<span class="lt-tip">tap a word number → its meaning takes the screen</span>' : ''}${liveOnProjector}</div>${parts.join(' ')}`;
 }
+
+/* ---------- Strong's tap-to-define — numbers live in the preview only;
+   tapping one shows the Hebrew/Greek word card on the projector, tapping
+   again flips back to the verse. Service never has to stop. ---------- */
+let strongsLexicon = null, strongsLoading = false;
+function ensureLexicon() {
+  if (strongsLexicon || strongsLoading) return Promise.resolve(strongsLexicon);
+  strongsLoading = true;
+  return fetch('data/strongs.json').then(r => r.json())
+    .then(d => { strongsLexicon = d; return d; })
+    .catch(() => null)
+    .finally(() => { strongsLoading = false; });
+}
+$('liveText').addEventListener('click', async e => {
+  const sup = e.target.closest('sup[data-sn]');
+  if (!sup) return;
+  const sn = sup.dataset.sn;
+  if (live.strongsShowing && live.strongsCard && live.strongsCard.sn === sn) {
+    pushLive({ strongsShowing: false, strongsCard: null });   // flip back to the verse
+    renderLiveText();
+    return;
+  }
+  const lex = await ensureLexicon();
+  const entry = lex && lex[sn];
+  if (!entry) { sup.classList.add('missing'); sup.title = 'Word not in the lexicon'; return; }
+  const card = { sn, lang: sn[0] === 'G' ? 'Greek' : 'Hebrew', word: entry.w || '',
+                 translit: entry.t || '', pron: entry.p || '', def: entry.d || '',
+                 kjv: entry.k || '', deriv: entry.x || '' };
+  const book = liveRef ? bible.books[liveRef.bookIdx] : null;
+  if (book && liveRef) {
+    card.ref = `${book.name} ${liveRef.ch}:${liveRef.vFrom}${liveRef.vTo > liveRef.vFrom ? '-' + liveRef.vTo : ''}`;
+    card.verse = stripStrongs(book.chapters[liveRef.ch - 1][liveRef.vFrom - 1] || '');
+  }
+  pushLive({ strongsShowing: true, strongsCard: card });
+  renderLiveText();
+});
 function scrollLiveIntoView() {
   setTimeout(() => {
     const el = $('verseDots').querySelector('.dot-dot.live');
@@ -380,6 +423,66 @@ $('btnNextChapter').addEventListener('click', () => {
     fillChapters();
   }
   if (verseMode === 'chapter') chapterLive(+$('bookSelect').value, +$('chapterSelect').value);
+});
+
+/* ---------- Verses dock nav — step verse by verse, live, reading across
+   chapters and books (verse/range shift the window; chapter mode steps
+   whole chapters, just like the Chapters dock) ---------- */
+function stepVerse(dir) {
+  const bi = +$('bookSelect').value;
+  const book = bible.books[bi];
+  const ch = +$('chapterSelect').value;
+  const count = book.chapters[ch - 1].length;
+  const sameRef = liveRef && liveRef.bookIdx === bi && liveRef.ch === ch;
+  if (verseMode === 'chapter') {
+    const target = ch + dir;
+    if (target >= 1 && target <= book.chapters.length) { chapterLive(bi, target); return; }
+    const nb = bi + dir;
+    if (nb < 0 || nb >= bible.books.length) return;
+    chapterLive(nb, dir > 0 ? 1 : bible.books[nb].chapters.length);
+    return;
+  }
+  let v = (sameRef ? (dir > 0 ? liveRef.vTo : liveRef.vFrom) : 1) + dir;
+  if (v < 1) {   // back into the previous chapter / book
+    if (ch > 1) {
+      const pc = book.chapters[ch - 2].length;
+      goLiveScripture({ bookIdx: bi, ch: ch - 1, vFrom: pc, vTo: pc });
+    } else if (bi > 0) {
+      const pb = bible.books[bi - 1], pc2 = pb.chapters.length, pl = pb.chapters[pc2 - 1].length;
+      goLiveScripture({ bookIdx: bi - 1, ch: pc2, vFrom: pl, vTo: pl });
+    }
+    return;
+  }
+  if (v > count) {   // forward into the next chapter / book
+    if (ch < book.chapters.length) goLiveScripture({ bookIdx: bi, ch: ch + 1, vFrom: 1, vTo: 1 });
+    else if (bi < bible.books.length - 1) goLiveScripture({ bookIdx: bi + 1, ch: 1, vFrom: 1, vTo: 1 });
+    return;
+  }
+  if (verseMode === 'range' && sameRef) {
+    const size = liveRef.vTo - liveRef.vFrom;
+    if (dir > 0) {
+      const s = Math.max(1, Math.min(v, count - size));
+      goLiveScripture({ bookIdx: bi, ch, vFrom: s, vTo: s + size });
+    } else {
+      const e = v, s = Math.max(1, e - size);
+      goLiveScripture({ bookIdx: bi, ch, vFrom: s, vTo: Math.max(e, s) });
+    }
+    return;
+  }
+  goLiveScripture({ bookIdx: bi, ch, vFrom: v, vTo: v });
+}
+$('btnPrevVerse').addEventListener('click', () => stepVerse(-1));
+$('btnNextVerse').addEventListener('click', () => stepVerse(1));
+$('btnAddVerseService').addEventListener('click', () => {
+  const r = liveRef && liveRef.bookIdx === +$('bookSelect').value && liveRef.ch === +$('chapterSelect').value
+    ? { bookIdx: liveRef.bookIdx, ch: liveRef.ch, vFrom: liveRef.vFrom, vTo: liveRef.vTo }
+    : currentScriptureRange();
+  service.push({
+    id: uid(), type: 'scripture', title: refOf(r),
+    slides: scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo),
+  });
+  LS.set(K.service, service);
+  flash($('btnAddVerseService'), 'Added ✓');
 });
 
 /* ---------- Memory dock — this session's live scriptures ---------- */
@@ -1406,6 +1509,7 @@ function refreshModeChip() {
   const m = workMode();
   $('modeChip').textContent = MODE_LABEL[m] || 'Choose mode';
   $('modeChip').classList.toggle('unset', !m);
+  if (typeof updateAddVersionsGate === 'function') updateAddVersionsGate();
 }
 function setWorkMode(m) {
   const s = LS.get(K.settings, {});
@@ -1556,8 +1660,6 @@ if (!workMode()) showGate();
 ========================================================= */
 function next() { if (live.mode === 'normal' && live.index < live.slides.length - 1) pushLive({ index: live.index + 1 }); }
 function prev() { if (live.mode === 'normal' && live.index > 0) pushLive({ index: live.index - 1 }); }
-$('btnNext').addEventListener('click', next);
-$('btnPrev').addEventListener('click', prev);
 $('btnFloatNext').addEventListener('click', next);
 $('btnFloatPrev').addEventListener('click', prev);
 $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
@@ -1584,7 +1686,7 @@ async function openDisplayWindow() {
   const w = window.open('display.html', 'kogg_display', features || undefined);
   try { w.focus(); } catch {}
   if (!usedScreenApi) {
-    $('previewNow').textContent = 'Tip: on the output window press F11; or Win+Shift+→ to send it to the projector.';
+    flash($('btnOpenDisplay'), 'Tip: press F11 on the output');
   }
 }
 document.addEventListener('keydown', e => {
@@ -1768,15 +1870,85 @@ $('btnLtHide').addEventListener('click', () => {
   pushLive({ lowerThird: { on: false, l1: $('ltLine1').value.trim(), l2: $('ltLine2').value.trim() } });
 });
 
-/* Strong's numbers on the projector */
+/* Strong's numbers — the toggle controls the tap-to-define word numbers
+   in the "On the projector" preview (the projector itself always shows
+   clean text). */
 function strongsOn() { return LS.get(K.settings, {}).strongsOn !== false; }
 function refreshStrongsBtn() { $('btnStrongs').textContent = strongsOn() ? 'Numbers ON' : 'Numbers OFF'; }
 $('btnStrongs').addEventListener('click', () => {
   const settings = LS.get(K.settings, {});
   settings.strongsOn = !strongsOn();
   LS.set(K.settings, settings);
-  const btn = $('btnStrongs');
+  refreshStrongsBtn();
+  renderVerseDots();   // re-renders the preview with/without numbers
+  flash($('btnStrongs'), strongsOn() ? 'Numbers ON ✓' : 'Numbers OFF ✓');
+});
 refreshStrongsBtn();
+
+/* ---------- custom Bible versions — "Add versions" (Sync / Local modes) ---------- */
+function customVersions() { return LS.get(K.settings, {}).customVersions || []; }
+function rebuildCustomOptions() {
+  const list = customVersions();
+  const group = $('customVersionsGroup');
+  group.hidden = !list.length;
+  group.innerHTML = list.map(v => `<option value="idb:${v.assetId}">${esc(v.name)}</option>`).join('');
+  $('bibleList').innerHTML = list.length
+    ? list.map(v => `<div class="ver-row"><span>📗 ${esc(v.name)}</span><button data-delver="${v.assetId}" class="danger" title="Remove this version from this device">✕</button></div>`).join('')
+    : '<span class="dim">No added versions yet.</span>';
+  updateAddVersionsGate();
+}
+function updateAddVersionsGate() {
+  const m = workMode();
+  const note = $('addVersionsModeNote');
+  if (!note) return;
+  if (m === 'base') note.textContent = 'Not available in Base Mode — switch to Sync or Local to add versions.';
+  else if (m === 'sync') note.textContent = 'Added versions stay on this device (the cloud library keeps songs/themes/plans).';
+  else note.textContent = 'Added versions stay on this device.';
+  const btn = $('btnAddBible');
+  if (btn) { btn.disabled = m === 'base'; btn.title = m === 'base' ? 'Switch to Sync or Local mode to add versions' : ''; }
+}
+$('btnAddBible').addEventListener('click', async () => {
+  if (workMode() === 'base') { flash($('btnAddBible'), 'Sync/Local only'); return; }
+  const file = $('bibleFile').files[0];
+  if (!file) { flash($('btnAddBible'), 'Pick a file'); return; }
+  const text = await file.text();
+  let data;
+  try { data = JSON.parse(text); } catch { flash($('btnAddBible'), 'Not valid JSON'); return; }
+  const shapeOk = data && Array.isArray(data.books) && data.books.length === 66 &&
+    data.books.every(b => b && typeof b.name === 'string' && Array.isArray(b.chapters) &&
+      b.chapters.length > 0 && b.chapters.every(c => Array.isArray(c) && c.every(t => typeof t === 'string')));
+  if (!shapeOk) {
+    flash($('btnAddBible'), 'Wrong shape');
+    alert('This file does not match the KOGG Bible shape.\n\nExpected: { "translation": "Name", "books": [ 66 books in canonical order, each { "name": "Genesis", "chapters": [ ["verse 1", "verse 2", …] ] } ] }');
+    return;
+  }
+  const name = String(data.translation || file.name.replace(/\.json$/i, '')).slice(0, 40);
+  const s = LS.get(K.settings, {});
+  if ((s.customVersions || []).some(v => v.name === name)) { flash($('btnAddBible'), 'Name exists'); return; }
+  const assetId = 'bible-' + uid();
+  if (!(window.KOGGAssets && await window.KOGGAssets.put(assetId, text))) { flash($('btnAddBible'), 'Storage failed'); return; }
+  s.customVersions = (s.customVersions || []).concat([{ name, assetId }]);
+  LS.set(K.settings, s);
+  $('bibleFile').value = '';
+  rebuildCustomOptions();
+  flash($('btnAddBible'), 'Added ✓');
+});
+$('bibleList').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-delver]');
+  if (!b) return;
+  if (!confirm('Remove this version from this device?')) return;
+  const id = b.dataset.delver;
+  const s = LS.get(K.settings, {});
+  s.customVersions = (s.customVersions || []).filter(v => v.assetId !== id);
+  LS.set(K.settings, s);
+  try { if (window.KOGGAssets) await window.KOGGAssets.del(id); } catch {}
+  rebuildCustomOptions();
+  if ($('translationSelect').value === 'idb:' + id) {
+    $('translationSelect').value = 'data/kjv.json';
+    LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: 'data/kjv.json' }));
+    loadBible('data/kjv.json');
+  }
+});
 
 /* ---------- church logo (Logo screen + countdown) ---------- */
 function refreshLogoStatus() {
@@ -1840,10 +2012,6 @@ $('btnStarterHymns').addEventListener('click', async () => {
   const n = await addStarterHymns();
   flash($('btnStarterHymns'), n ? `+${n} hymns ✓` : 'No new ones ✓');
 });
-  pushLive({ themeId: currentThemeId });
-  flash(btn, strongsOn() ? 'Shown ✓' : 'Hidden ✓');
-});
-refreshStrongsBtn();
 
 /* OBS overlay URL */
 function obsOverlayUrl() {
@@ -1892,6 +2060,7 @@ function flash(btn, msg) {
 /* ---------- init ---------- */
 window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
 const savedSettings = LS.get(K.settings, {});
+rebuildCustomOptions();      // custom versions must exist in the select before restore
 if (savedSettings.currentTranslation) $('translationSelect').value = savedSettings.currentTranslation;
 if (savedSettings.light) applyOperatorTheme(true);
 

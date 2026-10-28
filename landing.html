@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KOGG Presenter — Free Church Presentation App</title>
-<meta name="description" content="KOGG Presenter is a free, offline-first church presentation app: five Bibles, a one-page dock deck (Books, Chapters, Verses, Memory), quick jump by reference, voice control, service plans, lower thirds and a transparent OBS overlay. Choose your work mode: Base, Sync or Local.">
+<meta name="description" content="KOGG Presenter is a free, offline-first church presentation app: seven Bibles, a one-page dock deck (Books, Chapters, Verses, Memory), quick jump by reference, voice control, service plans, lower thirds and a transparent OBS overlay. Choose your work mode: Base, Sync or Local.">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <style>
   @font-face {
@@ -326,7 +326,7 @@
       <div class="card"><span class="ficon">🚀</span><h3>Quick jump</h3><p>Type <code>jn 3:16</code>, <code>ps 23 4</code> or <code>1sam 2</code> — the book completes itself after one or two letters, then chapter, then verse. Or press 🎤 and just say it.</p></div>
       <div class="card"><span class="ficon">🧠</span><h3>Memory dock</h3><p>Every scripture you've been in this service stays one tap away. The pastor says “take us back” — you already have. The grid shrinks to fit as the list grows.</p></div>
       <div class="card"><span class="ficon">🌈</span><h3>Color-coded books</h3><p>Old and New Testament, each book colored by class — Moses/Torah, History, Poetry, Major &amp; Minor Prophets, Gospels, Paul's Letters, General Letters, Prophecy.</p></div>
-      <div class="card"><span class="ficon">🔎</span><h3>Find it when you can't quote it</h3><p>Type or speak the words you remember — <i>"sheep hear my voice"</i> — and go straight to the verse across all five translations.</p></div>
+      <div class="card"><span class="ficon">🔎</span><h3>Find it when you can't quote it</h3><p>Type or speak the words you remember — <i>"sheep hear my voice"</i> — and go straight to the verse across the whole Bible you have loaded.</p></div>
       <div class="card"><span class="ficon">🎵</span><h3>Song library &amp; 34 starter hymns</h3><p>Lyrics split into verse/chorus slides automatically. A pack of public-domain hymns is bundled. Import any lyrics page from the web and keep it forever.</p></div>
       <div class="card"><span class="ficon">⏱️</span><h3>Service plans &amp; universal Quick Go</h3><p>Queue songs and scriptures into a plan. One search bar at the top reaches every deck — reference, song, plan item or saved plan — and makes it live.</p></div>
       <div class="card"><span class="ficon">🎤</span><h3>Voice control</h3><p>While the room is singing, just speak: <i>"next"</i>, <i>"blank"</i>, <i>"John three sixteen"</i>. The mic sits at the bottom of the console where your hand already is.</p></div>
@@ -348,7 +348,7 @@
           <li><b>🪪 Your data is only yours</b> — a database policy means only your signed-in session can read or write your row.</li>
           <li><b>🚫 No ads, no analytics, no selling</b> — the app makes no requests beyond your Bible files and your own sync.</li>
           <li><b>📤 Full export, anytime</b> — Tools → Export Library gives your entire library as JSON. Never locked in.</li>
-          <li><b>📜 Open-source texts only</b> — KJV, BSB, WEB, ASV and Strong's numbers are public domain.</li>
+          <li><b>📜 Freely usable texts</b> — KJV, BSB, WEB, ASV and Strong's numbers are public domain; NIV and NLT permit free church use.</li>
         </ul>
       </div>
       <div class="authbox">
@@ -396,18 +396,18 @@
   <section id="faq" class="reveal">
     <h2>Questions people ask</h2>
     <details open><summary>What's the difference between Base, Sync and Local mode?</summary><p><b>Base Mode</b> loads the basics once and keeps scripture display working offline — zero cloud contacts. <b>Sync Mode</b> signs you in at start; your library pushes and pulls to your account automatically. <b>Local Mode</b> is the hybrid: everything (Bibles, schedules, lyrics, themes) saves on this device only. Switch anytime from the top bar — none of the modes stop the app from working offline.</p></details>
-    <details><summary>Is it really free? Where's the catch?</summary><p>No catch: the app is static HTML/JS you can host anywhere for free, Bibles are public domain, sync uses Supabase's free tier. No server cost, no subscription — and nothing is sold. Not your data, not anything.</p></details>
-    <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open it once online; the service worker downloads all five Bibles, the starter hymns and the app shell. After that it runs from your device's cache with Wi-Fi off — in every mode. Voice recognition is the one exception (it's a browser feature that needs connectivity).</p></details>
+    <details><summary>Is it really free? Where's the catch?</summary><p>No catch: the app is static HTML/JS you can host anywhere for free, the Bibles may be used freely in church settings, sync uses Supabase's free tier. No server cost, no subscription — and nothing is sold. Not your data, not anything.</p></details>
+    <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open it once online; the service worker downloads all seven Bibles, the starter hymns and the app shell. After that it runs from your device's cache with Wi-Fi off — in every mode. Voice recognition is the one exception (it's a browser feature that needs connectivity).</p></details>
     <details><summary>Who can see my library if I create an account?</summary><p>Only you. Row-level security means every request is checked against your signed-in identity; the database physically refuses queries for other users' rows. Export your full library to JSON anytime.</p></details>
     <details><summary>Can several people share one account?</summary><p>You can, but it's not designed that way — the library is per-account. Sign in with the same email on the phone and the laptop and they stay in sync.</p></details>
-    <details><summary>What about modern translations like NIV or ESV?</summary><p>They're copyrighted, so bundling isn't allowed without a publisher license (which is granted to churches). KOGG ships only legally shareable texts; you can still display such a translation from a website they permit. Everything else — themes, songs, plans, the interface — has zero restrictions.</p></details>
+    <details><summary>What about modern translations like NIV or ESV?</summary><p><b>NIV and NLT are bundled</b> — both publishers grant free use of Scripture in church settings. ESV and some others are not included; publishers of those grant licenses case by case. In Sync or Local Mode you can also import your own Bible file (Tools → Scripture versions) and it stays on your device.</p></details>
   </section>
 
 </div>
 
 <footer>
   <div class="wrap">
-    <div>KOGG Presenter — free and open source · Scriptures: KJV, BSB, WEB, ASV, Strong's (public domain)</div>
+    <div>KOGG Presenter — free and open source · Scriptures: KJV, BSB, NIV, NLT, WEB, ASV, Strong's</div>
     <div class="foot-links">
       <a href="index.html">Open App</a>
       <a href="https://github.com/ukeme02/kogg-presenter">Source on GitHub</a>

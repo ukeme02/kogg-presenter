@@ -9,10 +9,6 @@ const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS tran
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function plain(s) { return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/ {2,}/g, ' '); }
-function strongsHtml(s) {
-  // escape first, then turn the [G1234]/[H1234] markers into <sup> tags
-  return esc(String(s)).replace(/\[(G|H)(\d{1,5})]/g, '<sup>$2</sup>').replace(/ {2,}/g, ' ');
-}
 
 function themeById(themes, id) { return themes.find(t => t.id === id) || themes[0]; }
 function getThemes() {
@@ -95,20 +91,42 @@ function render(state) {
   renderLogo(state);
   $('blankScreen').classList.toggle('on', blankOn);
   const showSlide = state.mode === 'normal' && state.slides.length > 0;
-  textEl.style.display = showSlide ? '' : 'none';
-  labelEl.style.display = showSlide ? '' : 'none';
+  const card = state.mode === 'normal' && state.strongsShowing && state.strongsCard ? state.strongsCard : null;
+  $('strongsCard').classList.toggle('on', !!card);
+  textEl.style.display = showSlide && !card ? '' : 'none';
+  labelEl.style.display = showSlide && !card ? '' : 'none';
   if (state.mode === 'normal') {
     const t = applyTheme(state);
-    const slide = state.slides[state.index] || { text: '', label: '' };
-    const withNums = state.strongsOn !== false && /\[(?:G|H)\d{1,5}]/.test(slide.text);
-    textEl.innerHTML = withNums ? strongsHtml(slide.text) : esc(plain(slide.text));
-    labelEl.textContent = plain(slide.label);
-    textEl.style.fontSize = t.fontSize + 'vh';
-    requestAnimationFrame(fitText);
+    if (card) {
+      renderStrongsCard(card, t);   // the projector shows the word meaning — the verse stays queued
+    } else {
+      const slide = state.slides[state.index] || { text: '', label: '' };
+      textEl.innerHTML = esc(plain(slide.text));   // always clean text — numbers live only in the operator preview
+      labelEl.textContent = plain(slide.label);
+      textEl.style.fontSize = t.fontSize + 'vh';
+      requestAnimationFrame(fitText);
+    }
   } else if (!OVERLAY) {
     applyBackdrops(state);
   }
   renderLowerThird(state.lowerThird);
+}
+
+/* Strong's word card — shown when the operator taps a word number in the
+   "On the projector" preview. Styled with the live theme. */
+function renderStrongsCard(card, t) {
+  const box = $('strongsCard');
+  box.style.color = t.textColor;
+  box.style.fontFamily = t.font;
+  box.innerHTML = `
+    <div class="sc-top"><span class="sc-num">${esc(card.sn)}</span><span class="sc-lang">${esc(card.lang)} word</span></div>
+    ${card.word ? `<div class="sc-word${card.lang === 'Hebrew' ? ' rtl' : ''}">${esc(card.word)}</div>` : ''}
+    ${card.translit ? `<div class="sc-translit">${esc(card.translit)}${card.pron ? ' &nbsp;·&nbsp; ' + esc(card.pron) : ''}</div>` : ''}
+    ${card.def ? `<div class="sc-def">${esc(card.def)}</div>` : ''}
+    ${card.kjv ? `<div class="sc-kjv"><b>KJV renders:</b> ${esc(card.kjv)}</div>` : ''}
+    ${card.deriv ? `<div class="sc-deriv"><b>From:</b> ${esc(card.deriv)}</div>` : ''}
+    ${card.ref ? `<div class="sc-ref">${esc(card.ref)}${card.verse ? '<span class="sc-verse">“' + esc(card.verse) + '”</span>' : ''}</div>` : ''}
+    <div class="sc-hint">tap the same number in the console to return to the verse</div>`;
 }
 
 /* church logo screen — custom logo image if the operator uploaded one */

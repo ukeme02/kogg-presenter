@@ -1,5 +1,5 @@
 /* KOGG Presenter service worker — offline-first */
-const CACHE = 'kogg-presenter-v15';
+const CACHE = 'kogg-presenter-v16';
 const ASSETS = [
   './',
   './index.html',
@@ -15,8 +15,11 @@ const ASSETS = [
   './data/kjv.json',
   './data/bsb.json',
   './data/kjvs.json',
+  './data/niv.json',
+  './data/nlt.json',
   './data/web.json',
   './data/asv.json',
+  './data/strongs.json',
   './data/hymns.json',
   './fonts/NunitoSans-Variable.woff2',
   './manifest.webmanifest',
@@ -24,8 +27,8 @@ const ASSETS = [
   './icons/icon-maskable.svg',
 ];
 
-/* heavy, rarely-changing files (bibles + font) stay cache-first so the
-   ~23 MB of data isn't re-downloaded every visit; updates land by the next visit */
+/* heavy, rarely-changing files (bibles + font + lexicon) stay cache-first so the
+   ~35 MB of data isn't re-downloaded every visit; updates land by the next visit */
 const BIG = /\.(json|woff2)$/;
 
 self.addEventListener('install', e => {

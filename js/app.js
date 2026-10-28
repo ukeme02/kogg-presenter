@@ -421,8 +421,7 @@ function applyFloatPreview() {
     LS.set(K.settings, s);
     applyFloatPreview();
   });
-  $('fpPrev').addEventListener('click', () => $('btnFloatPrev').click());
-  $('fpNext').addEventListener('click', () => $('btnFloatNext').click());
+
 })();
 function scrollLiveIntoView() {
   setTimeout(() => {
@@ -932,13 +931,13 @@ $('dockMenu').addEventListener('click', e => {
   const b = e.target.closest('button[data-dockkey]');
   if (!b) return;
   const key = b.dataset.dockkey;
+  $('dockMenu').hidden = true;   // always close immediately, then perform the action
   const s = LS.get(K.settings, {});
   if (key === '__fnav') {
     s.showFloatNav = !lsShowFloatNav();
     LS.set(K.settings, s);
     applyFloatNav();
     flash($('btnDocks'), s.showFloatNav ? 'Switcher ON ✓' : 'Switcher off ✓');
-    $('dockMenu').hidden = true;
     return;
   }
   if (key === '__float') {
@@ -946,7 +945,6 @@ $('dockMenu').addEventListener('click', e => {
     LS.set(K.settings, s);
     applyFloatPreview();
     flash($('btnDocks'), s.showFloatPreview ? 'Mirror ON ✓' : 'Mirror off ✓');
-    $('dockMenu').hidden = true;
     return;
   }
   if (key === '__reset') {
@@ -956,20 +954,18 @@ $('dockMenu').addEventListener('click', e => {
     applyDocks();
     refreshLock();
     flash($('btnDocks'), 'Default layout ✓');
-    $('dockMenu').hidden = true;
     return;
   }
   if (key === '__all') s.hiddenDocks = [];
   else {
     const h = new Set(hiddenDocks());
     if (h.has(key)) { h.delete(key); flash(b, 'Now on screen'); }
-    else if (document.querySelectorAll('.docks .dock').length - h.size > 1) h.add(key); else { flash(b, 'Keep at least one'); return; }
+    else if (document.querySelectorAll('.docks .dock').length - h.size > 1) h.add(key); else { flash(b, 'Keep at least one'); }
     s.hiddenDocks = [...h];
   }
   LS.set(K.settings, s);
   applyDocks();
   renderDockMenu();
-  $('dockMenu').hidden = true;   // close after choosing
 });
 function saveDocks() {
   const s = LS.get(K.settings, {});
@@ -1921,8 +1917,6 @@ if (!workMode()) showGate();
 ========================================================= */
 function next() { if (live.mode === 'normal' && live.index < live.slides.length - 1) pushLive({ index: live.index + 1 }); }
 function prev() { if (live.mode === 'normal' && live.index > 0) pushLive({ index: live.index - 1 }); }
-$('btnFloatNext').addEventListener('click', next);
-$('btnFloatPrev').addEventListener('click', prev);
 $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
 $('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
 $('btnOpenDisplay').addEventListener('click', openDisplayWindow);

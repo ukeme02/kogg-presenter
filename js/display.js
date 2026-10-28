@@ -101,7 +101,7 @@ function render(state) {
       renderStrongsCard(card, t);   // the projector shows the word meaning — the verse stays queued
     } else {
       const slide = state.slides[state.index] || { text: '', label: '' };
-      textEl.innerHTML = esc(plain(slide.text));   // always clean text — numbers live only in the operator preview
+      textEl.innerHTML = renderSlideText(slide, state);   // always clean text — numbers live only in the operator preview
       labelEl.textContent = plain(slide.label);
       textEl.style.fontSize = t.fontSize + 'vh';
       requestAnimationFrame(fitText);
@@ -110,6 +110,20 @@ function render(state) {
     applyBackdrops(state);
   }
   renderLowerThird(state.lowerThird);
+}
+
+/* word highlight — the operator drags over words in the preview; the matching
+   verse (label ends "…:<verse>") gets those words marked, live, on screen. */
+function renderSlideText(slide, state) {
+  const words = plain(slide.text).trim().split(/\s+/).filter(Boolean);
+  let hl = null;
+  if (state.highlight) {
+    const m = /:(\d+)$/.exec(slide.label || '');
+    if (m && +m[1] === state.highlight.v) hl = state.highlight;
+  }
+  return words.map((w, i) =>
+    hl && i + 1 >= hl.wFrom && i + 1 <= hl.wTo ? `<mark class="whl">${esc(w)}</mark>` : esc(w)
+  ).join(' ');
 }
 
 /* Strong's word card — shown when the operator taps a word number in the

@@ -12,7 +12,9 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Scripture display | **Five offline Bibles out of the box** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, **NIV** and **NLT** (WEB and ASV still included). One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
 | Add versions | Tools tab → **Scripture versions**: import your own Bible JSON in Sync/Local Mode; it is stored in the device (IndexedDB) and appears in the translation list everywhere |
 | Strong's tap-to-define | In the KJV Strong's Bible, word numbers appear in the **"On the projector" preview only** — the congregation never sees them. Tap a number and the word's Hebrew/Greek meaning (original word, transliteration, definition, KJV usage) takes the projector screen; tap the same number again to flip back to the verse. Toggle off in Tools → Strong's numbers |
-| Quick jump | In the Scripture deck type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
+| Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
+| Whole-Bible search | Its own resizable dock: find verses by remembered words/phrase across the loaded translation |
+| Word emphasis | In the "On the projector" preview, press and drag across words — the projector highlights them live, in a marker style; click anywhere else to clear |
 | Memory dock | Every scripture you put live stays in the session Memory dock — tap to re-show during the sermon (clears on reload) |
 | Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
 | Starter hymns | 34 public-domain hymns bundled (`data/hymns.json`) — added on first run, or via the **+ Starter Hymns** button |
@@ -29,6 +31,7 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Service plan | Ordered queue of songs + scriptures, named plans save/load, whole-service live mode |
 | Live output | `display.html` — clean full-screen projector view, synced instantly with the operator |
 | Themes | 14 gradient backgrounds + custom background images, text color, font, font size |
+| Docks | Seven movable/resizable docks over a 12×12 grid — drag the title grip to reposition, corner handle to size, double/halve with Span. **🧩 Docks menu** in the Scripture toolbar picks which docks are visible; layout locks with 🔒 |
 | Lower thirds | Animated name/title banner — ideal as an OBS overlay over video |
 | OBS pairing | `display.html?overlay=1` gives a transparent browser source for OBS Studio |
 | Blank / Logo | One-tap blank screen and logo screen |

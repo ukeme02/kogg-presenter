@@ -1,3 +1,12 @@
+@font-face {
+  font-family: 'Nunito Sans Expanded';
+  font-style: normal;
+  font-stretch: 125%;
+  font-weight: 200 1000;
+  src: url('../fonts/NunitoSans-Variable.woff2') format('woff2-variations');
+  font-display: swap;
+}
+
 :root {
   --bg: #14161c;
   --panel: #1d212b;
@@ -12,7 +21,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: 'Nunito Sans Expanded', Georgia, serif;
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -509,15 +518,54 @@ body.books-hidden .splitter[data-key="books"] { display: none; }
 
 .livedot { color: var(--danger); font-size: 13px; font-weight: 700; white-space: nowrap; }
 
-/* full-text Bible search results */
+/* word highlight — click/drag words in the preview to emphasise on the projector */
+.lk {
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 1px 2px;
+  margin: 0 -1px;
+  transition: background .12s;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+.lk:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.lk.marked { background: color-mix(in srgb, var(--accent) 26%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+body.light .lk:hover { background: rgba(47,107,255,.1); }
+body.light .lk.marked { background: rgba(47,107,255,.22); box-shadow: 0 0 0 1px rgba(47,107,255,.45); }
+#liveText { -webkit-user-select: none; user-select: none; }
+
+/* Whole-Bible search dock */
 .search-results {
-  max-height: 40vh;
-  overflow-y: auto;
   border: 1px solid #3a4356;
   border-radius: 10px;
-  margin: 8px 0 10px;
   background: var(--panel2);
+  max-height: 40vh;
+  overflow-y: auto;
 }
+.dock[data-dock="search"] .search-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  margin: 8px 0 0;
+}
+.dock .row > input { width: auto; flex: 1 1 140px; min-width: 0; }
+.dockmenu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.dockmenu-item.on { color: var(--text); }
+.dockmenu-item:hover { background: var(--panel2); }
+#dockMenu { min-width: 230px; }
 body.light .search-results { border-color: #c9d2e0; }
 .search-item {
   display: flex;
@@ -566,7 +614,20 @@ body.light .search-results { border-color: #c9d2e0; }
 
 /* ---------- docks: reorder / resize / lock ---------- */
 .docks .dock.wide { grid-column: span 2; }
-.dock-head .grip { cursor: grab; user-select: none; }
+.dock-head .grip {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  padding: 3px 8px 3px 4px;
+  border-radius: 8px;
+  transition: background .15s;
+}
+.dock-head .grip:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.dock-head .grip:active { cursor: grabbing; background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.rs-corner { touch-action: none; }
+.dock.dragging, .dock.resizing { -webkit-user-select: none; user-select: none; }
+.dock.resizing { outline: 2px solid var(--accent); outline-offset: -2px; }
 .rs-corner {
   position: absolute;
   right: 3px;

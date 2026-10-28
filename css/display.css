@@ -36,6 +36,17 @@ body.overlay #screen { background: transparent !important; }
   white-space: pre-wrap;
 }
 
+#slideText mark.whl {
+  background: #ffd83d;
+  color: #101010;
+  text-shadow: none;
+  border-radius: .09em;
+  padding: .02em .14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  box-shadow: 0 0 6vh rgba(255,216,61,.35);
+}
+
 #slideLabel {
   position: fixed;
   bottom: 3.5vh;

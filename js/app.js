@@ -119,7 +119,7 @@ const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-pres
 function pushLive(patch = {}) {
   live = Object.assign({}, live, patch);
   live.strongsOn = LS.get(K.settings, {}).strongsOn !== false;
-  if (patch.slides !== undefined) { live.strongsShowing = false; live.strongsCard = null; }   // new content → the word card closes
+  if (patch.slides !== undefined) { live.strongsShowing = false; live.strongsCard = null; live.highlight = null; }   // new content → word card and highlight close
   LS.set(K.live, live);
   if (channel) channel.postMessage(live);
   renderPreview();
@@ -225,16 +225,32 @@ function renderLiveText() {
   }
   const book = bible.books[liveRef.bookIdx];
   const hasStrongs = /\[(?:G|H)\d{1,5}]/.test(book.chapters[liveRef.ch - 1][liveRef.vFrom - 1] || '');
-  const showNums = hasStrongs && strongsOn();   // numbers stay while the card shows — second tap flips back
+  const nums = hasStrongs && strongsOn();   // numbers stay while the card shows — second tap flips back
   const parts = [];
   for (let v = liveRef.vFrom; v <= Math.min(liveRef.vTo, liveRef.vFrom + 40); v++) {
     const raw = book.chapters[liveRef.ch - 1][v - 1] || '';
-    const t = showNums ? withStrongsHtml(raw) : esc(stripStrongs(raw));
-    parts.push(`<b>${v}</b> ${t}`);
+    const hl = live.highlight && live.highlight.v === v ? live.highlight : null;
+    const toks = raw.trim().split(/\s+/).filter(Boolean);
+    let pi = 0;
+    const hh = toks.map(tok => {
+      const m = [...tok.matchAll(/\[(G|H)(\d{1,5})]/g)];
+      const plainTok = tok.replace(/\[(?:G|H)\d{1,5}]/g, '');
+      let out = '';
+      if (plainTok) {
+        pi++;
+        const marked = hl && pi >= hl.wFrom && pi <= hl.wTo ? ' marked' : '';
+        out = `<span class="lk${marked}" data-v="${v}" data-w="${pi}">${esc(plainTok)}</span>`;
+      }
+      if (nums && m.length) {
+        out += m.map(x => `<sup class="sn" data-sn="${x[1]}${x[2]}" title="Tap — meaning on screen">${x[2]}</sup>`).join('');
+      }
+      return out;
+    }).join(' ');
+    parts.push(`<b>${v}</b> ${hh}`);
   }
   const ref = book.name + ' ' + liveRef.ch + (liveRef.vTo > liveRef.vFrom ? ':' + liveRef.vFrom + '-' + liveRef.vTo : ':' + liveRef.vFrom);
   const liveOnProjector = live.strongsShowing && live.strongsCard ? '<span class="lt-note">word meaning on screen — tap the number again to flip back</span>' : '';
-  box.innerHTML = `<div class="live-ref">${esc(ref)}${showNums ? '<span class="lt-tip">tap a word number → its meaning takes the screen</span>' : ''}${liveOnProjector}</div>${parts.join(' ')}`;
+  box.innerHTML = `<div class="live-ref">${esc(ref)}${nums ? '<span class="lt-tip">tap a word number → its meaning takes the screen</span>' : ''}${liveOnProjector}</div>${parts.join(' ')}`;
 }
 
 /* ---------- Strong's tap-to-define — numbers live in the preview only;
@@ -250,6 +266,11 @@ function ensureLexicon() {
     .finally(() => { strongsLoading = false; });
 }
 $('liveText').addEventListener('click', async e => {
+  /* click on empty text (not a word, not a number) = clear the highlight */
+  if (!e.target.closest('.lk') && !e.target.closest('sup.sn') && live.highlight) {
+    pushLive({ highlight: null });
+    renderLiveText();
+  }
   const sup = e.target.closest('sup[data-sn]');
   if (!sup) return;
   const sn = sup.dataset.sn;
@@ -272,6 +293,49 @@ $('liveText').addEventListener('click', async e => {
   pushLive({ strongsShowing: true, strongsCard: card });
   renderLiveText();
 });
+
+/* word highlight — press on a word (or drag across words) in the preview
+   and the projector highlights it in real time; tap empty space to clear.
+   Word indices are per verse, so any slide of the range can be on screen. */
+let hlDrag = null;
+(function initWordHighlight() {
+  const box = $('liveText');
+  box.addEventListener('pointerdown', e => {
+    const word = e.target.closest('.lk');
+    if (!word) return;   // empty-space press → the click handler clears
+    const v = +word.dataset.v, w = +word.dataset.w;
+    hlDrag = { v, wFrom: w, wTo: w, moved: false };
+    try { box.setPointerCapture(e.pointerId); } catch {}
+    e.preventDefault();
+  });
+  box.addEventListener('pointermove', e => {
+    if (!hlDrag) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const word = el && el.closest('.lk');
+    if (!word || +word.dataset.v !== hlDrag.v) return;
+    const w = +word.dataset.w;
+    const wFrom = Math.min(hlDrag.wFrom, w), wTo = Math.max(hlDrag.wFrom, w);
+    if (wFrom !== hlDrag.wFrom || wTo !== hlDrag.wTo) {
+      hlDrag.moved = true;
+      hlDrag.wFrom = wFrom; hlDrag.wTo = wTo;
+      pushLive({ highlight: { v: hlDrag.v, wFrom, wTo } });   // live while you drag
+      renderLiveText();
+    }
+  });
+  box.addEventListener('pointerup', () => {
+    if (!hlDrag) return;
+    const d = hlDrag; hlDrag = null;
+    if (d.moved) return;                                     // the drag already pushed its range
+    const cur = live.highlight;                              // single-word tap: toggles off if already marked
+    if (cur && cur.v === d.v && cur.wFrom === d.wFrom && cur.wTo === d.wTo && cur.wFrom === cur.wTo) {
+      pushLive({ highlight: null });
+    } else {
+      pushLive({ highlight: { v: d.v, wFrom: d.wFrom, wTo: d.wTo } });
+    }
+    renderLiveText();
+  });
+  box.addEventListener('pointercancel', () => { hlDrag = null; });
+})();
 function scrollLiveIntoView() {
   setTimeout(() => {
     const el = $('verseDots').querySelector('.dot-dot.live');
@@ -695,7 +759,15 @@ $('btnLock').addEventListener('click', () => {
 
 /* ---------- docks: free size & position over a 12×12 grid, lock to freeze ---------- */
 let dockSizes = LS.get(K.settings, {}).dockSizes || {};
-const DOCK_DEFAULTS = { books: [5, 6], chapters: [3, 5], verses: [4, 6], text: [4, 6], memory: [4, 5] };
+const DOCK_DEFAULTS = {
+  books: [5, 6], chapters: [3, 5], verses: [4, 6], text: [4, 6], memory: [4, 5],
+  quickgo: [3, 3], search: [4, 4],
+};
+const DOCK_LABELS = {
+  books: '📚 Books', chapters: '📑 Chapters', verses: '🔖 Verses', text: '🖥️ On the projector',
+  memory: '🧠 Memory', quickgo: '⚡ Quick jump', search: '🔎 Whole-Bible search',
+};
+function hiddenDocks() { return LS.get(K.settings, {}).hiddenDocks || []; }
 function applyDocks() {
   const grid = document.querySelector('.docks');
   if (!grid) return;
@@ -703,12 +775,46 @@ function applyDocks() {
     const el = grid.querySelector(`.dock[data-dock="${key}"]`);
     if (el) grid.appendChild(el);
   });
+  const hidden = hiddenDocks();
   document.querySelectorAll('.docks .dock').forEach(d => {
-    const s = dockSizes[d.dataset.dock] || DOCK_DEFAULTS[d.dataset.dock] || [4, 5];
+    const key = d.dataset.dock;
+    if (hidden.includes(key)) { d.style.display = 'none'; return; }
+    d.style.display = '';
+    const s = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
     d.style.gridColumn = `span ${Math.min(12, Math.max(2, s[0]))}`;
     d.style.gridRow = `span ${Math.min(12, Math.max(2, s[1]))}`;
   });
 }
+/* 🧩 Docks menu — pick which docks you want visible right now */
+function renderDockMenu() {
+  const menu = $('dockMenu');
+  const hidden = hiddenDocks();
+  menu.innerHTML = '<div class="more-group">Docks on screen</div>' +
+    Object.keys(DOCK_LABELS).map(key =>
+      `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('') +
+    '<button data-dockkey="__all" class="dockmenu-item"><b>Show all</b></button>';
+}
+$('btnDocks').addEventListener('click', e => {
+  e.stopPropagation();
+  renderDockMenu();
+  $('dockMenu').hidden = !$('dockMenu').hidden;
+});
+$('dockMenu').addEventListener('click', e => {
+  const b = e.target.closest('button[data-dockkey]');
+  if (!b) return;
+  const key = b.dataset.dockkey;
+  const s = LS.get(K.settings, {});
+  if (key === '__all') s.hiddenDocks = [];
+  else {
+    const h = new Set(hiddenDocks());
+    if (h.has(key)) { h.delete(key); flash(b, 'Now on screen'); }
+    else if (document.querySelectorAll('.docks .dock').length - h.size > 1) h.add(key); else { flash(b, 'Keep at least one'); return; }
+    s.hiddenDocks = [...h];
+  }
+  LS.set(K.settings, s);
+  applyDocks();
+  renderDockMenu();
+});
 function saveDocks() {
   const s = LS.get(K.settings, {});
   s.dockOrder = [...document.querySelectorAll('.docks .dock')].map(d => d.dataset.dock);

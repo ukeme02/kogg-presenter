@@ -72,14 +72,11 @@
           </optgroup>
           <optgroup label="My versions" id="customVersionsGroup" hidden></optgroup>
         </select>
-        <div class="quickjump">
-          <input id="bookSearch" type="search" autocomplete="off"
-                 placeholder="Quick jump — jn 3:16, ps 23:1-4, rom 8  (book → chapter → verse)  ( / to focus )">
-          <span id="bookGhost"></span>
-          <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
-        </div>
-        <button id="btnVoiceJump" title="Speak a scripture — Chrome/Edge, online">🎤</button>
         <span id="liveRef" class="livedot" hidden></span>
+        <div class="more-wrap">
+          <button id="btnDocks" title="Choose which docks are on screen">🧩 Docks</button>
+          <div id="dockMenu" class="more-menu" hidden></div>
+        </div>
       </div>
 
       <div class="docks">
@@ -126,16 +123,31 @@
           <div id="memoryChips" class="scroll memory-grid"></div>
           <p class="hint dock-hint">This session's scriptures — tap any to flip back during the sermon.</p>
         </div>
-      </div>
 
-      <details class="dock dock-search">
-        <summary>Search the whole Bible — words you remember (quotes = exact phrase)</summary>
-        <div class="row">
-          <input id="bibleSearch" type="search" autocomplete="off" placeholder='e.g. sheep hear my voice  or  "no man cometh to the Father"'>
-          <button id="btnVoiceSearch" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
+        <div class="dock" data-dock="quickgo">
+          <div class="dock-head"><span class="grip"><i class="dock-ico">⚡</i>Quick jump</span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <p class="hint dock-hint">Type <b>jn 3:16</b> / <b>ps 23:1-4</b> / <b>rom 8</b> — the book completes itself and the verse goes live as you type. Press <b>/</b> anywhere to focus.</p>
+          <div class="quickjump">
+            <input id="bookSearch" type="search" autocomplete="off"
+                   placeholder="jn 3:16  ·  ps 23:1-4  ·  rom 8  (/ to focus)">
+            <span id="bookGhost"></span>
+            <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
+          </div>
+          <div class="dock-foot">
+            <button id="btnVoiceJump" title="Speak a scripture — Chrome/Edge, online">🎤 Speak it</button>
+          </div>
         </div>
-        <div id="bibleResults" class="search-results" hidden></div>
-      </details>
+
+        <div class="dock" data-dock="search">
+          <div class="dock-head"><span class="grip"><i class="dock-ico">🔎</i>Whole-Bible search</span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <p class="hint dock-hint">Find verses by the words you remember — <i>"sheep hear my voice"</i>. Quotes = exact phrase.</p>
+          <div class="row">
+            <input id="bibleSearch" type="search" autocomplete="off" placeholder='sheep hear my voice  ·  "no man cometh to the Father"'>
+            <button id="btnVoiceSearch" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
+          </div>
+          <div id="bibleResults" class="search-results scroll" hidden></div>
+        </div>
+      </div>
     </div>
     <select id="verseFrom" hidden></select>
     <select id="verseTo" hidden></select>

@@ -16,7 +16,7 @@ function getThemes() {
   return [{ id: 't1', name: 'Black', bg: '#000000', bgImage: '', textColor: '#fff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, weight: '700' }];
 }
 function getLive() {
-  try { return JSON.parse(localStorage.getItem('cp_live')) || { mode: 'logo', slides: [], index: 0 }; }
+  try { return JSON.parse(localStorage.getItem('cp_live')) || { mode: 'blank', slides: [], index: 0 }; }
   catch { return { mode: 'logo', slides: [], index: 0 }; }
 }
 function getSettings() {

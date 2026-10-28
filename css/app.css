@@ -294,7 +294,7 @@ body.light .vchip { background: #fff; border-color: #d6dde9; }
   position: fixed;
   right: 14px;
   top: 96px;
-  z-index: 90;
+  z-index: 85;
   width: 250px;
   max-width: min(70vw, 320px);
   background: var(--panel);
@@ -335,7 +335,7 @@ body.light #floatPreview { border-color: #c9d2e0; box-shadow: 0 14px 34px rgba(2
   position: fixed;
   right: 14px;
   top: 104px;
-  z-index: 90;
+  z-index: 85;
   background: var(--panel);
   border: 1px solid #3a4356;
   border-radius: 12px;
@@ -376,7 +376,7 @@ body.light #floatEdit { border-color: #c9d2e0; box-shadow: 0 14px 34px rgba(20,3
 .scroll { flex: 1 1 auto; min-height: 0; }
 .chip-grid.scroll,
 .memory-grid.scroll { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; min-height: 0; margin: 0; }
-.dock.toolbar { flex-direction: row; gap: 10px; align-items: center; padding: 10px 12px; }
+.dock.toolbar { flex-direction: row; gap: 10px; align-items: center; padding: 10px 12px; position: relative; z-index: 120; }   /* above float widgets — their menus must never be blocked */
 .dock.toolbar select { width: auto; min-width: 150px; max-width: 30vw; flex: 0 0 auto; }
 .dock.toolbar .livedot { flex: 1; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .dock.toolbar .more-wrap { flex: 0 0 auto; }

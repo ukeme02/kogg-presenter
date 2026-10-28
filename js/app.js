@@ -55,7 +55,7 @@ let searchIndex = [];        // flat plain-text verse index for the Bible search
 let songs = LS.get(K.songs, []);
 let themes = LS.get(K.themes, null);
 let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
-let live = LS.get(K.live, { mode: 'logo', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });
+let live = LS.get(K.live, { mode: 'blank', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });   // plain black screen until you pick something
 let editingSongId = null;
 
 const DEFAULT_THEMES = [
@@ -911,15 +911,22 @@ function renderDockMenu() {
   const menu = $('dockMenu');
   const hidden = hiddenDocks();
   const fp = lsShowFloatPreview();
+  const fn = lsShowFloatNav();
   const items = Object.keys(DOCK_LABELS).filter(k => k !== 'text').map(key =>
     `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('');
   menu.innerHTML = '<div class="more-group">Docks on screen</div>' + items +
     '<div class="dockmenu-item static">🔒 On the projector — always visible</div>' +
+    `<button data-dockkey="__fnav" class="dockmenu-item${fn ? ' on' : ''}">${fn ? '✓' : '◻'} 🧭 Slide switcher (floating)</button>` +
     `<button data-dockkey="__float" class="dockmenu-item${fp ? ' on' : ''}">${fp ? '✓' : '◻'} 🖥️ Floating display mirror</button>` +
     '<button data-dockkey="__all" class="dockmenu-item"><b>Show all</b></button>' +
     '<button data-dockkey="__reset" class="dockmenu-item"><b>Reset layout</b></button>';
 }
-function lsShowFloatPreview() { return LS.get(K.settings, {}).showFloatPreview !== false; }
+function lsShowFloatNav() { return LS.get(K.settings, {}).showFloatNav !== false; }
+function applyFloatNav() {
+  const nav = document.querySelector('.float-nav');
+  if (nav) nav.hidden = !lsShowFloatNav();
+}
+function lsShowFloatPreview() { return LS.get(K.settings, {}).showFloatPreview === true; }
 $('btnDocks').addEventListener('click', e => {
   e.stopPropagation();
   renderDockMenu();
@@ -930,6 +937,14 @@ $('dockMenu').addEventListener('click', e => {
   if (!b) return;
   const key = b.dataset.dockkey;
   const s = LS.get(K.settings, {});
+  if (key === '__fnav') {
+    s.showFloatNav = !lsShowFloatNav();
+    LS.set(K.settings, s);
+    applyFloatNav();
+    flash($('btnDocks'), s.showFloatNav ? 'Switcher ON ✓' : 'Switcher off ✓');
+    $('dockMenu').hidden = true;
+    return;
+  }
   if (key === '__float') {
     s.showFloatPreview = !lsShowFloatPreview();
     LS.set(K.settings, s);
@@ -2428,5 +2443,6 @@ initSplitters();
 initDockDrag();
 refreshLock();
 applyFloatPreview();
+applyFloatNav();
 if (LS.get(K.settings, {}).fpFold) $('fpCollapse').textContent = '▸';
 applyFloatEdit();

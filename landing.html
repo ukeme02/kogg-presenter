@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KOGG Presenter — Free Church Presentation App</title>
-<meta name="description" content="KOGG Presenter is a free, offline-first church presentation app: five Bibles, lyrics, tap-to-live verse navigation, voice control, lower thirds and a transparent OBS overlay.">
+<meta name="description" content="KOGG Presenter is a free, offline-first church presentation app: five Bibles, a one-page dock deck (Books, Chapters, Verses, Memory), quick jump by reference, voice control, service plans, lower thirds and a transparent OBS overlay. Choose your work mode: Base, Sync or Local.">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <style>
   @font-face {
@@ -133,6 +133,7 @@
     <img src="icons/icon.svg" alt="">
     <span class="navname">KOGG Presenter</span>
     <nav>
+      <a href="#modes">Work modes</a>
       <a href="#features">Features</a>
       <a href="#safety">Account &amp; Safety</a>
       <a href="#get">Get it</a>
@@ -147,18 +148,20 @@
   <!-- HERO -->
   <div class="hero">
     <div>
-      <span class="eyebrow">Free forever · offline-first</span>
+      <span class="eyebrow">Free forever · offline-first · your work mode</span>
       <h1>Your scriptures and lyrics on screen — <span>in three taps</span>.</h1>
       <p class="lead">KOGG Presenter is a church presentation app that runs in the browser and on your phone.
-        Tap a verse, it's live. Say a reference out loud, it's live. No subscriptions, no installs, and it
-        works with the internet switched off.</p>
+        Pick how you work — <b>Base</b>, <b>Sync</b> or <b>Local</b> — then tap a number and the verse is live.
+        Type <code style="opacity:.8">jn 3:16</code> and it beats you to it. No subscriptions, and it works with the internet switched off.</p>
       <div class="cta-row">
         <a class="btn" href="index.html">Open the App →</a>
         <a class="btn ghost" href="#get">Install on Android / Windows / iOS</a>
       </div>
       <div class="mini-tags">
         <span class="tag">5 Bible versions offline</span>
-        <span class="tag">Tap-to-live navigation</span>
+        <span class="tag">One-page dock deck</span>
+        <span class="tag">Quick jump: jn 3:16</span>
+        <span class="tag">Memory dock</span>
         <span class="tag">Voice control</span>
         <span class="tag">OBS overlay</span>
         <span class="tag">Cloud sync</span>
@@ -170,8 +173,8 @@
         <div class="t">“For God so loved the world, that he gave his only begotten Son…”</div>
       </div>
       <div class="row2">
-        <div class="op"><span class="dot">●</span> <b>Live:</b> John 3:16<br><span style="opacity:.75">Next →</span></div>
-        <div class="op"><b>Search</b><br>“sheep hear my voice” → John 10:27</div>
+        <div class="op"><b>Quick jump</b><br><code>jn 3 16</code> → live instantly<span class="dot"> ●</span></div>
+        <div class="op"><b>Memory</b><br>Jn 3:16 · Ps 23:1-4 · Rom 8:28 — tap to resume</div>
       </div>
     </div>
   </div>
@@ -180,31 +183,47 @@
   <div class="trust">
     <div><b>No sign-up needed</b> use it before you trust it</div>
     <div><b>Offline by design</b> Bibles live in the app</div>
+    <div><b>3 work modes</b> Base · Sync · Local</div>
     <div><b>No ads, no trackers</b> nothing to sell</div>
     <div><b>Made for volunteers</b> learn it in one minute</div>
   </div>
+
+  <!-- WORK MODES -->
+  <section id="modes">
+    <h2>Choose your work mode</h2>
+    <p class="sub">Every time the app opens, it asks one simple question: how do you want to work today? Pick once, change anytime from the top bar.</p>
+    <div class="safewrap">
+      <div class="card"><span class="ficon">📖</span><h3>Base Mode</h3><p>Fresh &amp; fast. The basics load once and the scripture display keeps working even without internet after that — perfect for a one-off projection setup. Nothing to sign, nothing uploaded.</p></div>
+      <div class="card"><span class="ficon">☁️</span><h3>Sync Mode</h3><p>Sign in right at the start and your whole library follows you: scriptures, songs, lyrics, schedules, your logo and themes — pulled from the cloud on any device you use, auto-synced as you work.</p></div>
+      <div class="card"><span class="ficon">💾</span><h3>Local Mode</h3><p>The hybrid: everything lives and saves on this device — Bible versions, song schedules, lyrics, themes — on Windows, Android, macOS, iOS or Linux, online or off.</p></div>
+    </div>
+  </section>
 
   <!-- FEATURES -->
   <section id="features">
     <h2>Everything a media team actually needs</h2>
     <p class="sub">Built with real services in mind: speed to the projector, zero fuss, and hardware you already own.</p>
     <div class="grid">
-      <div class="card"><span class="ficon">📖</span><h3>Five Bibles, always with you</h3><p>KJV, BSB, KJV with Strong's numbers, WEB and ASV — fully downloaded on first load, ready with no internet. Standard numbers toggle for Bible-study settings.</p></div>
-      <div class="card"><span class="ficon">⚡</span><h3>Tap-to-live navigation</h3><p>Browse book → chapter → the verse text itself, tap once and the projector follows. Range and whole-chapter modes for longer readings.</p></div>
-      <div class="card"><span class="ficon">🔎</span><h3>Find it when you can't quote it</h3><p>Type the words you remember — <i>"sheep hear my voice"</i> — and go straight to the verse. Works on all five translations, in a fraction of a second.</p></div>
+      <div class="card"><span class="ficon">📖</span><h3>Five Bibles, always with you</h3><p>KJV, BSB, KJV with Strong's numbers, WEB and ASV — downloaded on first load, ready with no internet. Strong's numbers toggle for Bible-study settings.</p></div>
+      <div class="card"><span class="ficon">🎛️</span><h3>One-page dock deck</h3><p>Books, Chapters, Verses, Memory and the projector preview sit side by side on one screen. Drag docks to reposition, resize them, lock the layout — the arrangement is yours, and it stays.</p></div>
+      <div class="card"><span class="ficon">⚡</span><h3>Number circles — tap &amp; it's live</h3><p>Chapters and verses are number bubbles you can always see. Tap a number and that verse is on the projector instantly — Verse, Range or whole-Chapter mode.</p></div>
+      <div class="card"><span class="ficon">🚀</span><h3>Quick jump</h3><p>Type <code>jn 3:16</code>, <code>ps 23 4</code> or <code>1sam 2</code> — the book completes itself after one or two letters, the chapter lands automatically, and the verse goes live as you finish typing. Or tap 🎤 and just say it.</p></div>
+      <div class="card"><span class="ficon">🧠</span><h3>Memory dock</h3><p>Every scripture you've been in this service stays one tap away. Re-emphasize a verse in seconds — the pastor goes back, you're already there. It builds until reload, and shrinks to fit as it grows.</p></div>
+      <div class="card"><span class="ficon">🌈</span><h3>Color-coded books</h3><p>Old and New Testament split, with each book colored by its class — Moses/Torah, History, Poetry, Major &amp; Minor Prophets, Gospels, Paul's Letters, General Letters, Prophecy. Equal-sized bubbles, instantly recognizable.</p></div>
+      <div class="card"><span class="ficon">🔎</span><h3>Find it when you can't quote it</h3><p>Type or speak the words you remember — <i>"sheep hear my voice"</i> — and go straight to the verse.Works across all five translations in a fraction of a second.</p></div>
       <div class="card"><span class="ficon">🎵</span><h3>Song library &amp; 34 starter hymns</h3><p>Lyrics split into verse/chorus slides automatically. A pack of 34 public-domain hymns is bundled. Import any lyrics page from the web and keep it forever.</p></div>
-      <div class="card"><span class="ficon">🎤</span><h3>Voice control</h3><p>While the room is singing, just speak: <i>"next"</i>, <i>"blank"</i>, <i>"John three sixteen"</i>. Nothing on the console to distract the operator.</p></div>
+      <div class="card"><span class="ficon">⏱️</span><h3>Service plans &amp; universal Quick Go</h3><p>Queue songs and scriptures into a service plan. One search bar at the top reaches every deck — a reference, a song title, a plan item or a saved plan — and takes you live.</p></div>
+      <div class="card"><span class="ficon">🎤</span><h3>Voice control</h3><p>While the room is singing, just speak: <i>"next"</i>, <i>"blank"</i>, <i>"John three sixteen"</i>. The mic sits at the bottom of the console where your hand already is.</p></div>
       <div class="card"><span class="ficon">🎨</span><h3>Themes &amp; your own backgrounds</h3><p>14 built-in gradient themes, your own images, church logo, font, size, weight and alignment — all adjustable live mid-service.</p></div>
       <div class="card"><span class="ficon">📺</span><h3>Lower thirds &amp; countdown</h3><p>Animated speaker name banners for livestreams and a pre-service countdown with clock for the big screen.</p></div>
-      <div class="card"><span class="ficon">☁️</span><h3>Cloud sync, zero setup</h3><p>One free account and your songs, themes, plans, logo and background images follow you — pushed from any PC or phone you sign in on, auto-synced on every change.</p></div>
-      <div class="card"><span class="ficon">🎛️</span><h3>OBS overlay on one URL</h3><p>A transparent browser source floats slide text and lower thirds over your video — no plugins, barely any CPU.</p></div>
+      <div class="card"><span class="ficon">🧩</span><h3>OBS overlay on one URL</h3><p>A transparent browser source floats slide text and lower thirds over your video — no plugins, barely any CPU.</p></div>
     </div>
   </section>
 
   <!-- SAFETY / ACCOUNT -->
   <section id="safety">
     <h2>Account &amp; data safety</h2>
-    <p class="sub">An account is optional — one of the core choices of our design is that the app works fully without one. When you do create one, it exists for one reason: so your library follows you between devices.</p>
+    <p class="sub">An account is optional — it's only there for <b>Sync Mode</b>. In Base and Local Mode the app works fully on your device, forever. When you do create one, it exists for one reason: so your library follows you between devices.</p>
     <div class="safewrap">
       <div class="safety">
         <div class="lock">🔒</div>
@@ -261,8 +280,9 @@
   <!-- FAQ -->
   <section id="faq">
     <h2>Questions people ask</h2>
-    <details open><summary>Is it really free? Where's the catch?</summary><p>No catch: the app is static HTML/JS you can host anywhere for free (Cloudflare Pages), Bibles are public domain, sync uses Supabase's free tier. There is no server cost, no subscription, and nothing is sold — not your data, not anything.</p></details>
-    <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open it once online; the service worker downloads all five Bibles, the starter hymns and the app shell. After that the app runs from your device's cache with Wi-Fi off. Voice recognition is the one exception (it's a browser feature that needs connectivity).</p></details>
+    <details open><summary>What's the difference between Base, Sync and Local mode?</summary><p><b>Base Mode</b> loads the basics once and keeps scripture display working offline — zero cloud contacts, ideal for a single display setup. <b>Sync Mode</b> signs you in at start; your library pushes and pulls to your account automatically. <b>Local Mode</b> is the hybrid: everything (Bibles, schedules, lyrics, themes) saves on this device only. You can switch modes anytime from the top bar, and none of them stop the app from working offline.</p></details>
+    <details><summary>Is it really free? Where's the catch?</summary><p>No catch: the app is static HTML/JS you can host anywhere for free (Cloudflare Pages), Bibles are public domain, sync uses Supabase's free tier. There is no server cost, no subscription, and nothing is sold — not your data, not anything.</p></details>
+    <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open it once online; the service worker downloads all five Bibles, the starter hymns and the app shell. After that the app runs from your device's cache with Wi-Fi off — in every mode. Voice recognition is the one exception (it's a browser feature that needs connectivity).</p></details>
     <details><summary>Who can see my library if I create an account?</summary><p>Only you. Row-level security means every request is checked against your own signed-in identity; the database physically refuses queries for other users' rows. Export your full library to JSON anytime.</p></details>
     <details><summary>Can several people share one account?</summary><p>You can, but it's not designed that way — the library is per-account. Sign in with the same email on the phone and the laptop and they stay in sync.</p></details>
     <details><summary>What about modern translations like NIV or ESV?</summary><p>They're copyrighted, so bundling isn't allowed by the publishers without a license (which they do grant to churches). KOGG ships only texts that are legally shareable; you can still display such a translation from a website they permit if you have it. Everything else — themes, songs, plans, the interface — has zero restrictions.</p></details>

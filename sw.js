@@ -1,5 +1,5 @@
 /* KOGG Presenter service worker — offline-first */
-const CACHE = 'kogg-presenter-v21';
+const CACHE = 'kogg-presenter-v22';
 const ASSETS = [
   './',
   './index.html',

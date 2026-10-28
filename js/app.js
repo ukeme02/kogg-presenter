@@ -146,14 +146,10 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 }));
 
 /* ---------- "⋯" overflow menu ---------- */
-$('btnMore').addEventListener('click', () => {
-  $('moreMenu').hidden = !$('moreMenu').hidden;
-});
 document.addEventListener('click', e => {
   if (!e.target.closest('.more-wrap')) {
-    $('moreMenu').hidden = true;
     const dm = $('dockMenu');
-    if (dm && !dm.hidden) dm.hidden = true;
+    if (dm && !dm.hidden) dm.hidden = true;   // click-outside closes the docks menu
   }
 });
 
@@ -862,11 +858,11 @@ function initSplitters() {
 function refreshLock() {
   const locked = !!LS.get(K.settings, {}).panesLocked;
   document.body.classList.toggle('panes-locked', locked);
-  $('btnLock').textContent = locked ? '🔒' : '🔓';
-  $('btnLock').title = locked ? 'Layout locked ✓ — tap to unlock and resize the sections'
+  $('feLock').textContent = locked ? '🔒' : '🔓';
+  $('feLock').title = locked ? 'Layout locked ✓ — tap to unlock and resize the sections'
     : 'Layout unlocked — drag the grey gaps between sections, then tap to lock';
 }
-$('btnLock').addEventListener('click', () => {
+$('feLock').addEventListener('click', () => {
   const s = LS.get(K.settings, {});
   s.panesLocked = !s.panesLocked;
   LS.set(K.settings, s);
@@ -1794,7 +1790,6 @@ function showGate() {
 }
 function closeGate() {
   $('startGate').hidden = true;
-  $('moreMenu').hidden = true;
 }
 /* ---------- device detection + install guidance for Local Mode ---------- */
 let installEvent = null;
@@ -1897,7 +1892,7 @@ $('btnGateSkip').addEventListener('click', () => {
 });
 $('btnGateLater').addEventListener('click', closeGate);
 $('modeChip').addEventListener('click', showGate);
-$('btnMode').addEventListener('click', () => { showGate(); $('moreMenu').hidden = true; });
+$('feMode').addEventListener('click', () => showGate());
 async function gateAuth(up) {
   const st = $('gateStatus');
   st.textContent = 'Connecting…';
@@ -2003,7 +1998,7 @@ function numberize(words) {
   return out;
 }
 
-function voiceShow(text) { flash($('btnVoice'), '→ ' + text); }
+function voiceShow(text) { flash($('feVoice'), '→ ' + text); }
 
 function processVoice(raw) {
   const said = raw.toLowerCase().replace(/[^a-z0-9\s'-]/g, ' ').trim();
@@ -2071,14 +2066,14 @@ function startVoice() {
     rec.onerror = e => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         stopVoice();
-        flash($('btnVoice'), 'Mic blocked');
+        flash($('feVoice'), 'Mic blocked');
         alert('Microphone permission denied — allow mic access to use voice control.\nNote: voice input needs an internet connection in Chrome/Edge.');
       }
     };
     rec.start();
     voiceOn = true;
     voiceBtnSync(true);
-    flash($('btnVoice'), 'Listening…');
+    flash($('feVoice'), 'Listening…');
   } catch (err) {
     alert('Could not start voice control: ' + err.message);
   }
@@ -2087,10 +2082,10 @@ function stopVoice() {
   voiceOn = false;
   try { if (rec) rec.stop(); } catch {}
 }
-$('btnVoice').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
+$('feVoice').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
 $('btnVoice2').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
 function voiceBtnSync(on) {
-  $('btnVoice').classList.toggle('active', on);
+  $('feVoice').classList.toggle('active', on);
   $('btnVoice2').classList.toggle('active', on);
 }
 
@@ -2114,16 +2109,9 @@ function quickCycleAlign(flashBtn) {
   patchTheme({ align: nextAlign });
   if (flashBtn) flash(flashBtn, nextAlign === 'left' ? '⬅ Left' : '⬌ Center');
 }
-$('btnFontSizeUp').addEventListener('click', () => quickFontSize(1, $('btnFontSizeUp')));
-$('btnFontSizeDown').addEventListener('click', () => quickFontSize(-1, $('btnFontSizeDown')));
-$('btnAlign').addEventListener('click', () => quickCycleAlign($('btnAlign')));
 $('feSizeUp').addEventListener('click', () => quickFontSize(1, $('feSizeUp')));
 $('feSizeDown').addEventListener('click', () => quickFontSize(-1, $('feSizeDown')));
 $('feAlign').addEventListener('click', () => quickCycleAlign($('feAlign')));
-$('feVoice').addEventListener('click', () => $('btnVoice').click());
-$('feTheme').addEventListener('click', () => $('btnTheme').click());
-$('feLock').addEventListener('click', () => $('btnLock').click());
-$('feMode').addEventListener('click', () => $('btnMode').click());
 
 /* floating quick edit — draggable, closable, toggle from ⋯ menu */
 function lsShowFloatEdit() { return LS.get(K.settings, {}).showFloatEdit !== false; }
@@ -2182,21 +2170,13 @@ function applyFloatEdit() {
     flash($('btnFloatEditToggle'), s.showFloatEdit ? 'Quick edit ON ✓' : 'Quick edit off');
   });
 })();
-/* any action inside the ⋯ menu performs itself and closes the menu —
-   except the quick-edits that want repeat presses (A− / A+ / ⬌) */
-const MORE_KEEP_OPEN = ['btnFontSizeUp', 'btnFontSizeDown', 'btnAlign'];
-$('moreMenu').addEventListener('click', e => {
-  const hit = e.target.closest('button, a');
-  if (hit && !MORE_KEEP_OPEN.includes(hit.id)) $('moreMenu').hidden = true;
-});
-
 /* Light / dark operator mode */
 function applyOperatorTheme(light) {
   document.body.classList.toggle('light', light);
-  $('btnTheme').textContent = light ? '☀' : '🌙';
+  $('feTheme').textContent = light ? '☀' : '🌙';
   LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { light }));
 }
-$('btnTheme').addEventListener('click', () =>
+$('feTheme').addEventListener('click', () =>
   applyOperatorTheme(!document.body.classList.contains('light')));
 
 /* Lower thirds */

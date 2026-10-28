@@ -314,20 +314,15 @@ function renderBookChips(filter) {
   const box = $('bookChips');
   let html = '', total = 0;
   const sect = (title, groups) => {
-    let secHtml = `<div class="book-sec">${title}</div>`;
-    let found = false;
+    const chips = [];
     for (const g of groups) {
-      const chips = [];
       for (let i = g.from; i <= g.to && i < bible.books.length; i++) {
         if (!matches(i)) continue;
-        if (i >= bible.books.length) break;
         total++;
-        found = true;
         chips.push(`<button data-i="${i}" class="book-chip g-${g.key}${i === +$('bookSelect').value ? ' selected' : ''}" title="${esc(bible.books[i].name)}">${BOOK_ABBS[i] || esc(bible.books[i].name)}</button>`);
       }
-      if (chips.length) secHtml += `<div class="book-group"><span class="book-label">${esc(g.label)}</span>${chips.join('')}</div>`;
     }
-    if (found) html += secHtml;
+    if (chips.length) html += `<div class="book-sec">${title}</div><div class="book-grid">${chips.join('')}</div>`;
   };
   sect('Old Testament', BOOK_GROUPS_OT);
   sect('New Testament', BOOK_GROUPS_NT);
@@ -595,42 +590,50 @@ $('btnLock').addEventListener('click', () => {
   refreshLock();
 });
 
-/* ---------- docks: drag to reposition, Span button to resize, lock to freeze ---------- */
-let dockSpans = LS.get(K.settings, {}).dockSpans || {};
+/* ---------- docks: free size & position over a 12×12 grid, lock to freeze ---------- */
+let dockSizes = LS.get(K.settings, {}).dockSizes || {};
+const DOCK_DEFAULTS = { books: [5, 6], chapters: [3, 5], verses: [4, 6], text: [4, 6], memory: [4, 5] };
 function applyDocks() {
   const grid = document.querySelector('.docks');
-  if (!grid || !LS.get(K.settings, {}).dockOrder) return;
+  if (!grid) return;
   (LS.get(K.settings, {}).dockOrder || []).forEach(key => {
     const el = grid.querySelector(`.dock[data-dock="${key}"]`);
     if (el) grid.appendChild(el);
   });
-  document.querySelectorAll('.docks .dock').forEach(d =>
-    d.classList.toggle('wide', dockSpans[d.dataset.dock] === 2));
+  document.querySelectorAll('.docks .dock').forEach(d => {
+    const s = dockSizes[d.dataset.dock] || DOCK_DEFAULTS[d.dataset.dock] || [4, 5];
+    d.style.gridColumn = `span ${Math.min(12, Math.max(2, s[0]))}`;
+    d.style.gridRow = `span ${Math.min(12, Math.max(2, s[1]))}`;
+  });
 }
 function saveDocks() {
   const s = LS.get(K.settings, {});
   s.dockOrder = [...document.querySelectorAll('.docks .dock')].map(d => d.dataset.dock);
-  s.dockSpans = dockSpans;
+  s.dockSizes = dockSizes;
   LS.set(K.settings, s);
 }
+/* span button = quick double / halve width; the corner handle does free sizing */
 document.querySelectorAll('.docks .dock .span-btn').forEach(b =>
   b.addEventListener('click', () => {
     const dock = b.closest('.dock');
     const key = dock.dataset.dock;
-    dockSpans[key] = (dockSpans[key] === 2) ? 1 : 2;
-    dock.classList.toggle('wide', dockSpans[key] === 2);
+    const def = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
+    const cur = +dock.style.gridColumn.replace('span ', '') || def[0];
+    dockSizes[key] = cur < def[0] * 1.5 ? [Math.min(12, def[0] * 2), def[1]] : [def[0], def[1]];
+    dock.style.gridColumn = `span ${dockSizes[key][0]}`;
     saveDocks();
     refreshLock();
   }));
 function initDockDrag() {
+  const grid = document.querySelector('.docks');
   document.querySelectorAll('.docks .dock').forEach(dock => {
     const head = dock.querySelector('.dock-head');
+    /* drag by the grip to reposition */
     head.addEventListener('pointerdown', e => {
       // drags only from the grip text area; buttons and pick-mode stay clickable
       if (e.target.closest('button, .seg') || !e.target.closest('.grip')) return;
       if (LS.get(K.settings, {}).panesLocked) return;
       e.preventDefault();
-      const grid = document.querySelector('.docks');
       dock.classList.add('dragging');
       const move = ev => {
         const target = [...grid.querySelectorAll('.dock:not(.dragging)')].find(other => {
@@ -646,6 +649,39 @@ function initDockDrag() {
         document.removeEventListener('pointermove', move);
         document.removeEventListener('pointerup', up);
         dock.classList.remove('dragging');
+        saveDocks();
+      };
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up);
+    });
+    /* drag the corner to resize freely (grid-unit snapping) */
+    const rs = document.createElement('div');
+    rs.className = 'rs-corner';
+    rs.title = 'Drag to resize this dock freely';
+    dock.appendChild(rs);
+    rs.addEventListener('pointerdown', e => {
+      if (LS.get(K.settings, {}).panesLocked) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const g = grid.getBoundingClientRect();
+      const gap = parseFloat(getComputedStyle(grid).columnGap) || 12;
+      const unitW = (g.width + gap) / 12;
+      const unitH = (g.height + gap) / 12;
+      const startX = e.clientX, startY = e.clientY;
+      const key = dock.dataset.dock;
+      const s0 = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
+      dock.classList.add('resizing');
+      const move = ev => {
+        const cols = Math.min(12, Math.max(2, Math.round(s0[0] + (ev.clientX - startX) / unitW)));
+        const rows = Math.min(12, Math.max(2, Math.round(s0[1] + (ev.clientY - startY) / unitH)));
+        dock.style.gridColumn = `span ${cols}`;
+        dock.style.gridRow = `span ${rows}`;
+        dockSizes[key] = [cols, rows];
+      };
+      const up = () => {
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        dock.classList.remove('resizing');
         saveDocks();
       };
       document.addEventListener('pointermove', move);

@@ -247,11 +247,14 @@ body.light details.group { background: #eef1f7; }
 .docks {
   flex: 1;
   display: grid;
-  grid-template-columns: 1.55fr .75fr 1.3fr .85fr;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(12, 1fr);
   gap: 12px;
-  min-height: 380px;
+  grid-auto-flow: dense;
+  height: calc(100vh - 240px);
+  min-height: 400px;
 }
-.docks .dock { min-height: 320px; }
+.docks .dock { min-height: 0; overflow: hidden; position: relative; }
 
 /* numbered circles — chapters and verses */
 .chip-grid.dots {
@@ -308,14 +311,17 @@ details.dock-search > summary::-webkit-details-marker { display: none; }
 details.dock-search[open] > summary { margin-bottom: 10px; }
 
 @media (max-width: 1100px) {
-  .docks { grid-template-columns: 1fr 1fr; }
+  .docks { grid-template-columns: 1fr 1fr; grid-template-rows: none; height: auto; }
+  .docks .dock { grid-column: auto !important; grid-row: auto !important; min-height: 260px; max-height: 46vh; }
   .scripture-deck { min-height: 0; }
+  .scripture-deck .docks { min-height: 0; }
 }
 @media (max-width: 640px) {
   .docks { grid-template-columns: 1fr; }
   .docks .dock { min-height: 0; }
   #dock-books .chip-grid.scroll { max-height: 34vh; }
   #dock-chapters .chip-grid.scroll, #dock-verses .chip-grid.scroll { max-height: 30vh; }
+  .docks .dock { max-height: none; }
 }
 
 /* Light operator mode */
@@ -471,9 +477,26 @@ body.light .search-results { border-color: #c9d2e0; }
 .float-nav button.primary { padding-left: 30px; padding-right: 30px; }
 
 /* ---------- docks: reorder / resize / lock ---------- */
-.docks { grid-auto-flow: row dense; }
 .docks .dock.wide { grid-column: span 2; }
 .dock-head .grip { cursor: grab; user-select: none; }
+.rs-corner {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 20px;
+  height: 20px;
+  z-index: 5;
+  cursor: nwse-resize;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 20px;
+  text-align: right;
+  opacity: .65;
+  touch-action: none;
+}
+.rs-corner::after { content: '◢'; }
+.docks .dock:hover .rs-corner { opacity: 1; color: var(--accent); }
+body.panes-locked .rs-corner { display: none; }
 body.panes-locked .grip { cursor: default; }
 body.panes-locked .span-btn { display: none; }
 .span-btn {
@@ -501,14 +524,13 @@ body.panes-locked .span-btn { display: none; }
   margin: 12px 0 6px;
 }
 .book-sec:first-child { margin-top: 0; }
-.book-group {
+.book-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
   gap: 4px;
   align-content: start;
-  margin-bottom: 7px;
+  margin-bottom: 4px;
 }
-.book-label { grid-column: 1 / -1; font-size: 10.5px; color: var(--muted); margin-bottom: 2px; }
 .book-chip {
   width: 100%;
   height: 34px;

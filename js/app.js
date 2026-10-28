@@ -2079,28 +2079,96 @@ function voiceBtnSync(on) {
   $('btnVoice2').classList.toggle('active', on);
 }
 
-/* Quick font size / alignment on the current theme */
+/* Quick font size / alignment on the current theme — the floating quick-edit
+   widget and the ⋯ menu share these */
 function patchTheme(patch) {
   const t = themeById(currentThemeId);
   Object.assign(t, patch);
   LS.set(K.themes, themes);
   pushLive({ themeId: currentThemeId });
 }
-$('btnFontSizeUp').addEventListener('click', () => {
+function quickFontSize(dir, flashBtn) {
   const t = themeById(currentThemeId);
-  patchTheme({ fontSize: Math.min(15, (+t.fontSize || 7) + 0.5) });
-  flash($('btnFontSizeUp'), `A+ ${t.fontSize}`);
-});
-$('btnFontSizeDown').addEventListener('click', () => {
+  const size = Math.max(3, Math.min(15, (+t.fontSize || 7) + dir * 0.5));
+  patchTheme({ fontSize: size });
+  if (flashBtn) flash(flashBtn, dir > 0 ? `A+ ${size}` : `A− ${size}`);
+}
+function quickCycleAlign(flashBtn) {
   const t = themeById(currentThemeId);
-  patchTheme({ fontSize: Math.max(3, (+t.fontSize || 7) - 0.5) });
-  flash($('btnFontSizeDown'), `A− ${t.fontSize}`);
-});
-$('btnAlign').addEventListener('click', () => {
-  const t = themeById(currentThemeId);
-  const nextAlign = (t.align === 'left') ? 'center' : 'left';
+  const nextAlign = t.align === 'left' ? 'center' : 'left';
   patchTheme({ align: nextAlign });
-  flash($('btnAlign'), nextAlign === 'left' ? '⬅ Left' : '⬌ Center');
+  if (flashBtn) flash(flashBtn, nextAlign === 'left' ? '⬅ Left' : '⬌ Center');
+}
+$('btnFontSizeUp').addEventListener('click', () => quickFontSize(1, $('btnFontSizeUp')));
+$('btnFontSizeDown').addEventListener('click', () => quickFontSize(-1, $('btnFontSizeDown')));
+$('btnAlign').addEventListener('click', () => quickCycleAlign($('btnAlign')));
+$('feSizeUp').addEventListener('click', () => quickFontSize(1, $('feSizeUp')));
+$('feSizeDown').addEventListener('click', () => quickFontSize(-1, $('feSizeDown')));
+$('feAlign').addEventListener('click', () => quickCycleAlign($('feAlign')));
+
+/* floating quick edit — draggable, closable, toggle from ⋯ menu */
+function lsShowFloatEdit() { return LS.get(K.settings, {}).showFloatEdit !== false; }
+function applyFloatEdit() {
+  const el = $('floatEdit');
+  el.hidden = !lsShowFloatEdit();
+  const pos = LS.get(K.settings, {}).fePos;
+  if (pos) {
+    el.style.left = Math.max(4, Math.min(window.innerWidth - 60, pos.x)) + 'px';
+    el.style.top = Math.max(4, Math.min(window.innerHeight - 40, pos.y)) + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+  }
+}
+(function initFloatEdit() {
+  const grip = $('floatEdit').querySelector('.fe-head .grip');
+  grip.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    const r = $('floatEdit').getBoundingClientRect();
+    const dx = e.clientX - r.left, dy = e.clientY - r.top;
+    let moved = false;
+    $('floatEdit').classList.add('dragging');
+    const move = ev => {
+      moved = true;
+      const x = Math.max(4, Math.min(window.innerWidth - 60, ev.clientX - dx));
+      const y = Math.max(4, Math.min(window.innerHeight - 40, ev.clientY - dy));
+      $('floatEdit').style.left = x + 'px';
+      $('floatEdit').style.top = y + 'px';
+      $('floatEdit').style.right = 'auto';
+      $('floatEdit').style.bottom = 'auto';
+    };
+    const up = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      $('floatEdit').classList.remove('dragging');
+      if (moved) {
+        const s = LS.get(K.settings, {});
+        s.fePos = { x: Math.round(parseFloat($('floatEdit').style.left) || 0), y: Math.round(parseFloat($('floatEdit').style.top) || 0) };
+        LS.set(K.settings, s);
+      }
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  });
+  $('feClose').addEventListener('click', () => {
+    const s = LS.get(K.settings, {});
+    s.showFloatEdit = false;
+    LS.set(K.settings, s);
+    applyFloatEdit();
+  });
+  $('btnFloatEditToggle').addEventListener('click', () => {
+    const s = LS.get(K.settings, {});
+    s.showFloatEdit = !lsShowFloatEdit();
+    LS.set(K.settings, s);
+    applyFloatEdit();
+    flash($('btnFloatEditToggle'), s.showFloatEdit ? 'Quick edit ON ✓' : 'Quick edit off');
+  });
+})();
+/* any action inside the ⋯ menu performs itself and closes the menu —
+   except the quick-edits that want repeat presses (A− / A+ / ⬌) */
+const MORE_KEEP_OPEN = ['btnFontSizeUp', 'btnFontSizeDown', 'btnAlign'];
+$('moreMenu').addEventListener('click', e => {
+  const hit = e.target.closest('button, a');
+  if (hit && !MORE_KEEP_OPEN.includes(hit.id)) $('moreMenu').hidden = true;
 });
 
 /* Light / dark operator mode */
@@ -2343,6 +2411,15 @@ window.__koggBoot = true;
 refreshSyncBadge();
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistration?.().then(r => {
+    if (r && r.waiting) {
+      const t = document.createElement('div');
+      t.className = 'update-toast';
+      t.textContent = 'A new version is ready — reopen the app to load it';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 6000);
+    }
+  });
 }
 loadBible($('translationSelect').value);
 setVerseMode(savedSettings.verseMode || 'verse');
@@ -2352,3 +2429,4 @@ initDockDrag();
 refreshLock();
 applyFloatPreview();
 if (LS.get(K.settings, {}).fpFold) $('fpCollapse').textContent = '▸';
+applyFloatEdit();

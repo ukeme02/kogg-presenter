@@ -38,6 +38,7 @@
           <button id="btnTheme" class="ctrl" title="Toggle light/dark operator mode">🌙</button>
           <button id="btnLock" class="ctrl" title="Layout: unlocked — drag the gaps between sections to resize, tap to lock">🔓</button>
         </div>
+        <button id="btnFloatEditToggle" class="more-wide" title="Show/hide the floating quick-edit (text size + alignment)">✏️ Floating quick edit</button>
         <button id="btnMode" class="more-wide" title="Base / Sync / Local — how this session works">🔀 Switch work mode</button>
         <a class="about-link" href="landing.html" target="_blank" title="About / download page">About &amp; download</a>
       </div>
@@ -438,6 +439,20 @@
     <button id="fpClose" title="Close (toggle on again from the 🧩 Docks menu)">✕</button>
   </div>
   <div id="fpBody" class="fp-body"></div>
+</div>
+
+<!-- Floating quick edit — text size + alignment for the current theme,
+     stays on screen while you switch tabs; toggle from the ⋯ menu -->
+<div id="floatEdit" hidden>
+  <div class="fe-head">
+    <span class="grip" title="Drag to move">✏️ Quick edit</span>
+    <button id="feClose" title="Close — bring it back from the ⋯ menu">✕</button>
+  </div>
+  <div class="fe-body">
+    <button id="feSizeDown" title="Smaller text (current theme)">A−</button>
+    <button id="feSizeUp" title="Bigger text (current theme)">A+</button>
+    <button id="feAlign" title="Toggle text alignment">⬌</button>
+  </div>
 </div>
 
 <!-- Work-mode start gate — shows until the operator picks a mode -->

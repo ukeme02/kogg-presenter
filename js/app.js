@@ -883,6 +883,30 @@ const DOCK_LABELS = {
   memory: '🧠 Memory', quickgo: '⚡ Quick jump', search: '🔎 Whole-Bible search',
 };
 function hiddenDocks() { return LS.get(K.settings, {}).hiddenDocks || []; }
+/* fit-to-view: simulate dense packing; if the docks need more than GRID_ROWS
+   rows, shrink row spans proportionally so everything fits without scrolling */
+function packUsedRows(list) {
+  const colOcc = new Array(12).fill(0);
+  let maxRow = 0;
+  for (const [c, r] of list) {
+    let best = Infinity, bestC = 0;
+    for (let c0 = 0; c0 <= 12 - c; c0++) {
+      const h = Math.max(...colOcc.slice(c0, c0 + c));
+      if (h < best) { best = h; bestC = c0; }
+    }
+    for (let i = bestC; i < bestC + c; i++) colOcc[i] = best + r;
+    maxRow = Math.max(maxRow, best + r);
+  }
+  return maxRow;
+}
+function fitSpansToViewport(items) { // items: {dock, cols, rows} mutated
+  for (let pass = 0; pass < 4; pass++) {
+    const used = packUsedRows(items.map(it => [it.cols, it.rows]));
+    if (used <= GRID_ROWS) return;
+    const factor = GRID_ROWS / used;
+    items.forEach(it => { it.rows = Math.max(2, Math.floor(it.rows * factor)); });
+  }
+}
 function applyDocks() {
   const grid = document.querySelector('.docks');
   if (!grid) return;
@@ -891,13 +915,18 @@ function applyDocks() {
     if (el) grid.appendChild(el);
   });
   const hidden = hiddenDocks().filter(k => k !== 'text');   // the projector dock is always visible
+  const items = [];
   document.querySelectorAll('.docks .dock').forEach(d => {
     const key = d.dataset.dock;
     if (hidden.includes(key)) { d.style.display = 'none'; return; }
     d.style.display = '';
     const s = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
-    d.style.gridColumn = `span ${Math.min(12, Math.max(2, s[0]))}`;
-    d.style.gridRow = `span ${Math.min(GRID_ROWS, Math.max(2, s[1]))}`;
+    items.push({ dock: d, cols: Math.min(12, Math.max(2, s[0])), rows: Math.min(GRID_ROWS, Math.max(2, s[1])) });
+  });
+  fitSpansToViewport(items);
+  items.forEach(it => {
+    it.dock.style.gridColumn = `span ${it.cols}`;
+    it.dock.style.gridRow = `span ${it.rows}`;
   });
 }
 /* 🧩 Docks menu — pick which docks you want visible right now

@@ -592,48 +592,90 @@ body.light .g-rev     { background: rgba(220,40,40,.14); color: #8a1c1c; }
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(10, 12, 18, .92);
-  backdrop-filter: blur(10px);
+  background:
+    radial-gradient(900px 500px at 12% -10%, rgba(79,140,255,.16), transparent 60%),
+    radial-gradient(700px 420px at 95% 110%, rgba(255,140,66,.12), transparent 60%),
+    rgba(10, 12, 18, .93);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   overflow-y: auto;
 }
-body.light #startGate { background: rgba(235, 240, 250, .94); }
+#startGate[hidden] { display: none; }
+body.light #startGate {
+  background:
+    radial-gradient(900px 500px at 12% -10%, rgba(79,140,255,.2), transparent 60%),
+    radial-gradient(700px 420px at 95% 110%, rgba(255,140,66,.14), transparent 60%),
+    rgba(235, 240, 250, .95);
+}
 .gate-panel {
-  background: var(--panel);
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 40%), var(--panel);
   border: 1px solid #3a4356;
-  border-radius: 16px;
-  padding: 26px;
-  max-width: 720px;
+  border-radius: 20px;
+  padding: 30px 30px 24px;
+  max-width: 680px;
   width: 100%;
-  box-shadow: 0 24px 70px rgba(0,0,0,.55);
+  box-shadow: 0 30px 90px rgba(0,0,0,.6);
+  animation: gateIn .3s ease;
 }
 body.light .gate-panel { border-color: #c9d2e0; }
-.gate-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.gate-brand img { width: 34px; height: 34px; }
-.gate-brand h1 { font-size: 21px; }
-.gate-modes { display: flex; flex-direction: column; gap: 12px; }
+@keyframes gateIn { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+.gate-head { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.gate-head img { width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 6px 18px rgba(79,140,255,.35); }
+.gate-head h1 { font-size: 23px; line-height: 1.2; }
+.gate-head h1 span { color: var(--accent2); }
+.gate-sub-line { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.gate-modes { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
 .gate-mode {
   display: grid;
-  grid-template-columns: 44px 92px 1fr;
+  grid-template-columns: 52px 1fr auto;
   align-items: center;
-  gap: 4px 12px;
+  gap: 14px;
   text-align: left;
-  padding: 16px 18px;
-  border-radius: 14px;
+  padding: 17px 20px;
+  border-radius: 16px;
   border: 1px solid #3a4356;
-  background: var(--panel2);
+  background: linear-gradient(120deg, var(--panel2), transparent 70%);
+  transition: border-color .16s, transform .16s, box-shadow .16s;
 }
-.gate-mode:hover { border-color: var(--accent); }
-.gate-ico { font-size: 30px; text-align: center; }
-.gate-mode b { font-size: 16.5px; }
-.gate-sub { grid-column: 3 / -1; font-size: 13px; color: var(--muted); line-height: 1.55; }
+.gate-mode:hover {
+  border-color: var(--accent);
+  transform: translateX(5px);
+  box-shadow: -4px 0 0 var(--accent), 0 8px 26px rgba(0,0,0,.35);
+}
 .gate-mode.chosen { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.gate-ico {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--panel2);
+  border: 1px solid #3a4356;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+body.light .gate-mode, body.light .gate-ico { border-color: #c9d2e0; }
+.gate-copy b { display: block; font-size: 16.5px; }
+.gate-copy small { display: block; font-size: 13px; color: var(--muted); line-height: 1.55; }
+.gate-go { font-size: 13px; font-weight: 800; color: var(--accent2); white-space: nowrap; }
+.gate-back { margin-bottom: 10px; display: inline-block; }
 .gate-field { display: block; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
 .gate-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
-.linklike { background: transparent; border: none; color: var(--accent); text-decoration: underline; padding: 8px 4px; font-weight: 600; cursor: pointer; }
+
+/* local-mode device guide */
+.install-path { border: 1px solid #3a4356; border-radius: 14px; padding: 16px 18px; margin: 12px 0; background: var(--panel2); }
+body.light .install-path { border-color: #c9d2e0; }
+.install-big {
+  width: 100%;
+  padding: 14px !important;
+  font-size: 15.5px !important;
+  font-weight: 800 !important;
+}
+.install-steps { margin: 4px 0 0 18px; font-size: 14px; color: var(--muted); line-height: 1.8; }
+.install-steps b { color: var(--text); }
 
 /* mode chip in the topbar */
 .mode-chip {

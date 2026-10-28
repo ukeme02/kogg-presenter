@@ -1378,15 +1378,88 @@ function setWorkMode(m) {
   refreshModeChip();
 }
 function showGate() {
-  const gate = $('startGate');
-  gate.hidden = false;
+  $('startGate').hidden = false;
   $('gateModes').hidden = false;
   $('gateSignin').hidden = true;
+  $('gateLocal').hidden = true;
   const m = workMode();
   document.querySelectorAll('.gate-mode').forEach(b =>
     b.classList.toggle('chosen', b.dataset.mode === m));
 }
-function closeGate() { $('startGate').hidden = true; }
+function closeGate() {
+  $('startGate').hidden = true;
+  $('moreMenu').hidden = true;
+}
+/* ---------- device detection + install guidance for Local Mode ---------- */
+let installEvent = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installEvent = e;
+});
+function detectPlatform() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/.test(ua);
+  const isMac = /Macintosh/.test(ua) && !isIOS;
+  const isWin = /Windows/.test(ua);
+  if (isWin) return { name: 'Windows', kind: 'desktop' };
+  if (isAndroid) return { name: 'Android', kind: 'mobile' };
+  if (isIOS) return { name: /iPad/.test(ua) ? 'iPad' : 'iPhone', kind: 'ios' };
+  if (isMac) return { name: 'Mac', kind: 'desktop' };
+  if (/CrOS/.test(ua)) return { name: 'Chromebook', kind: 'desktop' };
+  return { name: navigator.platform || 'your device', kind: 'desktop' };
+}
+function showLocalPanel() {
+  $('startGate').hidden = false;
+  $('gateModes').hidden = true;
+  $('gateSignin').hidden = true;
+  const pl = detectPlatform();
+  $('localDeviceName').textContent = pl.name;
+  const installed = window.matchMedia('(display-mode: standalone)').matches;
+  $('localDetect').innerHTML = installed
+    ? `✓ Already running as an installed app on <b>${pl.name}</b>. Everything you do here saves on this device — Bibles, songs, schedules, lyrics, themes. No account needed, ever.`
+    : `Running on <b>${pl.name}</b>. Local Mode works right away right here in the browser — the step below just makes it feel like a real app with a home-screen icon and full-screen launch.`;
+  if (installEvent) {
+    $('installNative').hidden = false;
+    $('installManual').hidden = true;
+  } else if (!installed) {
+    $('installNative').hidden = true;
+    $('installManual').hidden = false;
+    const manual = pl.kind === 'ios'
+      ? ['Open <b>Share</b> (the box with an arrow) at the bottom of Safari.',
+         'Choose <b>Add to Home Screen</b>.',
+         'Name it <b>KOGG</b> and tap Add — it launches full-screen and works offline.']
+      : pl.kind === 'mobile'
+      ? ['Open the ⋮ menu in Chrome.',
+         'Choose <b>Add to Home screen</b> → <b>Install</b>.',
+         'KOGG appears next to your other apps and opens full-screen.']
+      : ['Click the <b>install icon</b> (a monitor with a ↓) on the right side of the address bar in Chrome/Edge.',
+         'Or open the browser menu → <b>Apps → Install</b> / <b>Install page as app</b>.',
+         'KOGG gets its own window &amp; Start-menu icon — and works offline.'];
+    $('installSteps').innerHTML = manual.map(s => `<li>${s}</li>`).join('');
+  } else {
+    $('installNative').hidden = true;
+    $('installManual').hidden = true;
+  }
+}
+$('btnInstallApp').addEventListener('click', async () => {
+  if (!installEvent) return;
+  installEvent.prompt();
+  try {
+    const choice = await installEvent.userChoice;
+    if (choice && choice.outcome === 'accepted') {
+      $('localDetect').innerHTML = '✓ Installed. From now on KOGG opens like any app on <b>' + pl.name + '</b> — full-screen, offline, no tab needed.';
+      $('installNative').hidden = true;
+    }
+  } catch {}
+  installEvent = null;
+});
+$('btnGateLocalBack').addEventListener('click', () => {
+  $('gateLocal').hidden = true;
+  $('gateModes').hidden = false;
+});
+$('btnGateLocalGo').addEventListener('click', () => closeGate());
 document.querySelectorAll('.gate-mode').forEach(b => b.addEventListener('click', () => {
   if (b.dataset.mode === 'sync') {
     if (!(window.KOGGSync && window.KOGGSync.configured)) {
@@ -1395,23 +1468,26 @@ document.querySelectorAll('.gate-mode').forEach(b => b.addEventListener('click',
     } else {
       $('gateStatus').textContent = '';
     }
+    $('startGate').hidden = false;
     $('gateModes').hidden = true;
     $('gateSignin').hidden = false;
+    $('gateLocal').hidden = true;
     $('gateEmail').focus();
     return;
   }
-  setWorkMode(b.dataset.mode);
+  if (b.dataset.mode === 'local') {
+    setWorkMode('local');
+    showLocalPanel();
+    return;
+  }
+  // Base Mode — the plain console, nothing extra to learn
+  setWorkMode('base');
   closeGate();
+  flash($('modeChip'), 'Base ✓');
 }));
-$('btnGateBack').addEventListener('click', () => {
-  $('gateSignin').hidden = true;
-  $('gateModes').hidden = false;
-});
 $('btnGateSkip').addEventListener('click', () => {
   setWorkMode('local');
-  $('gateSignin').hidden = true;
-  $('gateModes').hidden = false;
-  closeGate();
+  showLocalPanel();
 });
 $('btnGateLater').addEventListener('click', closeGate);
 $('modeChip').addEventListener('click', showGate);

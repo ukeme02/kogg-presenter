@@ -404,26 +404,46 @@
 <!-- Work-mode start gate — shows until the operator picks a mode -->
 <div id="startGate" hidden>
   <div class="gate-panel" id="gateModes">
-    <div class="gate-brand"><img src="icons/icon.svg" alt=""><h1>How do you want to work today?</h1></div>
+    <div class="gate-head">
+      <img src="icons/icon.svg" alt="">
+      <div>
+        <h1>How do you want to work <span>today</span>?</h1>
+        <p class="gate-sub-line">Pick once — you can change it anytime from the top bar.</p>
+      </div>
+    </div>
     <div class="gate-modes">
       <button class="gate-mode" data-mode="base">
-        <span class="gate-ico">📖</span><b>Base Mode</b>
-        <span class="gate-sub">Fresh &amp; fast. The basics load once, and scripture display keeps working even without internet after that. No cloud, no account.</span>
+        <span class="gate-ico">📖</span>
+        <span class="gate-copy"><b>Base Mode</b>
+          <small>Fresh &amp; fast — the basics load once, and scripture display keeps working even without internet. No cloud, no account.</small>
+        </span>
+        <span class="gate-go">Start →</span>
       </button>
       <button class="gate-mode" data-mode="sync">
-        <span class="gate-ico">☁️</span><b>Sync Mode</b>
-        <span class="gate-sub">Sign in to your account — your scriptures, songs, lyrics, schedules, logo and themes follow you from any device.</span>
+        <span class="gate-ico">☁️</span>
+        <span class="gate-copy"><b>Sync Mode</b>
+          <small>Sign in and your scriptures, songs, lyrics, schedules, logo and themes follow you to any device.</small>
+        </span>
+        <span class="gate-go">Sign in →</span>
       </button>
       <button class="gate-mode" data-mode="local">
-        <span class="gate-ico">💾</span><b>Local Mode</b>
-        <span class="gate-sub">The hybrid: everything lives on this device — Bibles, song schedules, lyrics, themes — and saves automatically. Works on Windows, Android, macOS, iOS, Linux.</span>
+        <span class="gate-ico">💾</span>
+        <span class="gate-copy"><b>Local Mode</b>
+          <small>The hybrid — everything saves on this device automatically: Bibles, song schedules, lyrics, themes.</small>
+        </span>
+        <span class="gate-go">Use this device →</span>
       </button>
     </div>
     <button id="btnGateLater" class="linklike">Decide later — open the console</button>
   </div>
+
   <div class="gate-panel" id="gateSignin" hidden>
-    <div class="gate-brand"><img src="icons/icon.svg" alt=""><h1>Sync Mode — sign in</h1></div>
-    <p class="hint">One account keeps your whole library with you. Everything still works without one.</p>
+    <button class="gate-back linklike" id="btnGateBack">← Back to modes</button>
+    <div class="gate-head">
+      <img src="icons/icon.svg" alt="">
+      <div><h1>Sync Mode — <span>sign in</span></h1></div>
+    </div>
+    <p class="hint">One free account keeps your whole library with you on every device. Everything still works without one.</p>
     <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS.</div>
     <label class="gate-field">Email<br><input id="gateEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
     <label class="gate-field">Password<br><input id="gatePass" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
@@ -433,8 +453,26 @@
     </div>
     <div id="gateStatus" class="hint"></div>
     <div class="gate-row">
-      <button id="btnGateBack" class="linklike">← Back to modes</button>
       <button id="btnGateSkip" class="linklike">Skip — work offline instead</button>
+    </div>
+  </div>
+
+  <div class="gate-panel" id="gateLocal" hidden>
+    <button class="gate-back linklike" id="btnGateLocalBack">← Back to modes</button>
+    <div class="gate-head">
+      <img src="icons/icon.svg" alt="">
+      <div><h1>Local Mode — <span id="localDeviceName">this device</span></h1></div>
+    </div>
+    <p class="hint" id="localDetect">Checking your device…</p>
+    <div class="install-path" id="installNative" hidden>
+      <button id="btnInstallApp" class="install-big">⬇️ Install KOGG on this device</button>
+      <p class="hint">Installs a real app icon with full offline support. You'll never need this browser tab again.</p>
+    </div>
+    <div class="install-path" id="installManual" hidden>
+      <ol class="install-steps" id="installSteps"></ol>
+    </div>
+    <div class="gate-row">
+      <button id="btnGateLocalGo" class="primary">Open the console →</button>
     </div>
   </div>
 </div>

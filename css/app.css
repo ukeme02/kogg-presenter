@@ -206,7 +206,7 @@ body.light .ver-row { border-color: #dde3ee; background: #fff; }
 
 /* Scripture deck — the makeover: soft elevated docks, icon badges,
    glowing live states */
-.scripture-deck { display: flex; flex-direction: column; gap: 14px; min-height: calc(100vh - 190px); }
+.scripture-deck { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
 .dock {
   background: linear-gradient(180deg, var(--panel) 0%, var(--panel2) 130%);
   border: 1px solid rgba(255,255,255,.05);
@@ -268,12 +268,74 @@ body.light .dock-head .seg { border-color: #d6dde9; background: #eef1f7; }
 .dock-foot { display: flex; gap: 8px; margin-top: 10px; flex: 0 0 auto; }
 .dock-foot button { padding: 8px 14px; font-size: 13px; }
 .dock-foot #btnAddScripture, .dock-foot #btnAddVerseService { margin-left: auto; font-size: 13px; }
+
+/* version chips — switch translation from the projector dock, mid-show */
+.ver-chips {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ver-chips::-webkit-scrollbar { display: none; }
+.vchip {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,.09);
+  background: color-mix(in srgb, var(--panel2) 70%, transparent);
+}
+.vchip:hover { border-color: var(--accent); color: var(--text); }
+.vchip.active, .vchip:disabled { background: var(--accent); border-color: var(--accent); color: #fff; }
+body.light .vchip { background: #fff; border-color: #d6dde9; }
+
+/* floating projector preview — always-visible mini mirror */
+#floatPreview {
+  position: fixed;
+  right: 88px;
+  bottom: 76px;
+  z-index: 90;
+  width: 250px;
+  max-width: min(70vw, 320px);
+  background: var(--panel);
+  border: 1px solid #3a4356;
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.5);
+  overflow: hidden;
+  resize: both;
+  min-height: 56px;
+}
+body.light #floatPreview { border-color: #c9d2e0; box-shadow: 0 14px 34px rgba(20,30,60,.2); }
+#floatPreview.dragging { opacity: .85; }
+#floatPreview .fp-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  background: var(--panel2);
+  font-size: 12px;
+  font-weight: 700;
+}
+#floatPreview .fp-head .grip { cursor: grab; touch-action: none; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#floatPreview .fp-head button {
+  border: none;
+  background: transparent;
+  padding: 2px 7px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+.fp-body { padding: 9px 11px; max-height: 32vh; overflow-y: auto; font-size: 13px; line-height: 1.5; }
+.fp-ref { color: var(--accent); font-weight: 700; font-size: 11.5px; margin-bottom: 4px; }
+.fp-note { color: var(--muted); font-size: 12.5px; font-style: italic; }
+.fp-text { white-space: pre-wrap; }
 .mini-clear { padding: 4px 10px !important; font-size: 12px !important; border: none; background: transparent; color: var(--muted); }
 .scroll { flex: 1 1 auto; min-height: 0; }
 .chip-grid.scroll,
 .memory-grid.scroll { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; min-height: 0; margin: 0; }
-.dock.toolbar { flex-direction: row; gap: 10px; align-items: center; padding: 12px 14px; }
-.dock.toolbar select { width: auto; min-width: 170px; flex: 0 0 auto; }
+.dock.toolbar { flex-direction: row; gap: 10px; align-items: center; padding: 10px 12px; }
+.dock.toolbar select { width: auto; min-width: 150px; max-width: 30vw; flex: 0 0 auto; }
+.dock.toolbar .livedot { flex: 1; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.dock.toolbar .more-wrap { flex: 0 0 auto; }
 .dock.toolbar select:focus-visible, .quickjump input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .quickjump { position: relative; flex: 1; }
 .quickjump input { position: relative; z-index: 1; font-size: 14px; border-radius: 10px; }
@@ -299,11 +361,11 @@ body.light .dock-head .seg { border-color: #d6dde9; background: #eef1f7; }
   flex: 1;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: repeat(12, 1fr);
+  grid-template-rows: repeat(10, 1fr);
   gap: 12px;
   grid-auto-flow: dense;
-  height: calc(100vh - 240px);
-  min-height: 400px;
+  height: calc(100dvh - 216px);
+  min-height: 460px;
 }
 .docks .dock { min-height: 0; overflow: hidden; position: relative; }
 
@@ -409,17 +471,38 @@ details.dock-search > summary::-webkit-details-marker { display: none; }
 details.dock-search[open] > summary { margin-bottom: 10px; }
 
 @media (max-width: 1100px) {
-  .docks { grid-template-columns: 1fr 1fr; grid-template-rows: none; height: auto; }
-  .docks .dock { grid-column: auto !important; grid-row: auto !important; min-height: 260px; max-height: 46vh; }
+  .docks { grid-template-columns: 1fr 1fr; grid-template-rows: none; grid-auto-rows: minmax(180px, auto); height: auto; }
+  .docks .dock { grid-column: auto !important; grid-row: auto !important; min-height: 200px; max-height: none; }
   .scripture-deck { min-height: 0; }
   .scripture-deck .docks { min-height: 0; }
 }
 @media (max-width: 640px) {
   .docks { grid-template-columns: 1fr; }
-  .docks .dock { min-height: 0; }
+  .docks .dock { min-height: 0; max-height: none; }
   #dock-books .chip-grid.scroll { max-height: 34vh; }
   #dock-chapters .chip-grid.scroll, #dock-verses .chip-grid.scroll { max-height: 30vh; }
   .docks .dock { max-height: none; }
+}
+/* everything on one screen — chrome shrinks before anything scrolls */
+@media (max-width: 900px) {
+  .dock-head-hint, .dock .hint { display: none; }
+  .dock-head .seg button { padding: 4px 9px; }
+  main { padding: 8px; }
+}
+@media (max-height: 760px) and (min-width: 1101px) {
+  .dock-head-hint, .dock .hint { display: none; }
+  .dock { padding: 10px 10px 8px; }
+  .dock-head { margin-bottom: 6px; }
+  .dock-foot button { padding: 6px 10px; }
+}
+/* tabs fold into a scroll strip on narrow screens */
+@media (max-width: 640px) {
+  .tabs { overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 10px 14px; font-size: 13px; }
+  .topbar { gap: 6px; padding: 8px 10px; }
+  .ctrl { padding: 9px 10px; }
+  .quick-actions .ctrl { font-size: 13px; }
 }
 
 /* Light operator mode */

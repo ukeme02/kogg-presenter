@@ -123,6 +123,7 @@ function pushLive(patch = {}) {
   LS.set(K.live, live);
   if (channel) channel.postMessage(live);
   renderPreview();
+  renderFloatPreview();
 }
 
 /* ---------- live indicator ---------- */
@@ -149,7 +150,11 @@ $('btnMore').addEventListener('click', () => {
   $('moreMenu').hidden = !$('moreMenu').hidden;
 });
 document.addEventListener('click', e => {
-  if (!e.target.closest('.more-wrap')) $('moreMenu').hidden = true;
+  if (!e.target.closest('.more-wrap')) {
+    $('moreMenu').hidden = true;
+    const dm = $('dockMenu');
+    if (dm && !dm.hidden) dm.hidden = true;
+  }
 });
 
 /* =========================================================
@@ -175,6 +180,7 @@ async function loadBible(file) {
   const bookSel = $('bookSelect');
   bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${b.name}</option>`).join('');
   fillChapters();
+  renderVersionChips();
 }
 function fillChapters() {
   const book = bible.books[+$('bookSelect').value];
@@ -336,6 +342,90 @@ let hlDrag = null;
   });
   box.addEventListener('pointercancel', () => { hlDrag = null; });
 })();
+
+/* ---------- floating projector preview — a mini mirror of the screen that
+   stays open while you switch tabs; toggle from the 🧩 Docks menu ---------- */
+function renderFloatPreview() {
+  const body = $('fpBody');
+  const el = $('floatPreview');
+  if (!body || !el || el.hidden) return;
+  if (live.strongsShowing && live.strongsCard) {
+    body.innerHTML = `<div class="fp-note">word meaning on screen</div><div class="fp-text">${esc(live.strongsCard.sn + ' — ' + (live.strongsCard.word || live.strongsCard.def || ''))}</div>`;
+    return;
+  }
+  if (live.mode !== 'normal') {
+    body.innerHTML = `<div class="fp-note">${live.mode === 'logo' ? 'logo screen' : live.mode === 'blank' ? 'blank screen' : 'countdown on screen'}</div>`;
+    return;
+  }
+  const s = live.slides[live.index] || { text: '', label: '' };
+  let hl = null;
+  if (live.highlight) {
+    const m = /:(\d+)$/.exec(s.label || '');
+    if (m && +m[1] === live.highlight.v) hl = live.highlight;
+  }
+  const words = plain(s.text).trim().split(/\s+/).filter(Boolean);
+  body.innerHTML = `${s.label ? `<div class="fp-ref">${esc(s.label)}</div>` : ''}<div class="fp-text">${words.map((w, i) =>
+    hl && i + 1 >= hl.wFrom && i + 1 <= hl.wTo ? `<mark class="whl">${esc(w)}</mark>` : esc(w)).join(' ')}</div>`;
+}
+function applyFloatPreview() {
+  const el = $('floatPreview');
+  el.hidden = !lsShowFloatPreview();
+  const pos = LS.get(K.settings, {}).fpPos;
+  if (pos) {
+    el.style.left = Math.max(4, Math.min(window.innerWidth - 100, pos.x)) + 'px';
+    el.style.top = Math.max(4, Math.min(window.innerHeight - 60, pos.y)) + 'px';
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+  }
+  if (!el.hidden) {
+    $('fpBody').hidden = !!LS.get(K.settings, {}).fpFold;
+    renderFloatPreview();
+  }
+}
+(function initFloatPreview() {
+  const el = $('floatPreview');
+  const grip = el.querySelector('.fp-head .grip');
+  grip.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    const r = el.getBoundingClientRect();
+    const dx = e.clientX - r.left, dy = e.clientY - r.top;
+    let moved = false;
+    el.classList.add('dragging');
+    const move = ev => {
+      moved = true;
+      const x = Math.max(4, Math.min(window.innerWidth - 90, ev.clientX - dx));
+      const y = Math.max(4, Math.min(window.innerHeight - 50, ev.clientY - dy));
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+      el.style.right = 'auto'; el.style.bottom = 'auto';
+    };
+    const up = ev => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      el.classList.remove('dragging');
+      if (moved) {
+        const s = LS.get(K.settings, {});
+        s.fpPos = { x: Math.round(parseFloat(el.style.left) || 0), y: Math.round(parseFloat(el.style.top) || 0) };
+        LS.set(K.settings, s);
+      }
+    };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+  });
+  $('fpCollapse').addEventListener('click', () => {
+    const s = LS.get(K.settings, {});
+    s.fpFold = !s.fpFold;
+    LS.set(K.settings, s);
+    $('fpBody').hidden = !!s.fpFold;
+    $('fpCollapse').textContent = s.fpFold ? '▸' : '▾';
+    if (!s.fpFold) renderFloatPreview();
+  });
+  $('fpClose').addEventListener('click', () => {
+    const s = LS.get(K.settings, {});
+    s.showFloatPreview = false;
+    LS.set(K.settings, s);
+    applyFloatPreview();
+  });
+})();
 function scrollLiveIntoView() {
   setTimeout(() => {
     const el = $('verseDots').querySelector('.dot-dot.live');
@@ -390,7 +480,31 @@ $('chapterSelect').addEventListener('change', fillVerses);
 $('translationSelect').addEventListener('change', () => {
   const file = $('translationSelect').value;
   LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: file }));
-  loadBible(file);
+  loadBible(file).then(() => {
+    if (liveRef) goLiveScripture({ ...liveRef });   // same verses, new translation, still live
+  });
+});
+
+/* ---------- version chips — switch translation mid-show from the projector dock ---------- */
+function renderVersionChips() {
+  const box = $('versionChips');
+  if (!box) return;
+  const sel = $('translationSelect');
+  box.innerHTML = [...sel.options].map(o => {
+    const active = o.value === sel.value;
+    const short = o.text.split(' — ')[0].replace("KJV with Strong's", 'KJV+Str');
+    return `<button class="vchip${active ? ' active' : ''}" data-val="${esc(o.value)}" title="${esc(o.text)}${active ? ' — loaded' : ''}"${active ? ' disabled' : ''}>${esc(short)}</button>`;
+  }).join('');
+}
+$('versionChips').addEventListener('click', e => {
+  const b = e.target.closest('button[data-val]');
+  if (!b) return;
+  const val = b.dataset.val;
+  $('translationSelect').value = val;
+  b.classList.add('loaded');   // immediate feedback while the fetch lands
+  b.textContent = b.textContent + ' …';
+  $('translationSelect').dispatchEvent(new Event('change'));
+  flash(b, 'Switched ✓');
 });
 
 /* Scripture docks — Books / Chapters / Verses / Memory on one page */
@@ -760,9 +874,13 @@ $('btnLock').addEventListener('click', () => {
 /* ---------- docks: free size & position over a 12×12 grid, lock to freeze ---------- */
 let dockSizes = LS.get(K.settings, {}).dockSizes || {};
 const DOCK_DEFAULTS = {
-  books: [5, 6], chapters: [3, 5], verses: [4, 6], text: [4, 6], memory: [4, 5],
-  quickgo: [3, 3], search: [4, 4],
+  /* default layout: Books/Chapters/Verses/Memory side by side, projector
+     preview full-width beneath them, then Quick jump + Whole-Bible search
+     sharing the bottom band */
+  books: [3, 4], chapters: [3, 4], verses: [3, 4], memory: [3, 4],
+  text: [12, 4], quickgo: [6, 2], search: [6, 2],
 };
+const GRID_ROWS = 10;
 const DOCK_LABELS = {
   books: '📚 Books', chapters: '📑 Chapters', verses: '🔖 Verses', text: '🖥️ On the projector',
   memory: '🧠 Memory', quickgo: '⚡ Quick jump', search: '🔎 Whole-Bible search',
@@ -782,19 +900,22 @@ function applyDocks() {
     d.style.display = '';
     const s = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
     d.style.gridColumn = `span ${Math.min(12, Math.max(2, s[0]))}`;
-    d.style.gridRow = `span ${Math.min(12, Math.max(2, s[1]))}`;
+    d.style.gridRow = `span ${Math.min(GRID_ROWS, Math.max(2, s[1]))}`;
   });
 }
 /* 🧩 Docks menu — pick which docks you want visible right now */
 function renderDockMenu() {
   const menu = $('dockMenu');
   const hidden = hiddenDocks();
+  const fp = lsShowFloatPreview();
   menu.innerHTML = '<div class="more-group">Docks on screen</div>' +
     Object.keys(DOCK_LABELS).map(key =>
       `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('') +
-    '<button data-dockkey="__all" class="dockmenu-item"><b>Show all</b></button>';
+    `<button data-dockkey="__float" class="dockmenu-item${fp ? ' on' : ''}">${fp ? '✓' : '◻'} 🖥️ Floating preview</button>` +
+    '<button data-dockkey="__all" class="dockmenu-item"><b>Show all</b></button>' +
+    '<button data-dockkey="__reset" class="dockmenu-item"><b>Reset layout</b></button>';
 }
-$('btnDocks').addEventListener('click', e => {
+function lsShowFloatPreview() { return LS.get(K.settings, {}).showFloatPreview !== false; }$('btnDocks').addEventListener('click', e => {
   e.stopPropagation();
   renderDockMenu();
   $('dockMenu').hidden = !$('dockMenu').hidden;
@@ -804,6 +925,23 @@ $('dockMenu').addEventListener('click', e => {
   if (!b) return;
   const key = b.dataset.dockkey;
   const s = LS.get(K.settings, {});
+  if (key === '__float') {
+    s.showFloatPreview = !lsShowFloatPreview();
+    LS.set(K.settings, s);
+    applyFloatPreview();
+    renderDockMenu();
+    return;
+  }
+  if (key === '__reset') {
+    delete s.dockOrder; delete s.dockSizes; delete s.hiddenDocks;
+    LS.set(K.settings, s);
+    dockSizes = {};
+    applyDocks();
+    refreshLock();
+    renderDockMenu();
+    flash($('btnDocks'), 'Default layout ✓');
+    return;
+  }
   if (key === '__all') s.hiddenDocks = [];
   else {
     const h = new Set(hiddenDocks());
@@ -814,6 +952,7 @@ $('dockMenu').addEventListener('click', e => {
   LS.set(K.settings, s);
   applyDocks();
   renderDockMenu();
+  $('dockMenu').hidden = true;   // close after choosing
 });
 function saveDocks() {
   const s = LS.get(K.settings, {});
@@ -875,7 +1014,7 @@ function initDockDrag() {
       const g = grid.getBoundingClientRect();
       const gap = parseFloat(getComputedStyle(grid).columnGap) || 12;
       const unitW = (g.width + gap) / 12;
-      const unitH = (g.height + gap) / 12;
+      const unitH = (g.height + gap) / GRID_ROWS;
       const startX = e.clientX, startY = e.clientY;
       const key = dock.dataset.dock;
       const s0 = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
@@ -2001,6 +2140,7 @@ function rebuildCustomOptions() {
   $('bibleList').innerHTML = list.length
     ? list.map(v => `<div class="ver-row"><span>📗 ${esc(v.name)}</span><button data-delver="${v.assetId}" class="danger" title="Remove this version from this device">✕</button></div>`).join('')
     : '<span class="dim">No added versions yet.</span>';
+  renderVersionChips();
   updateAddVersionsGate();
 }
 function updateAddVersionsGate() {
@@ -2194,3 +2334,5 @@ applyDocks();
 initSplitters();
 initDockDrag();
 refreshLock();
+applyFloatPreview();
+if (LS.get(K.settings, {}).fpFold) $('fpCollapse').textContent = '▸';

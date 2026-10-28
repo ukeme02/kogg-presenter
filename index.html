@@ -116,6 +116,7 @@
         <div class="dock" data-dock="text">
           <div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>On the projector</span><button class="span-btn" title="Size: small / wide">Span</button></div>
           <div id="liveText" class="live-text scroll"></div>
+          <div class="dock-foot ver-chips" id="versionChips" title="Switch translation — the current verse goes live in it"></div>
         </div>
 
         <div class="dock" data-dock="memory">
@@ -424,6 +425,17 @@
   <button id="btnVoice2" class="voice-float" title="Voice control (🎤 Speak) — navigate by voice">🎤</button>
   <button id="btnFloatPrev" title="Previous slide (←)">◀</button>
   <button id="btnFloatNext" class="primary" title="Next slide (→ or space)">Next ▶</button>
+</div>
+
+<!-- Floating projector preview — mirrors the screen, stays open across tabs,
+     draggable; toggle it from the 🧩 Docks menu -->
+<div id="floatPreview" hidden>
+  <div class="fp-head">
+    <span class="grip" title="Drag to move">🖥️ On screen</span>
+    <button id="fpCollapse" title="Fold / unfold">▾</button>
+    <button id="fpClose" title="Close (toggle on again from the 🧩 Docks menu)">✕</button>
+  </div>
+  <div id="fpBody" class="fp-body"></div>
 </div>
 
 <!-- Work-mode start gate — shows until the operator picks a mode -->

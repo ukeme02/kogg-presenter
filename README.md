@@ -15,6 +15,8 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
 | Whole-Bible search | Its own resizable dock: find verses by remembered words/phrase across the loaded translation |
 | Word emphasis | In the "On the projector" preview, press and drag across words — the projector highlights them live, in a marker style; click anywhere else to clear |
+| Floating preview | A compact mini-mirror of the screen stays open while you switch tabs — draggable, foldable, toggleable from the 🧩 Docks menu |
+| Version chips | A row of translation chips under the projector preview — switch the Bible mid-show with one tap and the current verses go live in the new translation |
 | Memory dock | Every scripture you put live stays in the session Memory dock — tap to re-show during the sermon (clears on reload) |
 | Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
 | Starter hymns | 34 public-domain hymns bundled (`data/hymns.json`) — added on first run, or via the **+ Starter Hymns** button |

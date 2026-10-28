@@ -13,6 +13,7 @@
   <div class="brand">
     <img src="icons/icon.svg" alt="">
     <span>KOGG Presenter</span>
+    <button id="modeChip" class="mode-chip" title="Change work mode">…</button>
   </div>
   <div class="live-controls">
     <button id="btnPrev" class="ctrl" title="Previous (Left arrow)">◀</button>
@@ -45,6 +46,7 @@
           <button id="btnTheme" class="ctrl" title="Toggle light/dark operator mode">🌙</button>
           <button id="btnLock" class="ctrl" title="Layout: unlocked — drag the gaps between sections to resize, tap to lock">🔓</button>
         </div>
+        <button id="btnMode" class="more-wide" title="Base / Sync / Local — how this session works">🔀 Switch work mode</button>
         <a class="about-link" href="landing.html" target="_blank" title="About / download page">About &amp; download</a>
       </div>
     </div>
@@ -397,6 +399,44 @@
   <button id="btnVoice2" class="voice-float" title="Voice control (🎤 Speak) — navigate by voice">🎤</button>
   <button id="btnFloatPrev" title="Previous slide (←)">◀</button>
   <button id="btnFloatNext" class="primary" title="Next slide (→ or space)">Next ▶</button>
+</div>
+
+<!-- Work-mode start gate — shows until the operator picks a mode -->
+<div id="startGate" hidden>
+  <div class="gate-panel" id="gateModes">
+    <div class="gate-brand"><img src="icons/icon.svg" alt=""><h1>How do you want to work today?</h1></div>
+    <div class="gate-modes">
+      <button class="gate-mode" data-mode="base">
+        <span class="gate-ico">📖</span><b>Base Mode</b>
+        <span class="gate-sub">Fresh &amp; fast. The basics load once, and scripture display keeps working even without internet after that. No cloud, no account.</span>
+      </button>
+      <button class="gate-mode" data-mode="sync">
+        <span class="gate-ico">☁️</span><b>Sync Mode</b>
+        <span class="gate-sub">Sign in to your account — your scriptures, songs, lyrics, schedules, logo and themes follow you from any device.</span>
+      </button>
+      <button class="gate-mode" data-mode="local">
+        <span class="gate-ico">💾</span><b>Local Mode</b>
+        <span class="gate-sub">The hybrid: everything lives on this device — Bibles, song schedules, lyrics, themes — and saves automatically. Works on Windows, Android, macOS, iOS, Linux.</span>
+      </button>
+    </div>
+    <button id="btnGateLater" class="linklike">Decide later — open the console</button>
+  </div>
+  <div class="gate-panel" id="gateSignin" hidden>
+    <div class="gate-brand"><img src="icons/icon.svg" alt=""><h1>Sync Mode — sign in</h1></div>
+    <p class="hint">One account keeps your whole library with you. Everything still works without one.</p>
+    <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS.</div>
+    <label class="gate-field">Email<br><input id="gateEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
+    <label class="gate-field">Password<br><input id="gatePass" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+    <div class="gate-row">
+      <button id="btnGateIn" class="primary">Sign In</button>
+      <button id="btnGateUp">Create Account</button>
+    </div>
+    <div id="gateStatus" class="hint"></div>
+    <div class="gate-row">
+      <button id="btnGateBack" class="linklike">← Back to modes</button>
+      <button id="btnGateSkip" class="linklike">Skip — work offline instead</button>
+    </div>
+  </div>
 </div>
 
 <script src="js/supabase-config.js"></script>

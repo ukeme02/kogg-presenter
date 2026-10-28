@@ -19,6 +19,7 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Voice control | One tap: speak commands — "next", "previous", "blank", "logo", or "John three sixteen" — the console obeys (Web Speech API, Chrome/Edge, online) |
 | Quick Go | Type `jn 3:16-17`, `ps 23` or a song name in the top bar, hit Enter — it's live. Press `/` to focus from anywhere |
 | Extended screen | Output window opens straight onto the second monitor (Chrome/Edge Window Management API — allow once) |
+| Work modes | Choose on first load: **Base Mode** (basics once, offline scripture display, no cloud), **Sync Mode** (sign in — library follows the account), **Local Mode** (everything saved on this device — Windows/Android/macOS/iOS/Linux) |
 | Cloud sync | Free Supabase account: songs, themes, plans **and your logo/background images** follow you to any PC or phone. Changes auto-push when you're signed in online; the Account tab shows synced/unsynced status |
 | Typography | **Nunito Sans Expanded Bold** by default; font, size (+/− live in the top bar), weight and text alignment per theme |
 | Light/dark | Operator console has light and dark modes |

@@ -1214,6 +1214,9 @@ function scheduleSync() {
   refreshSyncBadge();
 }
 function autoSync() {
+  // work mode gate: Base/Local keep every change on this device;
+  // Sync mode pushes to the cloud automatically
+  if (workMode() && workMode() !== 'sync') { refreshSyncBadge(); return; }
   if (!(window.KOGGSync && window.KOGGSync.configured && window._koggUser && navigator.onLine)) return;
   if (!syncDirty()) { refreshSyncBadge(); return; }
   window.KOGGSync.push()
@@ -1254,7 +1257,8 @@ async function refreshUser() {
   } catch { window._koggUser = null; }
   syncUI();
   // signed in → the library keeps itself up to date without anyone pressing a button
-  if (window._koggUser && navigator.onLine) {
+  // (Sync mode — Base/Local keep changes on this device only)
+  if (window._koggUser && navigator.onLine && workMode() === 'sync') {
     if (syncDirty()) scheduleSync();
     pullCloud(true);   // silent merge: songs, themes, plans, settings, logo
   }
@@ -1353,6 +1357,87 @@ async function pullCloud(silent) {
 $('btnPushCloud').addEventListener('click', pushCloud);
 $('btnPullCloud').addEventListener('click', () => pullCloud(false));
 refreshUser();
+
+/* =========================================================
+   WORK MODE — Base / Sync / Local start gate
+========================================================= */
+/*  Base  → basics once, offline after that, no cloud.
+    Sync  → sign in at start; library follows the account on every device.
+    Local → hybrid: everything saves on this device (Windows/Android/macOS/iOS/Linux). */
+function workMode() { return LS.get(K.settings, {}).mode || ''; }
+const MODE_LABEL = { base: '📖 Base', sync: '☁️ Sync', local: '💾 Local' };
+function refreshModeChip() {
+  const m = workMode();
+  $('modeChip').textContent = MODE_LABEL[m] || 'Choose mode';
+  $('modeChip').classList.toggle('unset', !m);
+}
+function setWorkMode(m) {
+  const s = LS.get(K.settings, {});
+  s.mode = m;
+  LS.set(K.settings, s);
+  refreshModeChip();
+}
+function showGate() {
+  const gate = $('startGate');
+  gate.hidden = false;
+  $('gateModes').hidden = false;
+  $('gateSignin').hidden = true;
+  const m = workMode();
+  document.querySelectorAll('.gate-mode').forEach(b =>
+    b.classList.toggle('chosen', b.dataset.mode === m));
+}
+function closeGate() { $('startGate').hidden = true; }
+document.querySelectorAll('.gate-mode').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.mode === 'sync') {
+    if (!(window.KOGGSync && window.KOGGSync.configured)) {
+      $('gateStatus').textContent = 'Cloud sync is not configured on this deployment yet — see README → "Enable cloud sync".';
+      $('gateStatus').style.color = 'var(--warn)';
+    } else {
+      $('gateStatus').textContent = '';
+    }
+    $('gateModes').hidden = true;
+    $('gateSignin').hidden = false;
+    $('gateEmail').focus();
+    return;
+  }
+  setWorkMode(b.dataset.mode);
+  closeGate();
+}));
+$('btnGateBack').addEventListener('click', () => {
+  $('gateSignin').hidden = true;
+  $('gateModes').hidden = false;
+});
+$('btnGateSkip').addEventListener('click', () => {
+  setWorkMode('local');
+  $('gateSignin').hidden = true;
+  $('gateModes').hidden = false;
+  closeGate();
+});
+$('btnGateLater').addEventListener('click', closeGate);
+$('modeChip').addEventListener('click', showGate);
+$('btnMode').addEventListener('click', () => { showGate(); $('moreMenu').hidden = true; });
+async function gateAuth(up) {
+  const st = $('gateStatus');
+  st.textContent = 'Connecting…';
+  st.style.color = '';
+  try {
+    if (up) await window.KOGGSync.signUp($('gateEmail').value.trim(), $('gatePass').value);
+    else await window.KOGGSync.signIn($('gateEmail').value.trim(), $('gatePass').value);
+    setWorkMode('sync');
+    closeGate();
+    await refreshUser();
+    st.textContent = 'Signed in ✓ — pulling your library…';
+  } catch (err) {
+    st.textContent = err && err.message === 'not-configured'
+      ? 'Cloud sync is not configured on this deployment yet — pick a different mode, or see README → "Enable cloud sync".'
+      : ((err && err.message) || 'Sign-in failed — check your connection.');
+    st.style.color = 'var(--danger)';
+  }
+}
+$('btnGateIn').addEventListener('click', () => gateAuth(false));
+$('btnGateUp').addEventListener('click', () => gateAuth(true));
+refreshModeChip();
+if (!workMode()) showGate();
 
 /* =========================================================
    GLOBAL CONTROLS

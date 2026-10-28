@@ -427,10 +427,12 @@
   <button id="btnFloatNext" class="primary" title="Next slide (→ or space)">Next ▶</button>
 </div>
 
-<!-- Floating projector preview — mirrors the screen, stays open across tabs,
-     draggable; toggle it from the 🧩 Docks menu -->
+<!-- Floating display mirror — sits top-right, mirrors the projector live,
+     draggable + foldable; toggle from the 🧩 Docks menu -->
 <div id="floatPreview" hidden>
   <div class="fp-head">
+    <button id="fpPrev" title="Previous slide">◀</button>
+    <button id="fpNext" title="Next slide">▶</button>
     <span class="grip" title="Drag to move">🖥️ On screen</span>
     <button id="fpCollapse" title="Fold / unfold">▾</button>
     <button id="fpClose" title="Close (toggle on again from the 🧩 Docks menu)">✕</button>

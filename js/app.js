@@ -425,6 +425,8 @@ function applyFloatPreview() {
     LS.set(K.settings, s);
     applyFloatPreview();
   });
+  $('fpPrev').addEventListener('click', () => $('btnFloatPrev').click());
+  $('fpNext').addEventListener('click', () => $('btnFloatNext').click());
 })();
 function scrollLiveIntoView() {
   setTimeout(() => {
@@ -893,7 +895,7 @@ function applyDocks() {
     const el = grid.querySelector(`.dock[data-dock="${key}"]`);
     if (el) grid.appendChild(el);
   });
-  const hidden = hiddenDocks();
+  const hidden = hiddenDocks().filter(k => k !== 'text');   // the projector dock is always visible
   document.querySelectorAll('.docks .dock').forEach(d => {
     const key = d.dataset.dock;
     if (hidden.includes(key)) { d.style.display = 'none'; return; }
@@ -903,19 +905,22 @@ function applyDocks() {
     d.style.gridRow = `span ${Math.min(GRID_ROWS, Math.max(2, s[1]))}`;
   });
 }
-/* 🧩 Docks menu — pick which docks you want visible right now */
+/* 🧩 Docks menu — pick which docks you want visible right now
+   ("On the projector" is a functional dock and is always visible) */
 function renderDockMenu() {
   const menu = $('dockMenu');
   const hidden = hiddenDocks();
   const fp = lsShowFloatPreview();
-  menu.innerHTML = '<div class="more-group">Docks on screen</div>' +
-    Object.keys(DOCK_LABELS).map(key =>
-      `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('') +
-    `<button data-dockkey="__float" class="dockmenu-item${fp ? ' on' : ''}">${fp ? '✓' : '◻'} 🖥️ Floating preview</button>` +
+  const items = Object.keys(DOCK_LABELS).filter(k => k !== 'text').map(key =>
+    `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('');
+  menu.innerHTML = '<div class="more-group">Docks on screen</div>' + items +
+    '<div class="dockmenu-item static">🔒 On the projector — always visible</div>' +
+    `<button data-dockkey="__float" class="dockmenu-item${fp ? ' on' : ''}">${fp ? '✓' : '◻'} 🖥️ Floating display mirror</button>` +
     '<button data-dockkey="__all" class="dockmenu-item"><b>Show all</b></button>' +
     '<button data-dockkey="__reset" class="dockmenu-item"><b>Reset layout</b></button>';
 }
-function lsShowFloatPreview() { return LS.get(K.settings, {}).showFloatPreview !== false; }$('btnDocks').addEventListener('click', e => {
+function lsShowFloatPreview() { return LS.get(K.settings, {}).showFloatPreview !== false; }
+$('btnDocks').addEventListener('click', e => {
   e.stopPropagation();
   renderDockMenu();
   $('dockMenu').hidden = !$('dockMenu').hidden;
@@ -929,7 +934,8 @@ $('dockMenu').addEventListener('click', e => {
     s.showFloatPreview = !lsShowFloatPreview();
     LS.set(K.settings, s);
     applyFloatPreview();
-    renderDockMenu();
+    flash($('btnDocks'), s.showFloatPreview ? 'Mirror ON ✓' : 'Mirror off ✓');
+    $('dockMenu').hidden = true;
     return;
   }
   if (key === '__reset') {
@@ -938,8 +944,8 @@ $('dockMenu').addEventListener('click', e => {
     dockSizes = {};
     applyDocks();
     refreshLock();
-    renderDockMenu();
     flash($('btnDocks'), 'Default layout ✓');
+    $('dockMenu').hidden = true;
     return;
   }
   if (key === '__all') s.hiddenDocks = [];
@@ -2305,6 +2311,16 @@ function flash(btn, msg) {
 
 /* ---------- init ---------- */
 window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
+/* one-time layout migration — old saved sizes predate the balanced default
+   layout; clear them once so everyone sees the intended arrangement */
+(function migrateLayout() {
+  const s = LS.get(K.settings, {});
+  if (s.layoutVer !== 'v3') {
+    delete s.dockOrder; delete s.dockSizes; delete s.hiddenDocks;
+    s.layoutVer = 'v3';
+    LS.set(K.settings, s);
+  }
+})();
 const savedSettings = LS.get(K.settings, {});
 rebuildCustomOptions();      // custom versions must exist in the select before restore
 if (savedSettings.currentTranslation) $('translationSelect').value = savedSettings.currentTranslation;

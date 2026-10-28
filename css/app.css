@@ -292,8 +292,8 @@ body.light .vchip { background: #fff; border-color: #d6dde9; }
 /* floating projector preview — always-visible mini mirror */
 #floatPreview {
   position: fixed;
-  right: 88px;
-  bottom: 76px;
+  right: 14px;
+  top: 96px;
   z-index: 90;
   width: 250px;
   max-width: min(70vw, 320px);
@@ -303,7 +303,7 @@ body.light .vchip { background: #fff; border-color: #d6dde9; }
   box-shadow: 0 14px 40px rgba(0,0,0,.5);
   overflow: hidden;
   resize: both;
-  min-height: 56px;
+  min-height: 40px;
 }
 body.light #floatPreview { border-color: #c9d2e0; box-shadow: 0 14px 34px rgba(20,30,60,.2); }
 #floatPreview.dragging { opacity: .85; }

@@ -441,8 +441,8 @@
   <div id="fpBody" class="fp-body"></div>
 </div>
 
-<!-- Floating quick edit — text size + alignment for the current theme,
-     stays on screen while you switch tabs; toggle from the ⋯ menu -->
+<!-- Floating quick edit / console — the ⋯ menu contents as a floating
+     window, stays open while you switch tabs; toggle from the ⋯ menu -->
 <div id="floatEdit" hidden>
   <div class="fe-head">
     <span class="grip" title="Drag to move">✏️ Quick edit</span>
@@ -452,7 +452,12 @@
     <button id="feSizeDown" title="Smaller text (current theme)">A−</button>
     <button id="feSizeUp" title="Bigger text (current theme)">A+</button>
     <button id="feAlign" title="Toggle text alignment">⬌</button>
+    <button id="feVoice" title="Voice control — navigate by speaking (Chrome/Edge, online)">🎤</button>
+    <button id="feTheme" title="Toggle light/dark operator mode">🌙</button>
+    <button id="feLock" title="Lock / unlock the layout">🔓</button>
+    <button id="feMode" title="Base / Sync / Local — how this session works">🔀</button>
   </div>
+  <a id="feAbout" href="landing.html" target="_blank" title="About / download page">About &amp; download ↗</a>
 </div>
 
 <!-- Work-mode start gate — shows until the operator picks a mode -->

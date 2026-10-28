@@ -354,8 +354,10 @@ body.light #floatEdit { border-color: #c9d2e0; box-shadow: 0 14px 34px rgba(20,3
 }
 #floatEdit .fe-head .grip { cursor: grab; touch-action: none; flex: 1; white-space: nowrap; }
 #floatEdit .fe-head button { border: none; background: transparent; padding: 2px 7px; font-size: 12px; border-radius: 6px; color: var(--muted); }
-#floatEdit .fe-body { display: flex; gap: 6px; padding: 8px; }
-#floatEdit .fe-body button { flex: 1; padding: 8px 10px; font-size: 14px; font-weight: 700; }
+#floatEdit .fe-body { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px; }
+#floatEdit .fe-body button { padding: 8px 0; font-size: 14px; font-weight: 700; min-width: 0; }
+#feAbout { display: block; text-align: center; font-size: 12px; padding: 0 0 9px; color: var(--muted); text-decoration: none; }
+#feAbout:hover { color: var(--text); }
 #floatEdit.dragging { opacity: .85; }
 
 .update-toast {

@@ -2120,6 +2120,10 @@ $('btnAlign').addEventListener('click', () => quickCycleAlign($('btnAlign')));
 $('feSizeUp').addEventListener('click', () => quickFontSize(1, $('feSizeUp')));
 $('feSizeDown').addEventListener('click', () => quickFontSize(-1, $('feSizeDown')));
 $('feAlign').addEventListener('click', () => quickCycleAlign($('feAlign')));
+$('feVoice').addEventListener('click', () => $('btnVoice').click());
+$('feTheme').addEventListener('click', () => $('btnTheme').click());
+$('feLock').addEventListener('click', () => $('btnLock').click());
+$('feMode').addEventListener('click', () => $('btnMode').click());
 
 /* floating quick edit — draggable, closable, toggle from ⋯ menu */
 function lsShowFloatEdit() { return LS.get(K.settings, {}).showFloatEdit !== false; }

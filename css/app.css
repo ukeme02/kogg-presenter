@@ -414,6 +414,9 @@ body.light #floatEdit { border-color: #c9d2e0; box-shadow: 0 14px 34px rgba(20,3
   min-height: 0;
 }
 .docks .dock { min-height: 0; overflow: hidden; position: relative; }
+.docks .dock .dock-fit { flex: 0 0 auto; min-height: 0; transform-origin: top left; }
+.docks .dock .chip-grid.scroll { flex: 0 0 auto; overflow: visible; }   /* contents grow; the fit pass scales them */
+.docks .dock details.dock-search { max-height: none; }
 
 /* numbered circles — chapters and verses */
 .chip-grid.dots {
@@ -523,7 +526,8 @@ details.dock-search[open] > summary { margin-bottom: 10px; }
   .scripture-deck .docks { min-height: 0; }
 }
 @media (max-width: 640px) {
-  .docks { grid-template-columns: 1fr; grid-auto-rows: minmax(0, 1fr); overflow: hidden; }
+  .scripture-deck { height: auto; overflow: visible; }   /* phones: natural stacking + main scroll */
+  .docks { grid-template-columns: 1fr; grid-auto-rows: minmax(150px, auto); }
   .docks .dock { min-height: 0; max-height: none; }
   #dock-books .chip-grid.scroll { max-height: 34vh; }
   #dock-chapters .chip-grid.scroll, #dock-verses .chip-grid.scroll { max-height: 30vh; }

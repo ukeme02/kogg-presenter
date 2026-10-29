@@ -871,11 +871,12 @@ $('feLock').addEventListener('click', () => {
 /* ---------- docks: free size & position over a 12×12 grid, lock to freeze ---------- */
 let dockSizes = LS.get(K.settings, {}).dockSizes || {};
 const DOCK_DEFAULTS = {
-  /* default layout: Books/Chapters/Verses/Memory side by side, projector
-     preview full-width beneath them, then Quick jump + Whole-Bible search
-     sharing the bottom band */
-  books: [3, 4], chapters: [3, 4], verses: [3, 4], memory: [3, 4],
-  text: [12, 4], quickgo: [6, 2], search: [6, 2],
+  /* default layout: wide-enough columns so every dock's content is readable
+     at one view — books/chapters/verses share the top band (4 cols each),
+     memory + quick jump + whole-Bible search share the next band, then the
+     projector preview runs full-width */
+  books: [4, 4], chapters: [4, 4], verses: [4, 4], memory: [4, 2],
+  text: [12, 3], quickgo: [4, 2], search: [4, 2],
 };
 const GRID_ROWS = 10;
 const DOCK_LABELS = {
@@ -883,28 +884,93 @@ const DOCK_LABELS = {
   memory: '🧠 Memory', quickgo: '⚡ Quick jump', search: '🔎 Whole-Bible search',
 };
 function hiddenDocks() { return LS.get(K.settings, {}).hiddenDocks || []; }
-/* fit-to-view: simulate dense packing; if the docks need more than GRID_ROWS
-   rows, shrink row spans proportionally so everything fits without scrolling */
-function packUsedRows(list) {
-  const colOcc = new Array(12).fill(0);
-  let maxRow = 0;
-  for (const [c, r] of list) {
+/* fit-to-view: every dock gets its own content-sized track; when the whole
+   skyline is taller than the deck, everything scales down proportionally —
+   all docks fully visible on one view, no page and no internal scrolling */
+const DOCK_GAP = 12;
+function packPx(items) {   // items {d,w,h}; returns placed {it,y,h} + skyline height
+  const colH = new Array(12).fill(0);
+  let need = 0;
+  const placed = items.map(it => {
     let best = Infinity, bestC = 0;
-    for (let c0 = 0; c0 <= 12 - c; c0++) {
-      const h = Math.max(...colOcc.slice(c0, c0 + c));
+    for (let c0 = 0; c0 <= 12 - it.w; c0++) {
+      const h = Math.max(...colH.slice(c0, c0 + it.w));
       if (h < best) { best = h; bestC = c0; }
     }
-    for (let i = bestC; i < bestC + c; i++) colOcc[i] = best + r;
-    maxRow = Math.max(maxRow, best + r);
-  }
-  return maxRow;
+    for (let i = bestC; i < bestC + it.w; i++) colH[i] = best + it.h;
+    need = Math.max(need, best + it.h);
+    return { it, y: best, h: it.h };
+  });
+  return { placed, need };
 }
-function fitSpansToViewport(items) { // items: {dock, cols, rows} mutated
-  for (let pass = 0; pass < 4; pass++) {
-    const used = packUsedRows(items.map(it => [it.cols, it.rows]));
-    if (used <= GRID_ROWS) return;
-    const factor = GRID_ROWS / used;
-    items.forEach(it => { it.rows = Math.max(2, Math.floor(it.rows * factor)); });
+function naturalDockHeight(d) {
+  const head = d.querySelector('.dock-head');
+  const cs = getComputedStyle(d);
+  const w = d.querySelector(':scope > .dock-fit');
+  const bodyH = w ? w.scrollHeight : 0;
+  const headH = head ? head.getBoundingClientRect().height + (parseFloat(getComputedStyle(head).marginBottom) || 0) : 0;
+  const cap = window.innerHeight - 128;   // no single dock may demand more than roughly the deck
+  return Math.min(cap, Math.max(96, headH + bodyH + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + DOCK_GAP));
+}function applyDocksToGridTemplate(grid, deckH, isNarrow) {
+  grid.style.rowGap = '0px';
+  grid.style.columnGap = '12px';
+  const docks = [...grid.children].filter(d => d.classList.contains('dock') && d.style.display !== 'none');
+  docks.forEach(d => {   // measure from unscaled state
+    const w = d.querySelector(':scope > .dock-fit');
+    if (w) { w.style.transform = ''; w.style.width = ''; }
+  });
+  const cols = n => n / 2;   // 2 per row in the narrow 2-column mode
+  if (isNarrow) {
+    const items = docks.map(d => ({ d, w: 2, h: naturalDockHeight(d) }));
+    const rows = [];
+    for (let i = 0; i < items.length; i += 2) {
+      rows.push({ a: items[i], b: items[i + 1], h: Math.max(items[i].h, items[i + 1] ? items[i + 1].h : 0) });
+    }
+    let total = rows.reduce((s, r) => s + r.h, 0);
+    const F = total > deckH + 1 ? deckH / total : 1;
+    const minRow = r => {
+      const head = r.a.d.querySelector('.dock-head');
+      const cs = getComputedStyle(r.a.d);
+      const headH = head ? head.getBoundingClientRect().height + (parseFloat(getComputedStyle(head).marginBottom) || 0) : 0;
+      return headH + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + 46;
+    };
+    grid.style.gridTemplateRows = rows.map(r => (Math.max(minRow(r), Math.round(r.h * F))) + 'px').join(' ');
+    rows.forEach((r, i) => {
+      r.a.d.style.gridRow = `${i + 1} / ${i + 2}`;
+      if (r.b) r.b.d.style.gridRow = `${i + 1} / ${i + 2}`;
+    });
+  } else {
+    let items = docks.map(d => {
+      const w = +d.style.gridColumn.replace('span ', '') || 12;
+      return { d, w: Math.min(12, Math.max(2, w)), h: naturalDockHeight(d) };
+    });
+    const pack = packPx(items);
+    const placed = pack.placed;
+    let need = pack.need;
+    const minFor = p => {   // head + paddings + a hint of content must always survive
+      const head = p.it.d.querySelector('.dock-head');
+      const cs = getComputedStyle(p.it.d);
+      const headH = head ? head.getBoundingClientRect().height + (parseFloat(getComputedStyle(head).marginBottom) || 0) : 0;
+      return headH + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + 46;
+    };
+    let F = 1;
+    for (let pass = 0; pass < 2; pass++) {
+      F = need > deckH + 1 ? deckH / need : 1;
+      placed.forEach(p => { p.y *= F; p.h = Math.max(minFor(p), p.h * F); });
+      need = Math.max(...placed.map(p => p.y + p.h));
+    }
+    placed.forEach(p => { p.y = Math.round(p.y); p.h = Math.round(p.h); });
+    const bs = new Set(placed.flatMap(p => [p.y, p.y + p.h]));
+    const levels = [...bs].sort((a, b) => a - b);
+    const tmpl = [];
+    for (let i = 0; i < levels.length - 1; i++) tmpl.push(Math.max(26, Math.round(levels[i + 1] - levels[i])) + 'px');
+    grid.style.gridTemplateRows = tmpl.join(' ') || 'none';
+    grid.style.rowGap = '0px';
+    grid.style.columnGap = '12px';
+    placed.forEach(p => {
+      const i0 = levels.indexOf(p.y), i1 = levels.indexOf(p.y + p.h);
+      p.it.d.style.gridRow = `${i0 + 1} / ${i1 + 1}`;
+    });
   }
 }
 function applyDocks() {
@@ -915,19 +981,91 @@ function applyDocks() {
     if (el) grid.appendChild(el);
   });
   const hidden = hiddenDocks().filter(k => k !== 'text');   // the projector dock is always visible
-  const items = [];
   document.querySelectorAll('.docks .dock').forEach(d => {
     const key = d.dataset.dock;
     if (hidden.includes(key)) { d.style.display = 'none'; return; }
     d.style.display = '';
     const s = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
-    items.push({ dock: d, cols: Math.min(12, Math.max(2, s[0])), rows: Math.min(GRID_ROWS, Math.max(2, s[1])) });
+    d.style.gridColumn = `span ${Math.min(12, Math.max(2, s[0]))}`;   // rows come from the track engine
   });
-  fitSpansToViewport(items);
-  items.forEach(it => {
-    it.dock.style.gridColumn = `span ${it.cols}`;
-    it.dock.style.gridRow = `span ${it.rows}`;
+  scheduleDockFit();
+}
+/* one scheduled pass = px row tracks per dock + interior scale fit */
+let dockFitTimer = null;
+function scheduleDockFit() {
+  if (dockFitTimer) return;
+  dockFitTimer = setTimeout(() => {
+    dockFitTimer = null;
+    const grid = document.querySelector('.docks');
+    if (!grid) return;
+    if (window.innerWidth <= 640) {   // phones: back to the simple fluid layout
+      grid.style.gridTemplateRows = '';
+      grid.style.rowGap = '';
+      grid.style.columnGap = '';
+    } else {
+      applyDocksToGridTemplate(grid, grid.clientHeight, window.innerWidth <= 1100);
+    }
+    fitDockContents();
+  }, 40);
+}
+/* scale each dock's INTERIOR so the whole content stays visible inside its
+   slice — no internal scrolling (the dock head keeps its normal size) */
+function fitDockContents() {
+  document.querySelectorAll('.docks .dock').forEach(d => {
+    const w = d.querySelector(':scope > .dock-fit');
+    if (!w || d.style.display === 'none') return;
+    const head = d.querySelector('.dock-head');
+    if (!head) return;
+    w.style.transform = '';
+    w.style.width = '';
+    const cs = getComputedStyle(d);
+    const dR = d.getBoundingClientRect();
+    const wR = w.getBoundingClientRect();
+    const avail = dR.bottom - wR.top - (parseFloat(cs.paddingBottom) || 0);
+    if (avail <= 4) return;
+    let s = 1;
+    for (let i = 0; i < 3; i++) {   // correction loop: adjust until the VISUAL result fits
+      const vis = w.getBoundingClientRect().height;
+      if (vis <= avail + 1) break;
+      s = Math.max(0.2, Math.min(1, s * (avail / vis)));
+      w.style.width = (100 / s) + '%';
+      w.style.transform = `scale(${s})`;
+    }
+    if (w.getBoundingClientRect().height > avail + 1) {
+      // one last visual correction, then leave it (off by a hair imperceptibly)
+      const vis = w.getBoundingClientRect().height;
+      s = Math.max(0.2, Math.min(1, s * (avail / vis)));
+      w.style.width = (100 / s) + '%';
+      w.style.transform = `scale(${s})`;
+    }
   });
+}
+function initDockFit() {
+  document.querySelectorAll('.docks .dock').forEach(d => {
+    if (d.querySelector(':scope > .dock-fit')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'dock-fit';
+    [...d.children].forEach(ch => {
+      if (!ch.classList.contains('dock-head') && !ch.classList.contains('rs-corner')) wrap.appendChild(ch);
+    });
+    d.appendChild(wrap);
+  });
+  if (window.ResizeObserver) {
+    const grid = document.querySelector('.docks');
+    if (grid) {
+      const ro = new ResizeObserver(() => scheduleDockFit());
+      ro.observe(grid);
+      grid.querySelectorAll('.dock').forEach(d => {
+        ro.observe(d);
+        const w = d.querySelector(':scope > .dock-fit');
+        if (w) ro.observe(w);   // content-growth or A+/A− resizes the wrap itself
+      });
+    }
+  }
+  if (window.MutationObserver) {
+    const grid = document.querySelector('.docks');
+    if (grid) new MutationObserver(() => scheduleDockFit()).observe(grid, { childList: true, subtree: true });   // content swaps (book/chapter loads); our own style writes don't re-fire (attrs not observed)
+  }
 }
 /* 🧩 Docks menu — pick which docks you want visible right now
    ("On the projector" is a functional dock and is always visible) */
@@ -2429,6 +2567,8 @@ renderService();
 renderPlans();
 renderPreview();
 renderMemory();
+initDockFit();
+fitDockContents();
 window.__koggBoot = true;
 refreshSyncBadge();
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {

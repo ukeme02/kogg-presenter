@@ -360,6 +360,9 @@ body.light #floatEdit { border-color: #c9d2e0; box-shadow: 0 14px 34px rgba(20,3
 #feAbout { display: block; text-align: center; font-size: 12px; padding: 0 0 9px; color: var(--muted); text-decoration: none; }
 #feAbout:hover { color: var(--text); }
 #floatEdit.dragging { opacity: .85; }
+#floatEdit { overflow: visible; }
+#dockMenu.fe-pop { top: calc(100% + 4px); right: 0; left: auto; bottom: auto; z-index: 130; min-width: 250px; }
+.docks .dock, .docks .dock .dock-fit, .docks .dock .chip-grid { transition: none; }
 
 .update-toast {
   position: fixed;

@@ -928,12 +928,11 @@ $('feLock').addEventListener('click', () => {
 /* ---------- docks: free size & position over a 12×12 grid, lock to freeze ---------- */
 let dockSizes = LS.get(K.settings, {}).dockSizes || {};
 const DOCK_DEFAULTS = {
-  /* default layout: wide-enough columns so every dock's content is readable
-     at one view — books/chapters/verses share the top band (4 cols each),
-     memory + quick jump + whole-Bible search share the next band, then the
-     projector preview runs full-width */
-  books: [4, 4], chapters: [4, 4], verses: [4, 4], memory: [4, 2],
-  text: [12, 3], quickgo: [4, 2], search: [4, 2],
+  /* balanced two-band layout: Books/Chapters/Verses/Memory fill the top band
+     (3 cols each), then an equally-scaled band of three 4-col rectangles —
+     Quick jump / Whole-Bible search / On-the-projector */
+  books: [3, 4], chapters: [3, 4], verses: [3, 4], memory: [3, 4],
+  text: [4, 3], quickgo: [4, 3], search: [4, 3],
 };
 const GRID_ROWS = 10;
 const DOCK_LABELS = {
@@ -2842,9 +2841,9 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
    layout; clear them once so everyone sees the intended arrangement */
 (function migrateLayout() {
   const s = LS.get(K.settings, {});
-  if (s.layoutVer !== 'v4') {
+  if (s.layoutVer !== 'v5') {
     delete s.dockOrder; delete s.dockSizes; delete s.hiddenDocks; delete s.panesLocked;
-    s.layoutVer = 'v4';
+    s.layoutVer = 'v5';
     LS.set(K.settings, s);
   }
 })();

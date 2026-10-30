@@ -88,7 +88,8 @@
       const v = choose(base.settings?.[key],local.settings?.[key],remote.settings?.[key],'settings/' + key);
       if (v !== undefined) settings[key] = v;
     }
-    return {songs:byId('songs'),themes:byId('themes'),plans,settings,assets:{...(remote.assets || {}),...(local.assets || {})}};
+    const service=choose(base.service || [],local.service || [],remote.service === undefined ? (base.service || []) : remote.service,'current service');
+    return {songs:byId('songs'),themes:byId('themes'),service,plans,settings,assets:{...(remote.assets || {}),...(local.assets || {})}};
   }
   const api = { validate, assetIds, mergeRecords, portableSettings, merge };
   if (typeof module !== 'undefined') module.exports = api;

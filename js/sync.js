@@ -24,6 +24,7 @@
   }
   async function currentUser() {
     const client = await getClient();
+    if(client.auth.getSession){const session = await client.auth.getSession();if(session.error)throw session.error;if(!session.data?.session)return null;}
     const {data,error} = await client.auth.getUser();
     if (error) throw error;
     return data?.user || null;
@@ -50,7 +51,7 @@
     localStorage.setItem(baseKey(id),JSON.stringify({data,revision:row?.updated_at || null}));
   }
   async function libraryPayload() {
-    const payload = {songs:read('cp_songs',[]),themes:read('cp_themes',[]),plans:read('cp_plans',{}),settings:window.KOGGLibrary.portableSettings(read('cp_settings',{})),assets:{}};
+    const payload = {songs:read('cp_songs',[]),service:read('cp_service',[]),themes:read('cp_themes',[]),plans:read('cp_plans',{}),settings:window.KOGGLibrary.portableSettings(read('cp_settings',{})),assets:{}};
     for (const id of window.KOGGLibrary.assetIds(payload,false)) {
       const value = await window.KOGGAssets?.get(id);
       if (!value) throw new Error('Missing library image: ' + id + '. Re-add the image before syncing.');

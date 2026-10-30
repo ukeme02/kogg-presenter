@@ -94,7 +94,7 @@ function render(state) {
     } else {
       const slide = state.slides[state.index] || { text: '', label: '' };
       textEl.innerHTML = renderSlideText(slide, state);   // always clean text — numbers live only in the operator preview
-      labelEl.textContent = plain(slide.label);
+      labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : '');
       textEl.style.fontSize = t.fontSize + 'vh';
       requestAnimationFrame(fitText);
     }

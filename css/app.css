@@ -1002,3 +1002,14 @@ body.light .mode-chip { border-color: #c9d2e0; }
 
 .status-note { font-size: 12px; color: var(--muted); line-height: 1.4; }
 .dock.toolbar { flex-wrap: wrap; }
+
+.legacy-lookup[hidden], .prepared-panel[hidden], .comparison-panel[hidden] { display:none; }
+.prepared-panel { border-top:2px solid var(--accent); padding:10px 0; }
+.prepared-head { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.prepared-head b { color:var(--accent); font-size:12px; flex:1; }
+.prepared-text { white-space:pre-wrap; max-height:18vh; overflow:auto; padding:8px 0; font-size:15px; }
+.comparison-panel { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+.comparison-card { border:1px solid var(--accent); border-radius:8px; padding:8px; }
+.comparison-card p { white-space:pre-wrap; max-height:22vh; overflow:auto; font-size:14px; }
+.quickgo-item.selected { outline:2px solid var(--accent); outline-offset:-2px; }
+@media(max-width:700px){ .comparison-panel { grid-template-columns:1fr; } }

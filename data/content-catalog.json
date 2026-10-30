@@ -1,15 +1,78 @@
 {
-  "version": 2,
+  "version": 3,
   "hymnPacks": [
-    { "id": "traditional-extra-v1", "name": "More traditional hymns", "count": 262, "file": "data/hymns-extra.json" }
+    {
+      "id": "traditional-extra-v1",
+      "name": "More traditional hymns",
+      "count": 262,
+      "file": "data/hymns-extra.json"
+    }
   ],
   "bibles": [
-    { "name": "WEB", "short": "WEB — World English Bible", "file": "data/web.json" },
-    { "name": "ASV", "short": "ASV — American Standard 1901", "file": "data/asv.json" },
-    { "name": "YLT", "short": "YLT — Young's Literal 1898", "file": "data/ylt.json" },
-    { "name": "Darby", "short": "Darby — 1885 revision", "file": "data/darby.json" },
-    { "name": "AKJV", "short": "AKJV — American King James", "file": "data/akjv.json" },
-    { "name": "Webster", "short": "Webster — Noah Webster 1833", "file": "data/webster.json" },
-    { "name": "Geneva1599", "short": "Geneva — 1599 edition", "file": "data/geneva1599.json" }
+    {
+      "name": "WEB",
+      "short": "WEB — World English Bible",
+      "file": "data/web.json"
+    },
+    {
+      "name": "ASV",
+      "short": "ASV — American Standard 1901",
+      "file": "data/asv.json"
+    },
+    {
+      "name": "YLT",
+      "short": "YLT — Young's Literal 1898",
+      "file": "data/ylt.json"
+    },
+    {
+      "name": "Darby",
+      "short": "Darby — 1885 revision",
+      "file": "data/darby.json"
+    },
+    {
+      "name": "AKJV",
+      "short": "AKJV — American King James",
+      "file": "data/akjv.json"
+    },
+    {
+      "name": "Webster",
+      "short": "Webster — Noah Webster 1833",
+      "file": "data/webster.json"
+    },
+    {
+      "name": "Geneva1599",
+      "short": "Geneva — 1599 edition",
+      "file": "data/geneva1599.json"
+    }
+  ],
+  "requestedBibles": [
+    {
+      "name": "NIV",
+      "status": "Approved text source needed"
+    },
+    {
+      "name": "NLT",
+      "status": "Approved text source needed"
+    },
+    {
+      "name": "NKJV",
+      "status": "Approved text source needed"
+    },
+    {
+      "name": "Amplified",
+      "status": "Approved text source needed"
+    },
+    {
+      "name": "ASB (edition to confirm)",
+      "status": "Approved text source needed"
+    },
+    {
+      "name": "The Message",
+      "status": "Approved text source needed"
+    },
+    {
+      "name": "Efik",
+      "status": "Approved text source needed"
+    }
   ]
 }

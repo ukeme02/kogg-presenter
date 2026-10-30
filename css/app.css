@@ -1013,3 +1013,14 @@ body.light .mode-chip { border-color: #c9d2e0; }
 .comparison-card p { white-space:pre-wrap; max-height:22vh; overflow:auto; font-size:14px; }
 .quickgo-item.selected { outline:2px solid var(--accent); outline-offset:-2px; }
 @media(max-width:700px){ .comparison-panel { grid-template-columns:1fr; } }
+
+/* Reserve room for live translation switches; only the passage scrolls. */
+.docks .dock[data-dock="text"] > .dock-fit { display:flex; flex-direction:column; flex:1 1 0; min-height:0; overflow:hidden; }
+.docks .dock[data-dock="text"] .live-text { min-height:0; flex:1 1 50px; overflow:auto; padding:8px 10px; }
+.dock[data-dock="text"] .dock-foot { flex-wrap:wrap; gap:4px; margin-top:4px; }
+.dock[data-dock="text"] .dock-foot button { padding:4px 7px; }
+.dock[data-dock="text"] .ver-chips { order:-1; flex-shrink:0; overflow:visible; }
+.dock[data-dock="text"] #comparisonPanel { flex:0 1 45%; min-height:0; overflow:auto; }
+#extraBiblePanel { max-height:70vh; overflow-y:auto; }
+#extraBibleButtons { display:flex; flex-direction:column; align-items:stretch; }
+#extraBibleButtons b { margin-top:8px; }

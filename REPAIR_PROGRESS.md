@@ -161,3 +161,9 @@ Preserved the user's latest layout and direct-to-screen edits. Finished removing
 Verified the existing basic pack contains 300 unique traditional hymns and the optional expansion adds 262 more (562 total). Reinstalling either pack keeps saved edits and avoids duplicate first lines. Basic installation now records the pack version consistently, including manual retry; initial download failures show a retry message. Worker v32 caches the pack catalogue and carries downloaded optional packs forward before removing old caches, so the expansion survives offline upgrades. Credits remain in data/hymnary-sources.txt.
 
 Requested Bible roadmap: NIV and NLT in place of ASV/WEB in the preferred menu; NKJV, Amplified, ASB (edition to clarify), The Message, and Efik as additional choices. Full texts have not been added or relabelled: publisher-approved distributable sources are still needed. Focus for this change is the hymnary, as requested.
+
+## Dock controls and requested Bible choices — 30 October 2026
+
+Replaced WEB/ASV in the preferred translation selector with NIV/NLT, explicitly disabled until approved text is connected. Added NIV, NLT, NKJV, Amplified, ASB (edition to confirm), The Message and Efik to the requested catalogue; available public-domain downloads remain separately labelled. No translation text was renamed or fabricated.
+
+Fixed projector dock flex sizing: version chips have reserved space above scrollable passage text, footer buttons wrap, and comparison content scrolls. Added Docks → Rearrange docks to clear a saved layout lock. Dock dragging now recalculates positions as it moves instead of holding stale explicit grid rows; pointer cancellation cleans up the drag. Worker v33 refreshes the changed assets. Validation: 50 automated checks passed; physical pointer dragging and screen-size visual checks remain to verify in-browser.

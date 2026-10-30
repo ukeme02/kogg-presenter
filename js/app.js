@@ -527,7 +527,7 @@ function renderVersionChips() {
   box.innerHTML = [...sel.options].map(o => {
     const active = o.value === sel.value;
     const short = o.text.split(' — ')[0].replace("KJV with Strong's", 'KJV+Str');
-    return `<button class="vchip${active ? ' active' : ''}" data-val="${esc(o.value)}" title="${esc(o.text)}${active ? ' — loaded' : ''}"${active ? ' disabled' : ''}>${esc(short)}</button>`;
+    return `<button class="vchip${active ? ' active' : ''}" data-val="${esc(o.value)}" title="${esc(o.text)}${active ? ' — loaded' : ''}"${active || o.disabled ? ' disabled' : ''}>${esc(short)}</button>`;
   }).join('');
 }
 $('versionChips').addEventListener('click', e => {
@@ -1105,7 +1105,7 @@ function fitDockContents() {
     if (!w || d.style.display === 'none') return;
     const head = d.querySelector('.dock-head');
     if (!head) return;
-    if(d.dataset.dock === 'text'){w.style.transform='';w.style.width='';w.style.overflow='auto';return;}
+    if(d.dataset.dock === 'text'){w.style.transform='';w.style.width='';w.style.overflow='hidden';return;}
     w.style.transform = '';
     w.style.width = '';
     const cs = getComputedStyle(d);
@@ -1166,7 +1166,7 @@ function renderDockMenu() {
   const fn = lsShowFloatNav();
   const items = Object.keys(DOCK_LABELS).filter(k => k !== 'text').map(key =>
     `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('');
-  menu.innerHTML = '<div class="more-group">Docks on screen</div>' + items +
+  menu.innerHTML = '<button data-dockkey="__arrange" class="dockmenu-item"><b>↔ Rearrange docks</b></button><div class="more-group">Docks on screen</div>' + items +
     '<div class="dockmenu-item static">🔒 On the projector — always visible</div>' +
     `<button data-dockkey="__fnav" class="dockmenu-item${fn ? ' on' : ''}">${fn ? '✓' : '◻'} 🧭 Slide switcher (floating)</button>` +
     `<button data-dockkey="__float" class="dockmenu-item${fp ? ' on' : ''}">${fp ? '✓' : '◻'} 🖥️ Floating display mirror</button>` +
@@ -1194,6 +1194,10 @@ $('dockMenu').addEventListener('click', e => {
   const key = b.dataset.dockkey;
   $('dockMenu').hidden = true;   // always close immediately, then perform the action
   const s = LS.get(K.settings, {});
+  if (key === '__arrange') {
+    s.panesLocked=false;LS.set(K.settings,s);refreshLock();
+    flash($('feDocks'),'Drag dock titles to move');return;
+  }
   if (key === '__fnav') {
     s.showFloatNav = !lsShowFloatNav();
     LS.set(K.settings, s);
@@ -1263,7 +1267,7 @@ function initDockDrag() {
     head.addEventListener('pointerdown', e => {
       // drags only from the grip text area; buttons and pick-mode stay clickable
       if (e.target.closest('button, .seg') || !e.target.closest('.grip')) return;
-      if (LS.get(K.settings, {}).panesLocked) return;
+      if (LS.get(K.settings, {}).panesLocked) {flash($('feLock'),'Unlock to move docks');return;}
       e.preventDefault();
       dock.classList.add('dragging');
       dockLayoutLive = true;   // engine holds still while repositioning (no shake)
@@ -1276,10 +1280,12 @@ function initDockDrag() {
         if (!target) return;
         const r = target.getBoundingClientRect();
         grid.insertBefore(dock, ev.clientX < r.left + r.width / 2 ? target : target.nextSibling);
+        applyDocksToGridTemplate(grid, grid.clientHeight, window.innerWidth <= 1100);
       };
       const up = () => {
         document.removeEventListener('pointermove', move);
         document.removeEventListener('pointerup', up);
+        document.removeEventListener('pointercancel', up);
         dock.classList.remove('dragging');
         dockLayoutLive = false;
         saveDocks();
@@ -1287,6 +1293,7 @@ function initDockDrag() {
       };
       document.addEventListener('pointermove', move);
       document.addEventListener('pointerup', up);
+      document.addEventListener('pointercancel', up);
     });
     /* drag the corner to resize freely (grid-unit snapping) */
     const rs = document.createElement('div');
@@ -2751,8 +2758,9 @@ $('btnMoreBibles').addEventListener('click',async()=>{
     const catalogue=await response.json();
     const buttons=(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))
       .map(b=>`<button data-bible-file="${esc(b.file)}">↧ ${esc(b.short || b.name)}</button>`).join('');
-    $('extraBibleButtons').innerHTML=buttons || '<span class="hint">No extra versions listed.</span>';
-    $('extraBibleStatus').textContent='Download a version once while online, then it works offline in every work mode.';
+    const requested=(catalogue.requestedBibles || []).map(b=>`<button disabled title="Approved distributable text is not connected yet">${esc(b.name)} — text needed</button>`).join('');
+    $('extraBibleButtons').innerHTML='<b>Requested translations</b>'+requested+'<b>Available downloads</b>'+buttons;
+    $('extraBibleStatus').textContent='Requested versions need approved text sources. Available downloads work offline after downloading. Use Tools → Import Bible for a permitted Bible file.';
   }catch(err){$('extraBibleStatus').textContent=err.message;}
 });
 $('extraBiblePanel').addEventListener('click',async event=>{

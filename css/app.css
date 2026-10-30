@@ -1073,3 +1073,5 @@ body.light .mode-chip { border-color: #c9d2e0; }
 .dock[data-dock="text"] .dock-head {margin-bottom:2px;}
 .dock[data-dock="text"] .ver-chips {margin-top:3px;padding-top:3px;}
 .docks .dock[data-dock="text"] .live-text {padding:6px 10px;}
+
+.jump-hint {font-size:12px;line-height:1.5;color:var(--muted);margin-top:8px;}

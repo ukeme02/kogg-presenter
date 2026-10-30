@@ -757,10 +757,9 @@ function suggestBook(q) {
   if (!key) return [];
   const exact = bible.books.findIndex(b => normKey(b.name) === key || normKey(b.name) === normKey(BOOK_ABBR[key] || ''));
   if (exact >= 0) return [exact];
-  const out = bible.books
-    .map((b, i) => ({ i, k: normKey(b.name) }))
-    .filter(o => o.k.startsWith(key) || o.k.includes(key))
-    .map(o => o.i);
+  const names=bible.books.map((b,i)=>({i,k:normKey(b.name)}));
+  const prefixes=names.filter(o=>o.k.startsWith(key));
+  const out=(prefixes.length ? prefixes : names.filter(o=>o.k.includes(key))).map(o=>o.i);
   if (!out.length && BOOK_ABBR[key] !== undefined) {
     const idx = bible.books.findIndex(b => normKey(b.name) === normKey(BOOK_ABBR[key]));
     if (idx >= 0) out.push(idx);
@@ -808,53 +807,79 @@ function commitJump(q) {
   renderBookGhost();
 }
 let bookSearchTimer = null;
-function renderBookGhost() {
-  const q = $('bookSearch').value;
-  const letters = (q.match(/^[^0-9:]*/) || [''])[0].replace(/\s+/g, ' ');
-  const cands = suggestBook(letters.trim().length ? letters.trim() : (normKey(letters) || ''));
-  const ghost = $('bookGhost'), sug = $('quickBookSug');
-  if (!cands.length) { ghost.textContent = ''; sug.hidden = true; return; }
-  const first = bible.books[cands[0]];
-  // faint full-name completion, only while typing a unique pure-letter prefix
-  const typingLetters = !/[0-9:]/.test(q);
-  const key = normKey(letters.trim());
-  ghost.textContent = (typingLetters && cands.length === 1 && key.length >= 1 &&
-                       normKey(first.name).startsWith(key)
-    ? first.name : '');
-  // more than one match → a clickable suggestion row
-  sug.hidden = !(typingLetters && key.length >= 1 && cands.length > 1);
-  if (!sug.hidden) {
-    sug.innerHTML = cands.map(i =>
-      `<button data-s="${i}"><span class="quickgo-icon">📖</span>${esc(bible.books[i].name)}</button>`).join('');
-  }
+function jumpParts(value) {
+  const m=value.trim().match(/^([1-3]?\s*[a-zA-Z.\- ]+?)(?:\s*(\d+)(?:\s*[:.]\s*(\d*)(?:\s*-\s*(\d*))?)?)?$/);
+  return m ? {book:m[1].trim(),chapter:m[2] || '',verse:m[3],end:m[4]} : null;
 }
-$('bookSearch').addEventListener('input', () => {
-  renderBookChips($('bookSearch').value);
-  renderBookGhost();
+function renderBookGhost() {
+  const input=$('bookSearch'),p=jumpParts(input.value),sug=$('quickBookSug');
+  $('bookGhost').textContent='';
+  const cands=p ? suggestBook(p.book) : [];
+  const choosing=!!p && !p.chapter;
+  sug.hidden=!(choosing && cands.length>1);
+  if(!sug.hidden)sug.innerHTML=cands.map(i=>`<button data-s="${i}">📖 ${esc(bible.books[i].name)}</button>`).join('');
+  let hint='Type 3 book letters, then chapter → verse. Enter displays.';
+  if(cands.length===1){
+    const book=bible.books[cands[0]];
+    if(choosing)hint=`${book.name} • chapters 1–${book.chapters.length}. Type a chapter; → moves to verse.`;
+    else if(+p.chapter<1 || +p.chapter>book.chapters.length)hint=`${book.name} has chapters 1–${book.chapters.length}.`;
+    else hint=`${book.name} ${p.chapter} • verses 1–${book.chapters[+p.chapter-1].length}. ${p.verse ? 'Enter displays.' : 'Type a verse or range; Enter displays.'}`;
+  }else if(cands.length>1)hint='Choose a book below, or keep typing its name.';
+  $('jumpHint').textContent=hint;
+}
+function completeJumpBook() {
+  const input=$('bookSearch'),p=jumpParts(input.value);
+  if(!p || p.chapter)return false;
+  const cands=suggestBook(p.book);
+  if(cands.length!==1)return false;
+  input.value=bible.books[cands[0]].name+' ';
+  commitJump(input.value);renderBookGhost();return true;
+}
+function advanceJumpChapter() {
+  const input=$('bookSearch'),p=jumpParts(input.value);
+  if(!p || !p.chapter || p.verse!==undefined)return false;
+  const cands=suggestBook(p.book);if(cands.length!==1)return false;
+  const book=bible.books[cands[0]];
+  if(+p.chapter<1 || +p.chapter>book.chapters.length){renderBookGhost();return false;}
+  input.value=book.name+' '+p.chapter+':';
+  commitJump(book.name+' '+p.chapter);renderBookGhost();return true;
+}
+$('bookSearch').addEventListener('input',e=>{
   clearTimeout(bookSearchTimer);
-  bookSearchTimer = setTimeout(() => commitJump($('bookSearch').value), 320);
-});
-$('bookSearch').addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    clearTimeout(bookSearchTimer);
-    commitJump($('bookSearch').value);
-  } else if (e.key === 'Escape') {
-    $('bookSearch').value = '';
-    renderBookChips('');
-    renderBookGhost();
-    $('quickBookSug').hidden = true;
+  if(e.isComposing)return;
+  const input=$('bookSearch'),p=jumpParts(input.value);
+  const atEnd=input.selectionStart==null || input.selectionStart===input.value.length;
+  const deleting=(e.inputType || '').startsWith('delete');
+  if(atEnd && !deleting && p && !p.chapter && p.book.replace(/[^a-z]/gi,'').length>=3)completeJumpBook();
+  renderBookChips(input.value);renderBookGhost();
+  // A brief pause allows multi-digit chapters (12, 119…) before adding the colon.
+  if(atEnd && !deleting && p?.chapter && p.verse===undefined){
+    const pending=input.value;
+    bookSearchTimer=setTimeout(()=>{if(input.value===pending && document.activeElement===input)advanceJumpChapter();},650);
   }
 });
-$('quickBookSug').addEventListener('click', e => {
-  const b = e.target.closest('button[data-s]');
-  if (!b) return;
-  $('bookSearch').value = bible.books[+b.dataset.s].name + ' ';
-  $('quickBookSug').hidden = true;
-  renderBookChips($('bookSearch').value);
-  renderBookGhost();
-  $('bookSearch').focus();
+$('bookSearch').addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  const input=$('bookSearch');
+  if(e.key==='Enter'){
+    e.preventDefault();clearTimeout(bookSearchTimer);
+    const p=jumpParts(input.value);
+    if(p?.verse)commitJump(input.value);
+    else if(!completeJumpBook())advanceJumpChapter();
+  }else if(e.key==='ArrowRight' || e.key==='Tab'){
+    if(input.selectionStart!=null && (input.selectionStart!==input.value.length || input.selectionEnd!==input.value.length))return;
+    if(completeJumpBook() || advanceJumpChapter()){e.preventDefault();clearTimeout(bookSearchTimer);}
+  }else if(e.key==='Escape'){
+    clearTimeout(bookSearchTimer);input.value='';renderBookChips('');renderBookGhost();$('quickBookSug').hidden=true;
+  }
 });
+$('quickBookSug').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-s]');if(!b)return;
+  clearTimeout(bookSearchTimer);
+  $('bookSearch').value=bible.books[+b.dataset.s].name+' ';
+  commitJump($('bookSearch').value);renderBookChips($('bookSearch').value);renderBookGhost();$('bookSearch').focus();
+});
+
 document.addEventListener('click', e => {
   if (!e.target.closest('.quickjump')) $('quickBookSug').hidden = true;
 });

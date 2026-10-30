@@ -34,3 +34,40 @@ test('Rearrange docks explicitly clears a saved lock',async()=>{
  elements.get('dockMenu').handlers.click[0]({target:{closest:()=>({dataset:{dockkey:'__arrange'}})}});
  assert.equal(JSON.parse(storage.get('cp_settings')).panesLocked,false);
 });
+
+test('Quick jump completes a book, advances with Right Arrow, and displays only on Enter',async()=>{
+ const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));
+ const input=elements.get('bookSearch'),before=storage.get('cp_live');
+ input.value='Joh';input.handlers.input[0]({inputType:'insertText'});assert.equal(input.value,'John ');
+ assert.match(elements.get('jumpHint').textContent,/chapters 1–21/);
+ input.value='John 3';input.handlers.keydown[0]({key:'ArrowRight',preventDefault(){}});assert.equal(input.value,'John 3:');
+ input.value+='16';input.handlers.input[0]({inputType:'insertText'});assert.equal(storage.get('cp_live'),before);
+ input.handlers.keydown[0]({key:'Enter',preventDefault(){}});
+ assert.match(elements.get('liveText').innerHTML,/John 3:16/);
+});
+test('Quick jump inserts the colon after a pause, preserving multi-digit chapters',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));
+ const input=elements.get('bookSearch');let pending;context.setTimeout=fn=>{pending=fn;return 1;};context.document.activeElement=input;
+ input.value='Psalms 119';input.handlers.input[0]({inputType:'insertText'});assert.equal(input.value,'Psalms 119');
+ pending();assert.equal(input.value,'Psalms 119:');assert.match(elements.get('jumpHint').textContent,/verses 1–176/);
+});
+test('Quick jump supports numbered books and verse ranges with Tab advancement',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));
+ const input=elements.get('bookSearch');input.value='1 Cor';input.handlers.input[0]({inputType:'insertText'});assert.equal(input.value,'1 Corinthians ');
+ input.value+='13';input.handlers.keydown[0]({key:'Tab',preventDefault(){}});assert.equal(input.value,'1 Corinthians 13:');
+ input.value+='4-7';input.handlers.keydown[0]({key:'Enter',preventDefault(){}});
+ assert.equal(vm.runInContext('live.slides.length',context),4);assert.match(elements.get('liveText').innerHTML,/1 Corinthians 13:4/);assert.equal(vm.runInContext('live.slides[3].label',context),'1 Corinthians 13:7');
+});
+test('Quick jump rejects invalid verses and never changes live output on invalid Enter',async()=>{
+ const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));
+ const input=elements.get('bookSearch'),before=storage.get('cp_live');input.value='John 3:999';input.handlers.keydown[0]({key:'Enter',preventDefault(){}});
+ assert.equal(storage.get('cp_live'),before);
+ input.value='John 99';assert.equal(vm.runInContext('advanceJumpChapter()',context),false);assert.equal(input.value,'John 99');
+});
+test('Quick jump keeps ambiguous book prefixes selectable and allows deleting a colon',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));
+ const input=elements.get('bookSearch');input.value='Jo';input.handlers.input[0]({inputType:'insertText'});
+ assert.equal(input.value,'Jo');assert.equal(elements.get('quickBookSug').hidden,false);
+ let timers=0;context.setTimeout=()=>{timers++;return 1;};input.value='John 3';input.handlers.input[0]({inputType:'deleteContentBackward'});
+ assert.equal(input.value,'John 3');assert.equal(timers,0);
+});

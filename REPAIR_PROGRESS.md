@@ -181,3 +181,9 @@ Kept the desktop four-over-three order and saved layout preferences. Removed Pre
 Tablet portrait/landscape and short landscape displays use two natural-height columns with a full-width projector; phones use one column. Compact views clear all desktop row/column placements, preserve dock order, keep readable unscaled controls, and scroll naturally. Desktop corner resizing remains available; compact views use responsive sizing rather than drag handles. Rotation/resize uses the existing resize observer and fit scheduling.
 
 Validation: 55 automated checks pass, including phone/tablet/short-landscape reflow and removed control checks. Actual desktop browser confirmed unscaled passage text and translation footer below the passage; sample John 3:16 renders in the enlarged area. Physical tablet/phone testing remains useful; the browser tooling does not provide device emulation.
+
+## Guided Quick jump — 30 October 2026
+
+Quick jump now completes a unique book prefix after three letters, prioritising name prefixes so Joh resolves to John rather than numbered John letters. Ambiguous prefixes offer clickable choices; numbered books remain supported. Right Arrow, Tab or Enter accepts a book and advances a typed chapter to the verse position. A 650ms typing pause adds the colon automatically, allowing multi-digit chapters to be entered first. A visible chapter/verse-range hint guides keyboard and touch users. Deleting text and editing mid-input do not trigger unwanted completion. Typing a verse no longer publishes after a timer: Enter displays the selected verse/range; voice input remains an explicit display action.
+
+Validation: 60 automated checks pass, including numbered books, ranges, invalid references, multi-digit chapter auto-colon, deletion and Enter-only display. Actual browser verified Joh → John, John 3 → John 3:, and John 3:17 remaining off-air until Enter, then appearing in the projector dock. Worker v36 carries the new UI offline.

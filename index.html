@@ -102,18 +102,19 @@
           
           <div id="bookmarkChips" class="memory-grid"></div>
           <div id="memoryChips" class="scroll memory-grid"></div>
-          <p class="hint dock-hint">Reading history stays on this device. Tap to prepare; Go Live sends it to the screen.</p>
+          <p class="hint dock-hint">Reading history stays on this device. Tap a saved passage to display it.</p>
         </div>
 
         <div class="dock legacy-lookup" data-dock="quickgo">
           <div class="dock-head"><span class="grip"><i class="dock-ico">⚡</i>Quick jump</span></div>
-          <p class="hint dock-hint">Type <b>jn 3:16</b> / <b>ps 23:1-4</b> / <b>rom 8</b> — the book completes itself and the verse goes live as you type. Press <b>/</b> anywhere to focus.</p>
+          <p class="hint dock-hint">Type <b>jn 3:16</b> / <b>ps 23:1-4</b> / <b>rom 8</b> — type three book letters, then chapter and verse. <b>→</b> accepts each step; <b>Enter</b> displays.</p>
           <div class="quickjump">
             <input id="bookSearch" type="search" autocomplete="off"
-                   placeholder="jn 3:16  ·  ps 23:1-4  ·  rom 8  (/ to focus)">
+                   placeholder="Joh → 3 → 16 → Enter" aria-describedby="jumpHint" enterkeyhint="go">
             <span id="bookGhost"></span>
             <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
           </div>
+          <p id="jumpHint" class="jump-hint" role="status" aria-live="polite">Type 3 book letters, then chapter → verse. Enter displays.</p>
           <div class="dock-foot">
             <button id="btnVoiceJump" title="Speak a scripture — Chrome/Edge, online">🎤 Speak it</button>
           </div>

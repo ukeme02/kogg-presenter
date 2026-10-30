@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KOGG Presenter — Free Church Presentation App</title>
-<meta name="description" content="KOGG Presenter is a free, offline-first church presentation app: seven Bibles, a one-page dock deck (Books, Chapters, Verses, Memory), quick jump by reference, voice control, service plans, lower thirds and a transparent OBS overlay. Choose your work mode: Base, Sync or Local.">
+<meta name="description" content="KOGG Presenter is a free, offline-first church presentation app: five bundled Bibles, a one-page dock deck (Books, Chapters, Verses, Memory), quick jump by reference, voice control, service plans, lower thirds and a transparent OBS overlay. Choose your work mode: Base, Sync or Local.">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <style>
   @font-face {
@@ -211,6 +211,7 @@
   footer a { color:var(--accent2); text-decoration:none; }
   .foot-links { margin-top:8px; display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
 </style>
+<style>@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } .reveal { opacity:1 !important; transform:none !important; } }</style>
 </head>
 <body>
 
@@ -327,11 +328,11 @@
       <div class="card"><span class="ficon">🧠</span><h3>Memory dock</h3><p>Every scripture you've been in this service stays one tap away. The pastor says “take us back” — you already have. The grid shrinks to fit as the list grows.</p></div>
       <div class="card"><span class="ficon">🌈</span><h3>Color-coded books</h3><p>Old and New Testament, each book colored by class — Moses/Torah, History, Poetry, Major &amp; Minor Prophets, Gospels, Paul's Letters, General Letters, Prophecy.</p></div>
       <div class="card"><span class="ficon">🔎</span><h3>Find it when you can't quote it</h3><p>Type or speak the words you remember — <i>"sheep hear my voice"</i> — and go straight to the verse across the whole Bible you have loaded.</p></div>
-      <div class="card"><span class="ficon">🎵</span><h3>Song library &amp; 34 starter hymns</h3><p>Lyrics split into verse/chorus slides automatically. A pack of public-domain hymns is bundled. Import any lyrics page from the web and keep it forever.</p></div>
-      <div class="card"><span class="ficon">⏱️</span><h3>Service plans &amp; universal Quick Go</h3><p>Queue songs and scriptures into a plan. One search bar at the top reaches every deck — reference, song, plan item or saved plan — and makes it live.</p></div>
+      <div class="card"><span class="ficon">🎵</span><h3>Song library &amp; 34 starter hymns</h3><p>Lyrics split into verse/chorus slides automatically. A pack of public-domain hymns is bundled. Import text from supported web pages, review it, and save it to your local song library.</p></div>
+      <div class="card"><span class="ficon">⏱️</span><h3>Service plans &amp; universal Quick Go</h3><p>Queue songs and scriptures into a plan. One search bar at the top reaches every deck — reference, song, plan item or saved plan — and lets you project matching content or load a saved plan.</p></div>
       <div class="card"><span class="ficon">🎤</span><h3>Voice control</h3><p>While the room is singing, just speak: <i>"next"</i>, <i>"blank"</i>, <i>"John three sixteen"</i>. The mic sits at the bottom of the console where your hand already is.</p></div>
-      <div class="card"><span class="ficon">🎨</span><h3>Themes &amp; your own backgrounds</h3><p>14 built-in gradient themes, your own images, church logo, font, size, weight, alignment — adjustable live mid-service.</p></div>
-      <div class="card"><span class="ficon">🧩</span><h3>OBS overlay &amp; lower thirds</h3><p>A transparent browser source floats slide text and animated speaker banners over your video — no plugins, barely any CPU. Plus a pre-service countdown.</p></div>
+      <div class="card"><span class="ficon">🎨</span><h3>Themes &amp; your own backgrounds</h3><p>Four built-in themes, your own images, church logo, font, size, weight, alignment — adjustable live mid-service.</p></div>
+      <div class="card"><span class="ficon">🧩</span><h3>OBS overlay &amp; lower thirds</h3><p>An optional local bridge connects the operator to an OBS browser source for transparent slide text and lower thirds. Keep the bridge running; verify the setup before a service. A pre-service countdown is also included.</p></div>
     </div>
   </section>
 
@@ -344,10 +345,10 @@
         <div class="lock">🔒</div>
         <h3 style="font-size:19px">Designed to be trustable</h3>
         <ul>
-          <li><b>🔒 Encrypted in transit &amp; at rest</b> — accounts run on Supabase (PostgreSQL) with TLS and row-level security.</li>
-          <li><b>🪪 Your data is only yours</b> — a database policy means only your signed-in session can read or write your row.</li>
-          <li><b>🚫 No ads, no analytics, no selling</b> — the app makes no requests beyond your Bible files and your own sync.</li>
-          <li><b>📤 Full export, anytime</b> — Tools → Export Library gives your entire library as JSON. Never locked in.</li>
+          <li><b>🔒 Account provider</b> — sign-in and cloud libraries use Supabase. Use the HTTPS deployment; library access depends on the ownership policies configured by its administrator.</li>
+          <li><b>🪪 Account isolation</b> — the deployment must enable the documented ownership policy. Verify it before storing private library data.</li>
+          <li><b>Network services</b> — Bible files are served with the app. Account tools load a Supabase SDK from a CDN; cloud sync uses Supabase, and optional web lyrics import sends the requested URL to an external fetch service.</li>
+          <li><b>📤 Library backups</b> — Tools → Export Library includes songs, themes, service plans, settings and referenced images/custom Bibles in a versioned JSON backup. Keep a backup before switching devices or accounts.</li>
           <li><b>📜 Freely usable texts</b> — KJV, BSB, WEB, ASV and Strong's numbers are public domain; NIV and NLT permit free church use.</li>
         </ul>
       </div>
@@ -371,7 +372,7 @@
             <button class="go" id="lSignUp">Create Account</button>
             <button class="in" id="lSignIn">Sign In</button>
           </div>
-          <p id="lStatus" class="lStatus"></p>
+          <p id="lStatus" class="lStatus" role="status" aria-live="polite"></p>
         </div>
         <p id="landingAuthNone" class="why">Accounts open once cloud sync is enabled on this deployment — see README → “Enable cloud sync”. The app itself works fully without an account.</p>
       </div>
@@ -384,22 +385,22 @@
     <p class="sub">The app is one web app at <code>https://kogg-presenter.pages.dev</code> — installable on all platforms.</p>
     <div class="plats">
       <div class="card"><span class="pnum">01</span><h3>Phone or tablet</h3><p><a href="index.html">Open the app</a> in Chrome → menu → <i>Add to Home screen</i>. It becomes a real app icon and works offline.</p></div>
-      <div class="card"><span class="pnum">02</span><h3>Android APK</h3><p><a href="https://www.pwabuilder.com" target="_blank">PWABuilder</a> → paste the URL → download the signed APK. Sideload, no store needed.</p></div>
+      <div class="card"><span class="pnum">02</span><h3>Android APK</h3><p>Android packaging is optional and not supplied here. A maintainer can prepare and test a package using <a href="https://www.pwabuilder.com" target="_blank" rel="noopener noreferrer">PWABuilder</a>. Most users can install the web app from their browser.</p></div>
       <div class="card"><span class="pnum">03</span><h3>iPhone / iPad</h3><p>Safari → Share → <i>Add to Home Screen</i>. Full-screen and offline as a native-feeling app.</p></div>
       <div class="card"><span class="pnum">04</span><h3>Windows, Mac, Linux</h3><p>Chrome or Edge → menu → <i>Install</i>. Standalone window, Start-menu icon, offline support.</p></div>
       <div class="card"><span class="pnum">05</span><h3>Laptop + projector</h3><p>Operator on one screen, <code>display.html</code> on the projector — synced automatically, or via the Window Management API.</p></div>
-      <div class="card"><span class="pnum">06</span><h3>OBS Studio</h3><p>Browser Source → <code>display.html?overlay=1</code> (1920×1080, 30 FPS); transparent text and lower thirds over your scenes.</p></div>
+      <div class="card"><span class="pnum">06</span><h3>OBS Studio</h3><p>Start the local bridge described in the README, operate the app at <code>http://127.0.0.1:8766/</code>, and use its <code>display.html?overlay=1</code> URL in OBS. The hosted URL alone cannot share your browser's local state with OBS.</p></div>
     </div>
   </section>
 
   <!-- FAQ -->
   <section id="faq" class="reveal">
     <h2>Questions people ask</h2>
-    <details open><summary>What's the difference between Base, Sync and Local mode?</summary><p><b>Base Mode</b> loads the basics once and keeps scripture display working offline — zero cloud contacts. <b>Sync Mode</b> signs you in at start; your library pushes and pulls to your account automatically. <b>Local Mode</b> is the hybrid: everything (Bibles, schedules, lyrics, themes) saves on this device only. Switch anytime from the top bar — none of the modes stop the app from working offline.</p></details>
+    <details open><summary>What's the difference between Base, Sync and Local mode?</summary><p><b>Base Mode</b> loads the basics once and keeps scripture display working offline — zero cloud contacts. <b>Sync Mode</b> signs you in at start; your library pulls on sign-in and pushes pending changes when online. Conflicting edits need attention rather than being overwritten. <b>Local Mode</b> is the hybrid: everything (Bibles, schedules, lyrics, themes) saves on this device only. Switch anytime from the top bar — none of the modes stop the app from working offline.</p></details>
     <details><summary>Is it really free? Where's the catch?</summary><p>No catch: the app is static HTML/JS you can host anywhere for free, the Bibles may be used freely in church settings, sync uses Supabase's free tier. No server cost, no subscription — and nothing is sold. Not your data, not anything.</p></details>
-    <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open it once online; the service worker downloads all seven Bibles, the starter hymns and the app shell. After that it runs from your device's cache with Wi-Fi off — in every mode. Voice recognition is the one exception (it's a browser feature that needs connectivity).</p></details>
-    <details><summary>Who can see my library if I create an account?</summary><p>Only you. Row-level security means every request is checked against your signed-in identity; the database physically refuses queries for other users' rows. Export your full library to JSON anytime.</p></details>
-    <details><summary>Can several people share one account?</summary><p>You can, but it's not designed that way — the library is per-account. Sign in with the same email on the phone and the laptop and they stay in sync.</p></details>
+    <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open the operator app online and allow its Bible files and app assets to finish downloading. Test it with Wi-Fi off before a service. Cached scripture and local libraries work offline; sign-in, cloud sync, web lyrics import and browser voice recognition need internet.</p></details>
+    <details><summary>Who can see my library if I create an account?</summary><p>The cloud deployment must enforce the ownership policy described in the README. Its administrator should test account isolation before use. Shared computers also retain local library data; export a backup before clearing local data or switching accounts.</p></details>
+    <details><summary>Can several people share one account?</summary><p>You can, but it's not designed that way — the library is per-account. Use one account for your own devices. Sync merges independent edits and stops on conflicting edits; resolve a conflict before continuing. Export backups before changing accounts on a shared device.</p></details>
     <details><summary>What about modern translations like NIV or ESV?</summary><p><b>NIV and NLT are bundled</b> — both publishers grant free use of Scripture in church settings. ESV and some others are not included; publishers of those grant licenses case by case. In Sync or Local Mode you can also import your own Bible file (Tools → Scripture versions) and it stays on your device.</p></details>
   </section>
 
@@ -419,6 +420,7 @@
 
 <script src="js/supabase-config.js"></script>
 <script src="js/idb.js"></script>
+<script src="js/library.js"></script>
 <script src="js/sync.js"></script>
 <script>
 (function () {
@@ -440,14 +442,14 @@
   const prog = document.getElementById('progress');
   addEventListener('scroll', () => {
     const h = document.documentElement;
-    prog.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+    prog.style.width = (h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight) * 100) + '%';
   }, { passive: true });
 
   /* ---------- reveal on scroll ---------- */
-  const io = new IntersectionObserver(es => es.forEach(e => {
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  }), { threshold: .08 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  }), { threshold: .08 }) : null;
+  document.querySelectorAll('.reveal').forEach(el => { if (io) io.observe(el); else el.classList.add('in'); });
 
   /* ---------- hero orbs parallax ---------- */
   addEventListener('mousemove', e => {
@@ -487,13 +489,15 @@
     bibleLoading = true;
     const note = document.getElementById('demoLoad');
     if (note) note.textContent = 'Loading the real KJV…';
-    fetch('data/kjv.json').then(r => r.json()).then(b => {
+    fetch('data/kjv.json').then(r => { if (!r.ok) throw new Error('Bible download failed'); return r.json(); }).then(b => {
       bible = b;
       if (note) note.textContent = '✅ Real KJV loaded — every tap is a real verse.';
       renderDemoBooks();
       if (dBook >= 0) renderDemoChapters();
       onBibleReady.splice(0).forEach(fn => fn());
-    }).catch(() => { if (note) note.textContent = '(Bible file not reachable here — the app itself bundles it.)'; });
+      for (const [where, ref] of pendingRefs) liveVerse(ref, where);
+      pendingRefs.clear();
+    }).catch(() => { if (note) note.textContent = 'Bible download failed — type a reference or choose a book to retry.'; }).finally(() => { bibleLoading = false; });
   }
   const norm = s => s.toLowerCase().replace(/[.\s]/g, '');
   const ALIAS = { ex:'EXO', exod:'EXO', dt:'DEU', deut:'DEU', josh:'JOS', judg:'JDG', jgs:'JDG',
@@ -510,9 +514,9 @@
     const raw = norm(q);
     if (!raw) return -1;
     if (ALIAS[raw]) return BOOKS.findIndex(b => b[1] === ALIAS[raw]);
-    let i = BOOKS.findIndex(b => norm(b[1]) === raw);
+    let i = BOOKS.findIndex(b => norm(b[0]) === raw || norm(b[1]) === raw);
     if (i < 0) i = BOOKS.findIndex(b => norm(b[0]).startsWith(raw));
-    const key = raw.replace(/^\d+/, '');
+    const key = raw;
     if (i < 0) i = BOOKS.findIndex(b => norm(b[0]).startsWith(key));
     if (i < 0) i = BOOKS.findIndex(b => norm(b[0]).includes(key) || norm(b[1]).includes(key));
     return i;
@@ -527,22 +531,26 @@
     const rest = s.slice(letters.length).trim();
     const dm = rest.match(/^(\d+)\s*[:.]?\s*(?:(\d+)\s*(?:-\s*(\d+))?)?$/);
     if (!dm) return null;
-    return { bi, ch: +dm[1], v: +dm[2] || 1, vTo: +(dm[3] || dm[2] || 1) };
+    return { bi, ch: +dm[1], v: dm[2] === undefined ? 1 : +dm[2], vTo: +(dm[3] || dm[2] || 1) };
   }
   function showHit(ref, text, where) {
     document.getElementById(where + 'Ref').textContent = ref;
     document.getElementById(where + 'Text').textContent = '“' + text + '”';
   }
   const stripS = t => String(t).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/\s{2,}/g, ' ');
+  const pendingRefs = new Map();
   function liveVerse(ref, where) {
     if (!bible) {
+      pendingRefs.set(where, ref);
+      ensureBible();
       showHit('KJV is loading…', 'One moment — the Bible file is still loading. Try again in a second.', where);
       return;
     }
-    const book = bible.books[Math.min(ref.bi, bible.books.length - 1)];
-    const ch = book.chapters[Math.min(ref.ch, book.chapters.length) - 1];
+    const book = bible.books[ref.bi];
+    const ch = book?.chapters[ref.ch - 1];
+    if (![ref.bi,ref.ch,ref.v,ref.vTo].every(Number.isInteger) || !ch || ref.v < 1 || ref.vTo < ref.v || ref.vTo > ch.length) { showHit('Invalid reference', 'Choose a valid book, chapter and verse range.', where); return; }
     const parts = [];
-    for (let x = ref.v; x <= Math.min(ref.vTo, ch.length, ref.v + 12); x++)
+    for (let x = ref.v; x <= ref.vTo; x++)
       parts.push(stripS(ch[x - 1] || ''));
     showHit(`${book.name} ${Math.min(ref.ch, book.chapters.length)}:${ref.v}${ref.vTo > ref.v ? '–' + Math.min(ref.vTo, ch.length) : ''}`, parts.join(' '), where);
   }
@@ -621,19 +629,33 @@
   document.getElementById('landingAuthCfg').style.display = 'block';
   document.getElementById('landingAuthNone').style.display = 'none';
 
+  function validAuth() {
+    const email = document.getElementById('lEmail');
+    if (!email.value.trim() || !email.checkValidity() || pass.value.length < 6) { setStat('Enter a valid email and a password of at least six characters.', 'err'); return false; }
+    return true;
+  }
+  function authBusy(busy) { document.getElementById('lSignUp').disabled = busy; document.getElementById('lSignIn').disabled = busy; }
   document.getElementById('lSignUp').addEventListener('click', async () => {
+    if (!validAuth()) return;
+    authBusy(true);
     setStat('Creating your account…');
     try {
       await window.KOGGSync.signUp(document.getElementById('lEmail').value.trim(), pass.value);
       setStat('✓ Account created — check your inbox if email confirmation is on, then sign in and open the app.', 'ok');
     } catch (err) { setStat('Sign up failed: ' + err.message, 'err'); }
+    finally { authBusy(false); }
   });
   document.getElementById('lSignIn').addEventListener('click', async () => {
+    if (!validAuth()) return;
+    authBusy(true);
     setStat('Signing in…');
     try {
       await window.KOGGSync.signIn(document.getElementById('lEmail').value.trim(), pass.value);
-      setStat('✓ Signed in — open the app; your library syncs automatically.', 'ok');
+      const settings = JSON.parse(localStorage.getItem('cp_settings') || '{}');
+      localStorage.setItem('cp_settings', JSON.stringify({...settings, mode:'sync'}));
+      setStat('✓ Signed in — open the app to load your library. Any sync conflict will be shown there.', 'ok');
     } catch (err) { setStat('Sign in failed: ' + err.message, 'err'); }
+    finally { authBusy(false); }
   });
 })();
 </script>

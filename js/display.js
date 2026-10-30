@@ -64,25 +64,17 @@ function applyTheme(state) {
 }
 
 function fitText() {
-  // scale the text up OR down until it comfortably fills the screen
-  const vhPx = window.innerHeight;
-  const box = textEl.clientHeight;
-  let size = parseFloat(getComputedStyle(textEl).fontSize);
-  const apply = s => { textEl.style.fontSize = s + 'px'; };
-  const fits = () =>
-    textEl.scrollHeight <= box - 1 && textEl.scrollWidth <= textEl.clientWidth + 1;
-
-  let guard = 80;
-  // shrink first if it overflows
-  while (!fits() && size > 24 && guard-- > 0) { size -= 2; apply(size); }
-  // then grow until it fills ~92% of the box (or can't grow safely)
-  while (guard-- > 0) {
-    if (textEl.scrollHeight >= box * 0.92 || size >= vhPx * 0.42) break;
-    const next = size + 2;
-    apply(next);
-    if (!fits()) { apply(size); break; }   // overshot — step back
-    size = next;
+  if (textEl.style.display === 'none') return;
+  // The selected font size is the upper bound; shrink only when content overflows.
+  const maximum = parseFloat(getComputedStyle(textEl).fontSize) || 24;
+  let low = 8, high = Math.max(8, maximum);
+  const fits = () => textEl.scrollHeight <= textEl.clientHeight + 1 && textEl.scrollWidth <= textEl.clientWidth + 1;
+  for (let i = 0; i < 12; i++) {
+    const size = (low + high) / 2;
+    textEl.style.fontSize = size + 'px';
+    if (fits()) low = size; else high = size;
   }
+  textEl.style.fontSize = low + 'px';
 }
 
 function render(state) {
@@ -109,21 +101,24 @@ function render(state) {
   } else if (!OVERLAY) {
     applyBackdrops(state);
   }
-  renderLowerThird(state.lowerThird);
+  renderLowerThird(state.mode === 'blank' ? null : state.lowerThird);
 }
 
 /* word highlight — the operator drags over words in the preview; the matching
    verse (label ends "…:<verse>") gets those words marked, live, on screen. */
 function renderSlideText(slide, state) {
-  const words = plain(slide.text).trim().split(/\s+/).filter(Boolean);
+  const words = plain(slide.text).trim().split(/([\r\n]+)/).flatMap(part => /^[\r\n]+$/.test(part) ? [part] : part.split(/[^\S\r\n]+/).filter(Boolean));
   let hl = null;
   if (state.highlight) {
     const m = /:(\d+)$/.exec(slide.label || '');
     if (m && +m[1] === state.highlight.v) hl = state.highlight;
   }
-  return words.map((w, i) =>
-    hl && i + 1 >= hl.wFrom && i + 1 <= hl.wTo ? `<mark class="whl">${esc(w)}</mark>` : esc(w)
-  ).join(' ');
+  let wordIndex = 0;
+  return words.map(w => {
+    if (/^[\r\n]+$/.test(w)) return w;
+    wordIndex++;
+    return hl && wordIndex >= hl.wFrom && wordIndex <= hl.wTo ? `<mark class="whl">${esc(w)}</mark>` : esc(w);
+  }).join(' ').replace(/ *\n */g, '\n');
 }
 
 /* Strong's word card — shown when the operator taps a word number in the
@@ -219,5 +214,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'F11') return; // let the browser handle it
 });
 
-if (OVERLAY) document.body.classList.add('overlay');
+if (OVERLAY) { document.documentElement.classList.add('overlay'); document.body.classList.add('overlay'); }
 render(getLive());
+
+window.addEventListener('resize', () => render(getLive()));
+if (document.fonts?.ready) document.fonts.ready.then(() => render(getLive()));

@@ -8,6 +8,7 @@
 }
 
 html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
+html.overlay { background: transparent !important; }
 body.overlay { background: transparent !important; }
 body.overlay #screen { background: transparent !important; }
 #screen {
@@ -23,6 +24,9 @@ body.overlay #screen { background: transparent !important; }
 }
 
 #slideText {
+  box-sizing: border-box;
+  width: 100%;
+  height: 88vh;
   font-family: 'Nunito Sans Expanded', Georgia, serif;
   font-size: 7vh;
   font-weight: 700;
@@ -87,13 +91,14 @@ body.overlay #screen { background: transparent !important; }
 /* Strong's word card — a tap in the operator console puts the meaning
    of a marked word on screen. Styled with the live theme via JS. */
 #strongsCard {
+  overflow-y: auto;
   display: none;
   flex-direction: column;
   align-items: center;
   text-align: center;
   max-width: 78vw;
   max-height: 88vh;
-  overflow: hidden;
+  overflow-y: auto;
   text-shadow: 0 2px 12px rgba(0,0,0,.55);
   font-family: 'Nunito Sans Expanded', Georgia, serif;
 }

@@ -8,10 +8,16 @@ const LS = {
     catch { return fallback; }
   },
   set(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+    try { localStorage.setItem(key, JSON.stringify(value)); }
+    catch (err) {
+      const notice = document.getElementById('storageNotice') || document.body.appendChild(Object.assign(document.createElement('div'), { id: 'storageNotice', role: 'alert' }));
+      notice.textContent = 'Storage is unavailable or full. Your latest change could not be saved. Export a backup and free space before continuing.';
+      notice.style.cssText = 'position:fixed;bottom:0;left:0;right:0;padding:16px;background:#9b2020;color:white;z-index:99999';
+      throw err;
+    }
     // library changes mark the cloud copy out of date (auto-sync — see CLOUD section)
     if (window.__koggBoot &&
-        (key === K.songs || key === K.themes || key === K.service || key === K.plans)) scheduleSync();
+        (key === K.songs || key === K.themes || key === K.plans)) markDirty();
   },
 };
 const K = { songs: 'cp_songs', themes: 'cp_themes', service: 'cp_service',
@@ -44,6 +50,7 @@ function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
   for (let v = vFrom; v <= vTo; v++) {
     const text = book.chapters[chFrom - 1][v - 1];
     if (text == null) break;
+    if (!text.trim()) continue;
     slides.push({ text, label: `${book.name} ${chFrom}:${v}` });
   }
   return slides;
@@ -70,7 +77,7 @@ const DEFAULT_FONT = "'Nunito Sans Expanded', Georgia, serif";
 themes = themes.map(t => {
   t = Object.assign({ align: 'center', weight: '400' }, t);
   if (t.font === 'Georgia, serif') t.font = DEFAULT_FONT;
-  if (t.weight === '400' || t.weight === undefined) t.weight = '700';
+  if (t.weight === undefined) t.weight = '700';
   // the default theme (t1) was Sunset until Oct 2026 — switch untouched copies to Black
   if (t.id === 't1' && t.name === 'Sunset' &&
       t.bg === 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)' && !t.bgImage && !t.bgImageId) {
@@ -123,6 +130,7 @@ function pushLive(patch = {}) {
   LS.set(K.live, live);
   if (channel) channel.postMessage(live);
   renderPreview();
+  renderLiveText();
   renderFloatPreview();
 }
 
@@ -130,8 +138,8 @@ function pushLive(patch = {}) {
 function renderPreview() {
   // live indicator in the Scripture tab ("🔴 John 3:16")
   const lr = $('liveRef');
-  const showing = live.mode === 'normal' && live.title;
-  lr.textContent = showing ? '🔴 ' + live.title : '';
+  const showing = live.mode === 'normal' && live.slides?.[live.index];
+  lr.textContent = showing ? '🔴 ' + (live.slides[live.index].label || live.title || '') : '';
   lr.hidden = !showing;
 }
 
@@ -147,7 +155,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 
 /* ---------- "⋯" overflow menu ---------- */
 document.addEventListener('click', e => {
-  if (!e.target.closest('#dockMenu') && !e.target.closest('#feDocks')) {
+  if (!e.target.closest('#dockMenu') && !e.target.closest('#feDocks') && !e.target.closest('#btnDocks')) {
     const dm = $('dockMenu');
     if (dm && !dm.hidden) dm.hidden = true;   // click-outside closes the docks menu
   }
@@ -156,27 +164,44 @@ document.addEventListener('click', e => {
 /* =========================================================
    SCRIPTURE
 ========================================================= */
+let bibleLoadToken = 0;
+let loadedBibleFile = '';
 async function loadBible(file) {
+  const token = ++bibleLoadToken;
+  try {
   let data = null;
   if (file.startsWith('idb:')) {
     // custom version added in Tools — text lives in IndexedDB
     const raw = window.KOGGAssets ? await window.KOGGAssets.get(file.slice(4)) : null;
-    if (!raw) { flash($('translationSelect'), 'Version missing'); return; }
-    try { data = JSON.parse(raw); } catch { flash($('translationSelect'), 'Version corrupt'); return; }
+    if (!raw) throw new Error('Version missing from this device');
+    data = JSON.parse(raw);
   } else {
     const res = await fetch(file);
+    if (!res.ok) throw new Error('Bible download failed (' + res.status + ')');
     data = await res.json();
   }
+  if (token !== bibleLoadToken) return false;
+  if (!data || !Array.isArray(data.books) || data.books.length !== 66 || !data.books.every(b => typeof b.name === 'string' && Array.isArray(b.chapters) && b.chapters.length && b.chapters.every(c => Array.isArray(c) && c.length && c.every(v => typeof v === 'string')))) throw new Error('Bible file has an invalid format');
   bible = data;
+  loadedBibleFile = file;
+  $('translationSelect').value = file;
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: file }));
   // flat index of plain-verse text for fast full-text search (all 66 books)
   searchIndex = [];
   bible.books.forEach((b, bi) => b.chapters.forEach((ch, ci) => ch.forEach((t, vi) => {
     searchIndex.push({ bi, ci, vi, s: stripStrongs(t).toLowerCase() });
   })));
   const bookSel = $('bookSelect');
-  bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${b.name}</option>`).join('');
+  bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${esc(b.name)}</option>`).join('');
   fillChapters();
   renderVersionChips();
+  return true;
+  } catch (err) {
+    if (token !== bibleLoadToken) return false;
+    if (loadedBibleFile) $('translationSelect').value = loadedBibleFile;
+    $('modeHint').textContent = err.message + ' — select a translation to retry.';
+    return false;
+  }
 }
 function fillChapters() {
   const book = bible.books[+$('bookSelect').value];
@@ -186,6 +211,7 @@ function fillChapters() {
   renderChapterChips();
 }
 function fillVerses() {
+  rangeStart = 0;
   const book = bible.books[+$('bookSelect').value];
   const ch = +$('chapterSelect').value;
   const count = book.chapters[ch - 1].length;
@@ -201,6 +227,7 @@ function opts(n) { return Array.from({ length: n }, (_, i) => `<option value="${
    Verse mode (default):  tap a number → that verse is live, instantly.
    Range mode:            tap the first number, tap the last → range goes live.
    Chapter mode:          tap a chapter number in the Chapters dock — whole chapter live. */
+let rangeStart = 0;
 let verseMode = 'verse';
 let liveRef = null;    // {bookIdx, ch, vFrom, vTo} currently on the projector
 
@@ -220,17 +247,22 @@ function renderVerseDots() {
 }
 function renderLiveText() {
   const box = $('liveText');
-  if (verseMode === 'chapter') { box.innerHTML = ''; return; }
-  if (!liveRef || liveRef.bookIdx !== +$('bookSelect').value || liveRef.ch !== +$('chapterSelect').value) {
-    box.innerHTML = '<span class="dim">No verse live in this chapter yet — tap a number.</span>';
+  const slide = live.slides?.[live.index];
+  if (live.mode !== 'normal' || !slide) { box.textContent = live.mode === 'blank' ? 'Screen blank' : live.mode === 'logo' ? 'Logo on screen' : 'No slide on screen'; return; }
+  const currentBook = liveRef && bible?.books[liveRef.bookIdx];
+  const prefix = currentBook ? `${currentBook.name} ${liveRef.ch}:` : '';
+  const projectedVerse = prefix && slide.label?.startsWith(prefix) ? Number(slide.label.slice(prefix.length)) : 0;
+  if (!projectedVerse || !liveRef || projectedVerse < liveRef.vFrom || projectedVerse > liveRef.vTo) {
+    box.innerHTML = `<div class="live-ref">${esc(slide.label || '')}</div><div style="white-space:pre-wrap">${esc(stripStrongs(slide.text))}</div>`;
     return;
   }
-  const book = bible.books[liveRef.bookIdx];
-  const hasStrongs = /\[(?:G|H)\d{1,5}]/.test(book.chapters[liveRef.ch - 1][liveRef.vFrom - 1] || '');
+  const previewRef = {...liveRef, vFrom:projectedVerse, vTo:projectedVerse};
+  const book = bible.books[previewRef.bookIdx];
+  const hasStrongs = /\[(?:G|H)\d{1,5}]/.test(book.chapters[previewRef.ch - 1][previewRef.vFrom - 1] || '');
   const nums = hasStrongs && strongsOn();   // numbers stay while the card shows — second tap flips back
   const parts = [];
-  for (let v = liveRef.vFrom; v <= Math.min(liveRef.vTo, liveRef.vFrom + 40); v++) {
-    const raw = book.chapters[liveRef.ch - 1][v - 1] || '';
+  for (let v = previewRef.vFrom; v <= Math.min(previewRef.vTo, previewRef.vFrom + 40); v++) {
+    const raw = book.chapters[previewRef.ch - 1][v - 1] || '';
     const hl = live.highlight && live.highlight.v === v ? live.highlight : null;
     const toks = raw.trim().split(/\s+/).filter(Boolean);
     let pi = 0;
@@ -250,7 +282,7 @@ function renderLiveText() {
     }).join(' ');
     parts.push(`<b>${v}</b> ${hh}`);
   }
-  const ref = book.name + ' ' + liveRef.ch + (liveRef.vTo > liveRef.vFrom ? ':' + liveRef.vFrom + '-' + liveRef.vTo : ':' + liveRef.vFrom);
+  const ref = book.name + ' ' + previewRef.ch + (previewRef.vTo > previewRef.vFrom ? ':' + previewRef.vFrom + '-' + previewRef.vTo : ':' + previewRef.vFrom);
   const liveOnProjector = live.strongsShowing && live.strongsCard ? '<span class="lt-note">word meaning on screen — tap the number again to flip back</span>' : '';
   box.innerHTML = `<div class="live-ref">${esc(ref)}${nums ? '<span class="lt-tip">tap a word number → its meaning takes the screen</span>' : ''}${liveOnProjector}</div>${parts.join(' ')}`;
 }
@@ -258,14 +290,15 @@ function renderLiveText() {
 /* ---------- Strong's tap-to-define — numbers live in the preview only;
    tapping one shows the Hebrew/Greek word card on the projector, tapping
    again flips back to the verse. Service never has to stop. ---------- */
-let strongsLexicon = null, strongsLoading = false;
+let strongsLexicon = null, strongsLoading = null;
 function ensureLexicon() {
-  if (strongsLexicon || strongsLoading) return Promise.resolve(strongsLexicon);
-  strongsLoading = true;
-  return fetch('data/strongs.json').then(r => r.json())
+  if (strongsLexicon) return Promise.resolve(strongsLexicon);
+  if (strongsLoading) return strongsLoading;
+  strongsLoading = fetch('data/strongs.json').then(r => { if (!r.ok) throw new Error('Lexicon download failed'); return r.json(); })
     .then(d => { strongsLexicon = d; return d; })
     .catch(() => null)
-    .finally(() => { strongsLoading = false; });
+    .finally(() => { strongsLoading = null; });
+  return strongsLoading;
 }
 $('liveText').addEventListener('click', async e => {
   /* click on empty text (not a word, not a number) = clear the highlight */
@@ -289,8 +322,9 @@ $('liveText').addEventListener('click', async e => {
                  kjv: entry.k || '', deriv: entry.x || '' };
   const book = liveRef ? bible.books[liveRef.bookIdx] : null;
   if (book && liveRef) {
-    card.ref = `${book.name} ${liveRef.ch}:${liveRef.vFrom}${liveRef.vTo > liveRef.vFrom ? '-' + liveRef.vTo : ''}`;
-    card.verse = stripStrongs(book.chapters[liveRef.ch - 1][liveRef.vFrom - 1] || '');
+    const slide = live.slides[live.index];
+    card.ref = slide?.label || '';
+    card.verse = stripStrongs(slide?.text || '');
   }
   pushLive({ strongsShowing: true, strongsCard: card });
   renderLiveText();
@@ -359,7 +393,7 @@ function renderFloatPreview() {
     const m = /:(\d+)$/.exec(s.label || '');
     if (m && +m[1] === live.highlight.v) hl = live.highlight;
   }
-  const words = plain(s.text).trim().split(/\s+/).filter(Boolean);
+  const words = stripStrongs(s.text).trim().split(/\s+/).filter(Boolean);
   body.innerHTML = `${s.label ? `<div class="fp-ref">${esc(s.label)}</div>` : ''}<div class="fp-text">${words.map((w, i) =>
     hl && i + 1 >= hl.wFrom && i + 1 <= hl.wTo ? `<mark class="whl">${esc(w)}</mark>` : esc(w)).join(' ')}</div>`;
 }
@@ -430,6 +464,7 @@ function scrollLiveIntoView() {
   }, 60);
 }
 function setVerseMode(m) {
+  rangeStart = 0;
   verseMode = m;
   document.querySelectorAll('#pickMode button').forEach(b =>
     b.classList.toggle('active', b.dataset.mode === m));
@@ -461,7 +496,6 @@ $('verseDots').addEventListener('click', e => {
     rangeStart = 0;
   }
 });
-let rangeStart = 0;
 
 /* what's currently selected (used by "+ Add to Service") */
 function currentScriptureRange() {
@@ -476,9 +510,8 @@ $('bookSelect').addEventListener('change', fillChapters);
 $('chapterSelect').addEventListener('change', fillVerses);
 $('translationSelect').addEventListener('change', () => {
   const file = $('translationSelect').value;
-  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: file }));
-  loadBible(file).then(() => {
-    if (liveRef) goLiveScripture({ ...liveRef });   // same verses, new translation, still live
+  loadBible(file).then(loaded => {
+    if (loaded && liveRef) goLiveScripture({ ...liveRef });   // same verses, new translation, still live
   });
 });
 
@@ -577,6 +610,7 @@ $('chapterChips').addEventListener('click', e => {
   renderChapterChips();
 });
 $('btnPrevChapter').addEventListener('click', () => {
+  if (!bible) return;
   const cur = +$('chapterSelect').value;
   if (cur > 1) {
     $('chapterSelect').value = cur - 1;
@@ -584,10 +618,13 @@ $('btnPrevChapter').addEventListener('click', () => {
   } else if ($('bookSelect').value > 0) {
     $('bookSelect').value = $('bookSelect').value - 0 - 1;
     fillChapters();
+    $('chapterSelect').value = bible.books[+$('bookSelect').value].chapters.length;
+    fillVerses(); renderChapterChips();
   }
   if (verseMode === 'chapter') chapterLive(+$('bookSelect').value, +$('chapterSelect').value);
 });
 $('btnNextChapter').addEventListener('click', () => {
+  if (!bible) return;
   const cur = +$('chapterSelect').value;
   const total = bible.books[+$('bookSelect').value].chapters.length;
   if (cur < total) {
@@ -604,6 +641,7 @@ $('btnNextChapter').addEventListener('click', () => {
    chapters and books (verse/range shift the window; chapter mode steps
    whole chapters, just like the Chapters dock) ---------- */
 function stepVerse(dir) {
+  if (!bible) return;
   const bi = +$('bookSelect').value;
   const book = bible.books[bi];
   const ch = +$('chapterSelect').value;
@@ -649,6 +687,7 @@ function stepVerse(dir) {
 $('btnPrevVerse').addEventListener('click', () => stepVerse(-1));
 $('btnNextVerse').addEventListener('click', () => stepVerse(1));
 $('btnAddVerseService').addEventListener('click', () => {
+  if (!bible) return;
   const r = liveRef && liveRef.bookIdx === +$('bookSelect').value && liveRef.ch === +$('chapterSelect').value
     ? { bookIdx: liveRef.bookIdx, ch: liveRef.ch, vFrom: liveRef.vFrom, vTo: liveRef.vTo }
     : currentScriptureRange();
@@ -699,8 +738,7 @@ $('memoryChips').addEventListener('click', async e => {
   const m = memory[+chip.dataset.m];
   if ($('translationSelect').value !== m.translation) {
     $('translationSelect').value = m.translation;
-    LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: m.translation }));
-    await loadBible(m.translation);
+    if (!await loadBible(m.translation)) return;
   }
   goLiveScripture(Object.assign({}, m.r));
 });
@@ -710,14 +748,17 @@ $('btnMemoryClear').addEventListener('click', () => { memory.length = 0; renderM
    chapter and verse jump in automatically as you type ---------- */
 
 function suggestBook(q) {
-  const key = normKey(q.replace(/^[\d.\-\s]+/, '').replace(/[^a-z ]/g, ''));
+  if (!bible) return [];
+  const key = normKey(q.toLowerCase().replace(/[^a-z0-9. ]/g, ''));
   if (!key) return [];
+  const exact = bible.books.findIndex(b => normKey(b.name) === key || normKey(b.name) === normKey(BOOK_ABBR[key] || ''));
+  if (exact >= 0) return [exact];
   const out = bible.books
     .map((b, i) => ({ i, k: normKey(b.name) }))
     .filter(o => o.k.startsWith(key) || o.k.includes(key))
     .map(o => o.i);
   if (!out.length && BOOK_ABBR[key] !== undefined) {
-    const idx = bible.books.findIndex(b => normKey(b.name) === BOOK_ABBR[key]);
+    const idx = bible.books.findIndex(b => normKey(b.name) === normKey(BOOK_ABBR[key]));
     if (idx >= 0) out.push(idx);
   }
   return out.slice(0, 6);
@@ -740,7 +781,8 @@ function commitJump(q) {
     return;
   }
   const book = bible.books[bi];
-  const ch = Math.min(+dm[1], book.chapters.length);
+  const ch = +dm[1];
+  if (ch < 1 || ch > book.chapters.length) { flash($('bookSearch'), 'Invalid chapter'); return; }
   const vCount = book.chapters[ch - 1].length;
   if (!dm[2]) {  // chapter typed → land the docks on the chapter
     if (bi !== +$('bookSelect').value || ch !== +$('chapterSelect').value) {
@@ -755,7 +797,8 @@ function commitJump(q) {
     return;
   }
   // verse typed → live, instantly
-  const vTo = dm[3] ? Math.min(+dm[3], vCount) : Math.min(+dm[2], vCount);
+  const vTo = dm[3] ? +dm[3] : +dm[2];
+  if (+dm[2] < 1 || +dm[2] > vCount || vTo < 1 || vTo > vCount) { flash($('bookSearch'), 'Invalid verse'); return; }
   goLiveScripture({ bookIdx: bi, ch, vFrom: Math.min(+dm[2], vTo), vTo: Math.max(+dm[2], vTo) });
   $('quickBookSug').hidden = true;
   renderBookGhost();
@@ -1114,11 +1157,14 @@ function applyFloatNav() {
   if (nav) nav.hidden = !lsShowFloatNav();
 }
 function lsShowFloatPreview() { return LS.get(K.settings, {}).showFloatPreview === true; }
-$('feDocks').addEventListener('click', e => {
+function toggleDockMenu(e) {
   e.stopPropagation();
   renderDockMenu();
-  $('dockMenu').hidden = !$('dockMenu').hidden;
-});
+  const menu = $('dockMenu');
+  menu.hidden = !menu.hidden;
+}
+$('feDocks').addEventListener('click', toggleDockMenu);
+$('btnDocks').addEventListener('click', toggleDockMenu);
 $('dockMenu').addEventListener('click', e => {
   const b = e.target.closest('button[data-dockkey]');
   if (!b) return;
@@ -1370,6 +1416,7 @@ $('bibleResults').addEventListener('click', e => {
   $('bibleResults').hidden = true;
 });
 $('btnAddScripture').addEventListener('click', () => {
+  if (!bible) return;
   const r = currentScriptureRange();
   const book = bible.books[r.bookIdx];
   service.push({
@@ -1389,7 +1436,7 @@ function renderSongList() {
   const list = songs.filter(s =>
     !q || s.title.toLowerCase().includes(q) || (s.author || '').toLowerCase().includes(q));
   $('songList').innerHTML = list.map(s => `
-    <li data-id="${s.id}">
+    <li data-id="${esc(s.id)}">
       <span class="item-title">${esc(s.title)} <span class="item-meta">${esc(s.author || '')}</span></span>
       <button data-act="live">▶ Live</button>
       <button data-act="add">+ Service</button>
@@ -1495,7 +1542,7 @@ $('btnFetchWeb').addEventListener('click', async () => {
 ========================================================= */
 function renderService() {
   $('serviceList').innerHTML = service.map((item, i) => `
-    <li data-id="${item.id}">
+    <li data-id="${esc(item.id)}">
       <span class="item-meta">${i + 1}</span>
       <span class="item-title">${esc(item.title)} <span class="item-meta">(${item.slides.length} slide${item.slides.length === 1 ? '' : 's'})</span></span>
       <button data-act="live">▶</button>
@@ -1568,7 +1615,7 @@ $('btnDeletePlan').addEventListener('click', () => {
 ========================================================= */
 function themeById(id) { return themes.find(t => t.id === id) || themes[0]; }
 function renderThemesTab() {
-  $('themeSelect').innerHTML = themes.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  $('themeSelect').innerHTML = themes.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
   $('themeSelect').value = currentThemeId;
   loadThemeForm();
 }
@@ -1581,7 +1628,7 @@ function loadThemeForm() {
   $('themeAlign').value = t.align || 'center';
   $('themeWeight').value = t.weight || '400';
   const opt = [...$('themeBg').options].find(o => o.value === t.bg);
-  $('themeBg').value = opt ? t.bg : (t.bgImage ? 'image' : $('themeBg').options[0].value);
+  $('themeBg').value = opt ? t.bg : ((t.bgImage || t.bgImageId) ? 'image' : $('themeBg').options[0].value);
 }
 $('themeSelect').addEventListener('change', loadThemeForm);
 $('themeBgImage').addEventListener('change', () => {
@@ -1623,8 +1670,8 @@ $('btnSaveTheme').addEventListener('click', () => {
   t.align = $('themeAlign').value;
   t.weight = $('themeWeight').value;
   const bgVal = $('themeBg').value;
-  if (bgVal === 'image') { if (!t.bgImage) alert('Pick a custom image file first.'); }
-  else t.bg = bgVal;
+  if (bgVal === 'image') { if (!t.bgImage && !t.bgImageId) { alert('Pick a custom image file first.'); return; } }
+  else { t.bg = bgVal; t.bgImage = ''; delete t.bgImageId; }
   LS.set(K.themes, themes);
   flash($('btnSaveTheme'), 'Saved ✓');
 });
@@ -1671,11 +1718,11 @@ const BOOK_ABBR = {
 function normKey(s) { return s.toLowerCase().replace(/[.\s]/g, ''); }
 
 function parseQuickRef(q) {
-  const m = q.trim().toLowerCase().match(/^([1-3]?\s?[a-z.\s]+?)\s*(\d+)?\s*(?:[:.]\s*(\d+))?(?:\s*-\s*(\d+))?$/);
+  const m = q.trim().toLowerCase().match(/^([1-3]?\s?[a-z.\s]+?)\s*(\d+)?\s*(?:[:.\s]\s*(\d+))?(?:\s*-\s*(\d+))?$/);
   if (!m) return null;
   const key = normKey(m[1]);
   let bookIdx = bible ? bible.books.findIndex(b => normKey(b.name) === key) : -1;
-  if (bookIdx < 0 && BOOK_ABBR[key]) bookIdx = bible ? bible.books.findIndex(b => normKey(b.name) === BOOK_ABBR[key]) : -1;
+  if (bookIdx < 0 && BOOK_ABBR[key]) bookIdx = bible ? bible.books.findIndex(b => normKey(b.name) === normKey(BOOK_ABBR[key])) : -1;
   if (bookIdx < 0 && bible) {
     const candidates = bible.books.map((b, i) => ({ i, n: normKey(b.name) }))
       .filter(b => b.n.startsWith(key) && key.length >= 2);
@@ -1685,13 +1732,24 @@ function parseQuickRef(q) {
   const ch = m[2] ? +m[2] : 1;
   const vFrom = m[3] ? +m[3] : 1;
   const vTo = m[4] ? +m[4] : vFrom;
-  return { bookIdx, ch, vFrom: Math.min(vFrom, vTo), vTo: Math.max(vFrom, vTo) };
+  const ref = { bookIdx, ch, vFrom: Math.min(vFrom, vTo), vTo: Math.max(vFrom, vTo) };
+  return validScriptureRef(ref) ? ref : null;
+}
+function validScriptureRef(r) {
+  if (!bible || !r || ![r.bookIdx, r.ch, r.vFrom, r.vTo].every(Number.isInteger)) return false;
+  const chapter = bible.books[r.bookIdx]?.chapters[r.ch - 1];
+  return !!chapter && r.vFrom >= 1 && r.vTo >= r.vFrom && r.vTo <= chapter.length;
 }
 function goLiveScripture(r) {
+  if (!validScriptureRef(r)) { flash($('quickGo'), 'Invalid scripture reference'); return false; }
+  if (!scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo).length) {
+    flash($('quickGo'), 'Verse absent in this translation'); return false;
+  }
   const book = bible.books[r.bookIdx];
   const ref = `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`;
-  pushLive({ mode: 'normal', slides: scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo), index: 0, title: ref, themeId: currentThemeId });
   liveRef = r;
+  pushLive({ mode: 'normal', slides: scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo), index: 0, title: ref, themeId: currentThemeId });
+  renderPreview();
   // keep the scripture tab in sync so the operator sees what's live
   $('bookSelect').value = r.bookIdx;
   fillChapters();
@@ -1798,7 +1856,9 @@ let syncTimer = null;
 function syncDirty() { return !!LS.get(K.settings, {}).dirtyLibrary; }
 function markDirty() {
   const s = LS.get(K.settings, {});
-  if (!s.dirtyLibrary) { s.dirtyLibrary = true; LS.set(K.settings, s); }
+  s.dirtyLibrary = true;
+  s.libraryRevision = (s.libraryRevision || 0) + 1;
+  LS.set(K.settings, s);
   scheduleSync();
 }
 function scheduleSync() {
@@ -1806,23 +1866,22 @@ function scheduleSync() {
   syncTimer = setTimeout(autoSync, 15000);
   refreshSyncBadge();
 }
-function autoSync() {
-  // work mode gate: Base/Local keep every change on this device;
-  // Sync mode pushes to the cloud automatically
-  if (workMode() && workMode() !== 'sync') { refreshSyncBadge(); return; }
-  if (!(window.KOGGSync && window.KOGGSync.configured && window._koggUser && navigator.onLine)) return;
-  if (!syncDirty()) { refreshSyncBadge(); return; }
-  window.KOGGSync.push()
-    .then(() => {
-      const s = LS.get(K.settings, {});
-      s.dirtyLibrary = false;
-      LS.set(K.settings, s);
-    })
-    .catch(() => { })   // failed push retries on the next change
-    .then(refreshSyncBadge);
+let syncInFlight = false;
+let syncError = '';
+async function autoSync() {
+  if (workMode() !== 'sync' || !window.KOGGSync?.configured || !window._koggUser || !navigator.onLine || !syncDirty() || syncInFlight) { refreshSyncBadge(); return; }
+  syncInFlight = true;
+  const revision = LS.get(K.settings, {}).libraryRevision || 0;
+  try {
+    const data = await window.KOGGSync.push();
+    if (await applyCloudLibrary(data, revision)) clearDirty(revision);
+    syncError = '';
+  } catch (err) { syncError = err.message; }
+  finally { syncInFlight = false; refreshSyncBadge(); }
 }
-function clearDirty() {
+function clearDirty(expectedRevision) {
   const s = LS.get(K.settings, {});
+  if (expectedRevision !== undefined && (s.libraryRevision || 0) !== expectedRevision) return;
   if (s.dirtyLibrary) { s.dirtyLibrary = false; LS.set(K.settings, s); }
   refreshSyncBadge();
 }
@@ -1830,6 +1889,7 @@ function refreshSyncBadge() {
   const badge = $('syncBadge');
   if (!badge) return;
   if (!window._koggUser) { badge.textContent = ''; return; }
+  if (syncError) { badge.textContent = 'Sync needs attention: ' + syncError; return; }
   badge.textContent = !syncDirty() ? '✓ Cloud copy is up to date'
     : navigator.onLine ? '• Changes not yet synced — auto-push in a moment (or tap Push)'
     : '• Not synced yet — you are offline; sync resumes when back online (Push works too)';
@@ -1853,7 +1913,7 @@ async function refreshUser() {
   // (Sync mode — Base/Local keep changes on this device only)
   if (window._koggUser && navigator.onLine && workMode() === 'sync') {
     if (syncDirty()) scheduleSync();
-    pullCloud(true);   // silent merge: songs, themes, plans, settings, logo
+    await pullCloud(true);   // merge without discarding pending local edits
   }
 }
 $('btnShowPass').addEventListener('click', () => {
@@ -1887,66 +1947,65 @@ $('btnSignIn').addEventListener('click', async () => {
     await refreshUser();
     if (window._koggUser) {
       status.textContent = 'Signed in ✓ — your songs, themes and plans are syncing…';
-      await pullCloud(true);
-      status.textContent = 'Signed in ✓ — everything synced.';
+      status.textContent = syncError ? 'Signed in. Sync needs attention: ' + syncError : 'Signed in ✓ — library loaded; pending changes will upload.';
     } else {
       status.textContent = 'Signed in.';
     }
   } catch (err) { status.textContent = 'Sign in failed: ' + err.message; }
 });
 $('btnSignOut').addEventListener('click', async () => {
-  try { await window.KOGGSync.signOut(); } catch {}
+  try { await window.KOGGSync.signOut(); } catch (err) { alert('Sign out failed: ' + err.message); return; }
+  clearTimeout(syncTimer); syncError = '';
   window._koggUser = null;
   syncUI();
 });
+async function applyCloudLibrary(raw, revision) {
+  if (!raw) return false;
+  const data = window.KOGGLibrary.validate(raw);
+  for (const [id, value] of Object.entries(data.assets || {})) {
+    if (!await window.KOGGAssets?.put(id, value)) throw new Error('Could not store synced image ' + id);
+  }
+  if ((LS.get(K.settings, {}).libraryRevision || 0) !== revision) return false;
+  // Apply the library only after every write succeeds; preserve pending local status.
+  const settings = Object.assign({}, LS.get(K.settings, {}), window.KOGGLibrary.portableSettings(data.settings || {}));
+  const writes = {[K.songs]:data.songs || songs, [K.themes]:data.themes?.length ? data.themes : themes,
+    [K.plans]:data.plans || LS.get(K.plans, {}), [K.settings]:settings};
+  const before = Object.fromEntries(Object.keys(writes).map(k => [k, localStorage.getItem(k)]));
+  try { for (const [key,value] of Object.entries(writes)) localStorage.setItem(key, JSON.stringify(value)); }
+  catch (err) {
+    for (const [key,value] of Object.entries(before)) { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key,value); }
+    throw err;
+  }
+  songs = writes[K.songs]; themes = writes[K.themes];
+  if (!themes.some(t => t.id === currentThemeId)) currentThemeId = themes[0].id;
+  refreshLogoStatus(); renderSongList(); renderPlans(); renderThemesTab(); pushLive({themeId:currentThemeId});
+  return true;
+}
 async function pushCloud() {
+  if (syncInFlight) return;
+  const revision = LS.get(K.settings, {}).libraryRevision || 0;
+  syncInFlight = true;
   try {
-    await window.KOGGSync.push();
-    flash($('btnPushCloud'), 'Pushed ✓');
-    clearDirty();
-  } catch (err) { alert('Push failed: ' + err.message); }
+    const data = await window.KOGGSync.push();
+    if (await applyCloudLibrary(data, revision)) clearDirty(revision);
+    syncError = ''; flash($('btnPushCloud'), 'Pushed ✓');
+  } catch (err) { syncError = err.message; alert('Push failed: ' + err.message); }
+  finally { syncInFlight = false; refreshSyncBadge(); }
 }
 async function pullCloud(silent) {
+  const revision = LS.get(K.settings, {}).libraryRevision || 0;
   try {
     const data = await window.KOGGSync.pull();
-    if (!data) { if (!silent) flash($('btnPullCloud'), 'Cloud empty'); return; }
-    if (data.assets && window.KOGGAssets) {
-      for (const [id, v] of Object.entries(data.assets)) {
-        if (v) await window.KOGGAssets.put(id, v);
-      }
-    }
-    // songs merge: cloud-only songs are added, local songs and edits stay put —
-    // nothing local is ever deleted by a pull
-    if (data.songs) {
-      const ids = new Set(songs.map(s => s.id));
-      const fresh = data.songs.filter(s => s.id && !ids.has(s.id));
-      if (fresh.length) { songs = songs.concat(fresh); LS.set(K.songs, songs); }
-    }
-    if (data.themes && data.themes.length) {
-      const mineIds = new Set(themes.map(t => t.id));
-      const freshThemes = data.themes.filter(t => !mineIds.has(t.id));
-      if (freshThemes.length) { themes = themes.concat(freshThemes); LS.set(K.themes, themes); }
-    }
-    if (data.plans) LS.set(K.plans, Object.assign({}, LS.get(K.plans, {}), data.plans));
-    if (data.settings) {
-      const merged = Object.assign({}, LS.get(K.settings, {}), data.settings);
-      delete merged.dirtyLibrary;
-      LS.set(K.settings, merged);
-      if (merged.currentThemeId && themes.some(t => t.id === merged.currentThemeId)) {
-        currentThemeId = merged.currentThemeId;
-      }
-      if (merged.currentTranslation && merged.currentTranslation !== $('translationSelect').value) {
-        $('translationSelect').value = merged.currentTranslation;
-        loadBible(merged.currentTranslation);
-      }
-      refreshLogoStatus();
-      refreshStrongsBtn();
-    }
-    renderSongList(); renderPlans(); renderThemesTab();
-    pushLive({});   // refresh the display (logo/strongs may have changed)
+    if (!await applyCloudLibrary(data, revision)) return false;
+    syncError = '';
+    if (syncDirty()) scheduleSync();
     if (!silent) flash($('btnPullCloud'), 'Pulled ✓');
-  } catch (err) { if (!silent) alert('Pull failed: ' + err.message); }
+    return true;
+  } catch (err) { syncError = err.message; if (!silent) alert('Pull failed: ' + err.message); return false; }
+  finally { refreshSyncBadge(); }
 }
+window.addEventListener('online', () => { syncError = ''; scheduleSync(); refreshUser(); });
+window.addEventListener('offline', refreshSyncBadge);
 $('btnPushCloud').addEventListener('click', pushCloud);
 $('btnPullCloud').addEventListener('click', () => pullCloud(false));
 refreshUser();
@@ -1970,6 +2029,7 @@ function setWorkMode(m) {
   s.mode = m;
   LS.set(K.settings, s);
   refreshModeChip();
+  if (m === 'sync') refreshUser();
 }
 function showGate() {
   $('startGate').hidden = false;
@@ -2090,7 +2150,10 @@ async function gateAuth(up) {
   st.textContent = 'Connecting…';
   st.style.color = '';
   try {
-    if (up) await window.KOGGSync.signUp($('gateEmail').value.trim(), $('gatePass').value);
+    if (up) {
+      const result = await window.KOGGSync.signUp($('gateEmail').value.trim(), $('gatePass').value);
+      if (!result.session) { st.textContent = 'Check your email to confirm the account, then sign in here.'; return; }
+    }
     else await window.KOGGSync.signIn($('gateEmail').value.trim(), $('gatePass').value);
     setWorkMode('sync');
     closeGate();
@@ -2111,8 +2174,8 @@ if (!workMode()) showGate();
 /* =========================================================
    GLOBAL CONTROLS
 ========================================================= */
-function next() { if (live.mode === 'normal' && live.index < live.slides.length - 1) pushLive({ index: live.index + 1 }); }
-function prev() { if (live.mode === 'normal' && live.index > 0) pushLive({ index: live.index - 1 }); }
+function next() { if (live.mode === 'normal' && live.index < live.slides.length - 1) pushLive({ index: live.index + 1, strongsShowing: false, strongsCard: null, highlight: null }); }
+function prev() { if (live.mode === 'normal' && live.index > 0) pushLive({ index: live.index - 1, strongsShowing: false, strongsCard: null, highlight: null }); }
 $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
 $('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
 $('btnOpenDisplay').addEventListener('click', openDisplayWindow);
@@ -2120,26 +2183,21 @@ $('btnOpenDisplay').addEventListener('click', openDisplayWindow);
 /* Open the output window directly on the extended screen when one exists.
    Uses the Window Management API (Chrome/Edge) — asks permission once. */
 async function openDisplayWindow() {
-  let features = '';
-  let usedScreenApi = false;
+  // Open during the click gesture; permission prompts must not consume popup activation.
+  const w = window.open('about:blank', 'kogg_display', 'popup=yes');
+  if (!w) { flash($('btnOpenDisplay'), 'Allow popups to open output'); return; }
   try {
     if ('getScreenDetails' in window) {
       const details = await window.getScreenDetails();
       const cur = details.currentScreen;
-      const other = details.screens.find(s =>
-        s.left !== cur.left || s.top !== cur.top);
-      if (other) {
-        features = `left=${other.left},top=${other.top},width=${other.width},height=${other.height}`;
-        usedScreenApi = true;
-      }
+      const other = details.screens.find(s => s.left !== cur.left || s.top !== cur.top);
+      if (other) { w.moveTo(other.left, other.top); w.resizeTo(other.width, other.height); }
     }
-  } catch { /* permission denied — fall through to normal window */ }
-  const w = window.open('display.html', 'kogg_display', features || undefined);
-  try { w.focus(); } catch {}
-  if (!usedScreenApi) {
-    flash($('btnOpenDisplay'), 'Tip: press F11 on the output');
-  }
+  } catch { /* Continue on the current screen when permission or positioning is unavailable. */ }
+  try { w.location.href = new URL('display.html', location.href).href; w.focus(); }
+  catch { flash($('btnOpenDisplay'), 'Output closed — open it again'); }
 }
+
 document.addEventListener('keydown', e => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
   if (e.key === '/') { e.preventDefault(); $('quickGo').focus(); return; }
@@ -2147,6 +2205,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
   else if (e.key.toLowerCase() === 'b') $('btnBlank').click();
   else if (e.key.toLowerCase() === 'l') $('btnLogo').click();
+  else if (e.key === 'Escape') pushLive({mode:'normal'});
 });
 
 /* Countdown */
@@ -2401,7 +2460,7 @@ function rebuildCustomOptions() {
   group.hidden = !list.length;
   group.innerHTML = list.map(v => `<option value="idb:${v.assetId}">${esc(v.name)}</option>`).join('');
   $('bibleList').innerHTML = list.length
-    ? list.map(v => `<div class="ver-row"><span>📗 ${esc(v.name)}</span><button data-delver="${v.assetId}" class="danger" title="Remove this version from this device">✕</button></div>`).join('')
+    ? list.map(v => `<div class="ver-row"><span>📗 ${esc(v.name)}</span><button data-delver="${esc(v.assetId)}" class="danger" title="Remove this version from this device">✕</button></div>`).join('')
     : '<span class="dim">No added versions yet.</span>';
   renderVersionChips();
   updateAddVersionsGate();
@@ -2447,12 +2506,13 @@ $('bibleList').addEventListener('click', async e => {
   if (!b) return;
   if (!confirm('Remove this version from this device?')) return;
   const id = b.dataset.delver;
+  const wasSelected = $('translationSelect').value === 'idb:' + id;
   const s = LS.get(K.settings, {});
   s.customVersions = (s.customVersions || []).filter(v => v.assetId !== id);
   LS.set(K.settings, s);
   try { if (window.KOGGAssets) await window.KOGGAssets.del(id); } catch {}
   rebuildCustomOptions();
-  if ($('translationSelect').value === 'idb:' + id) {
+  if (wasSelected) {
     $('translationSelect').value = 'data/kjv.json';
     LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: 'data/kjv.json' }));
     loadBible('data/kjv.json');
@@ -2495,6 +2555,7 @@ $('btnLogoClear').addEventListener('click', () => {
   LS.set(K.settings, settings);
   markDirty();
   refreshLogoStatus();
+  pushLive({});
   flash($('btnLogoClear'), 'Removed ✓');
 });
 refreshLogoStatus();
@@ -2533,29 +2594,62 @@ $('btnCopyObs').addEventListener('click', async () => {
 });
 
 /* Backup / restore */
-$('btnExport').addEventListener('click', () => {
-  const data = { exported: new Date().toISOString(), songs, themes, service, plans: LS.get(K.plans, {}) };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'kogg-presenter-backup.json';
-  a.click();
+$('btnExport').addEventListener('click', async () => {
+  try {
+    const data = { version: 2, exported: new Date().toISOString(), songs, themes, service,
+      plans: LS.get(K.plans, {}), settings: LS.get(K.settings, {}), assets: {} };
+    delete data.settings.dirtyLibrary;
+    delete data.settings.libraryRevision;
+    for (const id of window.KOGGLibrary.assetIds(data)) {
+      const asset = await window.KOGGAssets?.get(id);
+      if (!asset) throw new Error('Missing asset: ' + id + '. Re-add it before making a full backup.');
+      data.assets[id] = asset;
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'kogg-presenter-backup.json'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch (err) { alert('Backup failed: ' + err.message); }
 });
 $('btnImport').addEventListener('click', () => $('importFile').click());
-$('importFile').addEventListener('change', () => {
+$('importFile').addEventListener('change', async () => {
   const file = $('importFile').files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
+  try {
+    if (file.size > 80 * 1024 * 1024) throw new Error('Backup exceeds 80 MB');
+    const lib = window.KOGGLibrary;
+    const d = lib.validate(JSON.parse(await file.text()));
+    for (const id of lib.assetIds(d)) {
+      if (!d.assets?.[id] && !await window.KOGGAssets?.get(id)) throw new Error('Backup is missing asset ' + id);
+    }
+    if (!confirm('Restore this backup? Matching songs, themes and named plans will be replaced by the backup versions. The current service and saved settings will also be restored when present.')) return;
+    for (const [id, value] of Object.entries(d.assets || {})) {
+      if (!await window.KOGGAssets?.put(id, value)) throw new Error('Could not save asset: ' + id);
+    }
+    const restored = {
+      [K.songs]: d.songs ? lib.mergeRecords(songs, d.songs) : songs,
+      [K.themes]: d.themes?.length ? lib.mergeRecords(themes, d.themes) : themes,
+      [K.service]: d.service || service,
+      [K.plans]: Object.assign({}, LS.get(K.plans, {}), d.plans || {}),
+      [K.settings]: Object.assign({}, LS.get(K.settings, {}), d.settings || {}, { dirtyLibrary: true }),
+    };
+    const before = Object.fromEntries(Object.keys(restored).map(k => [k, localStorage.getItem(k)]));
     try {
-      const d = JSON.parse(reader.result);
-      if (d.songs) { songs = songs.concat(d.songs.filter(s => !songs.some(x => x.id === s.id))); LS.set(K.songs, songs); }
-      if (d.plans) LS.set(K.plans, Object.assign(LS.get(K.plans, {}), d.plans));
-      alert('Import complete.');
-      renderSongList(); renderPlans();
-    } catch { alert('Invalid backup file.'); }
-  };
-  reader.readAsText(file);
+      for (const [key, value] of Object.entries(restored)) localStorage.setItem(key, JSON.stringify(value));
+    } catch (err) {
+      for (const [key, value] of Object.entries(before)) { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); }
+      throw err;
+    }
+    songs = restored[K.songs]; themes = restored[K.themes]; service = restored[K.service];
+    currentThemeId = restored[K.settings].currentThemeId || themes[0].id;
+    rebuildCustomOptions(); renderSongList(); renderService(); renderPlans(); renderThemesTab();
+    refreshLogoStatus(); refreshStrongsBtn(); refreshModeChip(); markDirty();
+    const translation = restored[K.settings].currentTranslation;
+    if (translation) await loadBible(translation);
+    pushLive({});
+    alert('Backup restored. Reopen the app to apply all saved layout preferences.');
+  } catch (err) { alert('Import failed: ' + err.message); }
+  finally { $('importFile').value = ''; }
 });
 
 /* ---------- misc ---------- */
@@ -2580,14 +2674,14 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
 })();
 const savedSettings = LS.get(K.settings, {});
 rebuildCustomOptions();      // custom versions must exist in the select before restore
-if (savedSettings.currentTranslation) $('translationSelect').value = savedSettings.currentTranslation;
+if (savedSettings.currentTranslation && [...$('translationSelect').options].some(o => o.value === savedSettings.currentTranslation)) $('translationSelect').value = savedSettings.currentTranslation;
 if (savedSettings.light) applyOperatorTheme(true);
 
 /* first run: quietly add the bundled public-domain starter hymns */
 (async function seedStarterHymns() {
   if (savedSettings.starterSeeded) return;
   const n = await addStarterHymns();
-  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { starterSeeded: true }));
+  if (n || songs.length) LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { starterSeeded: true }));
   if (n) refreshSyncBadge();
 })();
 
@@ -2622,3 +2716,25 @@ applyFloatPreview();
 applyFloatNav();
 if (LS.get(K.settings, {}).fpFold) $('fpCollapse').textContent = '▸';
 applyFloatEdit();
+
+if (window.KOGGSync?.configured) window.KOGGSync.getClient().then(client => {
+  client.auth.onAuthStateChange(event => {
+    if (event === 'PASSWORD_RECOVERY') $('passwordRecovery').hidden = false;
+    if (event === 'SIGNED_OUT') { window._koggUser = null; syncUI(); }
+  });
+  if (new URLSearchParams(location.hash.slice(1)).get('type') === 'recovery') $('passwordRecovery').hidden = false;
+}).catch(() => {});
+$('btnSavePassword').addEventListener('click', async () => {
+  const password = $('recoveryPassword').value;
+  if (password.length < 6 || password !== $('recoveryConfirm').value) { $('recoveryStatus').textContent = 'Use at least six characters and enter the same password twice.'; return; }
+  $('btnSavePassword').disabled = true;
+  try {
+    await window.KOGGSync.updatePassword(password);
+    $('recoveryPassword').value = ''; $('recoveryConfirm').value = '';
+    $('passwordRecovery').hidden = true;
+    history.replaceState(null, '', location.pathname + location.search);
+    await refreshUser();
+    alert('Password updated.');
+  } catch (err) { $('recoveryStatus').textContent = 'Password update failed: ' + err.message; }
+  finally { $('btnSavePassword').disabled = false; }
+});

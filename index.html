@@ -278,7 +278,7 @@
           Cloud sync isn't configured on this deployment yet. See README → “Enable cloud sync” (5-minute free setup with Supabase).
         </div>
         <div id="authForm">
-          <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS, and only you can ever read your library.</div>
+          <div class="safe-strip">🔒 Your sign-in is protected: sign-in uses Supabase; use HTTPS and verify the deployment’s library ownership policy.</div>
           <div class="row">
             <label style="flex:2">Email (for sign-in and password reset only — never shared)<br><input id="authEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
           </div>
@@ -301,7 +301,7 @@
             <button id="btnSignOut">Sign Out</button>
           </div>
           <p id="syncBadge" class="hint"></p>
-          <p class="hint">Your library syncs automatically while you're signed in — songs, themes, plans and your logo arrive on any device you sign in on. Push/Pull remain here for manual control.</p>
+          <p class="hint">In Sync mode, songs, themes, named plans and your logo merge across your devices. Conflicting edits stop sync and show a message. Export a backup before switching accounts. Push/Pull remain available.</p>
         </div>
       </details>
     </div>
@@ -392,7 +392,7 @@
       </details>
       <details class="group">
         <summary>Pair with OBS Studio</summary>
-        <p>Add a <b>Browser Source</b> in OBS and paste this URL — it shows only the text and lower third with a <b>transparent background</b>, layered over your video or slides:</p>
+        <p>For OBS, start the local bridge described in the README and open the operator at <code>http://127.0.0.1:8766/</code>. Then add its output URL as an OBS <b>Browser Source</b>. The hosted URL alone cannot connect this browser to OBS. Keep the bridge running during use.</p>
         <div class="row">
           <input id="obsUrl" readonly>
           <button id="btnCopyObs">Copy URL</button>
@@ -435,7 +435,7 @@
     <button id="feLock" title="Lock / unlock the layout">🔓</button>
     <button id="feMode" title="Base / Sync / Local — how this session works">🔀</button>
   </div>
-  <div id="dockMenu" class="more-menu fe-pop" hidden></div>
+
   <a id="feAbout" href="landing.html" target="_blank" title="About / download page">About &amp; download ↗</a>
 </div>
 
@@ -515,8 +515,16 @@
   </div>
 </div>
 
+<section id="passwordRecovery" class="card" hidden role="dialog" aria-modal="true" aria-labelledby="recoveryTitle" style="position:fixed;inset:10vh 15vw auto;z-index:100000;background:var(--bg,#111);padding:24px">
+  <h2 id="recoveryTitle">Choose a new password</h2>
+  <label>New password <input id="recoveryPassword" type="password" autocomplete="new-password" minlength="6"></label>
+  <label>Confirm password <input id="recoveryConfirm" type="password" autocomplete="new-password" minlength="6"></label>
+  <button id="btnSavePassword">Save new password</button>
+  <p id="recoveryStatus" role="status"></p>
+</section>
 <script src="js/supabase-config.js"></script>
 <script src="js/idb.js"></script>
+<script src="js/library.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/app.js"></script>
 </body>

@@ -2739,7 +2739,17 @@ $('extraHymnPacks').addEventListener('click',async event=>{
   catch(err){$('hymnPackStatus').textContent=err.message;}
   finally{button.disabled=false;}
 });
-$('btnMoreBibles').addEventListener('click',()=>{$('extraBiblePanel').hidden=!$('extraBiblePanel').hidden;});
+$('btnMoreBibles').addEventListener('click',async()=>{
+  const panel=$('extraBiblePanel');panel.hidden=!panel.hidden;if(panel.hidden)return;
+  try {
+    const response=await fetch('data/content-catalog.json');if(!response.ok)throw new Error('Connect to load the Bible catalogue');
+    const catalogue=await response.json();
+    const buttons=(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))
+      .map(b=>`<button data-bible-file="${esc(b.file)}">↧ ${esc(b.short || b.name)}</button>`).join('');
+    $('extraBibleButtons').innerHTML=buttons || '<span class="hint">No extra versions listed.</span>';
+    $('extraBibleStatus').textContent='Download a version once while online, then it works offline in every work mode.';
+  }catch(err){$('extraBibleStatus').textContent=err.message;}
+});
 $('extraBiblePanel').addEventListener('click',async event=>{
   const button=event.target.closest('button[data-bible-file]');if(!button)return;
   const reference=preparedScripture?.r || currentLiveReference() || currentScriptureRange();

@@ -192,7 +192,12 @@ kogg-presenter/
 
 ## Licensing notes
 
-- KJV, WEB, ASV texts: public domain. BSB (Berean Standard Bible): free to use and redistribute.
+- KJV, WEB, ASV, YLT (Young's Literal 1898), Darby (1885), AKJV, Webster (1833), Geneva 1599
+  texts: public domain. Optional versions download once on selection (Not bundled into the offline
+  core). Sources encoded from the public-domain vol. 1 set distributed through the Scrollmapper
+  Bible databases project; verse placement verified against the canonical 66-book slot template,
+  with known source gaps kept explicitly empty.
+- BSB (Berean Standard Bible): free to use and redistribute.
 - Strong's lexicon data: public domain (OpenScriptures).
 - **NIV**, **NLT**, **ESV** and similar modern translations are NOT bundled — their full texts are
   copyrighted and may not be redistributed in an open-source repo. If your church has a license,

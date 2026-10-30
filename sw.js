@@ -9,7 +9,7 @@ const ASSETS = [
   './icons/icon.svg', './icons/icon-maskable.svg',
 ];
 // Base prepares exactly KJV, BSB and KJV Strong’s plus its lexicon. Extra translations cache only when used.
-const OPTIONAL_ASSETS = ['./data/web.json','./data/asv.json'];
+const OPTIONAL_ASSETS = ['./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json'];
 const BIG = /\.(json|woff2)$/;
 let preparing = null;
 function cacheKey(input) {

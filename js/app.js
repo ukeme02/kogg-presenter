@@ -1611,7 +1611,7 @@ $('btnDeleteTheme').addEventListener('click', () => {
   themes = themes.filter(t => t.id !== $('themeSelect').value);
   currentThemeId = themes[0].id;
   LS.set(K.themes, themes);
-  LS.set(K.settings, { currentThemeId });
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentThemeId }));
   renderThemesTab();
 });
 $('btnSaveTheme').addEventListener('click', () => {

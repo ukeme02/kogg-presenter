@@ -1,6 +1,47 @@
 # KOGG Presenter repair progress
 
-Updated: 30 October 2026
+Updated: 30 October 2026 — evening session
+
+## Quick jump / Whole-Bible search docks restored
+
+The prepare-before-live change had demoted the ⚡ Quick jump and 🔎 Whole-Bible search docks to
+`legacy-lookup` elements with an unconditional `hidden` attribute and removed them from the
+🧩 Docks menu, making them and their 🎤 voice buttons unreachable. Both are first-class docks
+again (js `2383709`): visible by default, toggleable from the Docks menu, and their voice input
+works from Chrome/Edge while online (Web Speech API needs that network, not a KOGG fault).
+
+## Scripture prepare-and-live flow, quick-go responsiveness, hymnary, service sync
+
+Commit slice list this session:
+
+- `676d261` — prepare `stageScripture()` before "Go Live ↵"; persistent scripture history,
+  bookmarks, "Resume last reading"; translation comparison panel; projector label now names the
+  live version; Quick Go debounced to 200 ms and no longer stages a verse on every keystroke
+  (stage on arrow-key/click only); guards before the Bible loads; boot does not restage when the
+  passage is already live; `autoSync` clears the cached cloud profile on a real `not-signed-in`
+  push failure.
+- `ec6736f` — basic hymnary grows 34 → 300 bundled public-domain hymns; optional
+  `data/hymns-extra.json` (262 more) via `data/content-catalog.json`, downloaded once through the
+  validated `js/content.js` pack reader; Service Worker bumped to v31 (adds scripture-tools,
+  content.js, pack catalog); offline status now reads "3 Bibles + basic hymnary".
+- `884e28a` — the current service queue syncs to the cloud library like songs, themes and plans.
+- `2383709` — the dock restoration above.
+
+Tests: `node --test tests/*.cjs` → 44 pass, 0 fail after each slice. `node --check js/app.js` clean.
+
+Release — same evening:
+
+- Pushed to GitHub `origin/main`; Cloudflare production deploy **succeeded** via authenticated
+  wrangler (the earlier `api.cloudflare.com` DNS failure is gone), `https://kogg-presenter.pages.dev/`.
+- Staging excluded `.git`, `.wrangler`, `tests`, `tools`, docs and one stray untracked file
+  (`data/hymns-basic.json`, UTF-16, "traditional-basic-v2", unreferenced — needs a decision).
+- Integrity: 12 production files SHA-256-compared against local copies — 12/12 MATCH, including
+  the three Bibles, hymns, SW v31, new scripts, and both HTML pages via the canonical `/` and
+  `/display` routes.
+
+Still outstanding (see "Remaining release gates" below): real-browser/hardware/OBS/Supabase
+live checks; WEB Romans 16:25–27 empty slots; complete-hymnary edition choice; true offline
+installer/portable distribution; performance budget measurement.
 
 ## Current state
 Code repairs are applied in the existing Zcode repository and have been saved as commits after Git write approval became available. All remaining edits were approved for publishing on 30 October 2026. Source and test changes are committed in ordered groups; the commit log below records the repair IDs. Publishing verification is recorded in the release section below.

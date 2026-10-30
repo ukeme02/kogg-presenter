@@ -1794,8 +1794,9 @@ async function navigateScripture(dir) {
     pushLive({index,strongsShowing:false,strongsCard:null,highlight:null});
     pushMemory(currentLiveReference());return;
   }
-  const target=window.KOGGScripture.adjacent(bible.books,currentLiveReference(),dir);
-  if(target)goLiveScripture(target);
+  // past the edge of the passage: the old mode-aware walker keeps verse/range/chapter
+  // semantics intact (window size and whole-chapter steps) and goes live as it walks
+  stepVerse(dir);
 }
 $('btnTakeScripture').addEventListener('click',()=>{if(preparedScripture)prepareSaved(preparedScripture,true);});
 $('btnBookmarkScripture').addEventListener('click',()=>{

@@ -26,7 +26,7 @@
     navigator.serviceWorker.addEventListener('message', event => {
       const data = event.data;
       if (data?.type !== 'offline-status') return;
-      if (data.ready) show('Ready offline • KJV + output');
+      if (data.ready) show('Ready offline • 3 Bibles + starter hymns');
       else if (data.error) show('Offline setup incomplete — retry while online', true);
       else show(`Preparing offline… ${data.done}/${data.total}`);
     });

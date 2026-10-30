@@ -9,7 +9,7 @@ browser, and can be packaged for Windows, iOS, and desktop.
 
 | Feature | Details |
 |---|---|
-| Scripture display | **Five available Bibles** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, WEB and ASV. KJV is prepared with the offline core; other versions download and cache when selected. Licensed translations (NIV, ESV…) can be imported per device in Sync/Local mode. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
+| Scripture display | **Five available Bibles** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, WEB and ASV. KJV, BSB and KJV with Strong’s are prepared with the offline core, including the Strong’s lexicon. WEB and ASV cache when selected. Licensed translations (NIV, ESV…) can be imported per device in Sync/Local mode. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
 | Add versions | Tools tab → **Scripture versions**: import your own Bible JSON in Sync/Local Mode; it is stored in the device (IndexedDB) and appears in the translation list everywhere |
 | Strong's tap-to-define | In the KJV Strong's Bible, word numbers appear in the **"On the projector" preview only** — the congregation never sees them. Tap a number and the word's Hebrew/Greek meaning (original word, transliteration, definition, KJV usage) takes the projector screen; tap the same number again to flip back to the verse. Toggle off in Tools → Strong's numbers |
 | Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
@@ -218,11 +218,11 @@ See `REPAIR_PROGRESS.md` for the current repair status and remaining validation.
 
 | Mode | Account | Where work lives | Offline preparation |
 |---|---|---|---|
-| Base | None | This browser/device | Open once online and wait for **Ready offline • KJV + output**. No installation is needed. |
+| Base | None | This browser/device | Open once online and wait for **Ready offline • 3 Bibles + starter hymns**. No installation is needed. |
 | Sync | Required for cloud transfer | Local copy plus the account’s songs, named plans, themes and logo | Pull the required library and prepare this browser before disconnecting. Conflicts remain explicit. |
 | Local | None | This device | Same offline browser core, with an optional installed app icon. A new laptop with no prior internet still needs a separately transferred offline distribution. |
 
-The initial core downloads KJV, the operator/output pages, scripts, font and starter hymns. Other Bibles and the Strong’s lexicon are downloaded when used. Reopening a cached Bible does not re-download it in the background. Older cached optional Bible data from v28 is preserved during this update.
+The initial core downloads exactly three Bibles (KJV, BSB and KJV with Strong’s), the Strong’s lexicon, the operator/output pages, scripts, font and the existing 34 starter hymns. WEB and ASV cache only when selected. The complete basic hymnary is awaiting selection of a collection/edition. Reopening a cached Bible does not re-download it in the background. Older cached optional Bible data from v28 is preserved during this update.
 
 Output opens its page before asking for Window Management permission. On a compatible Chrome/Edge browser, allow the request to place the output on an extended screen. If permission is denied, the browser lacks the API, or no second screen is detected, the output stays usable and the operator gives a manual-placement instruction. The congregation’s screen can intentionally be black while Blank is active; the operator’s **Output connected** status distinguishes this from a page that never loaded.
 

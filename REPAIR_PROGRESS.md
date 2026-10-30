@@ -106,3 +106,7 @@ Worker v29 normalises redirected responses and maps clean page routes to their c
 Validation: **44 automated checks passed**. In an actual browser on loopback, the offline indicator reached Ready offline. Then the preview server was stopped: the operator reloaded with 66 books, both `/display.html` and `/display` reopened from cache, and Quick Go changed output from Genesis 1:1 to John 3:16 without the server. Extended-screen placement was exercised with synthetic screen details and denial tests; actual projector positioning remains a user hardware check. Published as `f5e829d` to GitHub and Cloudflare production (`https://c6e98e47.kogg-presenter.pages.dev`). In the live browser, Base Mode reached Ready offline, the operator reported Output connected, and John 3:16 appeared in the output. Reopening the exact previously failing `/display.html` address under the active worker also rendered John 3:16 successfully.
 
 The current service queue still needs explicit cloud portability work; named plans sync today. A standalone offline distribution remains future work.
+
+## Base content correction — 30 October 2026
+
+Per the user’s clarification, worker v30 prepares KJV, BSB, KJV Strong’s, its word lexicon, output assets and the bundled starter hymns. WEB and ASV are excluded from initial preparation. Readiness reflects the three Bibles. The hymnary requirement remains pending the user's choice of hymnbook/edition or a defined traditional collection; the existing 34 hymns are still explicitly labelled starter content.

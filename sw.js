@@ -1,15 +1,15 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v29';
+const CACHE = 'kogg-presenter-v30';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './css/app.css', './css/display.css', './js/app.js', './js/display.js',
   './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js',
-  './js/supabase-config.js', './js/idb.js', './data/kjv.json', './data/hymns.json',
+  './js/supabase-config.js', './js/idb.js', './data/kjv.json', './data/bsb.json', './data/kjvs.json', './data/strongs.json', './data/hymns.json',
   './fonts/NunitoSans-Variable.woff2', './manifest.webmanifest',
   './icons/icon.svg', './icons/icon-maskable.svg',
 ];
-// Additional Bibles and the lexicon are cached when used, not downloaded on every first visit.
-const OPTIONAL_ASSETS = ['./data/bsb.json','./data/kjvs.json','./data/web.json','./data/asv.json','./data/strongs.json'];
+// Base prepares exactly KJV, BSB and KJV Strong’s plus its lexicon. Extra translations cache only when used.
+const OPTIONAL_ASSETS = ['./data/web.json','./data/asv.json'];
 const BIG = /\.(json|woff2)$/;
 let preparing = null;
 function cacheKey(input) {
@@ -38,8 +38,9 @@ async function prepareOffline() {
   preparing = (async () => {
     const cache = await caches.open(CACHE);
     // Keep already-downloaded optional data from the previous verified data version.
-    if ((await caches.keys()).includes('kogg-presenter-v28')) {
-      const old = await caches.open('kogg-presenter-v28');
+    for (const prior of ['kogg-presenter-v29','kogg-presenter-v28']) {
+      if (!(await caches.keys()).includes(prior)) continue;
+      const old = await caches.open(prior);
       for (const asset of OPTIONAL_ASSETS) {
         const response = await old.match(cacheKey(asset));
         if (response && !await cache.match(cacheKey(asset))) await cache.put(cacheKey(asset),usableResponse(response));

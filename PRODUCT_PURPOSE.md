@@ -39,3 +39,7 @@ This records the current understanding from the project and conversation. It is 
 The user clarified that Base Mode is specifically a browser workflow: load once online, complete preparation, then present offline without installation. Sync adds portable account libraries and schedules; Local keeps the work on the device with optional installation. These are storage/account choices around the same presentation tool, not three separate heavyweight applications.
 
 The offline-first startup now prepares KJV and the operator/output core first and exposes readiness explicitly. Other translations are cached when selected. A complete installer/portable package for a laptop that has never prepared the browser is still separate future work.
+
+## Base content clarified — 30 October 2026
+
+Base Mode must prepare exactly three Bibles: KJV, BSB, and KJV with Strong’s. Include the Strong’s lexicon so word meanings work offline. A complete basic church hymnary must also be available offline; the current 34 starter hymns are not to be labelled a complete hymnary. The hymnbook/edition or collection definition must be chosen before this content requirement can be completed.

@@ -94,15 +94,14 @@ Everything else in the app works without any of this — sync is purely optional
 
 ## Pair with OBS Studio
 
-In OBS: **Sources → + → Browser**, paste `…/display.html?overlay=1` (the Tools tab shows and copies
-the exact URL), set 1920×1080 @ 30 FPS. That source is **transparent** — it draws only slide text
-and lower thirds on top of your camera/screenshare scenes. Put it as the top layer:
+The operator and a normal output window share state within the same browser. OBS has a separate browser process, so it needs the optional local bridge:
 
-- Slide text appears/disappears over your video when the operator advances.
-- Lower thirds (Tools tab) slide in over the video with names/titles.
-- "Blank" in overlay mode hides everything from KOGG (full transparency), leaving your scene clean.
+1. From this repository folder, run `node tools/obs-relay.cjs` (Node.js 18 or newer).
+2. Open `http://127.0.0.1:8766/` in Chrome or Edge as the operator. This origin has its own local storage; export/import a backup to transfer your existing library.
+3. In OBS, add a Browser Source using `http://127.0.0.1:8766/display.html?overlay=1` at 1920×1080, 30 FPS.
+4. Keep the local bridge running. Use Blank to hide both slide text and lower thirds. Omit `?overlay=1` for an opaque slide scene.
 
-You can add a second browser source *without* `?overlay=1` for a full opaque slide scene.
+The bridge binds only to loopback, rejects unrelated web origins, and transmits output state and referenced images, not sign-in tokens. It is intended for OBS on the same computer; remote phones do not connect to this loopback URL. The bridge transport has simulated HTTP/SSE regression coverage; actual OBS and projector verification is still required.
 
 ## How KOGG Presenter compares
 
@@ -203,3 +202,15 @@ kogg-presenter/
 - All code here: yours — no dependencies, no licenses to track.
 - Adding any further translations (ESV, etc.) requires permission from their publishers — they
   grant free church-use licenses.
+
+## Stabilisation and regression checks
+
+Run `node --test tests/*.cjs` with Node.js 18 or newer. These tests use synthetic DOM/client objects and in-memory HTTP requests; they do not claim a real browser, Supabase, or hardware pass.
+
+- Backups use a versioned JSON format containing songs, themes, the current service, named plans, settings, and referenced image/custom-Bible assets. Import validates before applying and asks before replacing matching records. Keep a backup before switching devices or accounts.
+- Sync uses three-way comparisons against a per-account baseline, detects conflicting edits, and conditionally writes the cloud row. Independent additions/edits and deletions can merge; conflicting edits stop rather than overwrite either device. The recovery UI requires the deployed Supabase project to allow the app's `index.html` redirect URL.
+- Device work mode, layout and local custom-Bible selections are not synced. Switching to another account is blocked while this device library is associated with its prior account; back up before resetting app data to change accounts.
+- Empty Bible array slots preserve verse numbers absent from the bundled source. They are skipped during projection, and an absent single verse leaves the current slide unchanged. No wording is copied from another translation. The bundled WEB source is missing Romans 16:25–27; these positions remain explicitly empty pending source verification. This is not a certification of source text/encoding quality.
+- Offline readiness requires a completed successful cache installation. Test an offline restart before relying on it during a service.
+
+See `REPAIR_PROGRESS.md` for the current repair status and remaining validation.

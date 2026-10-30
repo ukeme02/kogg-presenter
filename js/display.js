@@ -4,6 +4,7 @@
 const $ = id => document.getElementById(id);
 const screenEl = $('screen');
 const textEl = $('slideText');
+const contentEl = $('slideContent');
 const labelEl = $('slideLabel');
 const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS transparent mode
 
@@ -63,12 +64,16 @@ function applyTheme(state) {
   return t;
 }
 
-function fitText() {
+function fitText(enlargeScripture = false) {
   if (textEl.style.display === 'none') return;
-  // The selected font size is the upper bound; shrink only when content overflows.
-  const maximum = parseFloat(getComputedStyle(textEl).fontSize) || 24;
+  const style=getComputedStyle(textEl);
+  const base = parseFloat(style.fontSize) || 24;
+  // Short scripture can fill more of the output; lyrics retain their selected size.
+  const maximum = enlargeScripture ? Math.max(base,Math.min(base*1.6,window.innerHeight*0.12)) : base;
+  const availableHeight=textEl.clientHeight-(parseFloat(style.paddingTop)||0)-(parseFloat(style.paddingBottom)||0);
+  const availableWidth=textEl.clientWidth-(parseFloat(style.paddingLeft)||0)-(parseFloat(style.paddingRight)||0);
   let low = 8, high = Math.max(8, maximum);
-  const fits = () => textEl.scrollHeight <= textEl.clientHeight + 1 && textEl.scrollWidth <= textEl.clientWidth + 1;
+  const fits = () => contentEl.scrollHeight <= availableHeight + 1 && contentEl.scrollWidth <= availableWidth + 1;
   for (let i = 0; i < 12; i++) {
     const size = (low + high) / 2;
     textEl.style.fontSize = size + 'px';
@@ -93,10 +98,10 @@ function render(state) {
       renderStrongsCard(card, t);   // the projector shows the word meaning — the verse stays queued
     } else {
       const slide = state.slides[state.index] || { text: '', label: '' };
-      textEl.innerHTML = renderSlideText(slide, state);   // always clean text — numbers live only in the operator preview
+      contentEl.innerHTML = renderSlideText(slide, state);   // always clean text — numbers live only in the operator preview
       labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : '');
       textEl.style.fontSize = t.fontSize + 'vh';
-      requestAnimationFrame(fitText);
+      requestAnimationFrame(()=>fitText(!!state.scripture || / \d+:\d+/.test(slide.label || '')));
     }
   } else if (!OVERLAY) {
     applyBackdrops(state);

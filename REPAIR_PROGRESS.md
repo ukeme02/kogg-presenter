@@ -195,3 +195,9 @@ Chapter and Verse navigation footers now live outside their scaled content and s
 Microphone input only: confirmed no audio-file/music playback feature exists. Tested Quick jump and Whole search with simulated recognised speech. Found and fixed number-word parsing that merged "three sixteen" into "nineteen". Added readable microphone error messages; continuous listening stops on capture/network/permission failures rather than silently restarting, and Stop updates the buttons immediately. 62 automated checks pass. Real microphone capture and browser speech-service availability require an actual device test; simulated recognition verifies app handling, not hardware recording. Chrome/Edge may require internet for recognition.
 
 Saved checkpoint: Scripture UI work is parked. Next focus is the Lyrics deck and the existing 300-hymn basic collection plus 262-hymn expansion. Requested Bible integrations remain pending API.Bible account access. No audio playback is planned; keep the app lightweight.
+
+## Centered short output passages — 31 October 2026
+
+Fixed output text sitting near the top of an 88vh box. Added a separate inline-content container inside a vertically centered flex box, preserving word highlighting and line breaks. Fit logic measures the content against the padded safe area. Short Scripture may enlarge up to 1.6 times the selected size (bounded by 12vh); long Scripture still shrinks to fit. Lyrics retain the selected font-size upper bound. Resize/font loading continue to trigger a fresh fit.
+
+Validation: 63 automated checks pass. Actual browser showed John 11:35 (Jesus wept.) at approximately 80.6px, with content center at y=360 on a 720px-high output, without clipping. Scripture checkpoint saved; Lyrics is next.

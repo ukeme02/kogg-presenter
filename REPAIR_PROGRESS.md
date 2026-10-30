@@ -83,3 +83,12 @@ All 36 automated checks passed before publishing. A website-only upload was prep
 - GitHub Pages mirror: https://ukeme02.github.io/kogg-presenter/
 - Verified 12 files on each public site against local SHA-256 content: index, landing, worker, app/library/sync/relay/display scripts, display CSS, and BSB/ASV/WEB data. All 24 comparisons matched.
 - These checks confirm publication and file integrity; the browser, account/email, projector and real OBS release gates above remain outstanding.
+
+## Docks close fix — 30 October 2026
+
+The `.more-menu` flex display rule overrode the browser’s default `[hidden]` styling, so JavaScript toggled the menu state but the menu stayed visible. Added `.more-menu[hidden] { display: none; }`.
+
+- Verified in a real local browser: open using the Scripture Docks button, click it again, and the Docks menu is removed from the visible accessibility tree.
+- Added repeated-toggle coverage for both the Scripture and floating-console launchers.
+- All 37 automated checks pass.
+- Recorded the current product goal and decision principles in `PRODUCT_PURPOSE.md`.

@@ -945,19 +945,29 @@ function hiddenDocks() { return LS.get(K.settings, {}).hiddenDocks || []; }
    all docks fully visible on one view, no page and no internal scrolling */
 const DOCK_GAP = 12;
 function packPx(items) {   // items {d,w,h}; returns placed {it,y,h} + skyline height
-  const colH = new Array(12).fill(0);
-  let need = 0;
-  const placed = items.map(it => {
-    let best = Infinity, bestC = 0;
-    for (let c0 = 0; c0 <= 12 - it.w; c0++) {
-      const h = Math.max(...colH.slice(c0, c0 + it.w));
-      if (h < best) { best = h; bestC = c0; }
+  /* deterministic row-band flow in DOM order: docks accumulate into a band
+     until the next one no longer fits the 12-col width — every dock in a
+     band shares the band top and the band's height (tallest member), so
+     same-band docks always come out equally scaled */
+  const placed = [];
+  let cur = [], width = 0, top = 0;
+  for (const it of items) {
+    if (cur.length && width + it.w > 12) {
+      const h = Math.max(...cur.map(i => i.h));
+      cur.forEach(i => placed.push({ it: i, y: top, h }));
+      top += h;
+      cur = [];
+      width = 0;
     }
-    for (let i = bestC; i < bestC + it.w; i++) colH[i] = best + it.h;
-    need = Math.max(need, best + it.h);
-    return { it, y: best, h: it.h };
-  });
-  return { placed, need };
+    cur.push(it);
+    width += it.w;
+  }
+  if (cur.length) {
+    const h = Math.max(...cur.map(i => i.h));
+    cur.forEach(i => placed.push({ it: i, y: top, h }));
+    top += h;
+  }
+  return { placed, need: top };
 }
 function naturalDockHeight(d) {
   const head = d.querySelector('.dock-head');
@@ -1161,8 +1171,9 @@ function renderDockMenu() {
     '<div class="dockmenu-item static">🔒 On the projector — always visible</div>' +
     `<button data-dockkey="__fnav" class="dockmenu-item${fn ? ' on' : ''}">${fn ? '✓' : '◻'} 🧭 Slide switcher (floating)</button>` +
     `<button data-dockkey="__float" class="dockmenu-item${fp ? ' on' : ''}">${fp ? '✓' : '◻'} 🖥️ Floating display mirror</button>` +
-    '<button data-dockkey="__all" class="dockmenu-item"><b>Show all</b></button>' +
-    '<button data-dockkey="__reset" class="dockmenu-item"><b>Reset layout</b></button>';
+   '<button data-dockkey="__all" class="dockmenu-item"><b>Show all</b></button>' +
+   '<button data-dockkey="__reset" class="dockmenu-item"><b>Reset layout</b></button>' +
+   '<button data-dockkey="__cache" class="dockmenu-item"><b>🧹 Clear offline cache & reload</b></button>';
 }
 function lsShowFloatNav() { return LS.get(K.settings, {}).showFloatNav !== false; }
 function applyFloatNav() {
@@ -1205,6 +1216,15 @@ $('dockMenu').addEventListener('click', e => {
     applyDocks();
     refreshLock();
     flash($('feDocks'), 'Default layout ✓');
+    return;
+  }
+  if (key === '__cache') {
+    flash($('feDocks'), 'Clearing cache…');
+    (async () => {
+      try { if (window.caches) for (const n of await caches.keys()) await caches.delete(n); } catch (_) {}
+      try { if (navigator.serviceWorker) for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch (_) {}
+      location.reload();
+    })();
     return;
   }
   if (key === '__all') s.hiddenDocks = [];
@@ -2841,9 +2861,9 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
    layout; clear them once so everyone sees the intended arrangement */
 (function migrateLayout() {
   const s = LS.get(K.settings, {});
-  if (s.layoutVer !== 'v5') {
+  if (s.layoutVer !== 'v6') {
     delete s.dockOrder; delete s.dockSizes; delete s.hiddenDocks; delete s.panesLocked;
-    s.layoutVer = 'v5';
+    s.layoutVer = 'v6';
     LS.set(K.settings, s);
   }
 })();

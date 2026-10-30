@@ -1156,7 +1156,7 @@ function renderDockMenu() {
   const hidden = hiddenDocks();
   const fp = lsShowFloatPreview();
   const fn = lsShowFloatNav();
-  const items = Object.keys(DOCK_LABELS).filter(k => !['text','quickgo','search'].includes(k)).map(key =>
+  const items = Object.keys(DOCK_LABELS).filter(k => k !== 'text').map(key =>
     `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('');
   menu.innerHTML = '<div class="more-group">Docks on screen</div>' + items +
     '<div class="dockmenu-item static">🔒 On the projector — always visible</div>' +

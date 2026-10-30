@@ -63,7 +63,6 @@ let songs = LS.get(K.songs, []);
 let themes = LS.get(K.themes, null);
 let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
 let live = LS.get(K.live, { mode: 'blank', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });   // plain black screen until you pick something
-let comparisonToken = 0;
 let outputIsConnected = false;
 let editingSongId = null;
 
@@ -749,13 +748,6 @@ async function prepareSaved(entry) {
 $('memoryChips').addEventListener('click', e => { const b=e.target.closest('button[data-m]'); if(b) prepareSaved(memory[+b.dataset.m]); });
 $('bookmarkChips').addEventListener('click', e => { const b=e.target.closest('button[data-bookmark]'); if(b) prepareSaved(bookmarks[+b.dataset.bookmark]); });
 $('btnMemoryClear').addEventListener('click', () => { if(!confirm('Clear saved reading history? Bookmarks stay saved.'))return; memory=[];LS.set('cp_scripture_history',memory);renderMemory(); });
-$('btnResumeScripture').addEventListener('click', () => prepareSaved(LS.get('cp_last_scripture',null)));
-$('btnPreviousPassage').addEventListener('click', () => {
-  const current = {r:currentLiveReference(),translation:live.scripture?.translation};
-  const entry = memory.find(m => !window.KOGGScripture.same(m,current));
-  if(entry) prepareSaved(entry,true);
-});
-
 /* ---------- Quick jump — type "jn 3:16": book completes on 1-2 letters,
    chapter and verse jump in automatically as you type ---------- */
 
@@ -979,6 +971,15 @@ function naturalDockHeight(d) {
 }function applyDocksToGridTemplate(grid, deckH, isNarrow) {
   const docks=[...grid.children].filter(d=>d.classList.contains('dock') && d.style.display!=='none');
   grid.style.rowGap='10px';grid.style.columnGap='10px';
+  const viewport=typeof window==='undefined' ? {innerWidth:1280,innerHeight:720} : window;
+  const compact=viewport.innerWidth<=1100 || viewport.innerHeight<=600;
+  if(compact){
+    const columns=viewport.innerWidth<=640 ? 1 : 2;
+    grid.style.gridTemplateRows='';grid.style.gridTemplateColumns=`repeat(${columns},minmax(0,1fr))`;
+    docks.forEach(d=>{d.style.gridColumn=columns===2 && d.dataset.dock==='text' ? '1 / -1' : 'auto';d.style.gridRow='auto';});
+    return;
+  }
+  grid.style.gridTemplateColumns='repeat(12,minmax(0,1fr))';
   const bands=[];let band=[],used=0;
   for(const d of docks){
     const width=Math.min(12,Math.max(2,(dockSizes[d.dataset.dock] || DOCK_DEFAULTS[d.dataset.dock] || [4,3])[0]));
@@ -1025,13 +1026,7 @@ function scheduleDockFit() {
     dockFitTimer = null;
     const grid = document.querySelector('.docks');
     if (!grid) return;
-    if (window.innerWidth <= 640) {   // phones: back to the simple fluid layout
-      grid.style.gridTemplateRows = '';
-      grid.style.rowGap = '';
-      grid.style.columnGap = '';
-    } else {
-      applyDocksToGridTemplate(grid, grid.clientHeight, window.innerWidth <= 1100);
-    }
+    applyDocksToGridTemplate(grid, grid.clientHeight, window.innerWidth <= 1100);
     fitDockContents();
   }, 40);
 }
@@ -1045,6 +1040,7 @@ function fitDockContents() {
     if (!head) return;
     w.style.transform = '';
     w.style.width = '';
+    if(d.dataset.dock==='text' || window.innerWidth<=1100 || window.innerHeight<=600)return;
     const cs = getComputedStyle(d);
     const dR = d.getBoundingClientRect();
     const wR = w.getBoundingClientRect();
@@ -1738,28 +1734,6 @@ $('btnBookmarkScripture').addEventListener('click',()=>{
   bookmarks=window.KOGGScripture.remember(bookmarks,entry,50);
   LS.set('cp_scripture_bookmarks',bookmarks);renderMemory();flash($('btnBookmarkScripture'),'Saved ★');
 });
-$('btnCompareScripture').addEventListener('click',async()=>{
-  if(!liveRef)return;
-  const token=++comparisonToken, reference={...liveRef};
-  const panel=$('comparisonPanel');panel.hidden=false;panel.textContent='Loading the selected passage…';
-  const cards=[];
-  for(const [file,name] of [['data/kjv.json','KJV'],['data/bsb.json','BSB'],['data/kjvs.json','KJV Strong’s']]) {
-    try {
-      let data=bible;
-      if(file!==loadedBibleFile){const response=await fetch(file);if(!response.ok)throw new Error('Unavailable offline');data=await response.json();}
-      const text=window.KOGGScripture.passage(data,reference);
-      cards.push(`<section class="comparison-card"><b>${name}</b><p>${esc(stripStrongs(text || 'Verse absent in this translation'))}</p><button data-prepare-version="${file}">Switch to ${name}</button></section>`);
-    } catch { cards.push(`<section class="comparison-card"><b>${name}</b><p>Not downloaded yet. Reconnect and retry.</p></section>`); }
-    if(token!==comparisonToken)return;
-  }
-  panel.innerHTML=cards.join('');
-});
-$('comparisonPanel').addEventListener('click',async event=>{
-  const button=event.target.closest('button[data-prepare-version]');
-  if(!button || !liveRef)return;
-  const r={...liveRef};
-  if(await loadBible(button.dataset.prepareVersion))goLiveScripture(r);
-});
 function goLiveScripture(r) {
   if (!validScriptureRef(r)) { flash($('quickGo'), 'Invalid scripture reference'); return false; }
   if (!scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo).length) {
@@ -1780,7 +1754,6 @@ function goLiveScripture(r) {
   renderVerseDots();
   scrollLiveIntoView();
   pushMemory(r);
-  comparisonToken++; $('comparisonPanel').hidden = true;
   return true;
 }
 function quickGoLive(item) {

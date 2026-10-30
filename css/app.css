@@ -1014,25 +1014,62 @@ body.light .mode-chip { border-color: #c9d2e0; }
 .quickgo-item.selected { outline:2px solid var(--accent); outline-offset:-2px; }
 @media(max-width:700px){ .comparison-panel { grid-template-columns:1fr; } }
 
-/* Reserve room for live translation switches; only the passage scrolls. */
-.docks .dock[data-dock="text"] > .dock-fit { display:flex; flex-direction:column; flex:1 1 0; min-height:0; overflow:hidden; }
-.docks .dock[data-dock="text"] .live-text { min-height:0; flex:1 1 50px; overflow:auto; padding:8px 10px; }
-.dock[data-dock="text"] .dock-foot { flex-wrap:wrap; gap:4px; margin-top:4px; }
-.dock[data-dock="text"] .dock-foot button { padding:4px 7px; }
-.dock[data-dock="text"] .ver-chips { order:-1; flex-shrink:0; overflow:visible; }
-.dock[data-dock="text"] #comparisonPanel { flex:0 1 45%; min-height:0; overflow:auto; }
+/* Bible switches stay beneath the passage, outside its scroll area. */
 #extraBiblePanel { max-height:70vh; overflow-y:auto; }
 #extraBibleButtons { display:flex; flex-direction:column; align-items:stretch; }
 #extraBibleButtons b { margin-top:8px; }
-
-/* Balanced desktop deck: four equal top docks and three equal bottom docks. */
-@media (min-width:641px) {
- .docks {grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-flow:row;overflow:hidden;}
-}
-
+.docks {grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-flow:row;overflow:hidden;}
 .dock-head {flex-wrap:wrap;gap:4px;}
 .dock-head .seg {margin-left:auto;max-width:100%;display:flex;}
 .dock-head .seg button {padding:4px 7px;font-size:12px;}
-.docks .dock[data-dock="text"] > .dock-fit {display:block;flex:0 0 auto;overflow:visible;}
-.docks .dock[data-dock="text"] .live-text {height:90px;min-height:60px;max-height:90px;overflow:auto;}
 .docks .dock .rs-corner {opacity:.8;z-index:5;}
+.docks .dock[data-dock="text"] > .dock-fit {display:flex;flex-direction:column;flex:1 1 0;min-height:0;overflow:hidden;transform:none;}
+.docks .dock[data-dock="text"] .live-text {height:auto;min-height:0;max-height:none;flex:1 1 0;overflow:auto;padding:12px;font-size:17px;line-height:1.6;}
+.dock[data-dock="text"] .ver-chips {order:0;flex:0 0 auto;flex-wrap:wrap;gap:5px;overflow:visible;margin-top:8px;padding-top:7px;border-top:1px solid #ffffff16;}
+.dock[data-dock="text"] #btnBookmarkScripture {margin-left:auto;}
+/* Compact screens reflow naturally, keeping readable tap targets instead of shrinking. */
+@media (max-width:1100px), (max-height:600px) {
+ .scripture-deck {height:auto;overflow:visible;min-height:0;}
+ .docks {flex:0 0 auto;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:auto;overflow:visible;align-items:stretch;}
+ .docks .dock {min-width:0;min-height:220px;max-height:none;}
+ .docks .dock > .dock-fit {transform:none!important;width:100%!important;}
+ .docks .dock[data-dock="text"] {min-height:290px;}
+ .docks .dock[data-dock="text"] .live-text {flex:1 1 190px;max-height:40dvh;}
+ .docks .dock .rs-corner {display:none;}
+ .dock.toolbar select {max-width:100%;min-width:0;}
+ .dock.toolbar {gap:8px;}
+ .chip-grid.dots {grid-template-columns:repeat(auto-fill,minmax(38px,1fr));}
+ .book-chip {min-height:36px;}
+ .topbar > * {min-width:0;}
+ .quickgo {min-width:140px;flex:1 1 240px;}
+ main {overflow-x:hidden;}
+ #floatEdit {max-width:calc(100vw - 24px);}
+}
+@media (max-width:640px) {
+ .docks {grid-template-columns:minmax(0,1fr);}
+ .docks .dock {min-height:180px;}
+ .dock.toolbar {align-items:stretch;}
+ .dock.toolbar select {width:100%;flex:1 1 100%;}
+ .topbar {position:relative;}
+ .topbar .brand {font-size:15px;}
+ .quickgo {order:2;flex:1 1 100%;}
+ .tabs {flex-shrink:0;}
+ .docks .dock .chip-grid.scroll {max-height:none;}
+ .item-list,.search-results {max-width:100%;}
+ button,input,select {touch-action:manipulation;}
+}
+/* Use the full desktop workspace and keep projector chrome compact. */
+@media (min-width:1101px) and (min-height:601px) {
+ .scripture-deck {height:calc(100dvh - 138px);}
+}
+.dock[data-dock="text"] .dock-head {margin-bottom:6px;}
+.dock[data-dock="text"] #btnBookmarkScripture {padding:4px 8px;font-size:12px;min-height:28px;}
+.docks .dock[data-dock="text"] .live-text {font-size:16px;line-height:1.5;padding:8px 10px;}
+.dock[data-dock="text"] .ver-chips {margin-top:5px;padding-top:5px;}
+.dock[data-dock="text"] .vchip {padding:4px 8px;font-size:12px;}
+@media (min-width:1101px) and (min-height:601px) {
+ .scripture-deck {height:calc(100dvh - 142px);}
+}
+.dock[data-dock="text"] .dock-head {margin-bottom:2px;}
+.dock[data-dock="text"] .ver-chips {margin-top:3px;padding-top:3px;}
+.docks .dock[data-dock="text"] .live-text {padding:6px 10px;}

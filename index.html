@@ -65,12 +65,12 @@
 
       <div class="docks">
         <div class="dock" data-dock="books">
-          <div class="dock-head"><span class="grip"><i class="dock-ico">📚</i>Books</span><span class="dock-head-hint" id="bookCount"></span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div class="dock-head"><span class="grip"><i class="dock-ico">📚</i>Books</span><span class="dock-head-hint" id="bookCount"></span></div>
           <div id="bookChips" class="chip-grid books scroll"></div>
         </div>
 
         <div class="dock" data-dock="chapters">
-          <div class="dock-head"><span class="grip"><i class="dock-ico">📑</i>Chapters</span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div class="dock-head"><span class="grip"><i class="dock-ico">📑</i>Chapters</span></div>
           <div id="chapterChips" class="chip-grid dots scroll"></div>
           <div class="dock-foot">
             <button id="btnPrevChapter" title="Previous chapter (reads across books)">◀</button>
@@ -98,7 +98,7 @@
         </div>
 
         <div class="dock" data-dock="memory">
-          <div class="dock-head"><span class="grip"><i class="dock-ico">🧠</i>Memory</span><button id="btnMemoryClear" class="mini-clear" title="Clear saved reading history">✕</button><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div class="dock-head"><span class="grip"><i class="dock-ico">🧠</i>Memory</span><button id="btnMemoryClear" class="mini-clear" title="Clear saved reading history">✕</button></div>
           
           <div id="bookmarkChips" class="memory-grid"></div>
           <div id="memoryChips" class="scroll memory-grid"></div>
@@ -106,7 +106,7 @@
         </div>
 
         <div class="dock legacy-lookup" data-dock="quickgo">
-          <div class="dock-head"><span class="grip"><i class="dock-ico">⚡</i>Quick jump</span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div class="dock-head"><span class="grip"><i class="dock-ico">⚡</i>Quick jump</span></div>
           <p class="hint dock-hint">Type <b>jn 3:16</b> / <b>ps 23:1-4</b> / <b>rom 8</b> — the book completes itself and the verse goes live as you type. Press <b>/</b> anywhere to focus.</p>
           <div class="quickjump">
             <input id="bookSearch" type="search" autocomplete="off"
@@ -120,7 +120,7 @@
         </div>
 
         <div class="dock legacy-lookup" data-dock="search">
-          <div class="dock-head"><span class="grip"><i class="dock-ico">🔎</i>Whole-Bible search</span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div class="dock-head"><span class="grip"><i class="dock-ico">🔎</i>Whole-Bible search</span></div>
           <p class="hint dock-hint">Find verses by the words you remember — <i>"sheep hear my voice"</i>. Quotes = exact phrase.</p>
           <div class="row">
             <input id="bibleSearch" type="search" autocomplete="off" placeholder='sheep hear my voice  ·  "no man cometh to the Father"'>
@@ -130,7 +130,7 @@
         </div>
 
         <div class="dock" data-dock="text">
-          <div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>On the projector</span><button class="span-btn" title="Size: small / wide">Span</button></div>
+          <div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>On the projector</span></div>
           <div id="liveText" class="live-text scroll"></div>
           <div class="dock-foot"><button id="btnPreviousPassage">↩ Previous passage</button><button id="btnResumeScripture">Resume last reading</button><button id="btnBookmarkScripture">☆ Save</button></div>
           <button id="btnCompareScripture" class="mini-btn">⚖ Compare KJV / BSB / Strong's</button>

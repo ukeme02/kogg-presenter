@@ -977,89 +977,27 @@ function naturalDockHeight(d) {
   const cap = window.innerHeight - 128;   // no single dock may demand more than roughly the deck
   return Math.min(cap, Math.max(96, headH + bodyH + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + DOCK_GAP));
 }function applyDocksToGridTemplate(grid, deckH, isNarrow) {
-  grid.style.rowGap = '0px';
-  grid.style.columnGap = '12px';
-  const docks = [...grid.children].filter(d => d.classList.contains('dock') && d.style.display !== 'none');
-  docks.forEach(d => {   // measure from unscaled state
-    const w = d.querySelector(':scope > .dock-fit');
-    if (w) { w.style.transform = ''; w.style.width = ''; }
-  });
-  const cols = n => n / 2;   // 2 per row in the narrow 2-column mode
-  if (isNarrow) {
-    const items = docks.map(d => ({ d, w: 2, h: naturalDockHeight(d) }));
-    const rows = [];
-    for (let i = 0; i < items.length; i += 2) {
-      rows.push({ a: items[i], b: items[i + 1], h: Math.max(items[i].h, items[i + 1] ? items[i + 1].h : 0) });
-    }
-    let total = rows.reduce((s, r) => s + r.h, 0);
-    const minRow2 = r => {
-      const head = r.a.d.querySelector('.dock-head');
-      const cs = getComputedStyle(r.a.d);
-      const headH = head ? head.getBoundingClientRect().height + (parseFloat(getComputedStyle(head).marginBottom) || 0) : 0;
-      return headH + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + 46;
-    };
-    const floors = rows.map(minRow2);
-    for (let pass = 0; pass < 6 && total > deckH + 2; pass++) {
-      const F = (deckH + 2) / total;
-      const heights2 = rows.map((r, i) => Math.max(floors[i], r.h * F));
-      rows.forEach((r, i) => { r.h = heights2[i]; });
-      total = rows.reduce((s, r) => s + r.h, 0);
-    }
-    const rh2 = rows.map(r => Math.round(r.h));   // exact fit: shave rounding drift off the biggest row
-    let sum2 = rh2.reduce((s, h) => s + h, 0);
-    if (sum2 > deckH) {
-      const big2 = rh2.indexOf(Math.max(...rh2));
-      rh2[big2] -= sum2 - deckH;
-    }
-    grid.style.gridTemplateRows = rh2.map(h => h + 'px').join(' ');
-    rows.forEach((r, i) => {
-      r.a.d.style.gridRow = `${i + 1} / ${i + 2}`;
-      if (r.b) r.b.d.style.gridRow = `${i + 1} / ${i + 2}`;
-    });
-  } else {
-    let items = docks.map(d => {
-      const w = +d.style.gridColumn.replace('span ', '') || 12;
-      return { d, w: Math.min(12, Math.max(2, w)), h: naturalDockHeight(d) };
-    });
-    const pack = packPx(items);
-    const placed = pack.placed;
-    let need = pack.need;
-    // balance: every dock within a row band gets the band's full height (no ragged gaps)
-    const bandMax = new Map();
-    placed.forEach(p => bandMax.set(p.y, Math.max(bandMax.get(p.y) || 0, p.h)));
-    placed.forEach(p => { p.h = bandMax.get(p.y); });
-    need = Math.max(...placed.map(p => p.y + p.h));
-    // bands become distinct horizontal tracks in place order
-    const bands = [...new Set(placed.map(p => p.y))].sort((a, b) => a - b);
-    placed.forEach(p => { p.band = bands.indexOf(p.y); });
-    const minRow = p => {   // head + paddings + a hint of content must always survive
-      const head = p.it.d.querySelector('.dock-head');
-      const cs = getComputedStyle(p.it.d);
-      const headH = head ? head.getBoundingClientRect().height + (parseFloat(getComputedStyle(head).marginBottom) || 0) : 0;
-      return headH + (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0) + 46;
-    };
-    let bandH = bands.map(y => Math.max(...placed.filter(p => p.y === y).map(p => p.h)));
-    if (need > deckH + 1) {   // whole skyline scaled down proportionally, mins preserved
-      for (let pass = 0; pass < 6; pass++) {
-        const F = need > deckH + 2 ? (deckH + 2) / need : 1;
-        bandH = bandH.map((h, i) => Math.max(minRow(placed.find(p => p.y === bands[i])), h * F));
-        need = bandH.reduce((s, h) => s + h, 0);
-      }
-    }
-    const rh = bandH.map(h => Math.round(h));   // exact fit: shave rounding drift off the biggest band
-    let sumR = rh.reduce((s, h) => s + h, 0);
-    if (sumR > deckH) {
-      const big = rh.indexOf(Math.max(...rh));
-      rh[big] -= sumR - deckH;
-    }
-    grid.style.gridTemplateRows = rh.map(h => h + 'px').join(' ') || 'none';
-    grid.style.rowGap = '0px';
-    grid.style.columnGap = '12px';
-    placed.forEach(p => {
-      p.it.d.style.gridRow = `${p.band + 1} / ${p.band + 2}`;
-    });
+  const docks=[...grid.children].filter(d=>d.classList.contains('dock') && d.style.display!=='none');
+  grid.style.rowGap='10px';grid.style.columnGap='10px';
+  const bands=[];let band=[],used=0;
+  for(const d of docks){
+    const width=Math.min(12,Math.max(2,(dockSizes[d.dataset.dock] || DOCK_DEFAULTS[d.dataset.dock] || [4,3])[0]));
+    if(band.length && used+width>12){bands.push(band);band=[];used=0;}
+    band.push({d,width,start:used+1});used+=width;
   }
+  if(band.length)bands.push(band);
+  const weights=bands.map(items=>{
+    const resized=items.filter(({d})=>dockSizes[d.dataset.dock]).map(({d})=>dockSizes[d.dataset.dock][1]);
+    return resized.length ? Math.max(...resized) : 5;
+  });
+  const total=weights.reduce((sum,n)=>sum+n,0)||1;
+  const available=Math.max(0,deckH-10*Math.max(0,bands.length-1));
+  grid.style.gridTemplateRows=weights.map(n=>`${available*n/total}px`).join(' ');
+  bands.forEach((items,row)=>items.forEach(({d,width,start})=>{
+    d.style.gridColumn=`${start} / span ${width}`;d.style.gridRow=`${row+1} / ${row+2}`;
+  }));
 }
+
 function applyDocks() {
   const grid = document.querySelector('.docks');
   if (!grid) return;
@@ -1105,7 +1043,6 @@ function fitDockContents() {
     if (!w || d.style.display === 'none') return;
     const head = d.querySelector('.dock-head');
     if (!head) return;
-    if(d.dataset.dock === 'text'){w.style.transform='';w.style.width='';w.style.overflow='hidden';return;}
     w.style.transform = '';
     w.style.width = '';
     const cs = getComputedStyle(d);
@@ -1113,21 +1050,15 @@ function fitDockContents() {
     const wR = w.getBoundingClientRect();
     const avail = dR.bottom - wR.top - (parseFloat(cs.paddingBottom) || 0);
     if (avail <= 4) return;
-    let s = 1;
-    for (let i = 0; i < 3; i++) {   // correction loop: adjust until the VISUAL result fits
-      const vis = w.getBoundingClientRect().height;
-      if (vis <= avail + 1) break;
-      s = Math.max(0.2, Math.min(1, s * (avail / vis)));
-      w.style.width = (100 / s) + '%';
-      w.style.transform = `scale(${s})`;
+    const setScale = scale => {w.style.width=(100/scale)+'%';w.style.transform=`scale(${scale})`;};
+    if(w.getBoundingClientRect().height<=avail+1)return;
+    let lo=0.2,hi=1;
+    for(let i=0;i<9;i++){
+      const mid=(lo+hi)/2;setScale(mid);
+      if(w.getBoundingClientRect().height<=avail)lo=mid;else hi=mid;
     }
-    if (w.getBoundingClientRect().height > avail + 1) {
-      // one last visual correction, then leave it (off by a hair imperceptibly)
-      const vis = w.getBoundingClientRect().height;
-      s = Math.max(0.2, Math.min(1, s * (avail / vis)));
-      w.style.width = (100 / s) + '%';
-      w.style.transform = `scale(${s})`;
-    }
+    setScale(lo);
+
   });
 }
 function initDockFit() {
@@ -1247,18 +1178,6 @@ function saveDocks() {
   s.dockSizes = dockSizes;
   LS.set(K.settings, s);
 }
-/* span button = quick double / halve width; the corner handle does free sizing */
-document.querySelectorAll('.docks .dock .span-btn').forEach(b =>
-  b.addEventListener('click', () => {
-    const dock = b.closest('.dock');
-    const key = dock.dataset.dock;
-    const def = dockSizes[key] || DOCK_DEFAULTS[key] || [4, 5];
-    const cur = +dock.style.gridColumn.replace('span ', '') || def[0];
-    dockSizes[key] = cur < def[0] * 1.5 ? [Math.min(12, def[0] * 2), def[1]] : [def[0], def[1]];
-    dock.style.gridColumn = `span ${dockSizes[key][0]}`;
-    saveDocks();
-    refreshLock();
-  }));
 function initDockDrag() {
   const grid = document.querySelector('.docks');
   document.querySelectorAll('.docks .dock').forEach(dock => {
@@ -1315,8 +1234,10 @@ function initDockDrag() {
       dockLayoutLive = true;   // rows recompute once at the end — no shake mid-drag
       const move = ev => {
         const cols = Math.min(12, Math.max(2, Math.round(s0[0] + (ev.clientX - startX) / unitW)));
-        dock.style.gridColumn = `span ${cols}`;
-        dockSizes[key] = [cols, s0[1]];
+        const rows = Math.min(10,Math.max(2,Math.round(s0[1]+(ev.clientY-startY)/unitH)));
+        dockSizes[key] = [cols, rows];
+        applyDocksToGridTemplate(grid,grid.clientHeight,false);
+        fitDockContents();
       };
       const up = () => {
         document.removeEventListener('pointermove', move);
@@ -2854,9 +2775,10 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
    layout; clear them once so everyone sees the intended arrangement */
 (function migrateLayout() {
   const s = LS.get(K.settings, {});
-  if (s.layoutVer !== 'v6') {
+  if (s.layoutVer !== 'v7') {
     delete s.dockOrder; delete s.dockSizes; delete s.hiddenDocks; delete s.panesLocked;
-    s.layoutVer = 'v6';
+    s.layoutVer = 'v7';
+    dockSizes={};
     LS.set(K.settings, s);
   }
 })();

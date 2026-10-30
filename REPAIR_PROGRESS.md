@@ -153,3 +153,11 @@ The current service queue still needs explicit cloud portability work; named pla
 Per the user’s clarification, worker v30 prepares KJV, BSB, KJV Strong’s, its word lexicon, output assets and the bundled starter hymns. WEB and ASV are excluded from initial preparation. Readiness reflects the three Bibles. The hymnary requirement remains pending the user's choice of hymnbook/edition or a defined traditional collection; the existing 34 hymns are still explicitly labelled starter content.
 
 Publication status for the Base content correction: commit `7789205` pushed to GitHub. Cloudflare production deployment failed twice because `api.cloudflare.com` / `dash.cloudflare.com` could not be resolved. Its last verified production release remains the prior output/offline fix. The three-Bible change is not yet confirmed on the Cloudflare production URL.
+
+## Traditional hymnary and three-tap Scripture — 30 October 2026
+
+Preserved the user's latest layout and direct-to-screen edits. Finished removing calls to the deleted Scripture preparation function: clicking a search result or selecting a downloaded Bible presents immediately; keyboard arrows select a search result and Enter presents it.
+
+Verified the existing basic pack contains 300 unique traditional hymns and the optional expansion adds 262 more (562 total). Reinstalling either pack keeps saved edits and avoids duplicate first lines. Basic installation now records the pack version consistently, including manual retry; initial download failures show a retry message. Worker v32 caches the pack catalogue and carries downloaded optional packs forward before removing old caches, so the expansion survives offline upgrades. Credits remain in data/hymnary-sources.txt.
+
+Requested Bible roadmap: NIV and NLT in place of ASV/WEB in the preferred menu; NKJV, Amplified, ASB (edition to clarify), The Message, and Efik as additional choices. Full texts have not been added or relabelled: publisher-approved distributable sources are still needed. Focus for this change is the hymnary, as requested.

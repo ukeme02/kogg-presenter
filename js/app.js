@@ -63,7 +63,6 @@ let songs = LS.get(K.songs, []);
 let themes = LS.get(K.themes, null);
 let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
 let live = LS.get(K.live, { mode: 'blank', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });   // plain black screen until you pick something
-let preparedScripture = null;
 let comparisonToken = 0;
 let outputIsConnected = false;
 let editingSongId = null;
@@ -489,16 +488,16 @@ $('verseDots').addEventListener('click', e => {
   const v = +dot.dataset.v;
   const bi = +$('bookSelect').value, ch = +$('chapterSelect').value;
   if (verseMode === 'verse') {
-    stageScripture({ bookIdx: bi, ch, vFrom: v, vTo: v });
+    goLiveScripture({ bookIdx: bi, ch, vFrom: v, vTo: v });
     return;
   }
-  // range mode: first tap stores the start, second tap completes the range
+  // range mode: first tap stores the start, second tap completes the range — live
   if (!rangeStart) {
     rangeStart = v;
     dot.classList.add('live');
     $('modeHint').textContent = `Start: verse ${v} — now tap the last number.`;
   } else {
-    stageScripture({ bookIdx: bi, ch, vFrom: Math.min(rangeStart, v), vTo: Math.max(rangeStart, v) });
+    goLiveScripture({ bookIdx: bi, ch, vFrom: Math.min(rangeStart, v), vTo: Math.max(rangeStart, v) });
     rangeStart = 0;
   }
 });
@@ -516,8 +515,8 @@ $('bookSelect').addEventListener('change', fillChapters);
 $('chapterSelect').addEventListener('change', fillVerses);
 $('translationSelect').addEventListener('change', () => {
   const file = $('translationSelect').value;
-  const ref = preparedScripture?.r || currentLiveReference() || liveRef;
-  loadBible(file).then(loaded => { if (loaded && ref) stageScripture({...ref}); });
+  const ref = currentLiveReference() || liveRef;
+  loadBible(file).then(loaded => { if (loaded && ref) goLiveScripture({...ref}); else if (loaded) renderPreview(); });
 });
 
 /* ---------- version chips — switch translation mid-show from the projector dock ---------- */
@@ -539,7 +538,7 @@ $('versionChips').addEventListener('click', e => {
   b.classList.add('loaded');   // immediate feedback while the fetch lands
   b.textContent = b.textContent + ' …';
   $('translationSelect').dispatchEvent(new Event('change'));
-  flash(b, 'Prepared ✓');
+  flash(b, 'On screen ✓');
 });
 
 /* Scripture docks — Books / Chapters / Verses / Memory on one page */
@@ -595,7 +594,7 @@ function renderChapterChips() {
 }
 function chapterLive(bi, ch) {
   const book = bible.books[bi];
-  stageScripture({ bookIdx: bi, ch, vFrom: 1, vTo: book.chapters[ch - 1].length });
+  goLiveScripture({ bookIdx: bi, ch, vFrom: 1, vTo: book.chapters[ch - 1].length });
 }
 $('bookChips').addEventListener('click', e => {
   const chip = e.target.closest('button[data-i]');
@@ -739,13 +738,13 @@ function renderMemory() {
       m.r.vFrom === liveRef.vFrom && m.r.vTo === liveRef.vTo ? ' live' : ''}" title="${esc(m.ref)}">${esc(m.short)}</button>`
   ).join('') : '<span class="dim">Nothing live yet this session.</span>';
 }
-async function prepareSaved(entry, present = false) {
+async function prepareSaved(entry) {
   if (!entry || !window.KOGGScripture.valid(entry.r)) return false;
   if ($('translationSelect').value !== entry.translation) {
     if (![...$('translationSelect').options].some(o => o.value === entry.translation)) { flash($('liveRef'), 'Version unavailable on this device'); return false; }
     if (!await loadBible(entry.translation)) return false;
   }
-  return present ? goLiveScripture({...entry.r}) : stageScripture({...entry.r});
+  return goLiveScripture({...entry.r});
 }
 $('memoryChips').addEventListener('click', e => { const b=e.target.closest('button[data-m]'); if(b) prepareSaved(memory[+b.dataset.m]); });
 $('bookmarkChips').addEventListener('click', e => { const b=e.target.closest('button[data-bookmark]'); if(b) prepareSaved(bookmarks[+b.dataset.bookmark]); });
@@ -812,7 +811,7 @@ function commitJump(q) {
   // verse typed → live, instantly
   const vTo = dm[3] ? +dm[3] : +dm[2];
   if (+dm[2] < 1 || +dm[2] > vCount || vTo < 1 || vTo > vCount) { flash($('bookSearch'), 'Invalid verse'); return; }
-  stageScripture({ bookIdx: bi, ch, vFrom: Math.min(+dm[2], vTo), vTo: Math.max(+dm[2], vTo) });
+  goLiveScripture({ bookIdx: bi, ch, vFrom: Math.min(+dm[2], vTo), vTo: Math.max(+dm[2], vTo) });
   $('quickBookSug').hidden = true;
   renderBookGhost();
 }
@@ -1777,17 +1776,6 @@ function translationName(file) {
   const option=[...$('translationSelect').options].find(o=>o.value===file);
   return option?.text?.split(' — ')[0] || file;
 }
-function stageScripture(r) {
-  if(!bible || !validScriptureRef(r))return false;
-  const slides=scriptureToSlides(bible.books,r.bookIdx,r.ch,r.vFrom,r.vTo);
-  if(!slides.length){flash($('quickGo'),'Verse absent in this translation');return false;}
-  preparedScripture={r:{...r},translation:loadedBibleFile,title:refOf(r)};
-  $('preparedTitle').textContent=`PREPARED • ${preparedScripture.title} • ${translationName(loadedBibleFile)} • not live`;
-  $('preparedText').textContent=slides.map(slide=>stripStrongs(slide.text)).join('\n\n');
-  $('preparedPanel').hidden=false;
-  $('comparisonPanel').hidden=true; comparisonToken++;
-  return true;
-}
 function currentLiveReference() {
   if(!live.scripture || !live.slides[live.index])return null;
   const match=/ (\d+):(\d+)$/.exec(live.slides[live.index].label || '');
@@ -1795,14 +1783,13 @@ function currentLiveReference() {
 }
 async function navigateScripture(dir) {
   if(!bible || live.mode!=='normal') {
-    const r=preparedScripture?.r || currentScriptureRange();
-    const target=window.KOGGScripture.adjacent(bible?.books || [],r,dir);
-    if(target)stageScripture(target);
+    const target=window.KOGGScripture.adjacent(bible?.books || [],currentScriptureRange(),dir);
+    if(target)goLiveScripture(target);
     return;
   }
   if(!live.scripture) {
-    const target=window.KOGGScripture.adjacent(bible.books,preparedScripture?.r || currentScriptureRange(),dir);
-    if(target)stageScripture(target);return;
+    const target=window.KOGGScripture.adjacent(bible.books,currentScriptureRange(),dir);
+    if(target)goLiveScripture(target);return;
   }
   const state=live;
   if(live.scripture.translation!==loadedBibleFile) {
@@ -1817,16 +1804,15 @@ async function navigateScripture(dir) {
   // semantics intact (window size and whole-chapter steps) and goes live as it walks
   stepVerse(dir);
 }
-$('btnTakeScripture').addEventListener('click',()=>{if(preparedScripture)prepareSaved(preparedScripture,true);});
 $('btnBookmarkScripture').addEventListener('click',()=>{
-  if(!preparedScripture)return;
-  const entry={...preparedScripture,ref:preparedScripture.title,short:shortRef(preparedScripture.r)};
+  if(!liveRef)return;
+  const entry={r:{...liveRef},translation:loadedBibleFile,title:refOf(liveRef),ref:refOf(liveRef),short:shortRef(liveRef)};
   bookmarks=window.KOGGScripture.remember(bookmarks,entry,50);
   LS.set('cp_scripture_bookmarks',bookmarks);renderMemory();flash($('btnBookmarkScripture'),'Saved ★');
 });
 $('btnCompareScripture').addEventListener('click',async()=>{
-  if(!preparedScripture)return;
-  const token=++comparisonToken, reference={...preparedScripture.r};
+  if(!liveRef)return;
+  const token=++comparisonToken, reference={...liveRef};
   const panel=$('comparisonPanel');panel.hidden=false;panel.textContent='Loading the selected passage…';
   const cards=[];
   for(const [file,name] of [['data/kjv.json','KJV'],['data/bsb.json','BSB'],['data/kjvs.json','KJV Strong’s']]) {
@@ -1834,7 +1820,7 @@ $('btnCompareScripture').addEventListener('click',async()=>{
       let data=bible;
       if(file!==loadedBibleFile){const response=await fetch(file);if(!response.ok)throw new Error('Unavailable offline');data=await response.json();}
       const text=window.KOGGScripture.passage(data,reference);
-      cards.push(`<section class="comparison-card"><b>${name}</b><p>${esc(stripStrongs(text || 'Verse absent in this translation'))}</p><button data-prepare-version="${file}">Prepare ${name}</button></section>`);
+      cards.push(`<section class="comparison-card"><b>${name}</b><p>${esc(stripStrongs(text || 'Verse absent in this translation'))}</p><button data-prepare-version="${file}">Switch to ${name}</button></section>`);
     } catch { cards.push(`<section class="comparison-card"><b>${name}</b><p>Not downloaded yet. Reconnect and retry.</p></section>`); }
     if(token!==comparisonToken)return;
   }
@@ -1842,9 +1828,9 @@ $('btnCompareScripture').addEventListener('click',async()=>{
 });
 $('comparisonPanel').addEventListener('click',async event=>{
   const button=event.target.closest('button[data-prepare-version]');
-  if(!button || !preparedScripture)return;
-  const r={...preparedScripture.r};
-  if(await loadBible(button.dataset.prepareVersion))stageScripture(r);
+  if(!button || !liveRef)return;
+  const r={...liveRef};
+  if(await loadBible(button.dataset.prepareVersion))goLiveScripture(r);
 });
 function goLiveScripture(r) {
   if (!validScriptureRef(r)) { flash($('quickGo'), 'Invalid scripture reference'); return false; }
@@ -1866,7 +1852,7 @@ function goLiveScripture(r) {
   renderVerseDots();
   scrollLiveIntoView();
   pushMemory(r);
-  preparedScripture = null; comparisonToken++; $('preparedPanel').hidden = true;
+  comparisonToken++; $('comparisonPanel').hidden = true;
   return true;
 }
 function quickGoLive(item) {
@@ -1955,7 +1941,6 @@ $('quickGo').addEventListener('keydown', e => {
     if(!items.length)return;
     box._selected=((box._selected || 0)+(e.key==='ArrowDown'?1:-1)+items.length)%items.length;
     box.querySelectorAll('.quickgo-item').forEach((item,i)=>item.classList.toggle('selected',i===box._selected));
-    if(items[box._selected].type==='scripture')stageScripture(items[box._selected].ref);
   } else if (e.key === 'Escape') {
     $('quickGoResults').hidden = true;
   }
@@ -1965,8 +1950,7 @@ $('quickGoResults').addEventListener('click', e => {
   if (!item) return;
   const items = $('quickGoResults')._items || [];
   const chosen = items[+item.dataset.i];
-  if (chosen?.type === 'scripture') { $('quickGoResults')._selected=+item.dataset.i;stageScripture(chosen.ref); }
-  else if(chosen)quickGoLive(chosen);
+  if(chosen)quickGoLive(chosen);
 });
 document.addEventListener('click', e => {
   if (!e.target.closest('.quickgo')) $('quickGoResults').hidden = true;
@@ -2725,18 +2709,19 @@ $('btnLogoClear').addEventListener('click', () => {
 });
 refreshLogoStatus();
 
-/* ---------- starter hymns (bundled, all in the public domain) ---------- */
+/* ---------- bundled traditional hymnary and optional expansion ---------- */
 async function addHymnPack(file) {
   const pack=await window.KOGGContent.readPack(file);
   const merged=window.KOGGContent.mergeHymns(songs,pack);
   if(merged.added){songs=merged.songs;LS.set(K.songs,songs);}
   const settings=LS.get(K.settings,{});
   settings.hymnPacks=[...new Set([...(settings.hymnPacks || []),pack.pack])];
+  if(pack.pack==='traditional-basic-v1')settings.hymnPackVersion=pack.pack;
   LS.set(K.settings,settings);renderSongList();return merged.added;
 }
 async function addStarterHymns() {
-  try {const n=await addHymnPack('data/hymns.json');LS.set(K.settings,{...LS.get(K.settings,{}),hymnPackVersion:'traditional-basic-v1'});return n;}
-  catch {return 0;}
+  try {return await addHymnPack('data/hymns.json');}
+  catch(err) {$('hymnPackStatus').textContent='Basic hymnary not saved yet. Reconnect and choose Basic Hymnary to retry.';return 0;}
 }
 $('btnStarterHymns').addEventListener('click',async()=>{
   $('btnStarterHymns').disabled=true;
@@ -2772,9 +2757,9 @@ $('btnMoreBibles').addEventListener('click',async()=>{
 });
 $('extraBiblePanel').addEventListener('click',async event=>{
   const button=event.target.closest('button[data-bible-file]');if(!button)return;
-  const reference=preparedScripture?.r || currentLiveReference() || currentScriptureRange();
+  const reference=currentLiveReference() || currentScriptureRange();
   button.disabled=true;
-  try{if(await loadBible(button.dataset.bibleFile)){stageScripture(reference);$('extraBibleStatus').textContent='Downloaded. This version is now available offline.';}else $('extraBibleStatus').textContent='Not downloaded yet. Reconnect and retry.';}
+  try{if(await loadBible(button.dataset.bibleFile)){goLiveScripture(reference);$('extraBibleStatus').textContent='Downloaded. This version is now available offline.';}else $('extraBibleStatus').textContent='Not downloaded yet. Reconnect and retry.';}
   finally{button.disabled=false;}
 });
 

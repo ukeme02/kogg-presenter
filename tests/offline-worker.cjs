@@ -4,3 +4,10 @@ test('Base prepares exactly the three specified Bibles and the Strong’s lexico
 test('offline output works at both redirected and canonical page addresses',async()=>{const w=worker();await w.install();w.setOffline();for(const path of ['display.html','display']){const response=await w.fetch(path);assert.equal(response.status,200);assert.equal(response.redirected,false);assert.match(await response.text(),/display.html/);}});
 test('cached Bible reopening performs no network download',async()=>{const w=worker();await w.install();const count=w.calls.length;const response=await w.fetch('data/kjv.json');assert.equal(response.status,200);assert.equal(w.calls.length,count);});
 test('incomplete initial preparation never reports ready',async()=>{const w=worker();w.setOffline();await assert.rejects(w.install());assert(w.messages.every(m=>m.ready===false));assert(w.messages.some(m=>m.error));});
+
+test('a cache upgrade retains a downloaded hymn expansion for offline use',async()=>{
+ const w=worker();const old=await w.caches.open('kogg-presenter-v31');
+ await old.put('https://example.test/app/data/hymns-extra.json',new Response('saved expansion'));
+ await w.install();w.setOffline();
+ assert.equal(await (await w.fetch('data/hymns-extra.json')).text(),'saved expansion');
+});

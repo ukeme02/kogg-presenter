@@ -1086,11 +1086,13 @@ function initDockFit() {
   document.querySelectorAll('.docks .dock').forEach(d => {
     if (d.querySelector(':scope > .dock-fit')) return;
     const wrap = document.createElement('div');
+    const footer=['chapters','verses'].includes(d.dataset.dock) ? d.querySelector(':scope > .dock-foot') : null;
     wrap.className = 'dock-fit';
     [...d.children].forEach(ch => {
-      if (!ch.classList.contains('dock-head') && !ch.classList.contains('rs-corner')) wrap.appendChild(ch);
+      if (ch!==footer && !ch.classList.contains('dock-head') && !ch.classList.contains('rs-corner')) wrap.appendChild(ch);
     });
     d.appendChild(wrap);
+    if(footer)d.appendChild(footer);
   });
   if (window.ResizeObserver) {
     const grid = document.querySelector('.docks');
@@ -1355,7 +1357,7 @@ $('btnVoiceSearch').addEventListener('click', () => {
       renderBibleSearch();
       flash(btn, 'Heard ✓');
     };
-    r1.onerror = () => flash(btn, 'Mic error');
+    r1.onerror = e => flash(btn, microphoneError(e.error));
     r1.onend = () => btn.classList.remove('active');
     r1.start();
   } catch (err) { flash(btn, 'Mic failed'); }
@@ -1382,7 +1384,7 @@ $('btnVoiceJump').addEventListener('click', () => {
       renderBookGhost();
       flash(btn, 'Heard ✓');
     };
-    r1.onerror = () => flash(btn, 'Mic error');
+    r1.onerror = e => flash(btn, microphoneError(e.error));
     r1.onend = () => btn.classList.remove('active');
     r1.start();
   } catch (err) { flash(btn, 'Mic failed'); }
@@ -2316,7 +2318,13 @@ function numberize(words) {
     else if (/^\d+$/.test(w)) n = +w;
     if (n == null) { flush(); out.push(w); continue; }
     if (n === 100) { acc = (acc || 1) * 100; continue; }
-    if (n >= 10 && n % 10 === 0) { flush(); acc = n; continue; }
+    if (n >= 10 && n % 10 === 0) {
+      if(acc>=100 && acc%100===0)acc+=n;else {flush();acc=n;}
+      continue;
+    }
+    const joinsTens=acc>=20 && acc%10===0 && n<10;
+    const joinsHundreds=acc>=100 && acc%100===0 && n<100;
+    if(acc && !joinsTens && !joinsHundreds)flush();
     acc += n;
   }
   flush();
@@ -2369,6 +2377,9 @@ function processVoice(raw) {
   voiceShow(said.slice(0, 18));
 }
 
+function microphoneError(error) {
+  return ({'not-allowed':'Allow microphone access','service-not-allowed':'Voice service blocked','audio-capture':'Microphone unavailable','network':'Voice needs a connection','no-speech':'No speech heard — retry','aborted':'Listening stopped'})[error] || 'Microphone error — retry';
+}
 function startVoice() {
   if (!SR) {
     alert('Voice control needs Chrome or Edge (Web Speech API). Voice input also requires an internet connection.');
@@ -2389,11 +2400,9 @@ function startVoice() {
       else voiceBtnSync(false);
     };
     rec.onerror = e => {
-      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-        stopVoice();
-        flash($('feVoice'), 'Mic blocked');
-        alert('Microphone permission denied — allow mic access to use voice control.\nNote: voice input needs an internet connection in Chrome/Edge.');
-      }
+      if(e.error==='no-speech' || e.error==='aborted')return;
+      stopVoice();flash($('feVoice'),microphoneError(e.error));
+      if(e.error==='not-allowed' || e.error==='service-not-allowed')alert('Allow microphone access for this site in your browser. Voice recognition may need internet in Chrome/Edge.');
     };
     rec.start();
     voiceOn = true;
@@ -2405,6 +2414,7 @@ function startVoice() {
 }
 function stopVoice() {
   voiceOn = false;
+  voiceBtnSync(false);
   try { if (rec) rec.stop(); } catch {}
 }
 $('feVoice').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());

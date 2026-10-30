@@ -6,12 +6,12 @@ class Element {
  set innerHTML(value){this._html=value;const opts=[...value.matchAll(/<option(?:\s+value="([^"]*)")?[^>]*>(.*?)<\/option>/g)];if(opts.length){this.options=opts.map(m=>({value:m[1]??m[2],text:m[2]}));this._value=this.options[0].value;}}
  get innerHTML(){return this._html||'';} set value(v){this._value=String(v);} get value(){return this._value;}
 }
-function boot(){
+function boot({recognition}={}){
  const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],new Element(m[1])]));
  for(const m of html.matchAll(/<select[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g))elements.get(m[1]).innerHTML=m[2];
  const storage=new Map([['cp_settings',JSON.stringify({mode:'local',starterSeeded:true,hymnPackVersion:'traditional-basic-v1'})]]);
  const document={getElementById:id=>elements.get(id)||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new Element(),addEventListener(){},removeEventListener(){},body:new Element(),head:new Element()};
- const context=vm.createContext({console,document,window:{innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});
+ const context=vm.createContext({console,document,window:{SpeechRecognition:recognition,innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});
  vm.runInContext(app,context);return {context,elements,storage};
 }
 test('operator boots, loads all books, projects a range, advances preview and blanks',async()=>{const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));assert.equal(elements.get('bookSelect').options.length,66);vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:17})',context);assert.equal(JSON.parse(storage.get('cp_live')).slides.length,2);assert.match(elements.get('liveText').innerHTML,/John 3:16/);vm.runInContext('next()',context);assert.match(elements.get('liveText').innerHTML,/John 3:17/);elements.get('btnBlank').click();assert.equal(JSON.parse(storage.get('cp_live')).mode,'blank');assert.equal(elements.get('liveText').textContent,'Screen blank');});
@@ -70,4 +70,24 @@ test('Quick jump keeps ambiguous book prefixes selectable and allows deleting a 
  assert.equal(input.value,'Jo');assert.equal(elements.get('quickBookSug').hidden,false);
  let timers=0;context.setTimeout=()=>{timers++;return 1;};input.value='John 3';input.handlers.input[0]({inputType:'deleteContentBackward'});
  assert.equal(input.value,'John 3');assert.equal(timers,0);
+});
+
+test('voice Quick jump recognises a spoken reference and searches remembered words',async()=>{
+ const sessions=[];class Recognition{constructor(){sessions.push(this);}start(){this.started=true;}stop(){}}
+ const {elements}=boot({recognition:Recognition});await new Promise(resolve=>setImmediate(resolve));
+ elements.get('btnVoiceJump').click();assert.equal(sessions[0].started,true);
+ sessions[0].onresult({results:[[{transcript:'show John chapter three verse sixteen'}]]});
+ assert.match(elements.get('liveText').innerHTML,/John 3:16/);
+ elements.get('btnVoiceSearch').click();sessions[1].onresult({results:[[{transcript:'sheep hear my voice'}]]});
+ assert.equal(elements.get('bibleSearch').value,'sheep hear my voice');assert.match(elements.get('bibleResults').innerHTML,/John/);
+});
+test('voice navigation starts, advances, and stops without restarting after a microphone failure',async()=>{
+ const sessions=[];class Recognition{constructor(){sessions.push(this);}start(){this.starts=(this.starts||0)+1;}stop(){this.stopped=true;}}
+ const {context,elements}=boot({recognition:Recognition});await new Promise(resolve=>setImmediate(resolve));
+ vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:17})',context);
+ elements.get('btnVoice2').click();assert.equal(vm.runInContext('voiceOn',context),true);
+ const event={resultIndex:0,results:[Object.assign([{transcript:'next'}],{isFinal:true})]};sessions[0].onresult(event);
+ assert.match(elements.get('liveText').innerHTML,/John 3:17/);
+ sessions[0].onerror({error:'audio-capture'});sessions[0].onend();
+ assert.equal(vm.runInContext('voiceOn',context),false);assert.equal(sessions[0].starts,1);assert.match(elements.get('feVoice').textContent,/Microphone unavailable/);
 });

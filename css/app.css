@@ -1075,3 +1075,10 @@ body.light .mode-chip { border-color: #c9d2e0; }
 .docks .dock[data-dock="text"] .live-text {padding:6px 10px;}
 
 .jump-hint {font-size:12px;line-height:1.5;color:var(--muted);margin-top:8px;}
+
+/* Chapter and verse navigation stays on the bottom edge, outside scaled content. */
+.docks .dock[data-dock="chapters"], .docks .dock[data-dock="verses"] {padding-bottom:50px;}
+.docks .dock[data-dock="chapters"] > .dock-foot,
+.docks .dock[data-dock="verses"] > .dock-foot {position:absolute;bottom:9px;left:10px;right:10px;margin:0;gap:6px;}
+.docks .dock[data-dock="chapters"] > .dock-foot button,
+.docks .dock[data-dock="verses"] > .dock-foot button {min-height:32px;padding:5px 9px;}

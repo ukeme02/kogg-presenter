@@ -187,3 +187,11 @@ Validation: 55 automated checks pass, including phone/tablet/short-landscape ref
 Quick jump now completes a unique book prefix after three letters, prioritising name prefixes so Joh resolves to John rather than numbered John letters. Ambiguous prefixes offer clickable choices; numbered books remain supported. Right Arrow, Tab or Enter accepts a book and advances a typed chapter to the verse position. A 650ms typing pause adds the colon automatically, allowing multi-digit chapters to be entered first. A visible chapter/verse-range hint guides keyboard and touch users. Deleting text and editing mid-input do not trigger unwanted completion. Typing a verse no longer publishes after a timer: Enter displays the selected verse/range; voice input remains an explicit display action.
 
 Validation: 60 automated checks pass, including numbered books, ranges, invalid references, multi-digit chapter auto-colon, deletion and Enter-only display. Actual browser verified Joh → John, John 3 → John 3:, and John 3:17 remaining off-air until Enter, then appearing in the projector dock. Worker v36 carries the new UI offline.
+
+## Scripture checkpoint before Lyrics — 30 October 2026
+
+Chapter and Verse navigation footers now live outside their scaled content and stay anchored at their dock bottoms. Browser verified both button rows fully visible, 10px from the dock edge. Existing dock arrangement is preserved.
+
+Microphone input only: confirmed no audio-file/music playback feature exists. Tested Quick jump and Whole search with simulated recognised speech. Found and fixed number-word parsing that merged "three sixteen" into "nineteen". Added readable microphone error messages; continuous listening stops on capture/network/permission failures rather than silently restarting, and Stop updates the buttons immediately. 62 automated checks pass. Real microphone capture and browser speech-service availability require an actual device test; simulated recognition verifies app handling, not hardware recording. Chrome/Edge may require internet for recognition.
+
+Saved checkpoint: Scripture UI work is parked. Next focus is the Lyrics deck and the existing 300-hymn basic collection plus 262-hymn expansion. Requested Bible integrations remain pending API.Bible account access. No audio playback is planned; keep the app lightweight.

@@ -92,3 +92,7 @@ The `.more-menu` flex display rule overrode the browser’s default `[hidden]` s
 - Added repeated-toggle coverage for both the Scripture and floating-console launchers.
 - All 37 automated checks pass.
 - Recorded the current product goal and decision principles in `PRODUCT_PURPOSE.md`.
+
+## Product requirements clarified — 30 October 2026
+
+The user confirmed that low hardware demands, travel-ready schedules and installation/first presentation without internet are core requirements. `PRODUCT_PURPOSE.md` now distinguishes these requirements from the implementation's current capabilities. Remaining product work includes measuring performance on modest hardware, syncing the current service queue with its required content, and delivering an offline distribution that does not require a prior online visit. This documentation update does not claim those features are implemented.

@@ -96,3 +96,13 @@ The `.more-menu` flex display rule overrode the browser’s default `[hidden]` s
 ## Product requirements clarified — 30 October 2026
 
 The user confirmed that low hardware demands, travel-ready schedules and installation/first presentation without internet are core requirements. `PRODUCT_PURPOSE.md` now distinguishes these requirements from the implementation's current capabilities. Remaining product work includes measuring performance on modest hardware, syncing the current service queue with its required content, and delivering an offline distribution that does not require a prior online visit. This documentation update does not claim those features are implemented.
+
+## Output loading, extended screen and Base Mode — 30 October 2026
+
+The user reported `ERR_FAILED` at Cloudflare’s `display.html` address and expected extended-screen placement. Confirmed Cloudflare returns a 308 redirect to `/display`. Output now opens that canonical route immediately, then requests screen details and moves/resizes to an extended screen when permitted. Denial leaves output usable with a manual-placement message. The output document reports successful connection to the operator.
+
+Worker v29 normalises redirected responses and maps clean page routes to their cached HTML counterparts. Base Mode prepares KJV, operator/output assets, fonts and hymns first, reports explicit readiness, and does not contact the cloud client. Extra Bibles/lexicon are fetched and cached when used; already cached Bible reads do not initiate background downloads. Device-only Local Mode also avoids cloud initialisation.
+
+Validation: **44 automated checks passed**. In an actual browser on loopback, the offline indicator reached Ready offline. Then the preview server was stopped: the operator reloaded with 66 books, both `/display.html` and `/display` reopened from cache, and Quick Go changed output from Genesis 1:1 to John 3:16 without the server. Extended-screen placement was exercised with synthetic screen details and denial tests; actual projector positioning remains a user hardware check. Live Cloudflare output verification follows publication.
+
+The current service queue still needs explicit cloud portability work; named plans sync today. A standalone offline distribution remains future work.

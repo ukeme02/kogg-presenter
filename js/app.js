@@ -63,6 +63,7 @@ let songs = LS.get(K.songs, []);
 let themes = LS.get(K.themes, null);
 let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
 let live = LS.get(K.live, { mode: 'blank', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });   // plain black screen until you pick something
+let outputIsConnected = false;
 let editingSongId = null;
 
 const DEFAULT_THEMES = [
@@ -137,6 +138,7 @@ function pushLive(patch = {}) {
 
 /* ---------- live indicator ---------- */
 function renderPreview() {
+  if (outputIsConnected) setOutputStatus(live.mode === 'blank' ? 'Output connected • screen blank' : 'Output connected');
   // live indicator in the Scripture tab ("🔴 John 3:16")
   const lr = $('liveRef');
   const showing = live.mode === 'normal' && live.slides?.[live.index];
@@ -1905,6 +1907,7 @@ function syncUI() {
   refreshSyncBadge();
 }
 async function refreshUser() {
+  if (workMode() !== 'sync') { window._koggUser = null; syncUI(); return; }
   if (!(window.KOGGSync && window.KOGGSync.configured)) { syncUI(); return; }
   try {
     window._koggUser = await window.KOGGSync.currentUser();
@@ -1945,6 +1948,7 @@ $('btnSignIn').addEventListener('click', async () => {
   status.textContent = 'Signing in…';
   try {
     await window.KOGGSync.signIn($('authEmail').value.trim(), $('authPassword').value);
+    setWorkMode('sync');
     await refreshUser();
     if (window._koggUser) {
       status.textContent = 'Signed in ✓ — your songs, themes and plans are syncing…';
@@ -2030,7 +2034,8 @@ function setWorkMode(m) {
   s.mode = m;
   LS.set(K.settings, s);
   refreshModeChip();
-  if (m === 'sync') refreshUser();
+  if (m === 'sync') startAuthObserver();
+  else { clearTimeout(syncTimer); window._koggUser = null; syncUI(); }
 }
 function showGate() {
   $('startGate').hidden = false;
@@ -2183,20 +2188,42 @@ $('btnOpenDisplay').addEventListener('click', openDisplayWindow);
 
 /* Open the output window directly on the extended screen when one exists.
    Uses the Window Management API (Chrome/Edge) — asks permission once. */
+let displayWindow = null;
+function outputUrl() {
+  // Cloudflare Pages canonicalises HTML routes; avoid its redirect on a new output window.
+  const path = location.hostname?.endsWith('.pages.dev') ? 'display' : 'display.html';
+  return new URL(path, location.href).href;
+}
+function setOutputStatus(message) { $('outputStatus').textContent = message; }
+function outputConnected() {
+  outputIsConnected = true;
+  setOutputStatus(live.mode === 'blank' ? 'Output connected • screen blank' : 'Output connected');
+  if (channel) channel.postMessage(live);
+}
+if (channel) channel.onmessage = event => { if (event.data?.type === 'display-ready') outputConnected(); };
+window.addEventListener('message', event => {
+  if (event.origin !== location.origin || event.source !== displayWindow || event.data?.type !== 'display-ready') return;
+  outputConnected();
+  displayWindow.postMessage({type:'output-state', live}, location.origin);
+});
 async function openDisplayWindow() {
-  // Open during the click gesture; permission prompts must not consume popup activation.
-  const w = window.open('about:blank', 'kogg_display', 'popup=yes');
-  if (!w) { flash($('btnOpenDisplay'), 'Allow popups to open output'); return; }
+  // Navigate during the click itself: never leave a blank page waiting on permission.
+  const w = window.open(outputUrl(), 'kogg_display', 'popup=yes');
+  if (!w) { setOutputStatus('Output blocked — allow popups for this site'); flash($('btnOpenDisplay'), 'Allow popups to open output'); return; }
+  displayWindow = w;
+  setOutputStatus('Opening output…');
+  try { w.focus(); } catch {}
   try {
     if ('getScreenDetails' in window) {
       const details = await window.getScreenDetails();
       const cur = details.currentScreen;
       const other = details.screens.find(s => s.left !== cur.left || s.top !== cur.top);
-      if (other) { w.moveTo(other.left, other.top); w.resizeTo(other.width, other.height); }
-    }
-  } catch { /* Continue on the current screen when permission or positioning is unavailable. */ }
-  try { w.location.href = new URL('display.html', location.href).href; w.focus(); }
-  catch { flash($('btnOpenDisplay'), 'Output closed — open it again'); }
+      if (other && !w.closed) { w.moveTo(other.left, other.top); w.resizeTo(other.width, other.height); w.focus(); }
+      else if (!other) setOutputStatus('Output open • no second screen detected');
+    } else setOutputStatus('Output open • move it to the projector screen');
+  } catch {
+    setOutputStatus('Output open • screen permission unavailable; move it manually');
+  }
 }
 
 document.addEventListener('keydown', e => {
@@ -2695,18 +2722,7 @@ initDockFit();
 fitDockContents();
 window.__koggBoot = true;
 refreshSyncBadge();
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-  navigator.serviceWorker.getRegistration?.().then(r => {
-    if (r && r.waiting) {
-      const t = document.createElement('div');
-      t.className = 'update-toast';
-      t.textContent = 'A new version is ready — reopen the app to load it';
-      document.body.appendChild(t);
-      setTimeout(() => t.remove(), 6000);
-    }
-  });
-}
+window.KOGGOffline?.start();
 loadBible($('translationSelect').value);
 setVerseMode(savedSettings.verseMode || 'verse');
 applyDocks();
@@ -2718,13 +2734,19 @@ applyFloatNav();
 if (LS.get(K.settings, {}).fpFold) $('fpCollapse').textContent = '▸';
 applyFloatEdit();
 
-if (window.KOGGSync?.configured) window.KOGGSync.getClient().then(client => {
+let authObserved = false;
+function startAuthObserver() {
+if (authObserved || !window.KOGGSync?.configured) return;
+  authObserved = true;
+  window.KOGGSync.getClient().then(client => {
   client.auth.onAuthStateChange(event => {
     if (event === 'PASSWORD_RECOVERY') $('passwordRecovery').hidden = false;
     if (event === 'SIGNED_OUT') { window._koggUser = null; syncUI(); }
   });
   if (new URLSearchParams(location.hash.slice(1)).get('type') === 'recovery') $('passwordRecovery').hidden = false;
-}).catch(() => {});
+}).catch(() => { authObserved = false; });
+}
+if (workMode() === 'sync' || new URLSearchParams(location.hash.slice(1)).get('type') === 'recovery') startAuthObserver();
 $('btnSavePassword').addEventListener('click', async () => {
   const password = $('recoveryPassword').value;
   if (password.length < 6 || password !== $('recoveryConfirm').value) { $('recoveryStatus').textContent = 'Use at least six characters and enter the same password twice.'; return; }

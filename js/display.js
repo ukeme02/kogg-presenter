@@ -219,3 +219,10 @@ render(getLive());
 
 window.addEventListener('resize', () => render(getLive()));
 if (document.fonts?.ready) document.fonts.ready.then(() => render(getLive()));
+
+// Tell the operator this document actually loaded, including when its screen is intentionally blank.
+if (channel) channel.postMessage({type:'display-ready'});
+try { window.opener?.postMessage({type:'display-ready'}, location.origin); } catch {}
+window.addEventListener('message', event => {
+  if (event.origin === location.origin && event.source === window.opener && event.data?.type === 'output-state') render(event.data.live);
+});

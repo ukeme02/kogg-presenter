@@ -1,14 +1,24 @@
 {
-  "name": "Church Presenter",
-  "short_name": "Presenter",
-  "description": "Lightweight offline church presentation app — scriptures and lyrics for the big screen.",
+  "name": "KOGG Presenter",
+  "short_name": "KOGG",
+  "description": "Lightweight offline church presentation app \u2014 scriptures and lyrics for the big screen.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#14161c",
   "theme_color": "#1d212b",
   "icons": [
-    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
   ]
 }

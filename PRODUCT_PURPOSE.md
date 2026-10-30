@@ -33,3 +33,9 @@ An offline package can provide the app and bundled content without network acces
 Guiding questions: does this change reduce the operator’s time, effort or uncertainty when putting the right content on screen? Does it preserve low hardware demands, schedule portability and offline readiness?
 
 This records the current understanding from the project and conversation. It is a direction for implementation, not a claim that every listed behaviour has passed live-service testing.
+
+## Three-mode contract
+
+The user clarified that Base Mode is specifically a browser workflow: load once online, complete preparation, then present offline without installation. Sync adds portable account libraries and schedules; Local keeps the work on the device with optional installation. These are storage/account choices around the same presentation tool, not three separate heavyweight applications.
+
+The offline-first startup now prepares KJV and the operator/output core first and exposes readiness explicitly. Other translations are cached when selected. A complete installer/portable package for a laptop that has never prepared the browser is still separate future work.

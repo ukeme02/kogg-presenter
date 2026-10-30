@@ -22,6 +22,7 @@
   <div class="quick-actions">
     <button id="btnBlank" class="ctrl warn" title="Blank screen (B)">Blank</button>
     <button id="btnLogo" class="ctrl" title="Logo screen (L)">Logo</button>
+    <span id="outputStatus" class="hint" role="status" aria-live="polite"></span>
     <button id="btnOpenDisplay" class="ctrl primary" title="Open output screen">Output</button>
     <button id="btnFloatEditToggle" class="ctrl" title="Show/hide the floating console — text size, alignment, voice, theme, lock, work mode, docks">✏️</button>
   </div>
@@ -52,6 +53,8 @@
           </optgroup>
           <optgroup label="My versions" id="customVersionsGroup" hidden></optgroup>
         </select>
+        <span id="offlineStatus" class="status-note" role="status" aria-live="polite">Preparing offline…</span>
+        <button id="btnRetryOffline" hidden>Retry offline setup</button>
         <span id="liveRef" class="livedot" hidden></span>
         <div class="more-wrap">
           <button id="btnDocks" title="Choose which docks are on screen">🧩 Docks</button>
@@ -451,21 +454,21 @@
       <button class="gate-mode" data-mode="base">
         <span class="gate-ico">📖</span>
         <span class="gate-copy"><b>Base Mode</b>
-          <small>Fresh &amp; fast — the basics load once, and scripture display keeps working even without internet. No cloud, no account.</small>
+          <small>Open in your browser, wait for Ready offline, then present KJV and saved content without internet. No account or installation required.</small>
         </span>
         <span class="gate-go">Start →</span>
       </button>
       <button class="gate-mode" data-mode="sync">
         <span class="gate-ico">☁️</span>
         <span class="gate-copy"><b>Sync Mode</b>
-          <small>Sign in and your scriptures, songs, lyrics, schedules, logo and themes follow you to any device.</small>
+          <small>Sign in to bring songs, named service plans, themes and your logo to another device. Prepare it online before travelling offline.</small>
         </span>
         <span class="gate-go">Sign in →</span>
       </button>
       <button class="gate-mode" data-mode="local">
         <span class="gate-ico">💾</span>
         <span class="gate-copy"><b>Local Mode</b>
-          <small>The hybrid — everything saves on this device automatically: Bibles, song schedules, lyrics, themes.</small>
+          <small>Keep songs, schedules, Bibles and themes on this device. Optionally install an app icon. No account needed.</small>
         </span>
         <span class="gate-go">Use this device →</span>
       </button>
@@ -525,6 +528,7 @@
 <script src="js/library.js"></script>
 <script src="js/sync.js"></script>
 <script src="js/relay.js"></script>
+<script src="js/offline.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

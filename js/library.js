@@ -26,7 +26,7 @@
     const d = clean(raw);
     if (!d || typeof d !== 'object' || Array.isArray(d)) fail('Invalid library');
     if (d.version !== undefined && ![1, 2].includes(d.version)) fail('Unsupported backup version');
-    if (d.songs !== undefined) records(d.songs, s => identified(s) && text(s.title) && text(s.lyrics) && (s.author === undefined || text(s.author)), 'songs');
+    if (d.songs !== undefined) records(d.songs, s => identified(s) && text(s.title) && text(s.lyrics) && (s.author === undefined || text(s.author)) && (s.order===undefined || (Array.isArray(s.order) && s.order.length<=1000 && s.order.every(i=>Number.isInteger(i) && i>=0 && i<3000))), 'songs');
     if (d.themes !== undefined) records(d.themes, t => identified(t) && text(t.name) && text(t.bg) && text(t.font) && text(t.textColor) && Number.isFinite(t.fontSize) && t.fontSize > 0 && t.fontSize <= 100 && (!t.bgImageId || text(t.bgImageId)) && (!t.bgImage || text(t.bgImage)), 'themes');
     if (d.service !== undefined) records(d.service, i => identified(i) && text(i.title) && ['song','scripture'].includes(i.type) && slides(i.slides), 'service');
     if (d.plans !== undefined) {

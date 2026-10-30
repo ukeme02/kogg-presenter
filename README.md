@@ -12,18 +12,18 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Scripture display | **Five available Bibles** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, WEB and ASV. KJV, BSB and KJV with Strong’s are prepared with the offline core, including the Strong’s lexicon. WEB and ASV cache when selected. Licensed translations (NIV, ESV…) can be imported per device in Sync/Local mode. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
 | Add versions | Tools tab → **Scripture versions**: import your own Bible JSON in Sync/Local Mode; it is stored in the device (IndexedDB) and appears in the translation list everywhere |
 | Strong's tap-to-define | In the KJV Strong's Bible, word numbers appear in the **"On the projector" preview only** — the congregation never sees them. Tap a number and the word's Hebrew/Greek meaning (original word, transliteration, definition, KJV usage) takes the projector screen; tap the same number again to flip back to the verse. Toggle off in Tools → Strong's numbers |
-| Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
+| Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — a unique book completes after three letters, then Right Arrow/Tab advances chapter to verse; Enter displays |
 | Whole-Bible search | Its own resizable dock: find verses by remembered words/phrase across the loaded translation |
 | Word emphasis | In the "On the projector" preview, press and drag across words — the projector highlights them live, in a marker style; click anywhere else to clear |
 | Screen startup | The projector starts **plain black** in Nunito Sans Expanded Bold — blank until you put something live; Blank/Logo buttons are one tap |
 | Slide switcher (float) | The floating ◀ ▶ crew widget bottom-right is toggleable from the 🧩 Docks menu |
 | Floating quick edit | A− / A+ / ⬌ text size + alignment in a small draggable floating window — toggle from the ⋯ menu ("Floating quick edit") |
 | Version chips | A row of translation chips under the projector preview — switch the Bible mid-show with one tap and the current verses go live in the new translation |
-| Memory dock | Every scripture you put live stays in the session Memory dock — tap to re-show during the sermon (clears on reload) |
-| Lyrics library | Songs split into slides with `[Verse 1]` / `[Chorus]` labels, search, editor |
-| Starter hymns | 34 public-domain hymns bundled (`data/hymns.json`) — added on first run, or via the **+ Starter Hymns** button |
+| Memory dock | Scripture history and bookmarks persist on this device — tap a passage to display it |
+| Lyrics deck | Find → Paste/Edit → Display. One empty line splits slides; headings label them. Click any slide to display, reuse sections in song order, split/merge/reorder/duplicate/delete, Undo, and optional four-line split |
+| Hymnary | 300 traditional hymns bundled; optional 262-hymn expansion. Download once for offline use; source credits included |
 | Church logo | Tools tab → upload once; it shows on the Logo screen and follows your sync account |
-| Web lyrics import | Paste any lyrics-page URL → text is fetched, cleaned and saved locally (offline after that) |
+| Online lyrics | LRCLIB title/artist search with source credits; choose a result to review in the editor. Import downloaded SongSelect/plain-text files or paste lyrics. No generic webpage scraping or automatic SongSelect account connection |
 | Voice control | One tap: speak commands — "next", "previous", "blank", "logo", or "John three sixteen" — the console obeys (Web Speech API, Chrome/Edge, online) |
 | Quick Go | Type `jn 3:16-17`, `ps 23` or a song name in the top bar, hit Enter — it's live. Press `/` to focus from anywhere |
 | Extended screen | Output window opens straight onto the second monitor (Chrome/Edge Window Management API — allow once) |
@@ -35,7 +35,7 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Service plan | Ordered queue of songs + scriptures, named plans save/load, whole-service live mode |
 | Live output | `display.html` — clean full-screen projector view, synced instantly with the operator |
 | Themes | 14 gradient backgrounds + custom background images, text color, font, font size |
-| Docks | Seven movable/resizable docks over a 12×12 grid — drag the title grip to reposition, corner handle to size, double/halve with Span. **🧩 Docks menu** in the Scripture toolbar picks which docks are visible; layout locks with 🔒 |
+| Docks | Seven movable/resizable docks over a 12×12 grid — drag the title grip to reposition, corner handle to size. Desktop defaults to four docks above three; compact displays reflow. **🧩 Docks menu** in the Scripture toolbar picks which docks are visible; layout locks with 🔒 |
 | Lower thirds | Animated name/title banner — ideal as an OBS overlay over video |
 | OBS pairing | `display.html?overlay=1` gives a transparent browser source for OBS Studio |
 | Blank / Logo | One-tap blank screen and logo screen |
@@ -232,3 +232,11 @@ The initial core downloads exactly three Bibles (KJV, BSB and KJV with Strong’
 Output opens its page before asking for Window Management permission. On a compatible Chrome/Edge browser, allow the request to place the output on an extended screen. If permission is denied, the browser lacks the API, or no second screen is detected, the output stays usable and the operator gives a manual-placement instruction. The congregation’s screen can intentionally be black while Blank is active; the operator’s **Output connected** status distinguishes this from a page that never loaded.
 
 Cloudflare’s canonical `/display` and `/display.html` map to the same offline output. Redirected cached responses are normalised so they do not fail navigation with `ERR_FAILED`.
+
+## Lyrics storage and session behaviour
+
+Base songs/drafts and temporary Service items use the current tab's session storage. Refresh preserves that workspace; **End session** clears its songs, draft and Service items and blanks any session lyrics on output, without deleting saved libraries or hymn packs. A new session cannot resume expired Base lyrics. Temporary queue entries cannot be saved into permanent named plans or exported/synced. Switching modes does not silently promote session songs: save them explicitly in Local/Sync.
+
+Local saves songs, order and source credits on the device; Sync uses that local copy and the existing account sync when connected. Unsaved Local/Sync drafts remain on the device until a song is saved. Bundled hymn texts and saved songs work offline. Online search and account operations need a connection. LRCLIB is a community provider; results can vary or be unavailable. Source attribution does not itself grant performance or redistribution rights. SongSelect imports keep supplied credit text outside the projected lyrics.
+
+No audio playback, media library or extra runtime dependencies were added.

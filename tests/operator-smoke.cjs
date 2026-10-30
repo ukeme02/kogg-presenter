@@ -6,13 +6,13 @@ class Element {
  set innerHTML(value){this._html=value;const opts=[...value.matchAll(/<option(?:\s+value="([^"]*)")?[^>]*>(.*?)<\/option>/g)];if(opts.length){this.options=opts.map(m=>({value:m[1]??m[2],text:m[2]}));this._value=this.options[0].value;}}
  get innerHTML(){return this._html||'';} set value(v){this._value=String(v);} get value(){return this._value;}
 }
-function boot({recognition}={}){
+function boot({recognition,session=new Map(),saved=new Map()}={}){
  const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],new Element(m[1])]));
  for(const m of html.matchAll(/<select[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g))elements.get(m[1]).innerHTML=m[2];
- const storage=new Map([['cp_settings',JSON.stringify({mode:'local',starterSeeded:true,hymnPackVersion:'traditional-basic-v1'})]]);
+ const storage=new Map([['cp_settings',JSON.stringify({mode:'local',starterSeeded:true,hymnPackVersion:'traditional-basic-v1'})],...saved]);
  const document={getElementById:id=>elements.get(id)||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new Element(),addEventListener(){},removeEventListener(){},body:new Element(),head:new Element()};
- const context=vm.createContext({console,document,window:{SpeechRecognition:recognition,innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});
- vm.runInContext(app,context);return {context,elements,storage};
+ const context=vm.createContext({console,document,window:{SpeechRecognition:recognition,innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),KOGGLyrics:require('../js/lyrics.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},sessionStorage:{getItem:k=>session.get(k)||null,setItem:(k,v)=>session.set(k,v),removeItem:k=>session.delete(k)},AbortController,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});
+ vm.runInContext(app,context);return {context,elements,storage,session};
 }
 test('operator boots, loads all books, projects a range, advances preview and blanks',async()=>{const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));assert.equal(elements.get('bookSelect').options.length,66);vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:17})',context);assert.equal(JSON.parse(storage.get('cp_live')).slides.length,2);assert.match(elements.get('liveText').innerHTML,/John 3:16/);vm.runInContext('next()',context);assert.match(elements.get('liveText').innerHTML,/John 3:17/);elements.get('btnBlank').click();assert.equal(JSON.parse(storage.get('cp_live')).mode,'blank');assert.equal(elements.get('liveText').textContent,'Screen blank');});
 test('visible Docks button opens the single menu',async()=>{const {elements}=boot();await new Promise(resolve=>setImmediate(resolve));elements.get('dockMenu').hidden=true;elements.get('btnDocks').click();assert.equal(elements.get('dockMenu').hidden,false);assert.match(elements.get('dockMenu').innerHTML,/Docks on screen/);});
@@ -90,4 +90,40 @@ test('voice navigation starts, advances, and stops without restarting after a mi
  assert.match(elements.get('liveText').innerHTML,/John 3:17/);
  sessions[0].onerror({error:'audio-capture'});sessions[0].onend();
  assert.equal(vm.runInContext('voiceOn',context),false);assert.equal(sessions[0].starts,1);assert.match(elements.get('feVoice').textContent,/Microphone unavailable/);
+});
+
+function fillLyrics(elements,title='Example',lyrics='[Verse 1]\nOne\nTwo\n\n[Chorus]\nThree\nFour'){
+ elements.get('songTitle').value=title;elements.get('songLyrics').value=lyrics;elements.get('songLyrics').handlers.input[0]();
+}
+test('lyrics paste produces escaped cards and direct slide display without publishing edits',async()=>{
+ const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));const before=storage.get('cp_live');
+ fillLyrics(elements,'Test','[Verse]\n<hello>\n\n[Chorus]\nWorld');assert.match(elements.get('songSlidesPreview').innerHTML,/&lt;hello&gt;/);assert.equal(storage.get('cp_live'),before);
+ vm.runInContext('displayLyrics(1)',context);assert.equal(JSON.parse(storage.get('cp_live')).slides[1].text,'World');assert.equal(JSON.parse(storage.get('cp_live')).index,1);assert.equal(elements.get('lyricsLiveText').textContent,'World');
+ elements.get('songLyrics').value='Changed';elements.get('songLyrics').handlers.input[0]();assert.equal(elements.get('lyricsLiveText').textContent,'World');
+});
+test('Local and Sync save lyrics with order and source for offline use',async()=>{
+ for(const mode of ['local','sync']){const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));vm.runInContext(`LS.set(K.settings,{...LS.get(K.settings,{}),mode:'${mode}'})`,context);
+ fillLyrics(elements);vm.runInContext("lyricsOrder=[0,1,0,1];lyricsSource={name:'Imported text',credits:'Writer'}",context);elements.get('btnSaveSong').click();
+ const song=JSON.parse(storage.get('cp_songs'))[0];assert.deepEqual(song.order,[0,1,0,1]);assert.equal(song.source.credits,'Writer');assert.equal(vm.runInContext('songToSlides(songs[0]).length',context),4);
+ }
+});
+test('Base session songs and queue survive refresh, stay out of permanent storage, and end cleanly',async()=>{
+ const {context,elements,storage,session}=boot();await new Promise(resolve=>setImmediate(resolve));vm.runInContext("setWorkMode('base')",context);
+ fillLyrics(elements,'Temporary');elements.get('btnSaveSong').click();elements.get('btnAddLyricsService').click();elements.get('btnLiveSong').click();
+ assert.equal(storage.has('cp_songs'),false);assert.deepEqual(JSON.parse(storage.get('cp_service')),[]);assert.equal(JSON.parse(session.get('cp_lyrics_session')).songs.length,1);
+ storage.set('cp_last_scripture',JSON.stringify({r:{bookIdx:42,ch:3,vFrom:16,vTo:16},translation:'data/kjv.json'}));
+ const refreshed=boot({session,saved:storage});await new Promise(resolve=>setImmediate(resolve));assert.equal(vm.runInContext('lyricSession.songs.length',refreshed.context),1);assert.equal(vm.runInContext('service.filter(s=>s.sessionOnly).length',refreshed.context),1);assert.equal(JSON.parse(refreshed.storage.get('cp_live')).slides[0].text,'One\nTwo');
+ refreshed.elements.get('btnEndLyricsSession').click();assert.equal(vm.runInContext('lyricSession.songs.length',refreshed.context),0);assert.equal(vm.runInContext('service.length',refreshed.context),0);assert.equal(JSON.parse(refreshed.storage.get('cp_live')).mode,'blank');
+ const nextSession=boot({saved:storage});await new Promise(resolve=>setImmediate(resolve));assert.equal(vm.runInContext('lyricSession.songs.length',nextSession.context),0);assert.equal(JSON.parse(nextSession.storage.get('cp_live')).mode,'blank');
+});
+test('ending a Base session preserves an existing Local library',async()=>{
+ const saved=new Map([['cp_songs',JSON.stringify([{id:'permanent',title:'Keep me',lyrics:'Saved words'}])]]);const {context,elements,storage}=boot({saved});await new Promise(resolve=>setImmediate(resolve));vm.runInContext("setWorkMode('base')",context);fillLyrics(elements,'Temporary','Session words');elements.get('btnSaveSong').click();elements.get('btnEndLyricsSession').click();assert.equal(JSON.parse(storage.get('cp_songs'))[0].title,'Keep me');
+});
+test('slide edit undo restores the previous text and order',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));fillLyrics(elements);const original=elements.get('songLyrics').value;vm.runInContext('applyLyricsSections(LY.operation(LY.parse($("songLyrics").value),0,"delete"))',context);assert.notEqual(elements.get('songLyrics').value,original);elements.get('btnLyricsUndo').click();assert.equal(elements.get('songLyrics').value,original);
+});
+test('lyrics online search filters unusable records and reports service errors without losing drafts',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));fillLyrics(elements);context.navigator.onLine=true;elements.get('songSearch').value='Example';
+ context.fetch=async()=>({ok:true,json:async()=>[{id:1,trackName:'Example',artistName:'Singer',plainLyrics:'One\n\nTwo'},{id:2,trackName:'Instrumental',plainLyrics:null}]});await elements.get('btnSearchLyricsOnline').handlers.click[0]();assert.match(elements.get('lyricsOnlineResults').innerHTML,/Singer/);assert.doesNotMatch(elements.get('lyricsOnlineResults').innerHTML,/Instrumental/);
+ context.fetch=async()=>({ok:false,status:503});await elements.get('btnSearchLyricsOnline').handlers.click[0]();assert.match(elements.get('lyricsSearchStatus').textContent,/unavailable/);assert.match(elements.get('songLyrics').value,/One/);
 });

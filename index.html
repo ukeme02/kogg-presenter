@@ -145,43 +145,36 @@
 
   <!-- SONGS -->
   <section id="tab-songs" class="tab-panel">
-    <div class="card">
-      <h2>Song Library</h2>
-      <div class="row">
-        <input id="songSearch" type="search" placeholder="Search songs…">
-        <button id="btnNewSong" class="primary">+ New Song</button>
-        <button id="btnStarterHymns" title="Adds a pack of public-domain hymns (skips ones you already have)">+ Basic Hymnary</button>
-        <button id="btnMoreHymns">More hymns</button>
-      </div>
-      <div id="extraHymnPacks" hidden></div>
-      <p id="hymnPackStatus" role="status"></p>
-      <p class="hint"><a href="data/hymnary-sources.txt" target="_blank" rel="noopener">Traditional hymn source credits</a></p>
-      <ul id="songList" class="item-list"></ul>
-    </div>
-    <div class="card">
-      <h2>🌐 Import Lyrics from the Web</h2>
-      <p class="hint">Paste a page with lyrics (e.g. a lyrics site). The text is fetched and stored locally — after that it works offline.</p>
-      <div class="row">
-        <input id="webUrl" type="url" placeholder="https://… lyrics page URL">
-        <button id="btnFetchWeb" class="primary">Fetch</button>
-      </div>
-      <div id="webImportStatus" class="hint"></div>
-    </div>
-    <div class="card" id="songEditor" hidden>
-      <h2 id="songEditorTitle">New Song</h2>
-      <div class="row">
-        <label style="flex:2">Title<br><input id="songTitle" type="text" placeholder="Amazing Grace"></label>
-        <label style="flex:1">Author<br><input id="songAuthor" type="text" placeholder="John Newton"></label>
-      </div>
-      <label>Lyrics — separate slides with a blank line. A line like [Verse 1] or [Chorus] becomes the slide label.<br>
-        <textarea id="songLyrics" rows="10" placeholder="[Verse 1]&#10;Amazing grace, how sweet the sound&#10;That saved a wretch like me&#10;&#10;[Chorus]&#10;…"></textarea>
-      </label>
-      <div id="songSlidesPreview" class="preview-text"></div>
-      <div class="row">
-        <button id="btnSaveSong" class="primary">Save Song</button>
-        <button id="btnLiveSong">▶ Go Live (preview)</button>
-        <button id="btnCancelSong">Cancel</button>
-      </div>
+    <div class="lyrics-toolbar"><b>Lyrics</b><span id="lyricsModeStatus" role="status"></span><button id="btnEndLyricsSession">End session</button></div>
+    <div class="lyrics-deck">
+      <section class="card lyrics-find"><h2>Find a song</h2>
+        <input id="songSearch" type="search" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
+        <div class="row"><button id="btnNewSong" class="primary">+ New song</button><button id="btnSearchLyricsOnline">Search online</button></div>
+        <p id="lyricsSearchStatus" class="hint" role="status"></p><div id="lyricsOnlineResults" class="lyrics-results"></div>
+        <details><summary>Hymn packs & imports</summary><div class="row"><button id="btnStarterHymns">+ Basic Hymnary</button><button id="btnMoreHymns">More hymns</button></div>
+          <div id="extraHymnPacks" hidden></div><p id="hymnPackStatus" role="status"></p>
+          <p class="hint"><a href="data/hymnary-sources.txt" target="_blank" rel="noopener">Hymn source credits</a></p>
+          <label>Import song text (.txt)<input id="lyricsTextFile" type="file" accept="text/plain,.txt"></label>
+          <p class="hint">Import your downloaded SongSelect text, or paste lyrics. <a href="https://songselect.ccli.com/" target="_blank" rel="noopener">Open SongSelect</a></p>
+        </details><ul id="songList" class="item-list"></ul>
+      </section>
+      <section class="card lyrics-edit" id="songEditor"><h2 id="songEditorTitle">Paste & split</h2>
+        <details id="lyricsPastePanel" open><summary id="lyricsPasteSummary">Paste / edit lyrics</summary>
+        <div class="row"><label>Title<input id="songTitle" type="text" placeholder="Song title"></label><label>Artist / author<input id="songAuthor" type="text" placeholder="Artist or author"></label></div>
+        <label>One empty line = a new slide. Optional [Verse 1] / [Chorus] headings label slides.
+          <textarea id="songLyrics" rows="6" placeholder="[Verse 1]&#10;First line&#10;Second line&#10;&#10;[Chorus]&#10;Chorus lines…"></textarea>
+        </label><p id="lyricsSource" class="hint"></p></details>
+        <div class="row"><button id="btnLyricsUndo">Undo</button><button id="btnLyricsSplitLines">Split into 4 lines</button><button id="btnLyricsDefaultOrder">Reset order</button></div>
+        <div class="row"><button id="btnSaveSong" class="primary">Save song</button><button id="btnAddLyricsService">+ Service</button><button id="btnLiveSong">▶ Display first slide</button><button id="btnCancelSong">Clear editor</button></div>
+        <p id="lyricsStatus" role="status" class="hint"></p>
+        <b>Song order</b><p class="hint">Tap a section to add it again, or remove an order chip.</p>
+        <div id="lyricsSectionButtons" class="lyrics-order"></div><div id="lyricsOrder" class="lyrics-order"></div>
+        <div id="songSlidesPreview" class="lyrics-slides"></div>
+      </section>
+      <section class="card lyrics-output"><h2>On the projector</h2><p id="lyricsLiveLabel" class="hint"></p><div id="lyricsLiveText" class="lyrics-live-text"></div>
+        <div class="row"><button id="btnLyricsPrev">◀ Previous</button><button id="btnLyricsNext">Next ▶</button></div>
+        <p class="hint">Tap any slide card to display it. Left / Right moves between slides.</p>
+      </section>
     </div>
   </section>
 
@@ -539,6 +532,7 @@
 <script src="js/offline.js"></script>
 <script src="js/scripture-tools.js"></script>
 <script src="js/content.js"></script>
+<script src="js/lyrics.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

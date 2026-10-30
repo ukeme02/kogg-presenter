@@ -1082,3 +1082,43 @@ body.light .mode-chip { border-color: #c9d2e0; }
 .docks .dock[data-dock="verses"] > .dock-foot {position:absolute;bottom:9px;left:10px;right:10px;margin:0;gap:6px;}
 .docks .dock[data-dock="chapters"] > .dock-foot button,
 .docks .dock[data-dock="verses"] > .dock-foot button {min-height:32px;padding:5px 9px;}
+/* Lyrics: a compact find/edit/display workspace with readable slide cards. */
+.lyrics-toolbar {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.lyrics-toolbar > span {flex:1;color:var(--muted);font-size:13px;}
+.lyrics-deck {display:grid;grid-template-columns:minmax(230px,.85fr) minmax(320px,1.5fr) minmax(230px,.9fr);gap:12px;align-items:start;}
+.lyrics-deck > .card {min-width:0;margin:0;}
+.lyrics-deck h2 {font-size:17px;margin-bottom:12px;}
+.lyrics-find #songSearch {width:100%;margin-bottom:10px;}
+.lyrics-find .item-list {max-height:55dvh;overflow:auto;margin-top:10px;}
+.lyrics-find .item-list li {flex-wrap:wrap;gap:5px;}
+.lyrics-find .item-title {flex:1 1 100%;white-space:normal;}
+.lyrics-find .item-meta {display:block;font-size:11px;}
+.lyrics-find details {padding:8px 0;border-block:1px solid #ffffff16;}
+.lyrics-find details[open] > summary {margin-bottom:8px;}
+.lyrics-edit textarea {width:100%;resize:vertical;min-height:180px;font:inherit;font-size:14px;line-height:1.6;}
+.lyrics-edit label {font-size:12px;color:var(--muted);}
+.lyrics-order {display:flex;flex-wrap:wrap;gap:5px;margin:8px 0;}
+.lyrics-order button {padding:5px 8px;font-size:12px;}
+#lyricsSectionButtons button {border-style:dashed;}
+.lyrics-slides {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px;}
+.lyric-slide {border:1px solid #ffffff24;border-radius:9px;background:var(--panel2);min-width:0;overflow:hidden;}
+.lyric-slide.is-live {outline:2px solid var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel2));}
+.lyric-take {display:flex;flex-direction:column;gap:8px;text-align:left;width:100%;border:0;background:transparent;padding:12px;white-space:normal;}
+.lyric-take b {font-size:12px;color:var(--accent);}
+.lyric-take span {white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.6;}
+.lyric-take em {font-size:11px;color:var(--muted);font-style:normal;}
+.lyric-actions {display:flex;flex-wrap:wrap;gap:3px;padding:0 8px 8px;}
+.lyric-actions button {padding:5px;font-size:11px;}
+.lyric-warning {padding:5px 10px;color:var(--warn);font-size:12px;}
+.lyrics-output {position:sticky;top:0;}
+.lyrics-live-text {white-space:pre-wrap;overflow-wrap:anywhere;background:#080a10;color:white;min-height:180px;padding:16px;line-height:1.65;border-radius:8px;margin-bottom:12px;max-height:55dvh;overflow:auto;}
+.lyrics-results {display:flex;flex-direction:column;gap:5px;max-height:36dvh;overflow:auto;margin:8px 0;}
+.lyrics-results button {text-align:left;padding:9px;}
+.lyrics-results span {display:block;font-size:11px;color:var(--muted);}
+#lyricsSource {white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;max-height:100px;overflow:auto;}
+@media(max-width:1100px){.lyrics-deck {grid-template-columns:minmax(220px,.8fr) minmax(300px,1.5fr);}.lyrics-output {position:static;grid-column:1 / -1;}.lyrics-live-text {min-height:130px;max-height:35dvh;}}
+@media(max-width:700px){.lyrics-deck {grid-template-columns:minmax(0,1fr);}.lyrics-find .item-list {max-height:32dvh;}.lyrics-slides {grid-template-columns:minmax(0,1fr);}.lyrics-deck .row>button {flex:1 1 auto;}.lyric-actions button {min-height:34px;}.lyrics-output {grid-column:auto;}.lyrics-edit textarea {font-size:16px;}}
+
+#lyricsPastePanel {margin-bottom:10px;}
+#lyricsPastePanel > summary {cursor:pointer;padding:8px 0;color:var(--accent);font-size:13px;}
+#lyricsPastePanel[open] > summary {margin-bottom:6px;}

@@ -911,15 +911,15 @@ function initSplitters() {
   }
 }
 function refreshLock() {
-  const locked = LS.get(K.settings, {}).panesLocked !== false;   // locked by default
+  const locked = LS.get(K.settings, {}).panesLocked === true;   // movable by default; lock during a service
   document.body.classList.toggle('panes-locked', locked);
   $('feLock').textContent = locked ? '🔒' : '🔓';
-  $('feLock').title = locked ? 'Layout locked ✓ — tap to unlock and resize the sections'
-    : 'Layout unlocked — drag the grey gaps between sections, then tap to lock';
+  $('feLock').title = locked ? 'Layout locked ✓ — tap to unlock and rearrange the sections'
+    : 'Layout unlocked — drag a dock grip to move it, drag the corner to resize, then tap to lock';
 }
 $('feLock').addEventListener('click', () => {
   const s = LS.get(K.settings, {});
-  const cur = s.panesLocked !== false;   // effective state (locked by default)
+  const cur = s.panesLocked === true;   // effective state (movable by default)
   s.panesLocked = !cur;
   LS.set(K.settings, s);
   refreshLock();
@@ -940,7 +940,7 @@ const DOCK_LABELS = {
   books: '📚 Books', chapters: '📑 Chapters', verses: '🔖 Verses', text: '🖥️ On the projector',
   memory: '🧠 Memory', quickgo: '⚡ Quick jump', search: '🔎 Whole-Bible search',
 };
-function hiddenDocks() { return LS.get(K.settings, {}).hiddenDocks || ['memory']; }
+function hiddenDocks() { return LS.get(K.settings, {}).hiddenDocks || []; }
 /* fit-to-view: every dock gets its own content-sized track; when the whole
    skyline is taller than the deck, everything scales down proportionally —
    all docks fully visible on one view, no page and no internal scrolling */
@@ -2831,9 +2831,9 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
    layout; clear them once so everyone sees the intended arrangement */
 (function migrateLayout() {
   const s = LS.get(K.settings, {});
-  if (s.layoutVer !== 'v3') {
-    delete s.dockOrder; delete s.dockSizes; delete s.hiddenDocks;
-    s.layoutVer = 'v3';
+  if (s.layoutVer !== 'v4') {
+    delete s.dockOrder; delete s.dockSizes; delete s.hiddenDocks; delete s.panesLocked;
+    s.layoutVer = 'v4';
     LS.set(K.settings, s);
   }
 })();

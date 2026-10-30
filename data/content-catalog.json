@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hymnPacks": [
+    {
+      "id": "traditional-extra-v1",
+      "name": "More traditional hymns",
+      "count": 262,
+      "file": "data/hymns-extra.json"
+    }
+  ],
+  "bibles": [
+    {
+      "name": "WEB",
+      "file": "data/web.json"
+    },
+    {
+      "name": "ASV",
+      "file": "data/asv.json"
+    }
+  ]
+}

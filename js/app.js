@@ -129,6 +129,7 @@ function pushLive(patch = {}) {
   if (patch.slides !== undefined) { live.strongsShowing = false; live.strongsCard = null; live.highlight = null; }   // new content → word card and highlight close
   LS.set(K.live, live);
   if (channel) channel.postMessage(live);
+  window.KOGGRelay?.publish(live, themes, LS.get(K.settings, {}));
   renderPreview();
   renderLiveText();
   renderFloatPreview();

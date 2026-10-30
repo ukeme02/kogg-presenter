@@ -11,6 +11,7 @@ const ASSETS = [
   './js/display.js',
   './js/sync.js',
   './js/library.js',
+  './js/relay.js',
   './js/supabase-config.js',
   './js/idb.js',
   './data/kjv.json',

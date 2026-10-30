@@ -3,7 +3,7 @@
 Updated: 30 October 2026
 
 ## Current state
-Code repairs are applied in the existing Zcode repository and are now being saved as local commits after Git write approval became available. All remaining edits were approved for publishing on 30 October 2026. Source and test changes are committed in ordered groups; the commit log below records the repair IDs. Publishing verification is recorded in the release section below.
+Code repairs are applied in the existing Zcode repository and have been saved as commits after Git write approval became available. All remaining edits were approved for publishing on 30 October 2026. Source and test changes are committed in ordered groups; the commit log below records the repair IDs. Publishing verification is recorded in the release section below.
 
 Existing user work has been retained, including corrected book-group ranges, NIV/NLT removal work, and earlier documentation changes. The user subsequently approved publishing all remaining edits, including the NIV/NLT deletions and the four overlapping landing-page lines. Those changes are included in the release commit.
 
@@ -74,4 +74,12 @@ With Node.js available, run `node tools/obs-relay.cjs`, then open `http://127.0.
 
 ## Release — 30 October 2026
 
-All 36 automated checks passed before publishing. A website-only upload was prepared; scratch files, Git metadata, account caches and test tooling are excluded. GitHub Pages publishes from main at the repository root. Live deployment verification is pending.
+All 36 automated checks passed before publishing. A website-only upload was prepared; scratch files, Git metadata, account caches and test tooling are excluded. GitHub Pages publishes from main at the repository root. Published release: `92c4173` (`fix: finalize approved translation cleanup and release content`).
+
+- GitHub push succeeded to `origin/main`; GitHub Pages reported `built` for the exact release commit with no build error.
+- Cloudflare Pages production deployment succeeded: `https://ef1a175a.kogg-presenter.pages.dev`.
+- Production app: https://kogg-presenter.pages.dev/
+- Production landing page: https://kogg-presenter.pages.dev/landing.html
+- GitHub Pages mirror: https://ukeme02.github.io/kogg-presenter/
+- Verified 12 files on each public site against local SHA-256 content: index, landing, worker, app/library/sync/relay/display scripts, display CSS, and BSB/ASV/WEB data. All 24 comparisons matched.
+- These checks confirm publication and file integrity; the browser, account/email, projector and real OBS release gates above remain outstanding.

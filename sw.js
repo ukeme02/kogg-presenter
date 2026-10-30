@@ -17,8 +17,6 @@ const ASSETS = [
   './data/kjv.json',
   './data/bsb.json',
   './data/kjvs.json',
-  './data/niv.json',
-  './data/nlt.json',
   './data/web.json',
   './data/asv.json',
   './data/strongs.json',

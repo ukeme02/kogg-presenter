@@ -3,9 +3,9 @@
 Updated: 30 October 2026
 
 ## Current state
-Code repairs are applied in the existing Zcode repository and are now being saved as local commits after Git write approval became available. Nothing has been pushed or deployed. Source and test changes are committed in ordered groups; the commit log below records the real IDs.
+Code repairs are applied in the existing Zcode repository and are now being saved as local commits after Git write approval became available. All remaining edits were approved for publishing on 30 October 2026. Source and test changes are committed in ordered groups; the commit log below records the repair IDs. Publishing verification is recorded in the release section below.
 
-Existing user work has been retained, including corrected book-group ranges, NIV/NLT removal work, and earlier documentation changes. The user's staged NIV/NLT deletions remain staged separately. Four landing-page lines contain overlapping earlier edits and are intentionally left uncommitted with those edits rather than included silently. Their repaired wording remains in the working tree.
+Existing user work has been retained, including corrected book-group ranges, NIV/NLT removal work, and earlier documentation changes. The user subsequently approved publishing all remaining edits, including the NIV/NLT deletions and the four overlapping landing-page lines. Those changes are included in the release commit.
 
 ## Repair checklist
 
@@ -57,7 +57,7 @@ Latest result: **36 automated checks passed, zero failures**. This includes the 
 
 The final tracking commit can be located by its message, `docs: record repair commits and outstanding release checks`.
 
-The operator, backups and sync changes were committed together because they share the new validated library module and HTML script integration. Earlier user edits were excluded using a separate staging index; the working files were not reset. Remaining working changes are the user's existing staged removals and earlier/overlapping edits in README, index, app book groups, landing content and worker translation assets. No push or deployment was performed.
+The operator, backups and sync changes were committed together because they share the new validated library module and HTML script integration. Earlier user edits were excluded using a separate staging index; the working files were not reset. The user subsequently approved committing and publishing the remaining work. The release commit includes the earlier removals and changes in README, index, app book groups, landing content and worker translation assets.
 
 ## Remaining release gates
 
@@ -71,3 +71,7 @@ The operator, backups and sync changes were committed together because they shar
 ## How to preview the optional local setup
 
 With Node.js available, run `node tools/obs-relay.cjs`, then open `http://127.0.0.1:8766/` as the operator. Use `http://127.0.0.1:8766/landing.html` for the landing page and `http://127.0.0.1:8766/display.html?overlay=1` in OBS. Keep the process running. This origin has separate browser storage, so transfer an existing library using a full backup.
+
+## Release — 30 October 2026
+
+All 36 automated checks passed before publishing. A website-only upload was prepared; scratch files, Git metadata, account caches and test tooling are excluded. GitHub Pages publishes from main at the repository root. Live deployment verification is pending.

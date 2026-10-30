@@ -9,7 +9,7 @@ browser, and can be packaged for Windows, iOS, and desktop.
 
 | Feature | Details |
 |---|---|
-| Scripture display | **Five offline Bibles out of the box** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, **NIV** and **NLT** (WEB and ASV still included). One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
+| Scripture display | **Five offline Bibles out of the box** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, WEB and ASV. Licensed translations (NIV, ESV…) can be imported per device in Sync/Local mode. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
 | Add versions | Tools tab → **Scripture versions**: import your own Bible JSON in Sync/Local Mode; it is stored in the device (IndexedDB) and appears in the translation list everywhere |
 | Strong's tap-to-define | In the KJV Strong's Bible, word numbers appear in the **"On the projector" preview only** — the congregation never sees them. Tap a number and the word's Hebrew/Greek meaning (original word, transliteration, definition, KJV usage) takes the projector screen; tap the same number again to flip back to the verse. Toggle off in Tools → Strong's numbers |
 | Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — the book auto-completes on 1–2 letters, then chapter, then verse goes live as you type |
@@ -194,10 +194,9 @@ kogg-presenter/
 
 - KJV, WEB, ASV texts: public domain. BSB (Berean Standard Bible): free to use and redistribute.
 - Strong's lexicon data: public domain (OpenScriptures).
-- **NIV** © Biblica and **NLT** © Tyndale House Foundation are bundled in this repository for
-  personal/church use — both grant free use of Scripture quotations in non-commercial settings.
-  If you redistribute this app commercially or at scale, check each translation's current policy
-  (`www.biblica.com`, `www.tyndale.com`) first.
+- **NIV**, **NLT**, **ESV** and similar modern translations are NOT bundled — their full texts are
+  copyrighted and may not be redistributed in an open-source repo. If your church has a license,
+  import the text per device (Tools → Scripture versions); it stays local to that device.
 - Bundled hymn texts: all in the public domain (authors died well before 1930) — safe to distribute.
 - All code here: yours — no dependencies, no licenses to track.
 - Adding any further translations (ESV, etc.) requires permission from their publishers — they

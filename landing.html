@@ -321,7 +321,7 @@
     <h2>Everything a media team actually needs</h2>
     <p class="sub">Built with real services in mind: speed to the projector, zero fuss, and hardware you already own.</p>
     <div class="grid">
-      <div class="card"><span class="ficon">📖</span><h3>Seven Bibles, always with you</h3><p>KJV, BSB, KJV with Strong's numbers, NIV, NLT, WEB and ASV — downloaded on first load, ready with no internet. In the Strong's Bible, tap a word number and its Hebrew or Greek meaning takes the screen — tap again to return.</p></div>
+      <div class="card"><span class="ficon">📖</span><h3>Five Bibles, always with you</h3><p>KJV, BSB, KJV with Strong's numbers, WEB and ASV — available offline after their files finish caching in the operator app. In the Strong's Bible, tap a word number and its Hebrew or Greek meaning takes the screen — tap again to return. Licensed translations (NIV, ESV…) can be imported in Sync/Local mode and stay on your device.</p></div>
       <div class="card"><span class="ficon">🎛️</span><h3>One-page dock deck</h3><p>Books, Chapters, Verses, Memory, the projector preview, Quick jump and Whole-Bible search sit side by side. Drag any dock to reposition it, resize it freely with the corner handle, hide the ones you don't need — and lock the layout. It stays.</p></div>
       <div class="card"><span class="ficon">⚡</span><h3>Number circles — tap &amp; it's live</h3><p>Chapters and verses are number bubbles you can always see. Tap a number and that verse is on the projector instantly — verse, range or whole-chapter mode.</p></div>
       <div class="card"><span class="ficon">🚀</span><h3>Quick jump</h3><p>Type <code>jn 3:16</code>, <code>ps 23 4</code> or <code>1sam 2</code> — the book completes itself after one or two letters, then chapter, then verse. Or press 🎤 and just say it.</p></div>
@@ -349,7 +349,7 @@
           <li><b>🪪 Account isolation</b> — the deployment must enable the documented ownership policy. Verify it before storing private library data.</li>
           <li><b>Network services</b> — Bible files are served with the app. Account tools load a Supabase SDK from a CDN; cloud sync uses Supabase, and optional web lyrics import sends the requested URL to an external fetch service.</li>
           <li><b>📤 Library backups</b> — Tools → Export Library includes songs, themes, service plans, settings and referenced images/custom Bibles in a versioned JSON backup. Keep a backup before switching devices or accounts.</li>
-          <li><b>📜 Freely usable texts</b> — KJV, BSB, WEB, ASV and Strong's numbers are public domain; NIV and NLT permit free church use.</li>
+          <li><b>📜 Text permissions</b> — check the source and licence terms for the texts you use. Import additional translations only when you have the necessary rights; imported versions stay on the device.</li>
         </ul>
       </div>
       <div class="authbox">
@@ -401,14 +401,14 @@
     <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open the operator app online and allow its Bible files and app assets to finish downloading. Test it with Wi-Fi off before a service. Cached scripture and local libraries work offline; sign-in, cloud sync, web lyrics import and browser voice recognition need internet.</p></details>
     <details><summary>Who can see my library if I create an account?</summary><p>The cloud deployment must enforce the ownership policy described in the README. Its administrator should test account isolation before use. Shared computers also retain local library data; export a backup before clearing local data or switching accounts.</p></details>
     <details><summary>Can several people share one account?</summary><p>You can, but it's not designed that way — the library is per-account. Use one account for your own devices. Sync merges independent edits and stops on conflicting edits; resolve a conflict before continuing. Export backups before changing accounts on a shared device.</p></details>
-    <details><summary>What about modern translations like NIV or ESV?</summary><p><b>NIV and NLT are bundled</b> — both publishers grant free use of Scripture in church settings. ESV and some others are not included; publishers of those grant licenses case by case. In Sync or Local Mode you can also import your own Bible file (Tools → Scripture versions) and it stays on your device.</p></details>
+    <details><summary>What about modern translations like NIV or ESV?</summary><p>NIV and ESV are not bundled. If you have the required rights to a compatible text file, import it in Sync or Local Mode (Tools → Scripture versions). Imported Bibles stay on that device unless you transfer a full backup.</p></details>
   </section>
 
 </div>
 
 <footer>
   <div class="wrap">
-    <div>KOGG Presenter — free and open source · Scriptures: KJV, BSB, NIV, NLT, WEB, ASV, Strong's</div>
+    <div>KOGG Presenter — free web app · Scriptures: KJV, BSB, WEB, ASV, Strong's</div>
     <div class="foot-links">
       <a href="index.html">Open App</a>
       <a href="https://github.com/ukeme02/kogg-presenter">Source on GitHub</a>

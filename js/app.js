@@ -544,17 +544,17 @@ $('versionChips').addEventListener('click', e => {
 const BOOK_ABBS = ['GEN','EXO','LEV','NUM','DEU','JOS','JDG','RUT','1SA','2SA','1KI','2KI','1CH','2CH','EZR','NEH','EST','JOB','PSA','PRO','ECC','SNG','ISA','JER','LAM','EZK','DAN','HOS','JOL','AMO','OBA','JON','MIC','NAH','HAB','ZEP','HAG','ZEC','MAL','MAT','MRK','LUK','JHN','ACT','ROM','1CO','2CO','GAL','EPH','PHP','COL','1TH','2TH','1TI','2TI','TIT','PHM','HEB','JAS','1PE','2PE','1JN','2JN','3JN','JUD','REV'];
 const BOOK_GROUPS_OT = [
   { key: 'torah',  label: 'Moses / Torah',    from: 0,  to: 4 },
-  { key: 'othist', label: 'History',          from: 5,  to: 9 },
-  { key: 'poetry', label: 'Wisdom & Poetry',  from: 10, to: 13 },
-  { key: 'major',  label: 'Major Prophets',   from: 14, to: 16 },
-  { key: 'minor',  label: 'Minor Prophets',   from: 17, to: 21 },
+  { key: 'othist', label: 'History',          from: 5,  to: 16 },
+  { key: 'poetry', label: 'Wisdom & Poetry',  from: 17, to: 21 },
+  { key: 'major',  label: 'Major Prophets',   from: 22, to: 26 },
+  { key: 'minor',  label: 'Minor Prophets',   from: 27, to: 38 },
 ];
 const BOOK_GROUPS_NT = [
-  { key: 'gospels', label: 'Gospels',         from: 22, to: 25 },
-  { key: 'acts',    label: 'History',         from: 26, to: 26 },
-  { key: 'epist',   label: "Paul's Letters",  from: 27, to: 39 },
-  { key: 'general', label: 'General Letters', from: 40, to: 44 },
-  { key: 'rev',     label: 'Prophecy',        from: 45, to: 45 },
+  { key: 'gospels', label: 'Gospels',         from: 39, to: 42 },
+  { key: 'acts',    label: 'History',         from: 43, to: 43 },
+  { key: 'epist',   label: "Paul's Letters",  from: 44, to: 56 },
+  { key: 'general', label: 'General Letters', from: 57, to: 64 },
+  { key: 'rev',     label: 'Prophecy',        from: 65, to: 65 },
 ];
 function renderBookChips(filter) {
   if (!bible) return;

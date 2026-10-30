@@ -110,3 +110,5 @@ The current service queue still needs explicit cloud portability work; named pla
 ## Base content correction — 30 October 2026
 
 Per the user’s clarification, worker v30 prepares KJV, BSB, KJV Strong’s, its word lexicon, output assets and the bundled starter hymns. WEB and ASV are excluded from initial preparation. Readiness reflects the three Bibles. The hymnary requirement remains pending the user's choice of hymnbook/edition or a defined traditional collection; the existing 34 hymns are still explicitly labelled starter content.
+
+Publication status for the Base content correction: commit `7789205` pushed to GitHub. Cloudflare production deployment failed twice because `api.cloudflare.com` / `dash.cloudflare.com` could not be resolved. Its last verified production release remains the prior output/offline fix. The three-Bible change is not yet confirmed on the Cloudflare production URL.

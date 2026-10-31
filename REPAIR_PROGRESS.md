@@ -400,3 +400,10 @@ Landing HTML starts dark and initialization keeps dark as the default on each vi
 ## Worship without limits and fast brand entrance — 31 October 2026
 
 Applied official tagline to page title/social title, hero subtitle, both scrolling strips and closing mission ribbon. Replaced long feature tickers with equal-width repeated tagline groups and a soft passing light sweep. Reduced KOGG MEDIA logo to 88x34 desktop / 78x30 mobile and shortened strip span/spacing. Added a sub-second CSS-only wordmark entrance with no network/font/JS dependency and no click interception, plus reduced-motion no-JS fallback. Removed stacked hero entrance delays/heavy blur and shortened section reveals. Worker v67. Validation: 116 checks pass; visual QA remains blocked by browser capture initialization failure. Exact Anurati still pending font asset.
+
+
+## Shared card finish, supplied lettering and responsive polish — 31 October 2026
+
+Applied shared blue stage-card lighting, fine-pointer-only subtle depth and touch-safe static geometry to major/demo cards. Reflowed tablet library/setup grids and phone mode choices, sized key touch controls, tightened vertical rhythm, protected narrow text/code and constrained hero width.
+
+Used the KOGG lettering from the supplied KOGG MEDIA artwork through a self-contained cropped SVG viewport (original artwork embedded unchanged); this reproduces the supplied lettering consistently without pretending an Anurati font file is installed. Presenter remains Nunito. Added a blue book/cross/light icon direction in the app/favicon/maskable SVG assets. Rendered and inspected the wordmark and icon as PNGs using bundled Sharp. Full-page visual/physical phone/tablet QA remains unavailable. Worker v68; 116 automated tests pass. Screenshot carousel still needs current captures.

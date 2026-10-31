@@ -1565,3 +1565,6 @@ body.light .more-menu,body.light .quickgo-results,body.light #floatPreview,body.
 /* Brand lockup: Anurati for KOGG, Nunito for Presenter beneath.
    Local Anurati is used where installed; a distributable font asset is pending. */
 @font-face{font-family:'KOGG Anurati';src:local('Anurati'),local('Anurati Regular');font-display:swap}.brand-wordmark{display:flex;flex-direction:column;align-items:flex-start;gap:4px;line-height:1}.brand .brand-name{display:block;font-family:'KOGG Anurati','Nunito Sans Expanded',sans-serif;font-weight:400;font-size:24px;letter-spacing:.1em;line-height:1.1}.brand .brand-sub{display:block;font-family:'Nunito Sans Expanded',sans-serif;font-weight:700;font-size:9px;letter-spacing:.16em;line-height:1.2;margin:0}.brand img{flex:none}@media(max-width:760px){.brand .brand-name{font-size:20px}.brand .brand-sub{font-size:8px}}
+
+.brand .brand-kogg{width:91px;height:26px;object-fit:contain;border-radius:0;box-shadow:none;filter:brightness(0) invert(1)}body:not(.dark) .brand .brand-kogg{filter:brightness(0)}body:not(.light) .brand .brand-kogg{filter:brightness(0) invert(1)}
+@media(max-width:760px){.brand .brand-kogg{width:77px;height:22px}}

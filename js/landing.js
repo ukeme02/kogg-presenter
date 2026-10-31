@@ -2,6 +2,10 @@
 (function(){
  'use strict';
  const $=id=>document.getElementById(id);
+ const intro=document.querySelector('.brand-intro');
+ function finishIntro(){intro?.classList.add('intro-ready');}
+ if(document.readyState==='complete')requestAnimationFrame(finishIntro);else window.addEventListener('load',finishIntro,{once:true});
+ setTimeout(finishIntro,3000);document.addEventListener('pointerdown',finishIntro,{once:true});
  const theme=$('themeBtn');
  function setTheme(dark){document.body.classList.toggle('dark',dark);theme.textContent=dark?'☾':'☀';theme.setAttribute('aria-label',dark?'Switch to light appearance':'Switch to dark appearance');}
  setTheme(true);theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
@@ -93,26 +97,28 @@
  document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
  updateDots();
  $('copyObsGuide').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('obsGuideUrl').textContent);$('obsCopyStatus').textContent='OBS URL copied. Paste it into the Browser Source properties.';}catch{$('obsCopyStatus').textContent='Select and copy the URL above.';}});
- // Continuous page, with a temporary side guide rather than hidden chapter pages.
- const rail=document.querySelector('.chapter-nav'),storyToggle=$('storyToggle'),storyReveal=$('storyReveal');
- let railTimer=null,railFrame=0,railHovered=false;
- function setRail(open){rail.classList.toggle('story-visible',open);rail.inert=!open;rail.setAttribute('aria-hidden',String(!open));storyToggle?.setAttribute('aria-expanded',String(open));}
- function tuckRail(){clearTimeout(railTimer);railTimer=setTimeout(()=>{if(!railHovered&&!rail.contains(document.activeElement))setRail(false);},1350);}
- function revealRail(){setRail(true);tuckRail();}
- setRail(false);
- storyReveal?.addEventListener('focus',revealRail);storyReveal?.addEventListener('click',()=>{revealRail();rail.querySelector('[aria-current="location"]')?.focus();});
- storyToggle?.addEventListener('click',()=>setRail(false));
- rail.addEventListener('pointerenter',()=>{railHovered=true;clearTimeout(railTimer);});rail.addEventListener('pointerleave',()=>{railHovered=false;tuckRail();});rail.addEventListener('focusin',()=>clearTimeout(railTimer));rail.addEventListener('focusout',tuckRail);
- rail.addEventListener('click',event=>{if(event.target.closest('a')){railHovered=false;document.activeElement?.blur();setRail(false);}});
- document.addEventListener('keydown',event=>{if(event.key==='Escape')setRail(false);});
- window.addEventListener('scroll',()=>{if(!railFrame)railFrame=requestAnimationFrame(()=>{railFrame=0;if(scrollY>24)revealRail();else setRail(false);});},{passive:true});
+ // Floating watch-style navigation: draggable, bounded and keyboard accessible.
+ const widget=$('watchWidget'),launcher=$('watchLauncher'),apps=$('watchApps');
+ let watchOpen=false,watchDrag=null,watchMoved=false,watchX=18,watchY=Math.round(innerHeight*.45),watchFrame=0;
+ function boundWatch(x,y,open=false){const margin=open?123:8;const maxX=Math.max(margin,innerWidth-(open?175:64)-8),maxY=Math.max(margin,innerHeight-(open?175:64)-8);return {x:Math.max(margin,Math.min(maxX,x)),y:Math.max(margin,Math.min(maxY,y))};}
+ function positionWatch(x,y){const p=boundWatch(x,y,watchOpen);watchX=p.x;watchY=p.y;widget.style.left=watchX+'px';widget.style.top=watchY+'px';}
+ function saveWatch(){try{localStorage.setItem('kogg-navigation-position',JSON.stringify({x:watchX,y:watchY}));}catch{}}
+ function openWatch(open){watchOpen=open;apps.hidden=!open;launcher.setAttribute('aria-expanded',String(open));widget.classList.toggle('is-open',open);positionWatch(watchX,watchY);if(open)apps.querySelector('a')?.focus();}
+ try{const p=JSON.parse(localStorage.getItem('kogg-navigation-position'));if(Number.isFinite(p?.x)&&Number.isFinite(p?.y)){watchX=p.x;watchY=p.y;}}catch{}positionWatch(watchX,watchY);
+ launcher.addEventListener('pointerdown',event=>{if(event.button!==0)return;watchMoved=false;watchDrag={id:event.pointerId,x:event.clientX,y:event.clientY,startX:watchX,startY:watchY};launcher.setPointerCapture?.(event.pointerId);widget.classList.add('is-dragging');});
+ launcher.addEventListener('pointermove',event=>{if(!watchDrag||event.pointerId!==watchDrag.id)return;const dx=event.clientX-watchDrag.x,dy=event.clientY-watchDrag.y;if(Math.hypot(dx,dy)>6)watchMoved=true;if(watchMoved){if(watchOpen)openWatch(false);positionWatch(watchDrag.startX+dx,watchDrag.startY+dy);}});
+ function stopWatchDrag(){if(watchDrag){watchDrag=null;widget.classList.remove('is-dragging');if(watchMoved)saveWatch();}}
+ launcher.addEventListener('pointerup',stopWatchDrag);launcher.addEventListener('pointercancel',stopWatchDrag);
+ launcher.addEventListener('click',()=>{if(watchMoved){watchMoved=false;return;}openWatch(!watchOpen);});
+ $('watchClose').addEventListener('click',()=>{openWatch(false);launcher.focus();});
+ apps.addEventListener('click',event=>{if(event.target.closest('a')){openWatch(false);launcher.focus();}});
+ document.addEventListener('pointerdown',event=>{if(watchOpen&&!widget.contains(event.target))openWatch(false);});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&watchOpen){openWatch(false);launcher.focus();}});
+ window.addEventListener('resize',()=>{if(!watchFrame)watchFrame=requestAnimationFrame(()=>{watchFrame=0;positionWatch(watchX,watchY);});});
  const storySections={welcome:'welcome',demo:'explore',display:'screens',obs:'screens',modes:'modes',library:'modes',updates:'updates',roadmap:'updates',get:'start',faq:'start',partner:'mission'};
- const storyNames={welcome:'Welcome',explore:'Explore',screens:'Screens & OBS',modes:'Work modes',updates:'Updates',start:'Get started',mission:'The mission'};
- const storyOrder=Object.keys(storyNames);
- function markStory(chapter){document.querySelectorAll('[data-chapter-link]').forEach(link=>{if(link.dataset.chapterLink===chapter)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});if($('storyCurrent'))$('storyCurrent').textContent='0'+(storyOrder.indexOf(chapter)+1)+' · '+storyNames[chapter];}
- if('IntersectionObserver' in window){const storyObserver=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);if(visible[0])markStory(storySections[visible[0].target.id]);},{rootMargin:'-15% 0px -55% 0px',threshold:0});Object.keys(storySections).forEach(id=>{if($(id))storyObserver.observe($(id));});}
+ function markStory(chapter){document.querySelectorAll('[data-chapter-link]').forEach(link=>{if(link.dataset.chapterLink===chapter)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});}
+ if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);if(visible[0])markStory(storySections[visible[0].target.id]);},{rootMargin:'-15% 0px -55% 0px',threshold:0});Object.keys(storySections).forEach(id=>{if($(id))observer.observe($(id));});}
  markStory(storySections[location.hash.slice(1)]||'welcome');
- window.addEventListener('hashchange',()=>{const chapter=storySections[location.hash.slice(1)];if(chapter)markStory(chapter);tuckRail();});
  const share=$('shareKogg'),shareStatus=$('shareStatus');
  share.addEventListener('click',async()=>{
   const url='https://kogg-presenter.pages.dev/landing.html';

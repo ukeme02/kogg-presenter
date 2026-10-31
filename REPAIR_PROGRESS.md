@@ -431,3 +431,10 @@ Moved the seven chapter tabs out of the top stack into a fixed left-side rail wi
 ## Continuous page with transient story guide — 31 October 2026
 
 Restored the full continuous downward landing page and removed chapter hiding/Previous-Next controls/content offsets. Continuous hero, tickers, card effects and compact moving mission ribbon retained. Story rail is thinner, overlays without resizing content, starts tucked offscreen, glides in during scrolling and retracts after 1.35s idle. Hover/focus keep it available; link selection/Escape/mobile close dismiss it. Hidden guide is inert/aria-hidden, with an accessible keyboard reveal button. IntersectionObserver tracks the section in view. Added short reveal underline accents rather than another continuous background loop. Worker v73. Tests cover initial/scroll/idle rail states and active-section tracking without hiding content. Full-page visual and device performance QA remain unverified because capture tools are unavailable.
+
+
+## Bouncing loader and draggable app constellation — 31 October 2026
+
+Replaced story rail with a floating KOGG launcher and seven circular smartwatch-style chapter links. Launcher has a gentle idle bounce, pauses while hovered/focused/dragged, supports pointer/touch dragging, clamps to viewport, saves only its UI position, and moves inward before opening the circular app grid. Outside tap/Escape/close dismiss; labelled links and focus feedback remain. Continuous page and existing motion retained.
+
+Wordmark loading animation now bounces with three dots until load completes, or a three-second JS/four-second independent CSS safety timeout; pointer interaction clears it too. No fake progress or dependency on a loaded font. Worker v74. Tests cover narrow-screen placement, drag limits/persistence, no accidental open after dragging, and Escape. Full visual/device QA remains unavailable.

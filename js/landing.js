@@ -99,9 +99,11 @@
  $('copyObsGuide').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('obsGuideUrl').textContent);$('obsCopyStatus').textContent='OBS URL copied. Paste it into the Browser Source properties.';}catch{$('obsCopyStatus').textContent='Select and copy the URL above.';}});
  // Floating watch-style navigation: draggable, bounded and keyboard accessible.
  const widget=$('watchWidget'),launcher=$('watchLauncher'),apps=$('watchApps');
+ const bounceSeed={x:(Math.random()>.5?1:-1)*(4+Math.random()*4),y:12+Math.random()*8,time:5.5+Math.random()*2.5};
+ widget.style.setProperty('--bounce-time',bounceSeed.time.toFixed(2)+'s');
  let watchOpen=false,watchDrag=null,watchMoved=false,watchX=18,watchY=Math.round(innerHeight*.45),watchFrame=0;
  function boundWatch(x,y,open=false){const margin=open?123:8;const maxX=Math.max(margin,innerWidth-(open?175:64)-8),maxY=Math.max(margin,innerHeight-(open?175:64)-8);return {x:Math.max(margin,Math.min(maxX,x)),y:Math.max(margin,Math.min(maxY,y))};}
- function positionWatch(x,y){const p=boundWatch(x,y,watchOpen);watchX=p.x;watchY=p.y;widget.style.left=watchX+'px';widget.style.top=watchY+'px';}
+ function positionWatch(x,y){const p=boundWatch(x,y,watchOpen);watchX=p.x;watchY=p.y;widget.style.left=watchX+'px';widget.style.top=watchY+'px';widget.style.setProperty('--hop-x',((watchX<20?1:watchX>innerWidth-90?-1:Math.sign(bounceSeed.x))*Math.abs(bounceSeed.x)).toFixed(1)+'px');widget.style.setProperty('--hop-y',(-Math.min(bounceSeed.y,Math.max(0,watchY-6))).toFixed(1)+'px');}
  function saveWatch(){try{localStorage.setItem('kogg-navigation-position',JSON.stringify({x:watchX,y:watchY}));}catch{}}
  function openWatch(open){watchOpen=open;apps.hidden=!open;launcher.setAttribute('aria-expanded',String(open));widget.classList.toggle('is-open',open);positionWatch(watchX,watchY);if(open)apps.querySelector('a')?.focus();}
  try{const p=JSON.parse(localStorage.getItem('kogg-navigation-position'));if(Number.isFinite(p?.x)&&Number.isFinite(p?.y)){watchX=p.x;watchY=p.y;}}catch{}positionWatch(watchX,watchY);

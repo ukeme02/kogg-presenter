@@ -438,3 +438,8 @@ Restored the full continuous downward landing page and removed chapter hiding/Pr
 Replaced story rail with a floating KOGG launcher and seven circular smartwatch-style chapter links. Launcher has a gentle idle bounce, pauses while hovered/focused/dragged, supports pointer/touch dragging, clamps to viewport, saves only its UI position, and moves inward before opening the circular app grid. Outside tap/Escape/close dismiss; labelled links and focus feedback remain. Continuous page and existing motion retained.
 
 Wordmark loading animation now bounces with three dots until load completes, or a three-second JS/four-second independent CSS safety timeout; pointer interaction clears it too. No fake progress or dependency on a loaded font. Worker v74. Tests cover narrow-screen placement, drag limits/persistence, no accidental open after dragging, and Escape. Full visual/device QA remains unavailable.
+
+
+## Polished curiosity orb — 31 October 2026
+
+Removed the visible Explore tag under the floating launcher while retaining its accessible name. Added a glass-blue finish, restrained orbit ring/specular highlight and multi-hop bounce with randomized per-visit timing/direction/amplitude. Bounce stays close to the user-positioned anchor, limits upward travel near the viewport edge, and pauses for hover/focus/open/drag. No random full-screen roaming or animation library. Landing only; in-app widget functions deliberately deferred as requested. Worker v75. Fresh visual QA unavailable.

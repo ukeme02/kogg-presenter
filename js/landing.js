@@ -2,9 +2,9 @@
 (function(){
  'use strict';
  const $=id=>document.getElementById(id);
- const theme=$('themeBtn');let stored=null;try{stored=localStorage.getItem('kogg-landing-theme');}catch{}
- function setTheme(dark){document.body.classList.toggle('dark',dark);theme.textContent=dark?'☀':'◐';theme.setAttribute('aria-label',dark?'Switch to light appearance':'Switch to dark appearance');try{localStorage.setItem('kogg-landing-theme',dark?'dark':'light');}catch{}}
- setTheme(stored!=='dark');theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
+ const theme=$('themeBtn');
+ function setTheme(dark){document.body.classList.toggle('dark',dark);theme.textContent=dark?'☾':'☀';theme.setAttribute('aria-label',dark?'Switch to light appearance':'Switch to dark appearance');}
+ setTheme(false);theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
  const menu=$('menuToggle');menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';menu.setAttribute('aria-expanded',String(open));$('siteNav').classList.toggle('is-open',open);});
  $('siteNav').addEventListener('click',e=>{if(e.target.closest('a')){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});

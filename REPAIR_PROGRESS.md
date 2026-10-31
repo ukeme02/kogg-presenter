@@ -345,3 +345,10 @@ Replaced conflicting hero autoplay/synthetic tab clicks and heavy repeated blur 
 Added a church partnership section: KOGG serves the Body of Christ, seeks to resolve longstanding Scripture-display friction and is part of further church-focused work. Invites use/feedback, sharing, skills/resources and financial support with confident mission-led language. Share uses native sharing or copies the public link; GitHub feedback/partnership links open drafts, with public-privacy notice. No payment collection or invented contact details. Worker v58.
 
 Validation: 112 checks pass including hero local-scene progression and reduced-motion/focus/hover/offscreen pauses. Fresh visual QA unavailable because the browser tool could not start its local assets; no visual check claimed for this release.
+
+
+## Direct ministry contact and current OBS guide — 31 October 2026
+
+Added email partnership/feature-request links to koggpresenter@gmail.com and a WhatsApp developer-team button using the supplied Nigerian number, without displaying the number as page text. Invites churches to request specific features. Replaced public GitHub partnership enquiry as the primary contact route.
+
+Added an OBS Scripture Browser Source guide with local bridge prerequisites, separate local presenter origin, copyable overlay URL, canvas sizing, opaque/transparent options and troubleshooting. Guide follows the implemented relay and official OBS Browser Source properties. Clarifies the website and OBS do not share browser storage; a same-computer bridge is required. Added coming-soon fuller OBS workflows for Scripture, lyrics and alerts without removing existing output capabilities. Worker v59. Validation: 112 tests pass. Browser preview remains unavailable from the preceding tool failure; actual OBS/visual verification not claimed.

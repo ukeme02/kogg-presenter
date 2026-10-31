@@ -385,3 +385,8 @@ Verified git author labels: Ukeme Emmanuel Inyang-Otu, ukeme02 and local KOGG Pr
 ## Default landing animation — 31 October 2026
 
 At the user’s explicit request, enabled decorative motion by default for every landing visit and removed the Play/Pause motion button. Hero playback continues to pause for hover/focus/offscreen/hidden-tab interaction. Updated tests for the new default. Worker v64. Screenshot slider remains blocked on four current captures: capture runtime still fails before browser initialization. Do not claim it is installed or reuse outdated screenshots as the current UI.
+
+
+## Compact closing mission ribbon — 31 October 2026
+
+Moved KOGG MEDIA recognition below the Ready for your next service card. Replaced the large isolated logo bar with a compact themed signature ribbon, smaller logo, horizontally drifting Join the mission link and shared-purpose tagline. Includes a fixed email CTA; duplicate loop group is inert/aria-hidden. Hover/focus pause lets visitors activate the moving link. No new partner names or assets. Worker v65. Fresh visual verification remains unavailable due to capture tool initialization failure.

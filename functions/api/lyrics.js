@@ -19,7 +19,7 @@ export async function onRequestGet({request}){
   }
   if(Date.now()-lastHymnaryRequest<5000)return json({error:'Please wait five seconds between hymn page imports.'},429);
   lastHymnaryRequest=Date.now();
-  const response=await fetch(target.url,{signal:controller.signal,redirect:'error',headers:{'User-Agent':'KOGGPresenter/1.0 (individual hymn text import)','Accept':'text/html'}});
+  const response=await fetch(target.url,{signal:controller.signal,redirect:'manual',headers:{'User-Agent':'KOGGPresenter/1.0 (individual hymn text import)','Accept':'text/html'}});
   if(!response.ok)throw new Error('This source page could not be reached. Paste the lyrics instead.');
   if(!(response.headers.get('content-type')||'').includes('text/html'))throw new Error('Unsupported page format');
   const length=Number(response.headers.get('content-length')||0);if(length>2000000)throw new Error('Source page too large');

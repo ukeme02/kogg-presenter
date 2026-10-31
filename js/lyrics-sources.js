@@ -4,7 +4,8 @@
  const core=typeof module!=='undefined'?require('./lyrics.js'):scope.KOGGLyrics;
  function checked(value,max=200){return typeof value==='string'&&value.trim()&&value.length<=max?value.trim():null;}
  async function readJSON(url,{fetcher=fetch,signal}={}){
-  const response=await fetcher(url,{signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'error'});
+  const response=await fetcher(url,{signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual'});
+  if((response.status>=300&&response.status<400)||response.type==='opaqueredirect')throw new Error('This source redirected. Use its final supported source link instead.');
   const type=response.headers?.get('content-type')||'';
   if(type && !type.includes('json'))throw new Error('Invalid source response');
   const raw=await response.text();if(raw.length>2000000)throw new Error('Source response too large');const data=JSON.parse(raw);

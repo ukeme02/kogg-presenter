@@ -34,6 +34,10 @@ test('Cloudflare importer rejects unrelated hosts before fetching and marks all 
  const r=await handle({request:new Request('https://kogg.test/api/lyrics?action=import&url='+encodeURIComponent('https://127.0.0.1/private'))});assert.equal(r.status,400);assert.equal(fetched,false);assert.equal(r.headers.get('cache-control'),'no-store');
 });
 test('Cloudflare extracts a supported public-domain page without following redirects',async()=>{
- const handle=endpoint(async(url,opts)=>{assert.equal(url,'https://hymnary.org/text/title');assert.equal(opts.redirect,'error');return new Response(hymn,{headers:{'Content-Type':'text/html'}});});
+ const handle=endpoint(async(url,opts)=>{assert.equal(url,'https://hymnary.org/text/title');assert.equal(opts.redirect,'manual');return new Response(hymn,{headers:{'Content-Type':'text/html'}});});
  const r=await handle({request:new Request('https://kogg.test/api/lyrics?action=import&url='+encodeURIComponent('https://hymnary.org/text/title'))});assert.equal(r.status,200);assert.match((await r.json()).song.lyrics,/First line/);
+});
+
+test('source redirects are rejected without fetching a new location',async()=>{
+ let calls=0;await assert.rejects(()=>S.readJSON('https://lrclib.net/api/search?q=test',{fetcher:async()=>{calls++;return new Response('',{status:302,headers:{Location:'https://127.0.0.1/private'}});}}),/redirected/);assert.equal(calls,1);
 });

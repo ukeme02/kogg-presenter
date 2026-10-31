@@ -49,7 +49,7 @@
  const heroDots=[...document.querySelectorAll('.scene-dots i')];
  const heroSamples=['John 11:35','Psalm 23:1','John 3:16'];
  let heroSample=0,heroStep=0,engagedUntil=0;
- function bump(el){if(!el||paused||reduced.matches)return;el.classList.remove('scene-swap');void el.offsetWidth;el.classList.add('scene-swap');}
+ function bump(el){if(!el||paused)return;el.classList.remove('scene-swap');void el.offsetWidth;el.classList.add('scene-swap');}
  function showRef(i){const ref=heroSamples[i];const input=$('qj');if(input)input.value=ref;ensureBible();const parsed=parseQj(ref);if(parsed)liveVerse(parsed,'proj');bump($('projText'));bump($('projRef'));}
  function heroVerse(i){const buttons=[...document.querySelectorAll('[data-hero-verse]')];buttons[i]?.click();bump($('heroLyricText'));bump($('heroLyricLabel'));}
  function sceneTab(i){if(heroTabsB[i].getAttribute('aria-selected')!=='true')heroTabsB[i].click();heroDots.forEach((d,di)=>d.classList.toggle('on',di===i));const panel=heroTabsB[i].getAttribute('aria-controls');if(panel){const el=$(panel);el.classList.remove('preview-arrival');void el.offsetWidth;el.classList.add('preview-arrival');}}
@@ -61,7 +61,7 @@
  ];
  function heroTick(){heroStep=(heroStep+1)%heroSteps.length;heroSteps[heroStep]();}
  setInterval(()=>{
-  if(document.hidden||paused||reduced.matches||!inHero()||Date.now()<engagedUntil)return;
+  if(document.hidden||paused||!inHero()||Date.now()<engagedUntil)return;
   heroTick();
  },4600);
  function inHero(){return scrollY<window.innerHeight*1.15;}
@@ -69,6 +69,6 @@
  heroProductStage.addEventListener('pointerdown',()=>{engagedUntil=Date.now()+12000;});
  $('qj')?.addEventListener('focus',()=>{engagedUntil=Date.now()+20000;});
  document.addEventListener('keydown',e=>{if(e.key==='Tab'&&document.activeElement&&heroProductStage.contains(document.activeElement))engagedUntil=Date.now()+12000;});
- setTimeout(()=>{if(!paused&&!reduced.matches)heroTick();},1600);
+ setTimeout(()=>{if(!paused)heroTick();},1600);
  sceneTab(0);
  })();

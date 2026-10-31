@@ -42,16 +42,22 @@
  document.body.classList.add('motion-enabled');
  const revealTargets=document.querySelectorAll('.section-heading,.tour-panel,.mode-explorer,.library-card,.update-grid article,.install-card,.faq-list,.closing,.facts,.service-flow,.display-grid article,.roadmap-rows article');
  if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});revealTargets.forEach((el,i)=>{el.classList.add('reveal-ready');el.style.setProperty('--reveal-delay',(el.matches('.library-card,.update-grid article')?i%3*80:el.matches('.display-grid article,.roadmap-rows article')?i%4*70:0)+'ms');observer.observe(el);});}
- function progress(){frame=0;const range=document.documentElement.scrollHeight-innerHeight;document.documentElement.style.setProperty('--read-progress',range>0?String(Math.min(1,Math.max(0,scrollY/range))):'0');}
+ function progress(){frame=0;const range=document.documentElement.scrollHeight-innerHeight;document.querySelector('.reading-progress i').style.transform='scaleX('+(range>0?Math.min(1,Math.max(0,scrollY/range)):0)+')';}
  window.addEventListener('scroll',()=>{if(!frame)frame=requestAnimationFrame(()=>{progress();headerFrame=0;settleHeader();});},{passive:true});window.addEventListener('resize',()=>{headerFrame=0;settleHeader();progress();});
  const header=document.querySelector('.site-header');let headerFrame=0;
  function settleHeader(){headerFrame=0;header.classList.toggle('scrolled',scrollY>6);}
  document.addEventListener('click',e=>{if(!e.target.closest('.site-header')){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
  const stageCards=document.querySelectorAll('.mini-console,.lyric-demo,.display-card,.mode-detail,.library-card,.update-grid article,.install-card,.obs-quick,.obs-connection,.partnership-grid article,.closing');
- stageCards.forEach(card=>{card.classList.add('stage-card');card.addEventListener('pointermove',event=>{if(event.pointerType!=='mouse'||!window.matchMedia('(hover:hover) and (pointer:fine)').matches)return;const r=card.getBoundingClientRect(),x=(event.clientX-r.left)/r.width,y=(event.clientY-r.top)/r.height;card.style.setProperty('--card-x',x*100+'%');card.style.setProperty('--card-y',y*100+'%');card.style.setProperty('--card-rx',((x-.5)*2)+'deg');card.style.setProperty('--card-ry',((.5-y)*2)+'deg');});card.addEventListener('pointerleave',()=>{card.style.setProperty('--card-rx','0deg');card.style.setProperty('--card-ry','0deg');});});
- const product=document.querySelector('.hero-product');
- product.addEventListener('pointermove',e=>{if(motionBlocked()||e.pointerType!=='mouse')return;const r=product.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;product.style.setProperty('--tilt-x',((x-.5)*5)+'deg');product.style.setProperty('--tilt-y',((.5-y)*4)+'deg');product.style.setProperty('--glow-x',x*100+'%');product.style.setProperty('--glow-y',y*100+'%');});
- product.addEventListener('pointerleave',()=>{product.style.removeProperty('--tilt-x');product.style.removeProperty('--tilt-y');});
+ stageCards.forEach(card=>card.classList.add('stage-card'));
+ // Three calm steps. One visible text change instead of perpetual scrolling layers.
+ document.querySelectorAll('.step-flow').forEach(flow=>{
+  const messages=['Worship without limits.','Scripture ready. Focus on the service.','Built for the Body of Christ.'];let index=0,visible=false,interacting=false,timer;
+  function draw(){const text=flow.querySelector('.step-flow-text');text.textContent=messages[index];if(text.animate)text.animate([{opacity:.35,transform:'translateY(3px)'},{opacity:1,transform:'translateY(0)'}],{duration:320,easing:'ease-out'});flow.querySelector('.step-flow-count').textContent='0'+(index+1)+' / 03';}
+  function schedule(){clearTimeout(timer);if(!visible||interacting||document.hidden)return;timer=setTimeout(()=>{index=(index+1)%messages.length;draw();schedule();},8500);}
+  flow.querySelectorAll('[data-flow-dir]').forEach(button=>button.addEventListener('click',()=>{index=(index+Number(button.dataset.flowDir)+messages.length)%messages.length;draw();schedule();}));
+  flow.addEventListener('pointerenter',()=>{interacting=true;schedule();});flow.addEventListener('pointerleave',()=>{interacting=false;schedule();});flow.addEventListener('focusin',()=>{interacting=true;schedule();});flow.addEventListener('focusout',()=>{interacting=false;schedule();});document.addEventListener('visibilitychange',schedule);
+  if('IntersectionObserver' in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;schedule();},{threshold:.25}).observe(flow);
+ });
  document.querySelectorAll('[role="tab"],.sample-refs button').forEach(button=>button.addEventListener('click',()=>{if(motionBlocked())return;const panel=$(button.getAttribute('aria-controls'))||button.closest('[role="tabpanel"]');if(panel){panel.classList.remove('preview-arrival');void panel.offsetWidth;panel.classList.add('preview-arrival');}}));
 
  /* The hero runs on local preview text: no Bible download, synthetic clicks or focus stealing. */

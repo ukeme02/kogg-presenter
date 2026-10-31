@@ -407,3 +407,10 @@ Applied official tagline to page title/social title, hero subtitle, both scrolli
 Applied shared blue stage-card lighting, fine-pointer-only subtle depth and touch-safe static geometry to major/demo cards. Reflowed tablet library/setup grids and phone mode choices, sized key touch controls, tightened vertical rhythm, protected narrow text/code and constrained hero width.
 
 Used the KOGG lettering from the supplied KOGG MEDIA artwork through a self-contained cropped SVG viewport (original artwork embedded unchanged); this reproduces the supplied lettering consistently without pretending an Anurati font file is installed. Presenter remains Nunito. Added a blue book/cross/light icon direction in the app/favicon/maskable SVG assets. Rendered and inspected the wordmark and icon as PNGs using bundled Sharp. Full-page visual/physical phone/tablet QA remains unavailable. Worker v68; 116 automated tests pass. Screenshot carousel still needs current captures.
+
+
+## Monogram exploration and performance-first step flow — 31 October 2026
+
+Created three original SVG monogram directions under docs/branding and rendered a comparison sheet (work/monogram-exploration.png). Current icon retained pending user selection; balanced existing symbol/wordmark arrangement in header/footer/operator with centred Presenter subtitle and mobile sizing.
+
+User reported site hangs. Replaced perpetual feature tickers with a three-step flow, manual Previous/Next and short opacity/translation transitions. Auto steps run only onscreen and pause for hover/focus or hidden tab. Removed per-pointer geometry reads/style writes, perpetual card sheen, huge blur/conic layers, background drift, fact bobbing, repeated glows and header backdrop blur. Mission ribbon is stationary and retains its compact CTA. Scroll progress writes directly to its own transform instead of inheriting a document-wide custom property. Hero retains its bounded visibility-aware alternating scenes. Worker v70. No claimed performance measurements: browser runtime remains unavailable and hardware retest required.

@@ -1568,3 +1568,6 @@ body.light .more-menu,body.light .quickgo-results,body.light #floatPreview,body.
 
 .brand .brand-kogg{width:91px;height:26px;object-fit:contain;border-radius:0;box-shadow:none;filter:brightness(0) invert(1)}body:not(.dark) .brand .brand-kogg{filter:brightness(0)}body:not(.light) .brand .brand-kogg{filter:brightness(0) invert(1)}
 @media(max-width:760px){.brand .brand-kogg{width:77px;height:22px}}
+
+/* One balanced horizontal lockup, with the subtitle centred under the wordmark. */
+.brand{gap:11px;align-items:center}.brand>img{width:40px;height:40px;object-fit:contain;flex:none}.brand-wordmark{width:96px;align-items:center;gap:4px}.brand .brand-name{font-size:0;line-height:1;letter-spacing:0}.brand .brand-kogg{display:block;width:96px;height:27px}.brand .brand-sub{width:100%;text-align:center;letter-spacing:.17em;padding-left:.17em;font-size:9px;line-height:1.2}.site-footer .brand{gap:10px}@media(max-width:760px){.brand{gap:8px}.brand>img{width:34px;height:34px}.brand-wordmark{width:80px;gap:3px}.brand .brand-kogg{width:80px;height:23px}.brand .brand-sub{font-size:8px;letter-spacing:.14em;padding-left:.14em}}

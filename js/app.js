@@ -1090,7 +1090,7 @@ function fitDockContents() {
     if (!head) return;
     w.style.transform = '';
     w.style.width = '';
-    if(d.dataset.dock==='text' || window.innerWidth<=1100 || window.innerHeight<=600)return;
+    if(['text','search'].includes(d.dataset.dock) || window.innerWidth<=1100 || window.innerHeight<=600)return;
     const cs = getComputedStyle(d);
     const dR = d.getBoundingClientRect();
     const wR = w.getBoundingClientRect();
@@ -2880,16 +2880,26 @@ $('extraHymnPacks').addEventListener('click',async event=>{
   catch(err){$('hymnPackStatus').textContent=err.message;}
   finally{button.disabled=false;}
 });
+function positionExtraBiblePanel(){
+ const panel=$('extraBiblePanel');if(panel.hidden)return;
+ const anchor=$('btnMoreBibles').getBoundingClientRect(),width=Math.min(380,window.innerWidth-24),below=window.innerHeight-anchor.bottom-20,above=anchor.top-20;
+ const upwards=below<180&&above>below,space=Math.max(100,upwards?above:below);
+ panel.style.position='fixed';panel.style.width=width+'px';panel.style.minWidth='0';panel.style.maxHeight=Math.min(560,space)+'px';panel.style.right='auto';panel.style.left=Math.max(12,Math.min(window.innerWidth-width-12,anchor.left))+'px';
+ panel.style.top=(upwards?Math.max(12,anchor.top-Math.min(panel.scrollHeight||space,space)-8):anchor.bottom+8)+'px';
+}
+window.addEventListener('resize',positionExtraBiblePanel);
+window.addEventListener('scroll',event=>{if(!$('extraBiblePanel').contains?.(event.target))positionExtraBiblePanel();},true);
+document.addEventListener('click',event=>{if(!event.target.closest?.('#extraBiblePanel, #btnMoreBibles'))$('extraBiblePanel').hidden=true;});
 $('btnMoreBibles').addEventListener('click',async()=>{
-  const panel=$('extraBiblePanel');panel.hidden=!panel.hidden;if(panel.hidden)return;
+  const panel=$('extraBiblePanel');panel.hidden=!panel.hidden;if(panel.hidden)return;document.body.appendChild(panel);positionExtraBiblePanel();
   try {
     const response=await fetch('data/content-catalog.json');if(!response.ok)throw new Error('Connect to load the Bible catalogue');
     const catalogue=await response.json();
     const buttons=(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))
-      .map(b=>`<button data-bible-file="${esc(b.file)}">↧ ${esc(b.short || b.name)}</button>`).join('');
-    const requested=(catalogue.requestedBibles || []).map(b=>`<button disabled title="${esc(b.status || 'Approved distributable text is not connected yet')}">${esc(b.name)} — text needed</button>`).join('');
-    $('extraBibleButtons').innerHTML='<b>Requested translations</b>'+requested+'<b>Available downloads</b>'+buttons;
-    $('extraBibleStatus').textContent='Requested versions need a licensed or digital text source (shown on each button). Available downloads work offline after downloading. Use Tools → Import Bible for a permitted Bible file.';
+      .map(b=>`<button class="bible-menu-row" data-bible-file="${esc(b.file)}"><span class="bible-menu-copy"><b>${esc(b.short || b.name)}</b><small>${esc(b.name)}</small></span><span class="bible-menu-badge">Download ↓</span></button>`).join('');
+    const requested=(catalogue.requestedBibles || []).map(b=>`<div class="bible-menu-row bible-menu-pending" title="${esc(b.status || 'Approved distributable text is not connected yet')}"><span class="bible-menu-copy"><b>${esc(b.name)}</b><small>${esc(b.status || 'Digital source needed')}</small></span><span class="bible-menu-badge">Source needed</span></div>`).join('');
+    $('extraBibleButtons').innerHTML='<h3 class="bible-menu-heading">Available downloads</h3>'+buttons+'<h3 class="bible-menu-heading">Requested translations</h3>'+requested;
+    $('extraBibleStatus').textContent='Requested versions need a licensed or digital text source (shown on each button). Available downloads work offline after downloading. Use Tools → Import Bible for a permitted Bible file.';positionExtraBiblePanel();
   }catch(err){$('extraBibleStatus').textContent=err.message;}
 });
 $('extraBiblePanel').addEventListener('click',async event=>{

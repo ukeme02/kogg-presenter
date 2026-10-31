@@ -8,7 +8,7 @@
  setTimeout(finishIntro,3000);document.addEventListener('pointerdown',finishIntro,{once:true});
  const theme=$('themeBtn');
  function setTheme(dark){document.body.classList.toggle('dark',dark);theme.textContent=dark?'☾':'☀';theme.setAttribute('aria-label',dark?'Switch to light appearance':'Switch to dark appearance');}
- setTheme(true);theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
+ setTheme(false);theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
  const menu=$('menuToggle');menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';menu.setAttribute('aria-expanded',String(open));$('siteNav').classList.toggle('is-open',open);});
  $('siteNav').addEventListener('click',e=>{if(e.target.closest('a')){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
@@ -65,7 +65,7 @@
  const heroButtons=[...document.querySelectorAll('[data-hero-tab]')];
  const dots=[...document.querySelectorAll('.scene-dots i')];
  const scenes=[
-  {tab:0,ref:'John 11:35 · KJV',text:'Jesus wept.'},
+  {tab:0,ref:'2 Corinthians 4:6 · KJV',text:"For God, who commanded the light to shine out of darkness, hath shined in our hearts, to give the light of the knowledge of the glory of God in the face of Jesus Christ."},
   {tab:0,ref:'Psalm 23:1 · KJV',text:'The LORD is my shepherd; I shall not want.'},
   {tab:1,ref:'Amazing Grace · Verse 1',text:'Amazing grace, how sweet the sound\nThat saved a wretch like me'},
   {tab:1,ref:'Amazing Grace · Verse 2',text:'’Twas grace that taught my heart to fear\nAnd grace my fears relieved'}

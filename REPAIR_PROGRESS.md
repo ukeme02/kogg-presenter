@@ -452,3 +452,12 @@ Optimised the existing supplied-artwork SVG wordmark by embedding only its cropp
 Loader clears at DOM readiness instead of waiting for window load/all images, retaining bounce and safety limits. IntersectionObserver pauses decorative CSS animations outside a 160px viewport margin; continuous motion is unchanged while visible. Existing bounded hero autoplay/hidden-tab behavior retained. No animation library, new content download or page restructuring. Worker v76. Full live speed/scroll profiling unavailable because browser runtime cannot start.
 
 Optimised logo previews were rendered and visually inspected. Added a regression for offscreen pause / in-view resume (160px warm-up margin); 119 checks pass including this test.
+
+
+## Landing choices and Scripture search/menu fixes — 1 November 2026
+
+Restored light as the landing default, with dark manually selected. Floating launcher becomes white in dark mode. Initial real-KJV preview, first sample button and first autoplay scene now use 2 Corinthians 4:6 from the bundled Bible, with long-passage sizing.
+
+Fixed Whole-Bible Search shrinking after results: excluded search dock from the whole-interior scale fitter and gave it a full-height flex layout with fixed readable search/microphone row and independent scrollable results. Compact screens retain readable input and a bounded result area.
+
+Reworked More Bibles into consistent full-width rows with name/description and aligned download/source badges; removed the narrow inline max width. Menu is portalled to body, positioned within the viewport above/below its trigger as space allows, and repositions on resize/outer scroll. Existing download behavior and escaping retained. Added regression coverage for no search scaling and viewport/portal placement. Worker v77. Fresh visual/hardware checks remain unavailable.

@@ -4,11 +4,11 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KOGG Presenter — Worship without limits.</title>
 <meta name="description" content="A lightweight church presentation tool for Scripture, lyrics and service plans. Three offline core Bibles, 300 included hymns, optional packs, connected translations, and Base, Local or Sync modes. Runs in your browser.">
-<meta name="theme-color" content="#0e1118"><meta property="og:title" content="KOGG Presenter — Worship without limits."><meta property="og:description" content="Scripture, lyrics and your service plan. A lighter presentation tool for the local church."><meta property="og:type" content="website">
+<meta name="theme-color" content="#f2f5fa"><meta property="og:title" content="KOGG Presenter — Worship without limits."><meta property="og:description" content="Scripture, lyrics and your service plan. A lighter presentation tool for the local church."><meta property="og:type" content="website">
 <link rel="preload" href="fonts/NunitoSans-Variable.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="icons/kogg-wordmark.svg" as="image">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/landing.css">
 </head>
-<body class="dark">
+<body>
 <div class="brand-intro" aria-hidden="true"><div class="intro-wordmark"><span class="intro-kogg"><img src="icons/kogg-wordmark.svg" alt="" width="184" height="52"></span><span class="intro-presenter">Presenter</span><span class="intro-balls" aria-hidden="true"><i></i><i></i><i></i></span><span class="intro-line"></span><span class="intro-tagline">Worship without limits.</span></div></div>
 <div class="reading-progress" aria-hidden="true"><i></i></div>
 <div class="stage-atmosphere" aria-hidden="true"><i class="light-beam beam-one"></i><i class="light-beam beam-two"></i><div class="stage-grid"></div></div>
@@ -32,9 +32,9 @@
   <div class="product-top"><span class="window-dots"><i></i><i></i><i></i></span><span>KOGG / PREVIEW</span><span class="preview-indicator">● INTERACTIVE</span></div>
   <div class="preview-tabs" role="tablist" aria-label="Hero preview"><button id="hero-scripture-tab" role="tab" aria-selected="true" aria-controls="hero-scripture" data-hero-tab="scripture">Scripture</button><button id="hero-lyrics-tab" role="tab" aria-selected="false" aria-controls="hero-lyrics" tabindex="-1" data-hero-tab="lyrics">Lyrics</button><span class="scene-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
   <div id="hero-scripture" role="tabpanel" aria-labelledby="hero-scripture-tab">
-   <div class="hero-screen"><span class="screen-label">OUTPUT PREVIEW</span><p id="projText">Jesus wept.</p><span id="projRef">John 11:35 · KJV</span></div>
+   <div class="hero-screen"><span class="screen-label">OUTPUT PREVIEW</span><p id="projText" class="long-passage">For God, who commanded the light to shine out of darkness, hath shined in our hearts, to give the light of the knowledge of the glory of God in the face of Jesus Christ.</p><span id="projRef">2 Corinthians 4:6 · KJV</span></div>
    <div class="preview-controls"><label for="qj">JUMP TO A PASSAGE</label><div class="input-line"><input id="qj" type="search" autocomplete="off" spellcheck="false" placeholder="Try jn 3:16, then Enter" aria-describedby="heroInputHint"><span aria-hidden="true">↵</span></div>
-   <div class="sample-refs"><button data-sample-ref="John 11:35">John 11:35</button><button data-sample-ref="Psalm 23:1">Psalm 23:1</button><button data-sample-ref="John 3:16">John 3:16</button></div><p id="heroInputHint">A real KJV preview. Your projector stays untouched.</p></div>
+   <div class="sample-refs"><button data-sample-ref="2 Corinthians 4:6">2 Corinthians 4:6</button><button data-sample-ref="Psalm 23:1">Psalm 23:1</button><button data-sample-ref="John 3:16">John 3:16</button></div><p id="heroInputHint">A real KJV preview. Your projector stays untouched.</p></div>
   </div>
   <div id="hero-lyrics" role="tabpanel" aria-labelledby="hero-lyrics-tab" hidden>
    <div class="hero-screen"><span class="screen-label">OUTPUT PREVIEW</span><p id="heroLyricText">Amazing grace, how sweet the sound<br>That saved a wretch like me</p><span id="heroLyricLabel">Amazing Grace · Verse 1</span></div>

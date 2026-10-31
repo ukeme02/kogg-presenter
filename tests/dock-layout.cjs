@@ -31,3 +31,5 @@ test('projector exposes only the passage, bookmark and translation footer',()=>{
  assert.doesNotMatch(html,/id="(?:btnPreviousPassage|btnResumeScripture|btnCompareScripture|comparisonPanel)"/);
  assert.ok(html.indexOf('id="liveText"')<html.indexOf('id="versionChips"'));
 });
+
+test('Whole-Bible Search never scales its controls when the results grow',()=>{const wrap={style:{transform:'scale(0.2)',width:'500%'}},head={},dock={dataset:{dock:'search'},style:{display:''},querySelector:selector=>selector.includes('dock-fit')?wrap:head};const start=source.indexOf('function fitDockContents()'),end=source.indexOf('\nfunction initDockFit()',start);vm.runInNewContext(source.slice(start,end)+';fitDockContents();',{document:{querySelectorAll:()=>[dock]},window:{innerWidth:1280,innerHeight:720},getComputedStyle(){throw new Error('Search must not enter the scaling measurement loop');}});assert.equal(wrap.style.transform,'');assert.equal(wrap.style.width,'');});

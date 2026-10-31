@@ -110,6 +110,7 @@ function render(state) {
     applyBackdrops(state);
   }
   renderLowerThird(state.mode === 'blank' ? null : state.lowerThird);
+  renderNotesAlert(state.mode === 'blank' ? null : state.alert);
 }
 
 /* word highlight — the operator drags over words in the preview; the matching
@@ -165,17 +166,22 @@ async function renderLogo(state) {
   $('logoName').textContent = s.logoName || 'KOGG Presenter';
 }
 
+function renderNotesAlert(alert){
+ const el=$('notesAlert'),track=$('notesAlertTrack');if(!el||!track)return;
+ const on=!!(alert?.on&&typeof alert.text==='string'&&alert.text.trim());el.hidden=!on;document.body.classList.toggle('has-notes-alert',on);
+ if(on){const text=alert.text.slice(0,2000);if(track.textContent!==text){track.textContent=text;track.classList.remove('alert-moving');void track.offsetWidth;track.classList.add('alert-moving');}track.style.animationDuration=Math.max(15,Math.min(90,Number(alert.duration)||25))+'s';}
+}
+
 function renderLowerThird(lt) {
   const on = !!(lt && lt.on && (lt.l1 || lt.l2));
   const el = $('lowerThird');
+  const entering=el.classList.contains?.('lt-hidden')!==false;
   el.classList.toggle('lt-hidden', !on);
   if (on) {
     $('ltLine1').textContent = lt.l1 || '';
     $('ltLine2').textContent = lt.l2 || '';
     $('ltLine2').style.display = lt.l2 ? '' : 'none';
-    el.classList.remove('lt-animate');      // restart slide-in animation
-    void el.offsetWidth;
-    el.classList.add('lt-animate');
+    if(entering){el.classList.remove('lt-animate');void el.offsetWidth;el.classList.add('lt-animate');}
   }
 }
 

@@ -178,3 +178,6 @@ body.overlay #screen { background: transparent !important; }
 }
 
 #slideContent {width:100%;flex:0 0 auto;white-space:pre-wrap;overflow-wrap:break-word;}
+
+/* Notes notices use plain text and stay separate from the slide/tag layers. */
+#notesAlert{position:fixed;bottom:0;left:0;right:0;z-index:50;overflow:hidden;background:#101827ed;color:#fff;border-top:2px solid #4f8cff;padding:1.4vh 0;font-family:'Nunito Sans Expanded',sans-serif;font-size:3.2vh;font-weight:700;line-height:1.4;pointer-events:none}#notesAlert[hidden]{display:none}#notesAlertTrack{width:max-content;min-width:100%;white-space:nowrap;padding-inline:2vw}.alert-moving{animation:notesAlertScroll 25s linear infinite;will-change:transform}.has-notes-alert #lowerThird{bottom:12vh}@keyframes notesAlertScroll{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}@media(prefers-reduced-motion:reduce){#notesAlertTrack{animation:none;transform:none;width:auto;white-space:normal;font-size:2.3vh;max-height:20vh;overflow:hidden}}

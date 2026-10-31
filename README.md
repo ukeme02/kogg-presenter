@@ -248,3 +248,12 @@ Online search combines LRCLIB plain-lyrics records with lyrics.ovh/Deezer song s
 The existing Cloudflare Pages site runs a small `functions/api/lyrics.js` endpoint for source requests and supported-page imports. Import accepts only fixed source hosts: Hymnary `/text/` pages explicitly marking the **text** Public Domain, LRCLIB API song links, and lyrics.ovh API song links. Unsupported pages use copy/paste. Page imports discard page furniture and keep stanza boundaries and credits. Redirects, custom ports and credential-bearing URLs are rejected. Responses are `no-store`; the offline worker bypasses API routes so temporary Base lyrics do not become offline cache entries. Hymnary imports are spaced at least five seconds apart per running server instance. All other source requests have timeouts and size bounds.
 
 Deploy the committed website and `functions/` together with Wrangler Pages. Static-only hosting keeps browser source search and Google links, but supported-page imports need the Cloudflare endpoint. No Brave account or API key was created; its card-backed credits did not meet the requested fully-free fallback.
+
+
+## Notes deck
+
+Notes sits between Lyrics and Service. Choose a template or type plain text. In Point by point mode, one empty line creates the next point; tap a card to project it. Full-screen mode sends the whole text as one slide. Now ministering/tag and scrolling-alert modes overlay the current output; if the screen was blank, they start without resuming the old passage. Hide notes output removes Notes content while keeping unrelated Scripture/lyrics and overlays.
+
+Editing is preview-only until Display. Enable Live typing to update an already-live Notes item as you type; presenting another Scripture/song stops that item from taking over. Saved Notes are device-local in Local/Sync mode and tab-session-only in Base. Notes are not yet included in cloud sync or library backups.
+
+Lyrics search checks saved songs first, then automatically searches the connected sources after a short pause when there is no match and the device is online. Selecting an online result fetches its lyrics and displays its first slide. Saved song titles also display immediately; Edit remains a separate review action.

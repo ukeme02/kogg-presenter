@@ -461,3 +461,14 @@ Restored light as the landing default, with dark manually selected. Floating lau
 Fixed Whole-Bible Search shrinking after results: excluded search dock from the whole-interior scale fitter and gave it a full-height flex layout with fixed readable search/microphone row and independent scrollable results. Compact screens retain readable input and a bounded result area.
 
 Reworked More Bibles into consistent full-width rows with name/description and aligned download/source badges; removed the narrow inline max width. Menu is portalled to body, positioned within the viewport above/below its trigger as space allows, and repositions on resize/outer scroll. Existing download behavior and escaping retained. Added regression coverage for no search scaling and viewport/portal placement. Worker v77. Fresh visual/hardware checks remain unavailable.
+
+
+## Lyrics usability and new Notes deck — 1 November 2026
+
+Diagnosed result-to-projector confusion: online selections imported only into the editor, and saved song titles were not interactive. Selecting a saved title or online result now displays the first slide; Edit is separate. Added a 650ms automatic online fallback for local misses of at least three characters, with cancellation/stale-token protection, manual search retained, offline/source failure messaging and reconnect handling. Balanced action rows, result cards and slide icons with responsive sizing.
+
+Added Notes between Lyrics and Service. Lightweight plain-text model + editor supports paragraph-based points, one full-screen slide, lower-third/now-ministering tags and independent scrolling alerts. Five quick templates, preview cards, previous/next points, saved notes and explicit Live typing are included. Typing does not publish until Display; follow updates only an owned live Notes item, and cannot replace a later Scripture/song. Tags/alerts preserve underlying output; blank output starts them without revealing an old verse. Hide removes only Notes-owned content. Lower thirds no longer restart their entrance on every update; alerts do not restart on verse changes.
+
+Storage: Local/Sync Notes are device-local, not cloud-synced or included in existing backups. Base notes are sessionStorage for the current tab. No new framework, media player, font or network dependency. Notes model is ~2.6 KB. Worker v78 precaches it. Landing release notes updated.
+
+Validation: 131 automated checks pass, including note parsing/templates/index bounds, literal text/XSS handling, private edits, device/session storage separation, overlay preservation/hide, live-follow ownership, online fallback scheduling, result-to-projector flow, alert continuity and existing offline/sync/output regressions. Browser/capture tool still fails before initialization, so fresh visual QA and physical projector/OBS checks are not claimed.

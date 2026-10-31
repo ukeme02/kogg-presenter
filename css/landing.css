@@ -330,3 +330,53 @@ h3{font-size:24px;letter-spacing:-.03em}
  .scene-dots i:after{animation:none}
 }
 body.motion-paused .scene-swap,body.motion-paused .preview-arrival .hero-screen,body.motion-paused .preview-arrival .preview-controls{animation:none}
+
+/* ================= CINEMATIC STAGE — the big rectangular demo hero ================= */
+.hero{display:block;text-align:center;padding-bottom:96px}
+.hero-copy{max-width:940px;margin:0 auto 6px}
+.hero-copy .actions{justify-content:center}
+.hero-copy .quiet{text-align:center}
+.hero-caption{justify-content:center;text-align:center}
+.hero-caption .caption-line{margin-right:auto;margin-left:auto}
+.hero .lead{text-align:center;max-width:660px;margin-left:auto;margin-right:auto}
+.hero-copy>.eyebrow{justify-content:center}
+.hero-copy h1{font-size:clamp(52px,7.4vw,108px);line-height:.99;letter-spacing:-.035em}
+
+.hero-product{width:min(1180px,94vw);margin:64px auto 0;padding:clamp(12px,1.7vw,20px)}
+.hero-screen{min-height:clamp(320px,40vh,470px);max-height:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:38px clamp(18px,4vw,64px);position:relative;overflow:hidden}
+.hero-screen p{font-size:clamp(30px,4.6vw,54px);line-height:1.22;max-width:32ch;text-wrap:balance}
+.hero-screen p.long-passage{font-size:clamp(20px,2.8vw,32px)}
+.hero-screen .screen-label{margin-bottom:auto}
+.hero-screen>span:last-child{margin-top:auto}
+.preview-controls{display:flex;flex-direction:column;align-items:center;text-align:center}
+.preview-controls .input-line{max-width:460px;width:100%;margin-inline:auto}
+.sample-refs{justify-content:center}
+.scene-dots i{width:34px;height:4px}
+
+/* Entrance: the rectangle rises under the headline */
+.hero-product{animation:stageIn 1.15s cubic-bezier(.16,.8,.24,1) .18s both}
+@keyframes stageIn{from{opacity:0;translate:0 64px;scale:.988;filter:blur(22px)}58%{opacity:1}to{opacity:1;translate:0 0;scale:1;filter:blur(0)}}
+
+/* Scene swap: motion-blur shuttle */
+#hero-scripture.preview-arrival .hero-screen,#hero-lyrics.preview-arrival .hero-screen{animation:sceneIn 1.05s cubic-bezier(.16,.8,.24,1) both}
+#hero-scripture.preview-arrival .preview-controls,#hero-lyrics.preview-arrival .preview-controls{animation:sceneIn 1.05s cubic-bezier(.16,.8,.24,1) .16s both}
+@keyframes sceneIn{0%{opacity:0;translate:0 54px;scale:.982;filter:blur(30px) saturate(1.5)}45%{opacity:.94}100%{opacity:1;translate:0 0;scale:1;filter:blur(0) saturate(1)}}
+.scene-swap{animation:wordSlide .55s cubic-bezier(.16,.84,.3,1) both}
+@keyframes wordSlide{0%{opacity:.04;translate:0 26px;scale:1.014;filter:blur(22px) saturate(1.45)}55%{opacity:1}100%{opacity:1;translate:0 0;scale:1;filter:blur(0) saturate(1)}}
+
+/* The smeared light sweep riding each scene change */
+#hero-scripture.preview-arrival .hero-screen:after,#hero-lyrics.preview-arrival .hero-screen:after{content:"";position:absolute;inset:-40% -14%;pointer-events:none;background:linear-gradient(102deg,transparent 26%,rgba(150,185,255,.08) 40%,rgba(228,240,255,.2) 50%,rgba(150,185,255,.08) 60%,transparent 74%);filter:blur(26px) saturate(1.35);transform:translateX(-85%) skewX(-9deg);animation:sweepBlur 1.05s cubic-bezier(.16,.8,.24,1) both}
+@keyframes sweepBlur{100%{transform:translateX(120%) skewX(-9deg)}}
+
+@media(max-width:1100px){
+ .hero{display:block}
+ .hero-product{width:min(1020px,96vw)}
+}
+@media(max-width:700px){
+ .hero-product{width:min(1240px,97vw)}
+ .hero-screen p{font-size:clamp(23px,6.4vw,33px)}
+ .hero-copy h1{font-size:clamp(40px,10.5vw,56px)}
+}
+@media(prefers-reduced-motion:reduce){.hero-product{animation:none}.hero-product:after,.hero-product:before{animation:none}}
+body.motion-paused .scene-swap,body.motion-paused .preview-arrival .hero-screen,body.motion-paused .preview-arrival .preview-controls,body.motion-paused .hero-product{animation:none}
+body.motion-paused #hero-scripture.preview-arrival .hero-screen:after,body.motion-paused #hero-lyrics.preview-arrival .hero-screen:after{display:none}

@@ -312,3 +312,8 @@ Reviewed the committed Scripture, Lyrics, connected Bible providers, hymn catalo
 Landing interactions are isolated from operator storage, auth, projector and work-mode selection; only appearance is stored under a landing-specific key. Reuses local font and existing lyrics parser, adds no package or external runtime, and loads real KJV only on preview interaction. New assets are precached in worker v43.
 
 Validation: 106 automated checks pass. Browser verified both appearances, real John 3:16 preview, editable lyrics splitting and card selection/reset, Sync/offline explanation and iOS instructions. Longer hero passages use a smaller type size with protected label spacing. Phone/tablet breakpoints implemented; physical-device checks and signed-in two-device sync are still outstanding. Lyrics interface simplification remains the next product refinement.
+
+
+## Official landing branding restored — 31 October 2026
+
+Restored the original Nunito Sans Expanded font definition and blue palette across the refreshed landing page, including headings, buttons and preview accents. Kept the current layout, demos and accurate product updates. Offline worker advanced to v44.

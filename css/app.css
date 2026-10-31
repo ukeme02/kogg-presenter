@@ -1475,3 +1475,31 @@ body.light *::-webkit-scrollbar-thumb { background: rgba(90,105,135,.32); border
   .topbar { box-shadow: none; }
   .update-grid-grid, .lyrics-live-text { border-radius: 11px; }
 }
+
+/* ============ LYRICS DECK REBALANCE ============
+   Order controls live in their own dock; the hymn list yields to the
+   search; slide cards get real room; slide buttons sit on a strict grid. */
+.lyrics-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.lyrics-deck{grid-template-columns:minmax(225px,.72fr) minmax(330px,1.6fr) minmax(225px,.85fr)}
+.lyrics-deck>.lyrics-side>.card{margin:0}
+.lyrics-order-dock h2{font-size:15px;margin-bottom:6px}
+.lyrics-order{margin:0 0 6px}
+#songList{margin-top:10px}
+.search-wait{background:none;border:1px dashed var(--hairline);border-radius:10px;color:var(--muted);font-size:12.5px;line-height:1.6;padding:12px}
+.lyric-actions{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:8px 9px 9px;border-top:1px solid var(--hairline)}
+.lyric-actions button{min-width:0;padding:7px 2px;font-size:11px;border-radius:8px;background:color-mix(in srgb,var(--panel2) 72%,transparent);border-color:transparent}
+.lyric-actions button:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--hairline));background:color-mix(in srgb,var(--accent) 10%,transparent)}
+@media(max-width:1100px){
+ .lyrics-deck{grid-template-columns:minmax(215px,.8fr) minmax(300px,1.5fr)}
+ .lyrics-output{position:static;grid-column:1/-1}
+ .lyrics-live-text{min-height:130px;max-height:35dvh}
+}
+@media(max-width:700px){
+ .lyrics-deck{grid-template-columns:minmax(0,1fr)}
+ .lyrics-output{grid-column:auto}
+ .lyrics-find .item-list{max-height:32dvh}
+ .lyrics-slides{grid-template-columns:minmax(0,1fr)}
+ .lyrics-deck .row>button{flex:1 1 auto}
+ .lyric-actions button{min-height:34px;padding:8px 2px;font-size:11.5px}
+ .lyrics-edit textarea{font-size:16px}
+}

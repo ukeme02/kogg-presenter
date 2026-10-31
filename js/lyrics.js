@@ -1,11 +1,59 @@
-/* Lightweight lyrics operations; no media or rendering dependencies. */
-(function(scope){
- 'use strict';
- function parse(text){let pending='';const result=[];for(const raw of String(text||'').replace(/\r\n?/g,'\n').split(/\n[ \t]*\n+/)){
-   const block=raw.trim();if(!block)continue;const m=block.match(/^\[([^\]\n]+)\][ \t]*(?:\n|$)/);
-   const section=m?m[1].trim():pending,body=(m?block.slice(m[0].length):block).trim();
-   if(body){result.push({section,text:body});pending='';}else if(m)pending=section;
- }return result;}
+ /* Lightweight lyrics operations; no media or rendering dependencies. */
+ (function(scope){
+  'use strict';
+  /* Split a lone unbroken section (typical of lyrics scraped from the web) into
+     balanced, four-line slides without cutting a repeated refrain in half. */
+  function balanceSection(sole){
+    const lines=sole.text.split('\n').map(l=>l.trim()).filter(l=>l);
+    if(lines.length<8)return null;
+    const norm=l=>l.toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
+    const counts=new Map();
+    for(const line of lines){const k=norm(line);if(k)counts.set(k,(counts.get(k)||0)+1);}
+    const repeated=lines.map(l=>norm(l)&&counts.get(norm(l))>1);
+    const chorusish=lines.map((_,i)=>repeated[i]||(i>0&&i<lines.length-1&&repeated[i-1]&&repeated[i+1]));
+    const runs=[];for(let i=0;i<lines.length;){if(!chorusish[i]){i++;continue;}let j=i;while(j<lines.length&&chorusish[j])j++;if(j-i>=2)runs.push([i,j-1]);i=j;}
+    const runStart=runs.map(r=>r[0]);
+    const chunks=[];let i=0;
+    while(i<lines.length){
+      let size;
+      const run=runs.find(r=>r[0]===i);
+      if(run&&run[1]-run[0]+1<=5){
+        size=run[1]-run[0]+1;                             // a repeat block stays whole
+        chunks.push({section:'Chorus',text:lines.slice(i,i+size).join('\n')});
+      }else{
+        size=4;
+        const near=runStart.find(s=>s>i+1&&s<i+size+1);    // a refrain hard by the window
+        if(near)size=near-i;
+        size=Math.min(size,lines.length-i);
+        chunks.push({section:'',text:lines.slice(i,i+size).join('\n')});
+      }
+      i+=size;
+    }
+    const last=chunks[chunks.length-1];
+    if(last.section!=='Chorus'&&last.text.split('\n').length===1){
+      const prev=chunks[chunks.length-2];
+      prev.text+='\n'+last.text;chunks.pop();             // no orphan single-line slides
+    }
+    if(chunks.length<2)return null;
+    return chunks.map((c,idx)=>({section:c.section||(idx===0&&sole.section)||'',text:c.text}));
+  }
+  function parse(text){let pending='';const result=[];for(const raw of String(text||'').replace(/\r\n?/g,'\n').split(/\n[ \t]*\n+/)){
+    const block=raw.trim();if(!block)continue;
+    const lead=block.match(/^\[([^\]\n]+)\][ \t]*(?:\n|$)/);
+    let current=lead?lead[1].trim():pending;
+    const local=[];const buf=[];
+    const flush=()=>{const t=buf.join('\n').trim();if(t)local.push({section:current,text:t});buf.length=0;};
+    let tail=lead?current:null;   // a block that ends bare after its lead defers the heading
+    for(const line of (lead?block.slice(lead[0].length):block).split('\n')){
+      const hm=line.match(/^\[([^\]\n]+)\][ \t]*$/);
+      if(hm){flush();current=hm[1].trim();tail=hm[1].trim();continue;}   // a heading defers to the next lines
+      buf.push(line);
+      if(line.trim())tail=null;
+    }
+    flush();
+    result.push(...local);
+    pending=tail!==null?tail:'';
+  }if(result.length===1){const balanced=balanceSection(result[0]);if(balanced)return balanced;}return result;}
 
  function serialize(sections){return sections.map(s=>(s.section?'['+s.section+']\n':'')+s.text.trim()).filter(Boolean).join('\n\n');}
  function ordered(song){const sections=parse(song.lyrics);const order=Array.isArray(song.order)&&song.order.length?song.order:sections.map((_,i)=>i);return order.filter(i=>Number.isInteger(i)&&sections[i]).map(i=>({...sections[i],sourceIndex:i}));}

@@ -148,19 +148,25 @@
   <section id="tab-songs" class="tab-panel">
     <div class="lyrics-toolbar"><b>Lyrics</b><span id="lyricsModeStatus" role="status"></span><button id="btnEndLyricsSession">End session</button></div>
     <div class="lyrics-deck">
-      <section class="card lyrics-find"><h2>Find a song</h2>
-        <input id="songSearch" type="search" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
-        <div class="row"><button id="btnNewSong" class="primary">+ New song</button><button id="btnSearchLyricsOnline">Search online</button></div>
-        <p id="lyricsSearchStatus" class="hint" role="status"></p><div id="lyricsOnlineResults" class="lyrics-results"></div>
-        <p><a id="lyricsWebSearch" target="_blank" rel="noopener noreferrer" hidden>Search Google for this song ↗</a></p>
-        <details id="lyricsLinkImport"><summary>Import a source link</summary><input id="lyricsSourceUrl" type="url" placeholder="https://hymnary.org/text/…" aria-label="Lyrics source link"><button id="btnImportLyricsLink">Import lyrics</button><p class="hint">Supports public-domain Hymnary text pages and LRCLIB / lyrics.ovh API links. For other pages, copy the lyrics and paste them into the editor.</p><p id="lyricsLinkStatus" class="hint" role="status"></p></details>
-        <details><summary>Hymn packs & imports</summary><div class="row"><button id="btnStarterHymns">+ Basic Hymnary</button><button id="btnMoreHymns">More hymns</button></div>
-          <div id="extraHymnPacks" hidden></div><p id="hymnPackStatus" role="status"></p>
-          <p class="hint"><a href="data/hymnary-sources.txt" target="_blank" rel="noopener">Hymn source credits</a></p>
-          <label>Import song text (.txt)<input id="lyricsTextFile" type="file" accept="text/plain,.txt"></label>
-          <p class="hint">Import your downloaded SongSelect text, or paste lyrics. <a href="https://songselect.ccli.com/" target="_blank" rel="noopener">Open SongSelect</a></p>
-        </details><ul id="songList" class="item-list"></ul>
-      </section>
+      <div class="lyrics-side">
+        <section class="card lyrics-find"><h2>Find a song</h2>
+          <input id="songSearch" type="search" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
+          <div class="row"><button id="btnNewSong" class="primary">+ New song</button><button id="btnSearchLyricsOnline">Search online</button></div>
+          <p id="lyricsSearchStatus" class="hint" role="status"></p><div id="lyricsOnlineResults" class="lyrics-results"></div>
+          <p><a id="lyricsWebSearch" target="_blank" rel="noopener noreferrer" hidden>Search Google for this song ↗</a></p>
+          <details id="lyricsLinkImport"><summary>Import a source link</summary><input id="lyricsSourceUrl" type="url" placeholder="https://hymnary.org/text/…" aria-label="Lyrics source link"><button id="btnImportLyricsLink">Import lyrics</button><p class="hint">Supports public-domain Hymnary text pages and LRCLIB / lyrics.ovh API links. For other pages, copy the lyrics and paste them into the editor.</p><p id="lyricsLinkStatus" class="hint" role="status"></p></details>
+          <details><summary>Hymn packs & imports</summary><div class="row"><button id="btnStarterHymns">+ Basic Hymnary</button><button id="btnMoreHymns">More hymns</button></div>
+            <div id="extraHymnPacks" hidden></div><p id="hymnPackStatus" role="status"></p>
+            <p class="hint"><a href="data/hymnary-sources.txt" target="_blank" rel="noopener">Hymn source credits</a></p>
+            <label>Import song text (.txt)<input id="lyricsTextFile" type="file" accept="text/plain,.txt"></label>
+            <p class="hint">Import your downloaded SongSelect text, or paste lyrics. <a href="https://songselect.ccli.com/" target="_blank" rel="noopener">Open SongSelect</a></p>
+          </details><ul id="songList" class="item-list"></ul>
+        </section>
+        <section class="card lyrics-order-dock"><h2>Song order</h2>
+          <p class="hint">Tap a section to add it again, or remove an order chip.</p>
+          <div id="lyricsSectionButtons" class="lyrics-order"></div><div id="lyricsOrder" class="lyrics-order"></div>
+        </section>
+      </div>
       <section class="card lyrics-edit" id="songEditor"><h2 id="songEditorTitle">Paste & split</h2>
         <details id="lyricsPastePanel" open><summary id="lyricsPasteSummary">Paste / edit lyrics</summary>
         <div class="row"><label>Title<input id="songTitle" type="text" placeholder="Song title"></label><label>Artist / author<input id="songAuthor" type="text" placeholder="Artist or author"></label></div>
@@ -170,8 +176,6 @@
         <div class="row"><button id="btnLyricsUndo">Undo</button><button id="btnLyricsSplitLines">Split into 4 lines</button><button id="btnLyricsDefaultOrder">Reset order</button></div>
         <div class="row"><button id="btnSaveSong" class="primary">Save song</button><button id="btnAddLyricsService">+ Service</button><button id="btnLiveSong">▶ Display first slide</button><button id="btnCancelSong">Clear editor</button></div>
         <p id="lyricsStatus" role="status" class="hint"></p>
-        <b>Song order</b><p class="hint">Tap a section to add it again, or remove an order chip.</p>
-        <div id="lyricsSectionButtons" class="lyrics-order"></div><div id="lyricsOrder" class="lyrics-order"></div>
         <div id="songSlidesPreview" class="lyrics-slides"></div>
       </section>
       <section class="card lyrics-output"><h2>On the projector</h2><p id="lyricsLiveLabel" class="hint"></p><div id="lyricsLiveText" class="lyrics-live-text"></div>

@@ -443,3 +443,12 @@ Wordmark loading animation now bounces with three dots until load completes, or 
 ## Polished curiosity orb — 31 October 2026
 
 Removed the visible Explore tag under the floating launcher while retaining its accessible name. Added a glass-blue finish, restrained orbit ring/specular highlight and multi-hop bounce with randomized per-visit timing/direction/amplitude. Bounce stays close to the user-positioned anchor, limits upward travel near the viewport edge, and pauses for hover/focus/open/drag. No random full-screen roaming or animation library. Landing only; in-app widget functions deliberately deferred as requested. Worker v75. Fresh visual QA unavailable.
+
+
+## Landing delivery and invisible-animation optimisation — 31 October 2026
+
+Optimised the existing supplied-artwork SVG wordmark by embedding only its cropped, appropriately sized raster region: 311,011 → 19,606 bytes (~94% smaller). Replaced landing use of the 233,140-byte full PNG with an appropriately sized lossless WebP (25,290 bytes, ~89% smaller); original source PNG retained. Both delivered logo assets together shrink ~92%. Preloaded the local Nunito font and wordmark. These are measured local file-byte savings, not browser load-time measurements.
+
+Loader clears at DOM readiness instead of waiting for window load/all images, retaining bounce and safety limits. IntersectionObserver pauses decorative CSS animations outside a 160px viewport margin; continuous motion is unchanged while visible. Existing bounded hero autoplay/hidden-tab behavior retained. No animation library, new content download or page restructuring. Worker v76. Full live speed/scroll profiling unavailable because browser runtime cannot start.
+
+Optimised logo previews were rendered and visually inspected. Added a regression for offscreen pause / in-view resume (160px warm-up margin); 119 checks pass including this test.

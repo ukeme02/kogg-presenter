@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const intro=document.querySelector('.brand-intro');
  function finishIntro(){intro?.classList.add('intro-ready');}
- if(document.readyState==='complete')requestAnimationFrame(finishIntro);else window.addEventListener('load',finishIntro,{once:true});
+ if(document.readyState!=='loading')requestAnimationFrame(finishIntro);else document.addEventListener('DOMContentLoaded',finishIntro,{once:true});
  setTimeout(finishIntro,3000);document.addEventListener('pointerdown',finishIntro,{once:true});
  const theme=$('themeBtn');
  function setTheme(dark){document.body.classList.toggle('dark',dark);theme.textContent=dark?'☾':'☀';theme.setAttribute('aria-label',dark?'Switch to light appearance':'Switch to dark appearance');}
@@ -51,6 +51,8 @@
  const header=document.querySelector('.site-header');let headerFrame=0;
  function settleHeader(){headerFrame=0;header.classList.toggle('scrolled',scrollY>6);}
  document.addEventListener('click',e=>{if(!e.target.closest('.site-header')){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
+ // Keep the same visible motion, but stop rendering loops outside the viewport.
+ if('IntersectionObserver' in window){const motionObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>entry.target.classList.toggle('motion-offscreen',!entry.isIntersecting));},{rootMargin:'160px 0px',threshold:0});document.querySelectorAll('.mini-console,.lyric-demo,.display-card,.mode-detail,.library-card,.install-card,.obs-quick,.obs-connection,.partnership-grid article,.ticker,.mission-ribbon,.facts,.stage-atmosphere,.hero-product,.screen-duo,.updates-section,.closing').forEach(el=>motionObserver.observe(el));}
  const stageCards=document.querySelectorAll('.mini-console,.lyric-demo,.display-card,.mode-detail,.library-card,.update-grid article,.install-card,.obs-quick,.obs-connection,.partnership-grid article,.closing');
  stageCards.forEach(card=>{card.classList.add('stage-card');card.addEventListener('pointermove',event=>{if(event.pointerType!=='mouse'||!window.matchMedia('(hover:hover) and (pointer:fine)').matches)return;const r=card.getBoundingClientRect(),x=(event.clientX-r.left)/r.width,y=(event.clientY-r.top)/r.height;card.style.setProperty('--card-x',x*100+'%');card.style.setProperty('--card-y',y*100+'%');card.style.setProperty('--card-rx',((x-.5)*2)+'deg');card.style.setProperty('--card-ry',((.5-y)*2)+'deg');});card.addEventListener('pointerleave',()=>{card.style.setProperty('--card-rx','0deg');card.style.setProperty('--card-ry','0deg');});});
  const product=document.querySelector('.hero-product');

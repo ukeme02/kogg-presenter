@@ -361,3 +361,8 @@ Repeated Output clicks reuse/focus the existing popup without renavigating it, p
 Output clicks enter fullscreen only, never toggle out; Esc/browser controls retain exit. Operator requests fullscreen after placement and on reuse; output attempts it after acquiring its exclusive role. Rejected automatic fullscreen requests are caught, leaving the one-click fallback. Landing explains Chrome/Edge screen-management permission, Extend mode, optional automatic-fullscreen availability and one-click/Esc behavior. No permission bypass or forced re-entry after Esc. Worker v60.
 
 Validation: 115 tests pass, including popup reuse, no click-to-exit, duplicate guard suppression/notification and existing screen placement tests. Physical extended-screen and browser fullscreen/permission verification remains outstanding; fresh browser preview unavailable in this session.
+
+
+## OBS ease-first options — 31 October 2026
+
+Made capturing the existing Output window the recommended OBS route: Sources > Window Capture > KOGG Presenter — Output, with fit/crop/fullscreen guidance. No Node or bridge required for window capture. Kept transparent Browser Source with the local bridge as a collapsed advanced second option. Clarified these are separate OBS source types and Window Capture includes the output background. Updated FAQ and roadmap copy. Worker v61.

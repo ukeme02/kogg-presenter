@@ -317,3 +317,10 @@ Validation: 106 automated checks pass. Browser verified both appearances, real J
 ## Official landing branding restored — 31 October 2026
 
 Restored the original Nunito Sans Expanded font definition and blue palette across the refreshed landing page, including headings, buttons and preview accents. Kept the current layout, demos and accurate product updates. Offline worker advanced to v44.
+
+
+## Stage-inspired landing motion and texture — 31 October 2026
+
+Added blue projected-light beams, a fine grid and embedded grain texture, animated headline light, a service-flow signal, scroll reading progress, once-only section reveals, pointer-responsive preview lighting/tilt, slide transitions and button/card responses. Refined both light and dark blue surfaces while preserving Nunito Sans Expanded. Added a decorative-motion pause control; reduced-motion preferences disable effects automatically and keep content visible. No animation library, video, external asset or runtime dependency added. Worker v45.
+
+Validation: 106 checks pass; browser verified both themes, textured hero and section flow. The preview browser requests reduced motion, and correctly received the static, fully visible version. Full-motion effects are implemented through CSS and bounded page events; physical-device motion/performance verification remains outstanding.

@@ -4,16 +4,18 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KOGG Presenter — Scripture & lyrics. Ready when you are.</title>
 <meta name="description" content="A lightweight church presentation tool for Scripture, lyrics and service plans. Three offline core Bibles, 300 included hymns, optional packs, connected translations, and Base, Local or Sync modes. Runs in your browser.">
-<meta name="theme-color" content="#f6f5ef"><meta property="og:title" content="KOGG Presenter — Stay with the moment."><meta property="og:description" content="Scripture, lyrics and your service plan. A lighter presentation tool for the local church."><meta property="og:type" content="website">
+<meta name="theme-color" content="#0e1118"><meta property="og:title" content="KOGG Presenter — Stay with the moment."><meta property="og:description" content="Scripture, lyrics and your service plan. A lighter presentation tool for the local church."><meta property="og:type" content="website">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
+<div class="reading-progress" aria-hidden="true"><i></i></div>
+<div class="stage-atmosphere" aria-hidden="true"><i class="light-beam beam-one"></i><i class="light-beam beam-two"></i><div class="stage-grid"></div></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header"><div class="container nav-row">
  <a class="brand" href="#" aria-label="KOGG Presenter home"><img src="icons/icon.svg" alt="" width="34" height="34"><span>KOGG<span class="brand-sub">PRESENTER</span></span></a>
  <button id="menuToggle" class="menu-toggle" aria-expanded="false" aria-controls="siteNav">Menu</button>
  <nav id="siteNav" aria-label="Main navigation"><a href="#demo">Explore</a><a href="#modes">Work modes</a><a href="#updates">What’s new</a><a href="#faq">Questions</a></nav>
- <div class="nav-actions"><button id="themeBtn" class="theme-button" aria-label="Switch to dark appearance">◐</button><a href="index.html" class="button button-small">Open KOGG <span aria-hidden="true">↗</span></a></div>
+ <div class="nav-actions"><button id="motionToggle" class="motion-toggle" aria-pressed="false" aria-label="Pause decorative motion">Motion on <span aria-hidden="true">Ⅱ</span></button><button id="themeBtn" class="theme-button" aria-label="Switch to dark appearance">◐</button><a href="index.html" class="button button-small">Open KOGG <span aria-hidden="true">↗</span></a></div>
 </div></header>
 <main id="main">
 <section class="hero container" aria-labelledby="hero-title">
@@ -23,7 +25,7 @@
  <p class="quiet">No account needed to start. No installation required.</p>
  <div class="hero-caption"><span class="caption-line"></span><span>For the volunteer at the desk.<br>For the room waiting on the next verse.</span></div>
  </div>
- <div class="hero-product">
+ <div class="hero-product"><div class="product-sheen" aria-hidden="true"></div>
   <div class="product-top"><span class="window-dots"><i></i><i></i><i></i></span><span>KOGG / PREVIEW</span><span class="preview-indicator">● INTERACTIVE</span></div>
   <div class="preview-tabs" role="tablist" aria-label="Hero preview"><button id="hero-scripture-tab" role="tab" aria-selected="true" aria-controls="hero-scripture" data-hero-tab="scripture">Scripture</button><button id="hero-lyrics-tab" role="tab" aria-selected="false" aria-controls="hero-lyrics" tabindex="-1" data-hero-tab="lyrics">Lyrics</button></div>
   <div id="hero-scripture" role="tabpanel" aria-labelledby="hero-scripture-tab">
@@ -39,6 +41,7 @@
  </div>
 </section>
 <section class="facts container" aria-label="Included at the core"><div><b>03</b><span>core Bibles<br><small>KJV · BSB · KJV Strong’s</small></span></div><div><b>300<span>+</span></b><span>included hymns<br><small>262 more in an optional pack</small></span></div><div><b>01</b><span>lighter workspace<br><small>Desktop · tablet · phone</small></span></div></section>
+<div class="service-flow container" aria-label="A simple presentation flow"><span class="flow-caption">KEEP THE SERVICE MOVING</span><div class="flow-track"><span><i>01</i> Find the passage</span><b aria-hidden="true">→</b><span><i>02</i> Choose the moment</span><b aria-hidden="true">→</b><span><i>03</i> Fill the room</span><div class="flow-signal" aria-hidden="true"></div></div></div>
 <section class="section container" id="demo">
  <div class="section-heading"><div><span class="eyebrow">01 / LESS FRICTION</span><h2>From a thought<br>to the screen.</h2></div><p>Find the passage. Paste the song. Choose the slide.<br>Explore an isolated preview of the current tools.</p></div>
  <div class="tour-tabs" role="tablist" aria-label="Product demo"><button id="tour-scripture-tab" data-tour-tab="scripture" role="tab" aria-selected="true" aria-controls="tour-scripture">01 · Scripture</button><button id="tour-lyrics-tab" data-tour-tab="lyrics" role="tab" aria-selected="false" tabindex="-1" aria-controls="tour-lyrics">02 · Lyrics</button></div>

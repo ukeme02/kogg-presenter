@@ -217,10 +217,33 @@ window.addEventListener('storage', e => { if (e.key === 'cp_live') render(getLiv
 if (!OVERLAY) document.addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   else document.documentElement.requestFullscreen().catch(() => {});
+  hookOutputScreens();
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'F11') return; // let the browser handle it
 });
+
+/* If this output was shown on a single screen and a display connects (or extension is
+   switched on) later, follow it automatically. Permission rides the fullscreen click. */
+let outputScreensDetails = null, outputScreensHooked = false;
+async function hookOutputScreens() {
+  if (outputScreensHooked || OVERLAY || !('getScreenDetails' in window)) return;
+  try {
+    outputScreensDetails = await window.getScreenDetails();
+  } catch { return; }
+  outputScreensHooked = true;
+  const place = () => {
+    try {
+      const other = outputScreensDetails.screens.find(s => s !== outputScreensDetails.currentScreen);
+      if (!other) return;
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      window.moveTo(other.left, other.top);
+      window.resizeTo(other.width, other.height);
+    } catch {}
+  };
+  outputScreensDetails.addEventListener('screenschange', place);
+  place();
+}
 
 if (OVERLAY) { document.documentElement.classList.add('overlay'); document.body.classList.add('overlay'); }
 render(getLive());

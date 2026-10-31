@@ -2353,21 +2353,49 @@ window.addEventListener('message', event => {
 async function openDisplayWindow() {
   // Navigate during the click itself: never leave a blank page waiting on permission.
   const w = window.open(outputUrl(), 'kogg_display', 'popup=yes');
-  if (!w) { setOutputStatus('Output blocked — allow popups for this site'); flash($('btnOpenDisplay'), 'Allow popups to open output'); return; }
+  if (!w) { setOutputStatus('Output blocked �?" allow popups for this site'); flash($('btnOpenDisplay'), 'Allow popups to open output'); return; }
   displayWindow = w;
-  setOutputStatus('Opening output…');
+  setOutputStatus('Opening output�?�');
   try { w.focus(); } catch {}
   try {
     if ('getScreenDetails' in window) {
       const details = await window.getScreenDetails();
       const cur = details.currentScreen;
       const other = details.screens.find(s => s.left !== cur.left || s.top !== cur.top);
-      if (other && !w.closed) { w.moveTo(other.left, other.top); w.resizeTo(other.width, other.height); w.focus(); }
-      else if (!other) setOutputStatus('Output open • no second screen detected');
-    } else setOutputStatus('Output open • move it to the projector screen');
+      if (other && !w.closed) { try { if (w.document.fullscreenElement) w.document.documentElement.exitFullscreen(); } catch {} w.moveTo(other.left, other.top); w.resizeTo(other.width, other.height); w.focus(); }
+      else if (!other) setOutputStatus('Output open �?� no second screen detected');
+      hookOutputScreens(details);
+    } else setOutputStatus('Output open �?� move it to the projector screen');
   } catch {
-    setOutputStatus('Output open • screen permission unavailable; move it manually');
+    setOutputStatus('Output open �?� screen permission unavailable; move it manually');
   }
+}
+
+/* Screens change after the output opened \u2014 a projector connects late, or extension is
+   switched on \u2014 and the output must follow. The Window Management permission was
+   requested during the Output click; hooking the change event keeps watching silently. */
+let outputScreensHooked = false;
+let outputScreensDetails = null;
+function hookOutputScreens(details) {
+  if (outputScreensHooked || !details) return;
+  outputScreensHooked = true;
+  outputScreensDetails = details;
+  details.addEventListener('screenschange', () => placeOutputOnExtended(false));
+  window.matchMedia('(display-count: 1)').addEventListener?.('change', () => placeOutputOnExtended(false));
+  window.matchMedia('(display-count: 2)').addEventListener?.('change', () => placeOutputOnExtended(false));
+}
+async function placeOutputOnExtended(showNote) {
+  if (!displayWindow || displayWindow.closed || !outputScreensDetails) return;
+  try {
+    const details = outputScreensDetails;
+    const other = details.screens.find(s => s !== details.currentScreen);
+    if (!other) { if (showNote !== false) setOutputStatus('Output stays \u2014 only one screen connected'); return; }
+    try { if (displayWindow.document.fullscreenElement) displayWindow.document.documentElement.exitFullscreen(); } catch {}
+    displayWindow.moveTo(other.left, other.top);
+    displayWindow.resizeTo(other.width, other.height);
+    try { displayWindow.focus(); } catch {}
+    setOutputStatus('Output moved to the extended screen');
+  } catch {}
 }
 
 document.addEventListener('keydown', e => {

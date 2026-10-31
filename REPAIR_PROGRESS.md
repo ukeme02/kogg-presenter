@@ -324,3 +324,8 @@ Restored the original Nunito Sans Expanded font definition and blue palette acro
 Added blue projected-light beams, a fine grid and embedded grain texture, animated headline light, a service-flow signal, scroll reading progress, once-only section reveals, pointer-responsive preview lighting/tilt, slide transitions and button/card responses. Refined both light and dark blue surfaces while preserving Nunito Sans Expanded. Added a decorative-motion pause control; reduced-motion preferences disable effects automatically and keep content visible. No animation library, video, external asset or runtime dependency added. Worker v45.
 
 Validation: 106 checks pass; browser verified both themes, textured hero and section flow. The preview browser requests reduced motion, and correctly received the static, fully visible version. Full-motion effects are implemented through CSS and bounded page events; physical-device motion/performance verification remains outstanding.
+
+
+## Landing light/dark contrast correction — 31 October 2026
+
+Fixed pale Scripture book chips inheriting white text in dark mode. Separated button fill from theme text accent so white button labels keep a sufficiently dark blue background in either theme. Strengthened muted copy, placeholder text, control outlines and selected states; made dark preview/update panels use explicit light text independent of page theme. Darkened the light-theme headline gradient and increased small preview/chip label sizes. Offline worker v46. Browser checked theme toggles and Scripture controls; flat-background text contrast spot checks were performed, excluding translucent/gradient surfaces from the simple numeric scan.

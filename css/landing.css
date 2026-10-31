@@ -54,3 +54,29 @@ body.motion-paused *,body.motion-paused *:before,body.motion-paused *:after{anim
 @media(max-width:1050px){.nav-row{gap:14px}.nav-actions{gap:8px}.nav-row nav{gap:14px}.service-flow{gap:24px}.flow-track{gap:8px}.flow-track>span{font-size:10px}}
 @media(max-width:760px){.motion-toggle{font-size:0;border:0;padding:5px}.motion-toggle span{font-size:12px;margin:0}.hero-product{transform:none!important}.light-beam{filter:blur(25px);width:500px}.service-flow{display:block;padding-top:25px}.flow-caption{font-size:7px}.flow-track{gap:4px}.flow-track>span{font-size:8px;gap:5px;padding-inline:3px}.flow-track i{font-size:7px}.flow-track>b{font-size:12px}.reveal-ready:not(.is-visible){translate:0 14px}.mode-choices button:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){.reveal-ready:not(.is-visible){opacity:1;translate:none}.hero-product{transform:none!important}.motion-toggle{display:none}.flow-signal{display:none}}
+
+/* Theme contrast: coloured chips and fixed dark stages need explicit foregrounds. */
+:root{--accent:#2459d8;--muted:#505d72;--control-line:#7e8ca6;--button-bg:#2459d8}
+body.dark{--accent:#83b1ff;--muted:#b0bbd0;--control-line:#667795;--button-bg:#2459d8}
+.button,.preview-tabs button[aria-selected=true]{background:var(--button-bg);border-color:var(--button-bg);color:#fff}
+.button:hover{background:#1947b5;border-color:#1947b5;color:#fff}
+.dotn.sel{background:var(--button-bg);color:#fff}
+.bchip{color:#1c2230}
+.bchip.sel{outline-color:#2459d8;box-shadow:inset 0 0 0 1px #2459d8}
+.hero h1 em{background-image:linear-gradient(105deg,#1d54d8 15%,#326bd7 50%,#1d54d8 85%)}
+.dark .hero h1 em{background-image:linear-gradient(105deg,#83b1ff 15%,#b0deff 50%,#83b1ff 85%)}
+.updates-section,.updates-section h2,.update-grid h3{color:#edf2ff}
+.updates-section .eyebrow,.updates-section .release-date,.updates-section .update-tag{color:#9cc3ff}
+.hero-product{--lime:#9cc3ff;color:#edf2ff}
+.hero-product .preview-tabs button:not([aria-selected=true]){color:#c5cfe1}
+.hero-product .screen-label,.hero-product .hero-screen>span:last-child,.hero-product .preview-controls label,.hero-product .preview-controls p,.hero-product .product-bottom{color:#b4c1d8}
+.hero-product .input-line input::placeholder{color:#acbad3;opacity:1}
+.demo-jump input::placeholder,.tour-intro textarea::placeholder{color:var(--muted);opacity:1}
+.input-line,.preview-tabs button,.sample-refs button{border-color:#647593}
+.demo-jump input,.tour-intro textarea,.theme-button,.motion-toggle,.device-choices button,#demoConnection{border-color:var(--control-line)}
+.mode-choices button{border-color:var(--control-line)}
+.mode-choices button[aria-selected=true]{border-color:var(--accent);box-shadow:inset 3px 0 var(--accent)}
+.tour-tabs button[aria-selected=true]{color:var(--accent)}
+.hero-screen,.demo-proj{color-scheme:dark}
+
+.bchip{font-size:8px;min-height:24px}.hero-product .screen-label,.hero-product .preview-controls label,.hero-product .product-bottom,.hero-product .preview-controls p{font-size:9px}.preview-indicator{font-size:9px}.hero-screen>span:last-child{font-size:10px}

@@ -472,3 +472,5 @@ Added Notes between Lyrics and Service. Lightweight plain-text model + editor su
 Storage: Local/Sync Notes are device-local, not cloud-synced or included in existing backups. Base notes are sessionStorage for the current tab. No new framework, media player, font or network dependency. Notes model is ~2.6 KB. Worker v78 precaches it. Landing release notes updated.
 
 Validation: 131 automated checks pass, including note parsing/templates/index bounds, literal text/XSS handling, private edits, device/session storage separation, overlay preservation/hide, live-follow ownership, online fallback scheduling, result-to-projector flow, alert continuity and existing offline/sync/output regressions. Browser/capture tool still fails before initialization, so fresh visual QA and physical projector/OBS checks are not claimed.
+
+Final Notes guard: Blank also suspends live-follow for active tags/alerts, so typing cannot unblank output. Added coverage; 132 checks pass. Worker v79.

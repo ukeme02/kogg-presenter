@@ -395,3 +395,8 @@ Moved KOGG MEDIA recognition below the Ready for your next service card. Replace
 ## Dark-first landing and stacked wordmark — 31 October 2026
 
 Landing HTML starts dark and initialization keeps dark as the default on each visit, with light toggle retained. Added stacked KOGG / Presenter wordmark to landing header/footer and operator header. KOGG prefers local Anurati; Presenter stays Nunito Sans Expanded. No Anurati font is present in repository/system/downloads; exact consistent web rendering remains pending a user-supplied appropriately licensed font asset. Official designer page currently labels the free download personal-use only. No font downloaded or purchase made. Current fallback is clearly documented; do not claim Anurati is bundled. Worker v66. Official icon/logo design remains next.
+
+
+## Worship without limits and fast brand entrance — 31 October 2026
+
+Applied official tagline to page title/social title, hero subtitle, both scrolling strips and closing mission ribbon. Replaced long feature tickers with equal-width repeated tagline groups and a soft passing light sweep. Reduced KOGG MEDIA logo to 88x34 desktop / 78x30 mobile and shortened strip span/spacing. Added a sub-second CSS-only wordmark entrance with no network/font/JS dependency and no click interception, plus reduced-motion no-JS fallback. Removed stacked hero entrance delays/heavy blur and shortened section reveals. Worker v67. Validation: 116 checks pass; visual QA remains blocked by browser capture initialization failure. Exact Anurati still pending font asset.

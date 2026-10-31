@@ -390,3 +390,8 @@ At the user’s explicit request, enabled decorative motion by default for every
 ## Compact closing mission ribbon — 31 October 2026
 
 Moved KOGG MEDIA recognition below the Ready for your next service card. Replaced the large isolated logo bar with a compact themed signature ribbon, smaller logo, horizontally drifting Join the mission link and shared-purpose tagline. Includes a fixed email CTA; duplicate loop group is inert/aria-hidden. Hover/focus pause lets visitors activate the moving link. No new partner names or assets. Worker v65. Fresh visual verification remains unavailable due to capture tool initialization failure.
+
+
+## Dark-first landing and stacked wordmark — 31 October 2026
+
+Landing HTML starts dark and initialization keeps dark as the default on each visit, with light toggle retained. Added stacked KOGG / Presenter wordmark to landing header/footer and operator header. KOGG prefers local Anurati; Presenter stays Nunito Sans Expanded. No Anurati font is present in repository/system/downloads; exact consistent web rendering remains pending a user-supplied appropriately licensed font asset. Official designer page currently labels the free download personal-use only. No font downloaded or purchase made. Current fallback is clearly documented; do not claim Anurati is bundled. Worker v66. Official icon/logo design remains next.

@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const theme=$('themeBtn');
  function setTheme(dark){document.body.classList.toggle('dark',dark);theme.textContent=dark?'☾':'☀';theme.setAttribute('aria-label',dark?'Switch to light appearance':'Switch to dark appearance');}
- setTheme(false);theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
+ setTheme(true);theme.addEventListener('click',()=>setTheme(!document.body.classList.contains('dark')));
  const menu=$('menuToggle');menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')!=='true';menu.setAttribute('aria-expanded',String(open));$('siteNav').classList.toggle('is-open',open);});
  $('siteNav').addEventListener('click',e=>{if(e.target.closest('a')){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});

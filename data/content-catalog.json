@@ -1,11 +1,23 @@
 {
-  "version": 3,
+  "version": 4,
   "hymnPacks": [
+    {
+      "id": "traditional-basic-v1",
+      "name": "Traditional hymns (basic)",
+      "count": 300,
+      "file": "data/hymns.json"
+    },
     {
       "id": "traditional-extra-v1",
       "name": "More traditional hymns",
       "count": 262,
       "file": "data/hymns-extra.json"
+    },
+    {
+      "id": "traditional-basic-v2",
+      "name": "Complete basic hymnary",
+      "count": 562,
+      "file": "data/hymns-combined.json"
     }
   ],
   "bibles": [
@@ -43,36 +55,51 @@
       "name": "Geneva1599",
       "short": "Geneva — 1599 edition",
       "file": "data/geneva1599.json"
+    },
+    {
+      "name": "LSV",
+      "short": "LSV — Literal Standard 2020 (public domain)",
+      "file": "data/lsv.json"
+    },
+    {
+      "name": "BBE",
+      "short": "BBE — Basic English 1949 (widely redistributed)",
+      "file": "data/bbe.json"
+    },
+    {
+      "name": "ERV",
+      "short": "ERV — English Revised 1885 (public domain)",
+      "file": "data/erv.json"
     }
   ],
   "requestedBibles": [
     {
       "name": "NIV",
-      "status": "Approved text source needed"
+      "status": "No free source — publisher licence required"
     },
     {
       "name": "NLT",
-      "status": "Approved text source needed"
+      "status": "No free source — publisher licence required"
     },
     {
       "name": "NKJV",
-      "status": "Approved text source needed"
+      "status": "No free source — publisher licence required"
     },
     {
       "name": "Amplified",
-      "status": "Approved text source needed"
+      "status": "No free source — publisher licence required"
     },
     {
       "name": "ASB (edition to confirm)",
-      "status": "Approved text source needed"
+      "status": "Edition unconfirmed"
     },
     {
       "name": "The Message",
-      "status": "Approved text source needed"
+      "status": "No free source — publisher licence required"
     },
     {
       "name": "Efik",
-      "status": "Approved text source needed"
+      "status": "1868 public-domain text exists as scans only — digital text needed"
     }
   ]
 }

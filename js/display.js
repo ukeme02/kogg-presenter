@@ -69,10 +69,13 @@ function fitText(enlargeScripture = false) {
   const style=getComputedStyle(textEl);
   const base = parseFloat(style.fontSize) || 24;
   // Short scripture can fill more of the output; lyrics retain their selected size.
-  const maximum = enlargeScripture ? Math.max(base,Math.min(base*1.6,window.innerHeight*0.12)) : base;
+  const maxPossible = window.innerHeight * 0.12;
+  const maximum = enlargeScripture ? Math.max(base,Math.min(base*1.6,maxPossible)) : base;
   const availableHeight=textEl.clientHeight-(parseFloat(style.paddingTop)||0)-(parseFloat(style.paddingBottom)||0);
   const availableWidth=textEl.clientWidth-(parseFloat(style.paddingLeft)||0)-(parseFloat(style.paddingRight)||0);
   let low = 8, high = Math.max(8, maximum);
+  // Ensure low <= high for binary search to work correctly
+  if (low > high) high = low;
   const fits = () => contentEl.scrollHeight <= availableHeight + 1 && contentEl.scrollWidth <= availableWidth + 1;
   for (let i = 0; i < 12; i++) {
     const size = (low + high) / 2;

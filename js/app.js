@@ -43,7 +43,7 @@ function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
   const slides = [];
   for (let v = vFrom; v <= vTo; v++) {
     const text = book.chapters[chFrom - 1][v - 1];
-    if (text == null) break;
+    if (text == null) continue;  // skip missing verses instead of breaking
     if (!text.trim()) continue;
     slides.push({ text, label: `${book.name} ${chFrom}:${v}` });
   }
@@ -170,6 +170,19 @@ async function loadBible(file) {
   const token = ++bibleLoadToken;
   try {
   let data = null;
+  if (window.KOGGBibles?.providerOf(file)) {
+    // connected licensed version — skeleton with empty chapters; text streams per chapter
+    bible = window.KOGGBibles.skeleton(file);
+    loadedBibleFile = file;
+    $('translationSelect').value = file;
+    LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentTranslation: file }));
+    searchIndex = [];
+    const bookSel = $('bookSelect');
+    bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${esc(b.name)}</option>`).join('');
+    fillChapters();
+    renderVersionChips();
+    return true;
+  }
   if (file.startsWith('idb:')) {
     // custom version added in Tools — text lives in IndexedDB
     const raw = window.KOGGAssets ? await window.KOGGAssets.get(file.slice(4)) : null;
@@ -212,14 +225,30 @@ function fillChapters() {
 }
 function fillVerses() {
   rangeStart = 0;
-  const book = bible.books[+$('bookSelect').value];
+  const bookIdx = +$('bookSelect').value;
+  const book = bible.books[bookIdx];
   const ch = +$('chapterSelect').value;
-  const count = book.chapters[ch - 1].length;
+  let count = book.chapters[ch - 1].length;
+  if (!count && bible.provider && window.KOGGBibles) {
+    // connected version — the chapter streams in, then the dock rerenders with real text
+    window.KOGGBibles.ensureChapter(bible, bookIdx, ch)
+      .then(() => { fillVerses(); renderVerseDots(); indexConnectedChapter(bookIdx, ch - 1); })
+      .catch(err => { $('modeHint').textContent = err.message + ' — select the chapter again to retry.'; });
+    count = 1;   // placeholder bounds while the chapter streams in
+  }
   $('verseFrom').innerHTML = opts(count);
   $('verseTo').innerHTML = opts(count);
   $('verseFrom').value = 1;
   $('verseTo').value = count;          // default range = whole chapter
   renderVerseDots();
+}
+/* whole-Bible search on connected versions covers the chapters streamed this session */
+function indexConnectedChapter(bookIdx, ci) {
+  const book = bible.books[bookIdx];
+  book.chapters[ci].forEach((t, vi) => {
+    searchIndex.push({ bi: bookIdx, ci, vi, s: stripStrongs(t).toLowerCase() });
+  });
+  searchIndex.sort((a, b) => a.bi - b.bi || a.ci - b.ci);
 }
 function opts(n) { return Array.from({ length: n }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join(''); }
 
@@ -1316,7 +1345,7 @@ function renderBibleSearch() {
           <button class="primary" data-go="1">▶ Go</button>
         </div>`;
       }).join('') + (hits.length === 60 ? '<div class="search-none">Showing the first 60 matches — add a word to narrow it.</div>' : '')
-    : `<div class="search-none">No verses match “${esc(q)}” in ${bible.translation}. Try fewer or different words.</div>`;
+    : `<div class="search-none">No verses match “${esc(q)}” in ${esc(bible.translation)}. ${bible.provider ? 'Connected versions search only the chapters streamed this session — present the passages you need, or type the reference above.' : 'Try fewer or different words.'}</div>`;
   box.hidden = false;
 }
 $('bibleSearch').addEventListener('input', () => {
@@ -1770,9 +1799,13 @@ function parseQuickRef(q) {
   return validScriptureRef(ref) ? ref : null;
 }
 function validScriptureRef(r) {
-  if (!bible || !r || ![r.bookIdx, r.ch, r.vFrom, r.vTo].every(Number.isInteger)) return false;
+  if (!bible) return false;
   const chapter = bible.books[r.bookIdx]?.chapters[r.ch - 1];
-  return !!chapter && r.vFrom >= 1 && r.vTo >= r.vFrom && r.vTo <= chapter.length;
+  if (!chapter) return false;
+  const verses = r.vFrom >= 1 && r.vTo >= r.vFrom && r.vTo <= chapter.length;
+  if (verses || !(bible.provider && window.KOGGBibles)) return verses;
+  // connected version, chapter not streamed yet — verse count is unknown until it arrives
+  return r.vTo <= 500;
 }
 function translationName(file) {
   const option=[...$('translationSelect').options].find(o=>o.value===file);
@@ -1813,6 +1846,13 @@ $('btnBookmarkScripture').addEventListener('click',()=>{
   LS.set('cp_scripture_bookmarks',bookmarks);renderMemory();flash($('btnBookmarkScripture'),'Saved ★');
 });
 function goLiveScripture(r) {
+  if (!bible) return false;
+  if (bible.provider && window.KOGGBibles && !(bible.books[r.bookIdx]?.chapters[r.ch - 1] || []).length) {
+    // connected version — stream the chapter in, then stage as usual
+    return window.KOGGBibles.ensureChapter(bible, r.bookIdx, r.ch)
+      .then(() => { indexConnectedChapter(r.bookIdx, r.ch - 1); return goLiveScripture(r); })
+      .catch(err => { flash($('quickGo'), err.message); return false; });
+  }
   if (!validScriptureRef(r)) { flash($('quickGo'), 'Invalid scripture reference'); return false; }
   if (!scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo).length) {
     flash($('quickGo'), 'Verse absent in this translation'); return false;
@@ -2591,6 +2631,65 @@ $('btnStrongs').addEventListener('click', () => {
 });
 refreshStrongsBtn();
 
+/* ---------- licensed versions connected live (Providers) ---------- */
+const API_BIBLE_LABELS = { NIV: 'New International Version', NKJV: 'New King James Version', NASB: 'New American Standard Bible', CSB: 'Christian Standard Bible', AMP: 'Amplified Bible', MSG: 'The Message' };
+function apiBibleConfig() { const s = LS.get(K.settings, {}); return { key: s.apiBibleKey || '', versions: s.apiBibleVersions || [] }; }
+function rebuildConnectedOptions() {
+  const group = $('connectedVersionsGroup');
+  const cfg = apiBibleConfig();
+  const rows = [];
+  rows.push({ value: 'nlt:NLT', text: 'NLT — New Living Translation (connected, online)' });
+  cfg.versions.forEach(abbr => { if (API_BIBLE_LABELS[abbr]) rows.push({ value: 'api:' + abbr, text: `${abbr} — ${API_BIBLE_LABELS[abbr]} (connected, your key)` }); });
+  group.hidden = !rows.length;
+  group.innerHTML = rows.map(o => `<option value="${o.value}">${esc(o.text)}</option>`).join('');
+  if (savedSettings.currentTranslation && rows.some(o => o.value === savedSettings.currentTranslation)) $('translationSelect').value = savedSettings.currentTranslation;
+  renderVersionChips();
+}
+function saveApiBibleKey(value) {
+  const s = LS.get(K.settings, {});
+  s.apiBibleKey = String(value || '').trim();
+  LS.set(K.settings, s);
+}
+function saveApiBibleVersions(list) {
+  const s = LS.get(K.settings, {});
+  s.apiBibleVersions = list.filter(a => API_BIBLE_LABELS[a]);
+  LS.set(K.settings, s);
+}
+function renderLicensedControls() {
+  const cfg = apiBibleConfig();
+  if ($('apiBibleKey')) $('apiBibleKey').value = cfg.key;
+  const box = $('apiBibleChoices');
+  if (!box) return;
+  box.innerHTML = Object.entries(API_BIBLE_LABELS).map(([abbr, name]) => {
+    const on = cfg.versions.includes(abbr);
+    return `<label class="hint" style="flex:1"><input type="checkbox" data-licensed="${abbr}" ${on ? 'checked' : ''}> ${abbr} — ${name}</label>`;
+  }).join('');
+  const status = $('licensedStatus');
+  if (status) status.textContent = cfg.versions.length
+    ? `${cfg.versions.length} API.Bible version(s) connected: ${cfg.versions.join(', ')}. ${cfg.versions.length >= 3 ? 'That is the Starter-plan maximum.' : 'You can add up to three.'}`
+    : 'NLT is ready with no account. Add an API.Bible key, then choose up to three copyrighted versions.';
+}
+$('btnSaveApiBible')?.addEventListener('click', () => {
+  saveApiBibleKey($('apiBibleKey').value);
+  renderLicensedControls();
+  rebuildConnectedOptions();
+  flash($('btnSaveApiBible'), 'Key saved on this device ✓');
+});
+$('apiBibleChoices')?.addEventListener('change', e => {
+  const box = e.target.closest('input[data-licensed]');
+  if (!box) return;
+  const cfg = apiBibleConfig();
+  const list = box.checked ? [...new Set([...cfg.versions, box.dataset.licensed])] : cfg.versions.filter(a => a !== box.dataset.licensed);
+  if (list.length > 3) {
+    alert('The free API.Bible Starter plan licenses three copyrighted versions at a time. Untick one first, or upgrade with American Bible Society.');
+    box.checked = false;
+    return;
+  }
+  saveApiBibleVersions(list);
+  renderLicensedControls();
+  rebuildConnectedOptions();
+});
+
 /* ---------- custom Bible versions — "Add versions" (Sync / Local modes) ---------- */
 function customVersions() { return LS.get(K.settings, {}).customVersions || []; }
 function rebuildCustomOptions() {
@@ -2740,9 +2839,9 @@ $('btnMoreBibles').addEventListener('click',async()=>{
     const catalogue=await response.json();
     const buttons=(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))
       .map(b=>`<button data-bible-file="${esc(b.file)}">↧ ${esc(b.short || b.name)}</button>`).join('');
-    const requested=(catalogue.requestedBibles || []).map(b=>`<button disabled title="Approved distributable text is not connected yet">${esc(b.name)} — text needed</button>`).join('');
+    const requested=(catalogue.requestedBibles || []).map(b=>`<button disabled title="${esc(b.status || 'Approved distributable text is not connected yet')}">${esc(b.name)} — text needed</button>`).join('');
     $('extraBibleButtons').innerHTML='<b>Requested translations</b>'+requested+'<b>Available downloads</b>'+buttons;
-    $('extraBibleStatus').textContent='Requested versions need approved text sources. Available downloads work offline after downloading. Use Tools → Import Bible for a permitted Bible file.';
+    $('extraBibleStatus').textContent='Requested versions need a licensed or digital text source (shown on each button). Available downloads work offline after downloading. Use Tools → Import Bible for a permitted Bible file.';
   }catch(err){$('extraBibleStatus').textContent=err.message;}
 });
 $('extraBiblePanel').addEventListener('click',async event=>{
@@ -2845,6 +2944,8 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
 })();
 const savedSettings = LS.get(K.settings, {});
 rebuildCustomOptions();      // custom versions must exist in the select before restore
+rebuildConnectedOptions();   // licensed connected versions (NLT key-free; API.Bible with key)
+renderLicensedControls();
 if (savedSettings.currentTranslation && [...$('translationSelect').options].some(o => o.value === savedSettings.currentTranslation)) $('translationSelect').value = savedSettings.currentTranslation;
 if (savedSettings.light) applyOperatorTheme(true);
 

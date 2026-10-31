@@ -196,6 +196,69 @@ Microphone input only: confirmed no audio-file/music playback feature exists. Te
 
 Saved checkpoint: Scripture UI work is parked. Next focus is the Lyrics deck and the existing 300-hymn basic collection plus 262-hymn expansion. Requested Bible integrations remain pending API.Bible account access. No audio playback is planned; keep the app lightweight.
 
+## Free scripture sources — 31 October 2026
+
+Searched for free/open sources for the seven requested translations. NIV, NLT, NKJV, Amplified
+and The Message have no free source: they are copyrighted and the public-domain repos exclude
+them. Efik: the 1868 Goldie/Robb text is public domain but exists only as archive.org scans (the
+1985/1989 editions are copyrighted); a digital text still has to be produced. ASB edition remains
+unconfirmed. The More Bibles "text needed" buttons now show an honest per-version status
+(`js/app.js` reads `requestedBibles[].status` from the catalogue).
+
+Added three complete, freely licensed English volumes (66 books each, converted with the new
+`tools/bible-convert.cjs` from the nigelmsipa/public-domain-bibles plain-text sources):
+
+- `LSV` — Literal Standard Version 2020, released to the public domain ("no rights reserved").
+- `BBE` — Bible in Basic English 1949, widely redistributed (licensing should be verified per
+  jurisdiction before relying on it).
+- `ERV` — English Revised Version 1885, public domain; the classic 17 "omitted in ancient
+  authorities" notices (e.g. Matthew 17:21) mean those verse numbers are genuinely absent, which
+  the app shows as empty slots — same handling as WEB's Romans 16:25–27 gap.
+
+- Registered in `data/content-catalog.json` (More Bibles downloads) and in `sw.js`
+  `OPTIONAL_ASSETS`, so a downloaded copy survives offline worker upgrades; cache bumped to v40.
+- Left out: `OEB` (Open English Bible, CC0) — its free text covers only 44 of the 66 books, so
+  it cannot satisfy the app's 66-book shape.
+- Tests: `node --test tests/*.cjs` → 83 pass, 0 fail, including the new `tests/free-bibles.cjs`
+  shape and John 3:16 wording checks. `node --check` clean on sw.js, app.js and the converter.
+- Uncommitted at session end: the user's own output-screen scripture-enlargement edits plus this
+  bible work await a commit decision.
+
+## Licensed Bibles go live online (NLT + API.Bible) — 31 October 2026
+
+Copyrighted translations can no longer be "text needed" only: they now stream live, chapter by
+chapter, into session memory via official, non-commercial church APIs. Nothing is downloaded,
+hosted or persisted — true offline independence stays with the bundled/public-domain Bibles.
+
+- New `js/bible-providers.js`: canonical 66-book tables (names/USFM codes/chapter counts ≈1189
+  chapters) build zero-network skeleton Bibles (`connected:true`), so the Books/Chapters docks,
+  Quick jump and Whole-Bible search stay responsive before any fetch. `ensureChapter()` fetches
+  on demand with a pending-promise dedupe; fetched chapters live only in session memory. NLT
+  runs key-free through Tyndale's api.nlt.to (50 verses/request → consecutive windows until the
+  API runs dry, so Psalm 119's 176 verses arrive over four requests). API.Bible versions
+  (NIV/NKJV/NASB/CSB/AMP/MSG) stream through the operator's own free api-key; the Starter plan
+  licenses up to three translations and `resolveApiBibleId` caches the resolved bible id per page
+  life. Errors are explained to operators (unreachable, unlicensed 403, missing key).
+- `js/app.js`: `loadBible()` takes the connected path from skeletons; `fillVerses()` fetches and
+  renders on demand; `validScriptureRef()` allows unfetched provider chapters; `goLiveScripture()`
+  awaits the chapter then recurses. Whole-Bible search over a connected version covers what is
+  already in session memory and says so.
+- Tools → Licensed versions: paste the API.Bible key (device-local only), pick up to three
+  versions. The translation select gains a "Connected (online licensed)" optgroup built at boot;
+  NLT appears always, API.Bible choices once a key is saved.
+- `sw.js`: `js/bible-providers.js` precached; CACHE bumped v41 → v42 for already-cached devices.
+- Fixed during the work: NLT footnotes are *nested* spans (`tn > tn-ref`), which orphaned
+  alternate-wording text with a lazy strip; the cleaner now removes balanced span subtrees. A
+  successful fetch formerly left its promise in the pending map, which could mask later
+  refetches — success entries are now deleted too.
+- Tests: new `tests/bible-providers.cjs` (12 checks: tables/skeletons, both parsers, window
+  chunking, key/licensing errors, parallel-caller dedupe) → whole suite `node --test tests/*.cjs`
+  = 106 pass, 0 fail. Live probes against the real NLT API: John 3 → 36 clean verses
+  (footnotes gone), Psalm 119 → 176 verses over four windows. API.Bible live chapter flow needs
+  the operator's key and is covered by mocked tests meanwhile.
+- Legal note kept: NIV/NLT/NKJV/Amplified/The Message remain copyrighted; The Message's official
+  live terms still need verification before it is offered as a choice.
+
 ## Centered short output passages — 31 October 2026
 
 Fixed output text sitting near the top of an 88vh box. Added a separate inline-content container inside a vertically centered flex box, preserving word highlighting and line breaks. Fit logic measures the content against the padded safe area. Short Scripture may enlarge up to 1.6 times the selected size (bounded by 12vh); long Scripture still shrinks to fit. Lyrics retain the selected font-size upper bound. Resize/font loading continue to trigger a fresh fit.
@@ -223,3 +286,6 @@ Validation: source adapter and endpoint tests cover partial outages, metadata lo
 
 
 Live Cloudflare verification identified an edge-runtime difference: fetch does not accept redirect="error". Replaced it with manual redirects plus explicit rejection, added a regression check, and advanced the offline worker to v41. No redirect targets are followed.
+
+
+Live verification completed on Cloudflare production after the redirect correction: combined Amazing Grace search returned both LRCLIB and lyrics.ovh results; importing the supported Hymnary page produced six section/slide cards and retained source credits. The current projector remained unchanged. Deployment: https://61ef27f2.kogg-presenter.pages.dev (production alias kogg-presenter.pages.dev). No Brave signup, card entry or paid search plan was used.

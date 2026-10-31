@@ -51,6 +51,7 @@
             <option value="licensed:niv" disabled>NIV — licensed text needed</option>
             <option value="licensed:nlt" disabled>NLT — licensed text needed</option>
           </optgroup>
+          <optgroup label="Connected (online licensed)" id="connectedVersionsGroup" hidden></optgroup>
           <optgroup label="My versions" id="customVersionsGroup" hidden></optgroup>
         </select>
         <span id="offlineStatus" class="status-note" role="status" aria-live="polite">Preparing offline…</span>
@@ -321,6 +322,16 @@
         </div>
         <div id="bibleList" class="hint"></div>
       </details>
+      <details class="group" id="licensedVersionsGroup">
+        <summary>Licensed versions (live online)</summary>
+        <p class="hint">Copyrighted translations can't be bundled or downloaded here. Instead they stream straight from the official services while online: <b>NLT</b> is a free live connection via Tyndale's NLT API. <b>NIV, NKJV, NASB, CSB, Amplified and The Message</b> stream through your own free <a href="https://scripture.api.bible" target="_blank" rel="noopener">API.Bible</a> key — the Starter plan licenses up to three copyrighted versions for non-commercial church use. The key stays on this device only and is never published with this app.</p>
+        <div class="row">
+          <label style="flex:1">API.Bible key<br><input id="apiBibleKey" type="password" autocomplete="off" placeholder="paste your api-key"></label>
+          <button id="btnSaveApiBible" class="primary">Save key</button>
+        </div>
+        <div class="row" id="apiBibleChoices"></div>
+        <p id="licensedStatus" class="hint"></p>
+      </details>
       <details class="group">
         <summary>Strong's Numbers (KJV with Strong's)</summary>
         <p class="hint">When the "KJV with Strong's" translation is live, the small word numbers appear in the <b>On the projector</b> preview — never on the projector itself (the congregation sees clean text). <b>Tap a number</b> and its Hebrew/Greek meaning takes the screen while the service continues; tap it again to flip back to the verse.</p>
@@ -533,6 +544,7 @@
 <script src="js/relay.js"></script>
 <script src="js/offline.js"></script>
 <script src="js/scripture-tools.js"></script>
+<script src="js/bible-providers.js"></script>
 <script src="js/content.js"></script>
 <script src="js/lyrics.js"></script>
 <script src="js/lyrics-sources.js"></script>

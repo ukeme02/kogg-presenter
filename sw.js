@@ -1,15 +1,15 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v41';
+const CACHE = 'kogg-presenter-v42';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './css/app.css', './css/display.css', './js/app.js', './js/display.js',
-  './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/content.js', './js/lyrics.js', './js/lyrics-sources.js',
+  './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/bible-providers.js', './js/content.js', './js/lyrics.js', './js/lyrics-sources.js',
   './js/supabase-config.js', './js/idb.js', './data/kjv.json', './data/bsb.json', './data/kjvs.json', './data/strongs.json', './data/hymns.json', './data/content-catalog.json', './data/hymnary-sources.txt',
   './fonts/NunitoSans-Variable.woff2', './manifest.webmanifest',
   './icons/icon.svg', './icons/icon-maskable.svg',
 ];
 // Base prepares exactly KJV, BSB and KJV Strong’s plus its lexicon. Extra translations cache only when used.
-const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json'];
+const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 const BIG = /\.(json|woff2)$/;
 let preparing = null;
 function cacheKey(input) {

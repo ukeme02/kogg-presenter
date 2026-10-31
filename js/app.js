@@ -2346,7 +2346,9 @@ function outputConnected() {
 }
 if (channel) channel.onmessage = event => { if (event.data?.type === 'display-ready') outputConnected(); };
 window.addEventListener('message', event => {
-  if (event.origin !== location.origin || event.source !== displayWindow || event.data?.type !== 'display-ready') return;
+  if (event.origin !== location.origin || event.source !== displayWindow) return;
+  if (event.data?.type === 'output-duplicate') { displayWindow=null;setOutputStatus('Output is already open in another presenter tab — reuse that output');return; }
+  if (event.data?.type !== 'display-ready') return;
   outputConnected();
   displayWindow.postMessage({type:'output-state', live}, location.origin);
   // Reapply after navigation: some browsers ignore moves while the popup loads.
@@ -2354,6 +2356,12 @@ window.addEventListener('message', event => {
   void placeOutputOnExtended(true);
 });
 async function openDisplayWindow() {
+  if (displayWindow && !displayWindow.closed) {
+    try { displayWindow.focus(); } catch {}
+    await placeOutputOnExtended(true);
+    try { displayWindow.postMessage({type:'output-fullscreen'},location.origin); } catch {}
+    return;
+  }
   // Navigate during the click itself: never leave a blank page waiting on permission.
   const w = window.open(outputUrl(), 'kogg_display', 'popup=yes');
   if (!w) { setOutputStatus('Output blocked — allow popups for this site'); flash($('btnOpenDisplay'), 'Allow popups to open output'); return; }
@@ -2402,7 +2410,8 @@ async function placeOutputOnExtended(showNote) {
     popup.moveTo(other.left, other.top);
     popup.resizeTo(other.width, other.height);
     outputLastPlacement = key;
-    if (showNote) setOutputStatus('Output placed on extended screen — click the output once for fullscreen');
+    try { popup.postMessage({type:'output-fullscreen'},location.origin); } catch {}
+    if (showNote) setOutputStatus('Output placed on extended screen — if not fullscreen, click it once; Esc exits');
   } catch {
     if (showNote) setOutputStatus('Output open — automatic placement unavailable; move it manually');
   }

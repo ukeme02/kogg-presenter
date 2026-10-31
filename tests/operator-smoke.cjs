@@ -150,3 +150,5 @@ test('output awaits fullscreen exit before moving to a replacement screen',async
  context.window.open=()=>popup;context.window.getScreenDetails=async()=>({currentScreen:{left:0,top:0},screens:[{left:0,top:0},{left:1920,top:0,width:1280,height:720}]});
  await elements.get('btnOpenDisplay').handlers.click[0]();assert.deepEqual(order,['exit','move']);
 });
+
+test('repeated Output clicks reuse the popup without navigating or dropping fullscreen',async()=>{const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));let opens=0,requests=0;const popup={closed:false,focus(){},postMessage(m){if(m.type==='output-fullscreen')requests++;}};context.window.open=()=>{opens++;return popup;};await elements.get('btnOpenDisplay').handlers.click[0]();await elements.get('btnOpenDisplay').handlers.click[0]();assert.equal(opens,1);assert.equal(requests,1);popup.closed=true;await elements.get('btnOpenDisplay').handlers.click[0]();assert.equal(opens,2);});

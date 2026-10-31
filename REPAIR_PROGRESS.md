@@ -352,3 +352,12 @@ Validation: 112 checks pass including hero local-scene progression and reduced-m
 Added email partnership/feature-request links to koggpresenter@gmail.com and a WhatsApp developer-team button using the supplied Nigerian number, without displaying the number as page text. Invites churches to request specific features. Replaced public GitHub partnership enquiry as the primary contact route.
 
 Added an OBS Scripture Browser Source guide with local bridge prerequisites, separate local presenter origin, copyable overlay URL, canvas sizing, opaque/transparent options and troubleshooting. Guide follows the implemented relay and official OBS Browser Source properties. Clarifies the website and OBS do not share browser storage; a same-computer bridge is required. Added coming-soon fuller OBS workflows for Scripture, lyrics and alerts without removing existing output capabilities. Worker v59. Validation: 112 tests pass. Browser preview remains unavailable from the preceding tool failure; actual OBS/visual verification not claimed.
+
+
+## Single output and persistent fullscreen clicks — 31 October 2026
+
+Repeated Output clicks reuse/focus the existing popup without renavigating it, preserving its live state and fullscreen. Added an origin/profile-scoped Web Locks guard for ordinary output documents so a competing output remains hidden and its script-opened duplicate closes. OBS overlays are intentionally excluded. BFCache restoration reloads to reacquire the lock. Unsupported Web Locks browsers still use the existing named-window reuse; separate browsers/profiles/origins cannot be globally coordinated by a website.
+
+Output clicks enter fullscreen only, never toggle out; Esc/browser controls retain exit. Operator requests fullscreen after placement and on reuse; output attempts it after acquiring its exclusive role. Rejected automatic fullscreen requests are caught, leaving the one-click fallback. Landing explains Chrome/Edge screen-management permission, Extend mode, optional automatic-fullscreen availability and one-click/Esc behavior. No permission bypass or forced re-entry after Esc. Worker v60.
+
+Validation: 115 tests pass, including popup reuse, no click-to-exit, duplicate guard suppression/notification and existing screen placement tests. Physical extended-screen and browser fullscreen/permission verification remains outstanding; fresh browser preview unavailable in this session.

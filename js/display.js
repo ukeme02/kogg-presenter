@@ -215,6 +215,7 @@ if (channel) {
 window.addEventListener('storage', e => { if (e.key === 'cp_live') render(getLive()); });
 
 // The operator owns popup placement. A standalone output can manage itself.
+let duplicateOutput = false;
 let outputScreensDetails = null, outputScreensHooked = false;
 let standaloneHome = null, standaloneTarget = null, standalonePlacement = '';
 const managedOutput = !!window.opener;
@@ -253,8 +254,12 @@ async function hookOutputScreens() {
     await placeStandaloneOutput();
   } catch {}
 }
+async function enterOutputFullscreen() {
+  if (OVERLAY || document.fullscreenElement || duplicateOutput) return;
+  try { await document.documentElement.requestFullscreen(); } catch {}
+}
 if (!OVERLAY) document.addEventListener('click', async () => {
-  if (document.fullscreenElement) { await document.exitFullscreen().catch(() => {}); return; }
+  if (document.fullscreenElement || duplicateOutput) return;
   // Calling during a click allows the browser to ask for screen permission.
   if (!managedOutput) await hookOutputScreens();
   const target = !managedOutput && chooseStandaloneScreen();
@@ -277,5 +282,32 @@ if (document.fonts?.ready) document.fonts.ready.then(() => render(getLive()));
 if (channel) channel.postMessage({type:'display-ready'});
 try { window.opener?.postMessage({type:'display-ready'}, location.origin); } catch {}
 window.addEventListener('message', event => {
-  if (event.origin === location.origin && event.source === window.opener && event.data?.type === 'output-state') render(event.data.live);
+  if (event.origin !== location.origin || event.source !== window.opener) return;
+  if (event.data?.type === 'output-state') render(event.data.live);
+  if (event.data?.type === 'output-fullscreen') void enterOutputFullscreen();
 });
+
+// Web Locks arbitrate across presenter tabs without timer-based leader races.
+if (!OVERLAY && navigator.locks?.request) {
+  duplicateOutput = true;
+  screenEl.style.visibility = 'hidden';
+  navigator.locks.request('kogg-presentation-output',{ifAvailable:true},async lock => {
+    if (!lock) {
+      duplicateOutput = true;
+      try { window.opener?.postMessage({type:'output-duplicate'},location.origin); } catch {}
+      const notice=document.createElement('p');
+      notice.textContent='KOGG Output is already open. Return to the existing output window. You can close this duplicate tab.';
+      notice.style.cssText='color:#fff;background:#111827;padding:24px;font:18px sans-serif;position:fixed;inset:0;margin:0;z-index:100';
+      document.body.appendChild(notice);
+      if (window.opener) window.close();
+      return;
+    }
+    duplicateOutput = false;
+    screenEl.style.visibility = 'visible';
+    render(getLive());
+    // Succeeds automatically only where browser permission/settings allow it.
+    if (window.opener) void enterOutputFullscreen();
+    await new Promise(resolve=>window.addEventListener('pagehide',()=>{screenEl.style.visibility='hidden';resolve();},{once:true}));
+  }).catch(()=>{duplicateOutput=false;screenEl.style.visibility='visible';});
+  window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
+}

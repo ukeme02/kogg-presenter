@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v61';
+const CACHE = 'kogg-presenter-v62';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',

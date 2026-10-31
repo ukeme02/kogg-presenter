@@ -366,3 +366,10 @@ Validation: 115 tests pass, including popup reuse, no click-to-exit, duplicate g
 ## OBS ease-first options — 31 October 2026
 
 Made capturing the existing Output window the recommended OBS route: Sources > Window Capture > KOGG Presenter — Output, with fit/crop/fullscreen guidance. No Node or bridge required for window capture. Kept transparent Browser Source with the local bridge as a collapsed advanced second option. Clarified these are separate OBS source types and Window Capture includes the output background. Updated FAQ and roadmap copy. Worker v61.
+
+
+## Motion opt-in and screenshot carousel preparation — 31 October 2026
+
+Fixed reduced-motion handling: visitors retain their OS preference by default, but Play motion now explicitly enables page animation for this visit, with Pause restoring stillness. Consolidated competing reduced-motion CSS blocks into one scoped rule so explicit opt-in works. Tickers now have two identical groups and continuous movement even on hover. Added prepared premium blue-glass gallery styling and an unshipped template under ignored work. Worker v62. Validation: 116 tests pass, including opt-in/play/pause with reduced-motion active.
+
+Screenshot carousel NOT complete/published: both CUA and native Computer Use node runtimes fail before initialization (missing kernel assets path), including after reset. Older saved Scripture/lyrics/landing captures were inspected and show superseded content; no current mode-chooser image exists. Need four current screenshots from recovered capture tools or user attachments before installing the carousel. Do not represent old captures as current screenshots.

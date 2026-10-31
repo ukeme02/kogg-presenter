@@ -29,9 +29,10 @@
  document.querySelectorAll('[data-device]').forEach(b=>b.addEventListener('click',()=>{const device=devices[b.dataset.device];$('deviceLabel').textContent=device.label;$('installSteps').replaceChildren(...device.steps.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));document.querySelectorAll('[data-device]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
  // Decorative motion never drives app state, network requests or presentation output.
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
- const motion=$('motionToggle');let paused=false,frame=0;
- function applyMotion(){document.body.classList.toggle('motion-paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused));motion.setAttribute('aria-label',paused?'Enable decorative motion':'Pause decorative motion');motion.innerHTML=reduced.matches?'Reduced motion':paused?'Play motion <span aria-hidden="true">▷</span>':'Pause motion <span aria-hidden="true">Ⅱ</span>';motion.disabled=reduced.matches;motion.title=reduced.matches?'Your device requests reduced motion. Manual previews remain available.':'Pause or resume the page animations and hero demo';}
- motion.addEventListener('click',()=>{paused=!paused;applyMotion();});reduced.addEventListener('change',applyMotion);applyMotion();
+ const motion=$('motionToggle');let paused=false,frame=0,motionOverride=false;
+ function motionBlocked(){return paused||(reduced.matches&&!motionOverride);}
+ function applyMotion(){const blocked=motionBlocked();document.body.classList.toggle('motion-paused',blocked);document.body.classList.toggle('motion-enabled',motionOverride&&!paused);motion.setAttribute('aria-pressed',String(!blocked));motion.setAttribute('aria-label',blocked?'Play page motion':'Pause page motion');motion.innerHTML=blocked?'Play motion <span aria-hidden="true">▷</span>':'Pause motion <span aria-hidden="true">Ⅱ</span>';motion.disabled=false;motion.title=reduced.matches&&!motionOverride?'Your device prefers reduced motion. Choose Play motion to enable animations for this visit.':'Pause or resume scrolling strips and preview motion';}
+ motion.addEventListener('click',()=>{if(reduced.matches&&!motionOverride){motionOverride=true;paused=false;}else paused=!paused;applyMotion();});reduced.addEventListener('change',()=>{motionOverride=false;applyMotion();});applyMotion();
  const revealTargets=document.querySelectorAll('.section-heading,.tour-panel,.mode-explorer,.library-card,.update-grid article,.install-card,.faq-list,.closing,.facts,.service-flow,.display-grid article,.roadmap-rows article');
  if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});revealTargets.forEach((el,i)=>{el.classList.add('reveal-ready');el.style.setProperty('--reveal-delay',(el.matches('.library-card,.update-grid article')?i%3*80:el.matches('.display-grid article,.roadmap-rows article')?i%4*70:0)+'ms');observer.observe(el);});}
  function progress(){frame=0;const range=document.documentElement.scrollHeight-innerHeight;document.documentElement.style.setProperty('--read-progress',range>0?String(Math.min(1,Math.max(0,scrollY/range))):'0');}
@@ -40,9 +41,9 @@
  function settleHeader(){headerFrame=0;header.classList.toggle('scrolled',scrollY>6);}
  document.addEventListener('click',e=>{if(!e.target.closest('.site-header')){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
  const product=document.querySelector('.hero-product');
- product.addEventListener('pointermove',e=>{if(paused||reduced.matches||e.pointerType!=='mouse')return;const r=product.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;product.style.setProperty('--tilt-x',((x-.5)*5)+'deg');product.style.setProperty('--tilt-y',((.5-y)*4)+'deg');product.style.setProperty('--glow-x',x*100+'%');product.style.setProperty('--glow-y',y*100+'%');});
+ product.addEventListener('pointermove',e=>{if(motionBlocked()||e.pointerType!=='mouse')return;const r=product.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;product.style.setProperty('--tilt-x',((x-.5)*5)+'deg');product.style.setProperty('--tilt-y',((.5-y)*4)+'deg');product.style.setProperty('--glow-x',x*100+'%');product.style.setProperty('--glow-y',y*100+'%');});
  product.addEventListener('pointerleave',()=>{product.style.removeProperty('--tilt-x');product.style.removeProperty('--tilt-y');});
- document.querySelectorAll('[role="tab"],.sample-refs button').forEach(button=>button.addEventListener('click',()=>{if(paused||reduced.matches)return;const panel=$(button.getAttribute('aria-controls'))||button.closest('[role="tabpanel"]');if(panel){panel.classList.remove('preview-arrival');void panel.offsetWidth;panel.classList.add('preview-arrival');}}));
+ document.querySelectorAll('[role="tab"],.sample-refs button').forEach(button=>button.addEventListener('click',()=>{if(motionBlocked())return;const panel=$(button.getAttribute('aria-controls'))||button.closest('[role="tabpanel"]');if(panel){panel.classList.remove('preview-arrival');void panel.offsetWidth;panel.classList.add('preview-arrival');}}));
 
  /* The hero runs on local preview text: no Bible download, synthetic clicks or focus stealing. */
  const stage=document.querySelector('.hero-product');
@@ -57,7 +58,7 @@
  let scene=0,stageVisible=false,hovered=false,heroTimer=null;
  const sceneAnimations=new Map();
  function animatePreview(element){
-  if(!element||paused||reduced.matches||!element.animate)return;
+  if(!element||motionBlocked()||!element.animate)return;
   sceneAnimations.get(element)?.cancel();
   sceneAnimations.set(element,element.animate([{opacity:.15,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],{duration:650,easing:'cubic-bezier(.2,.7,.2,1)'}));
  }
@@ -71,7 +72,7 @@
  }
  function scheduleHero(){
   clearTimeout(heroTimer);
-  if(paused||reduced.matches||document.hidden||!stageVisible||hovered||stage.contains(document.activeElement))return;
+  if(motionBlocked()||document.hidden||!stageVisible||hovered||stage.contains(document.activeElement))return;
   heroTimer=setTimeout(()=>{scene=(scene+1)%scenes.length;showScene();scheduleHero();},6500);
  }
  if('IntersectionObserver' in window){new IntersectionObserver(entries=>{stageVisible=entries[0].isIntersecting;scheduleHero();},{threshold:.25}).observe(stage);}
@@ -79,7 +80,7 @@
  stage.addEventListener('pointerenter',()=>{hovered=true;scheduleHero();});stage.addEventListener('pointerleave',()=>{hovered=false;scheduleHero();});
  stage.addEventListener('focusin',scheduleHero);stage.addEventListener('focusout',()=>setTimeout(scheduleHero,0));
  stage.addEventListener('input',scheduleHero);document.addEventListener('visibilitychange',scheduleHero);
- motion.addEventListener('click',()=>{if(paused)sceneAnimations.forEach(a=>a.cancel());scheduleHero();});reduced.addEventListener('change',()=>{sceneAnimations.forEach(a=>a.cancel());scheduleHero();});
+ motion.addEventListener('click',()=>{if(motionBlocked())sceneAnimations.forEach(a=>a.cancel());scheduleHero();});reduced.addEventListener('change',()=>{sceneAnimations.forEach(a=>a.cancel());scheduleHero();});
  heroButtons.forEach((button,i)=>button.addEventListener('click',()=>{scene=i?2:0;updateDots();animatePreview($(button.getAttribute('aria-controls')).querySelector('.hero-screen'));scheduleHero();}));
  document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
  updateDots();

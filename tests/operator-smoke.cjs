@@ -128,3 +128,25 @@ test('lyrics online search filters unusable records and reports service errors w
  context.fetch=async url=>new Response(JSON.stringify(url.startsWith('/api/')?{items:[{title:'Example',author:'Singer',lyrics:'One\n\nTwo',source:{name:'LRCLIB'}}],available:true}:[]),{headers:{'Content-Type':'application/json'}});await elements.get('btnSearchLyricsOnline').handlers.click[0]();assert.match(elements.get('lyricsOnlineResults').innerHTML,/Singer/);assert.doesNotMatch(elements.get('lyricsOnlineResults').innerHTML,/Instrumental/);
  context.fetch=async()=>new Response('{}',{status:503,headers:{'Content-Type':'application/json'}});await elements.get('btnSearchLyricsOnline').handlers.click[0]();assert.match(elements.get('lyricsSearchStatus').textContent,/unavailable/);assert.match(elements.get('songLyrics').value,/One/);
 });
+
+
+test('output follows a late projector without moving again on unchanged events',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));
+ const handlers={},home={left:0,top:0},details={currentScreen:home,screens:[home],addEventListener(t,fn){handlers[t]=fn;}};
+ let moves=0;const popup={closed:false,focus(){},moveTo(x,y){moves++;this.position=[x,y];},resizeTo(){}};
+ context.window.open=()=>popup;context.window.getScreenDetails=async()=>details;
+ await elements.get('btnOpenDisplay').handlers.click[0]();assert.equal(moves,0);
+ assert.match(elements.get('outputStatus').textContent,/waiting for an extended screen/);
+ details.screens=[{left:0,top:0},{left:-1920,top:0,width:1920,height:1080}];
+ await handlers.screenschange();assert.deepEqual(popup.position,[-1920,0]);assert.equal(moves,1);
+ await handlers.screenschange();assert.equal(moves,1);
+ details.screens=[home];await handlers.screenschange();
+ details.screens=[home,{left:1920,top:0,width:1280,height:720}];await handlers.screenschange();
+ assert.deepEqual(popup.position,[1920,0]);assert.equal(moves,2);
+});
+test('output awaits fullscreen exit before moving to a replacement screen',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));const order=[];
+ const popup={closed:false,focus(){},document:{fullscreenElement:{},async exitFullscreen(){order.push('exit');}},moveTo(){order.push('move');},resizeTo(){}};
+ context.window.open=()=>popup;context.window.getScreenDetails=async()=>({currentScreen:{left:0,top:0},screens:[{left:0,top:0},{left:1920,top:0,width:1280,height:720}]});
+ await elements.get('btnOpenDisplay').handlers.click[0]();assert.deepEqual(order,['exit','move']);
+});

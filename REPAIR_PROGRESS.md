@@ -329,3 +329,10 @@ Validation: 106 checks pass; browser verified both themes, textured hero and sec
 ## Landing light/dark contrast correction — 31 October 2026
 
 Fixed pale Scripture book chips inheriting white text in dark mode. Separated button fill from theme text accent so white button labels keep a sufficiently dark blue background in either theme. Strengthened muted copy, placeholder text, control outlines and selected states; made dark preview/update panels use explicit light text independent of page theme. Darkened the light-theme headline gradient and increased small preview/chip label sizes. Offline worker v46. Browser checked theme toggles and Scripture controls; flat-background text contrast spot checks were performed, excluding translucent/gradient surfaces from the simple numeric scan.
+
+
+## Complete extended-screen output follow — 31 October 2026
+
+Reviewed OpenCode commit 0bf7848. Removed competing placement between operator and popup, identity-based screen comparisons, invalid display-count media queries, and incorrect fullscreen exit calls. Operator now places its popup using coordinates, retries after output-ready navigation, watches screens/current-screen changes, handles late connection/reconnection, and avoids repeated moves for unchanged geometry. Fullscreen exit is awaited before moving. Clear status explains permission/manual fallback and Extend display mode. Standalone output keeps a stable target rather than alternating away from its own current screen; an existing permission grant is reused without an unsolicited prompt. OBS overlay remains excluded. Worker v57.
+
+Validation: 110 tests pass, including new late attachment/reconnection, idempotent screen events, fullscreen exit order, standalone target stability and operator/popup ownership tests. Browser screen permission and actual two-monitor hardware placement/fullscreen still need physical-device confirmation. Opening a popup requires the Output click; automatic screen placement requires a supporting browser and user-granted window-management permission.

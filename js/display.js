@@ -214,35 +214,57 @@ if (channel) {
 }
 window.addEventListener('storage', e => { if (e.key === 'cp_live') render(getLive()); });
 
-if (!OVERLAY) document.addEventListener('click', () => {
-  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-  else document.documentElement.requestFullscreen().catch(() => {});
-  hookOutputScreens();
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'F11') return; // let the browser handle it
-});
-
-/* If this output was shown on a single screen and a display connects (or extension is
-   switched on) later, follow it automatically. Permission rides the fullscreen click. */
+// The operator owns popup placement. A standalone output can manage itself.
 let outputScreensDetails = null, outputScreensHooked = false;
+let standaloneHome = null, standaloneTarget = null, standalonePlacement = '';
+const managedOutput = !!window.opener;
+function chooseStandaloneScreen() {
+  if (!outputScreensDetails) return null;
+  const screens = outputScreensDetails.screens;
+  const same = (a,b) => a && b && a.left === b.left && a.top === b.top;
+  const existing = screens.find(s => same(s, standaloneTarget));
+  if (screens.length < 2) { standaloneTarget = null; standalonePlacement = ''; return null; }
+  standaloneTarget = existing || screens.find(s => !same(s, standaloneHome)) || null;
+  return standaloneTarget;
+}
+async function placeStandaloneOutput() {
+  const target = chooseStandaloneScreen();
+  if (!target) return;
+  const key = [target.left,target.top,target.width,target.height].join(':');
+  if (key === standalonePlacement) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    window.moveTo(target.left,target.top);
+    window.resizeTo(target.width,target.height);
+    standalonePlacement = key;
+  } catch {}
+}
 async function hookOutputScreens() {
-  if (outputScreensHooked || OVERLAY || !('getScreenDetails' in window)) return;
+  if (outputScreensHooked || OVERLAY || managedOutput || !('getScreenDetails' in window)) return;
   try {
     outputScreensDetails = await window.getScreenDetails();
-  } catch { return; }
-  outputScreensHooked = true;
-  const place = () => {
-    try {
-      const other = outputScreensDetails.screens.find(s => s !== outputScreensDetails.currentScreen);
-      if (!other) return;
-      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-      window.moveTo(other.left, other.top);
-      window.resizeTo(other.width, other.height);
-    } catch {}
-  };
-  outputScreensDetails.addEventListener('screenschange', place);
-  place();
+    const current = outputScreensDetails.currentScreen;
+    standaloneHome = {left:current.left,top:current.top};
+    // A standalone output already on a secondary screen should stay there.
+    if (current.isPrimary === false) standaloneTarget = {left:current.left,top:current.top};
+    outputScreensHooked = true;
+    outputScreensDetails.addEventListener('screenschange', placeStandaloneOutput);
+    outputScreensDetails.screens.forEach(screen => screen.addEventListener?.('change', placeStandaloneOutput));
+    await placeStandaloneOutput();
+  } catch {}
+}
+if (!OVERLAY) document.addEventListener('click', async () => {
+  if (document.fullscreenElement) { await document.exitFullscreen().catch(() => {}); return; }
+  // Calling during a click allows the browser to ask for screen permission.
+  if (!managedOutput) await hookOutputScreens();
+  const target = !managedOutput && chooseStandaloneScreen();
+  try { await document.documentElement.requestFullscreen(target ? {screen:target} : undefined); } catch {}
+});
+// Reuse an existing grant on a directly opened display, without an unsolicited prompt.
+if (!OVERLAY && !managedOutput && navigator.permissions?.query) {
+  navigator.permissions.query({name:'window-management'}).then(permission => {
+    if (permission.state === 'granted') void hookOutputScreens();
+  }).catch(() => {});
 }
 
 if (OVERLAY) { document.documentElement.classList.add('overlay'); document.body.classList.add('overlay'); }

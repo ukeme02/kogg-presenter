@@ -1126,3 +1126,352 @@ body.light .mode-chip { border-color: #c9d2e0; }
 #lyricsWebSearch {color:var(--accent);font-size:13px;}
 #lyricsWebSearch[hidden] {display:none;}
 #lyricsLinkImport input {width:100%;margin-bottom:8px;}
+
+/* ========================= PREMIUM UI SKIN =========================
+   The landing page's interactive preview, as a workspace: still chrome,
+   quiet glass, pill controls, soft light. Geometry untouched � the dock
+   grid, fit-scaling, splitters and touch targets keep their metrics. */
+
+:root {
+  --radius: 11px;
+  --hairline: rgba(146,166,208,.14);
+  --accent-2: #79bdff;
+  --accent2: #79bdff;
+  --ok: #3fd68c;
+}
+
+body.light {
+  --hairline: rgba(30,45,80,.12);
+  --accent-2: #2f6bff;
+  --accent2: #2f6bff;
+}
+
+/* A stage with light, not paint */
+body {
+  background:
+    radial-gradient(1100px 520px at 55% -140px, rgba(79,140,255,.075), transparent 60%),
+    radial-gradient(900px 460px at 108% 108%, rgba(96,90,255,.05), transparent 65%),
+    var(--bg);
+}
+
+body.light {
+  background:
+    radial-gradient(1100px 520px at 55% -140px, rgba(47,107,255,.05), transparent 60%),
+    radial-gradient(900px 460px at 108% 108%, rgba(255,150,80,.035), transparent 65%),
+    var(--bg);
+}
+
+/* Topbar: one quiet glass bar */
+.topbar {
+  background: linear-gradient(180deg, rgba(255,255,255,.022), rgba(255,255,255,0) 46%), var(--panel);
+  border-bottom: 1px solid var(--hairline);
+  box-shadow: none;
+  backdrop-filter: saturate(1.15);
+}
+
+body.light .topbar {
+  background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,0) 46%), var(--panel);
+  border-bottom-color: var(--hairline);
+  box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 8px 26px -22px rgba(20,30,60,.25);
+}
+
+.brand { font-size: 16.5px; letter-spacing: -.02em; }
+
+.brand img { border-radius: 7px; box-shadow: 0 4px 12px rgba(79,140,255,.28); }
+
+.mode-chip { background: rgba(255,255,255,.02); transition: color .15s, border-color .15s; }
+body.light .mode-chip { background: #fff; }
+
+/* Buttons: weightless until touched */
+button {
+  border-color: var(--hairline);
+  border-radius: 10px;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .12s ease, box-shadow .18s ease;
+}
+
+button:hover { background: color-mix(in srgb, var(--panel2) 82%, var(--accent) 6%); }
+
+body.light button:hover { background: #e3e9f3; }
+
+button:active { transform: scale(.97); }
+
+button.primary {
+  background: linear-gradient(180deg, #5c96ff, #4173e8);
+  border-color: transparent;
+  box-shadow: 0 8px 22px -10px rgba(79,140,255,.65), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+button.primary:hover { background: linear-gradient(180deg, #6ea1ff, #4b7cf2); transform: translateY(-1px); box-shadow: 0 12px 26px -10px rgba(79,140,255,.7), inset 0 1px 0 rgba(255,255,255,.2); }
+
+button.primary:active { transform: scale(.97); }
+
+body.light button.primary { background: var(--accent); box-shadow: 0 8px 22px -12px rgba(47,107,255,.5); }
+
+.ctrl { border-radius: 10px; }
+
+button.ctrl.active { box-shadow: 0 6px 18px -8px rgba(79,140,255,.55); }
+
+button.float-nav.pill, .float-nav button { backdrop-filter: blur(10px); }
+
+@media (hover: touch) { button.primary:hover, button:hover { transform: none; } }
+
+/* Inputs: one continuous focus language */
+input, select, textarea { border-color: var(--hairline); border-radius: 10px; transition: border-color .15s ease, box-shadow .18s ease; }
+
+input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 82%, transparent); }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+label { letter-spacing: .005em; }
+
+/* Tabs: restrained underline that glows */
+.tabs { border-bottom: 1px solid var(--hairline); }
+
+.tab {
+  position: relative;
+  color: color-mix(in srgb, var(--muted) 92%, transparent);
+  transition: color .15s ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab.active { border-bottom-color: var(--accent); color: var(--text); }
+
+.tab.active:after { content: ""; position: absolute; left: 20%; right: 20%; bottom: -2px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--accent-2), transparent); filter: blur(.4px); }
+
+/* Cards and groups: frosted panels with a top light */
+.card {
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.016), rgba(255,255,255,0) 42%), var(--panel);
+  box-shadow: 0 2px 6px rgba(0,0,0,.14);
+}
+
+body.light .card { background: var(--panel); box-shadow: 0 1px 2px rgba(20,30,60,.05), 0 10px 30px -24px rgba(20,30,60,.2); border-color: #dde3ee; }
+
+.card h2 { font-weight: 750; letter-spacing: -.01em; }
+
+details.group { border-color: var(--hairline); border-radius: 12px; background: color-mix(in srgb, var(--panel2) 55%, var(--panel)); transition: border-color .15s ease; }
+
+details.group:hover { border-color: color-mix(in srgb, var(--accent) 38%, var(--hairline)); }
+
+details.group[open] > summary { border-bottom-color: var(--hairline); }
+
+body.light details.group { background: #f2f5fa; }
+
+details.group > summary::after { transition: transform .2s ease, color .15s; color: color-mix(in srgb, var(--muted) 80%, transparent); font-size: 15px; }
+
+details.group[open] > summary::after { color: var(--accent); }
+
+/* Docks: floating glass on the stage */
+.dock {
+  border-color: var(--hairline);
+  border-radius: 15px;
+  box-shadow: 0 1px 1px rgba(0,0,0,.16), 0 14px 34px -22px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.045);
+  transition: border-color .2s ease, box-shadow .25s ease;
+}
+
+.dock:hover { border-color: color-mix(in srgb, var(--accent) 26%, var(--hairline)); box-shadow: 0 1px 1px rgba(0,0,0,.16), 0 18px 40px -22px rgba(20,40,90,.5), inset 0 1px 0 rgba(255,255,255,.05); }
+
+body.light .dock { border-color: #dfe5ef; box-shadow: 0 1px 2px rgba(20,30,60,.05), 0 12px 30px -24px rgba(20,30,60,.28), inset 0 1px 0 rgba(255,255,255,.6); }
+
+body.light .dock:hover { border-color: rgba(47,107,255,.38); box-shadow: 0 1px 2px rgba(20,30,60,.05), 0 16px 36px -24px rgba(47,107,255,.35); }
+
+.dock.toolbar { border-radius: 14px; box-shadow: 0 1px 1px rgba(0,0,0,.14), 0 16px 36px -24px rgba(0,0,0,.5); }
+
+.dock-ico { border-radius: 9px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent), 0 2px 8px -2px rgba(79,140,255,.4); }
+
+.dock-head .seg { box-shadow: inset 0 0 0 1px rgba(255,255,255,.03); }
+
+.dock-head .seg { border-color: var(--hairline); }
+
+body.light .dock-head .seg { border-color: #d6dde9; box-shadow: none; }
+
+.dock-foot button { transition: background .14s, border-color .14s, transform .1s, box-shadow .18s; }
+
+/* Version chips */
+.vchip { border-color: var(--hairline); background: color-mix(in srgb, var(--panel2) 62%, transparent); transition: border-color .15s, color .15s, background .15s, transform .1s, box-shadow .2s; }
+
+.vchip:hover { transform: translateY(-1px); }
+
+@media (hover: touch) { .vchip:hover { transform: none; } }
+
+.vchip.active { box-shadow: 0 6px 16px -6px rgba(79,140,255,.55); }
+
+/* Dots and chips: calm mirrors of the occupied state */
+.dot-dot { box-shadow: inset 0 0 0 1px rgba(255,255,255,.03); background: color-mix(in srgb, var(--panel2) 58%, transparent); }
+
+.dot-dot:hover { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent); }
+
+.dot-dot.selected { background: color-mix(in srgb, var(--accent) 15%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent); }
+
+.dot-dot.live { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent), 0 4px 14px -4px rgba(79,140,255,.6); }
+
+.book-chip { border-radius: 9px; transition: transform .12s ease, box-shadow .14s ease, filter .14s ease; }
+
+.book-chip:hover { filter: brightness(1.12); }
+
+.book-chip.selected { box-shadow: 0 0 0 2px var(--accent), 0 6px 16px -6px rgba(79,140,255,.55); }
+
+.chip-grid button { transition: background .14s, border-color .14s, color .14s, transform .1s, box-shadow .18s; }
+
+.mem-chip { border-radius: 10px; }
+
+.mem-chip:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hairline)); }
+
+.mem-chip.live { box-shadow: 0 4px 14px -6px rgba(79,140,255,.6); }
+
+/* Live text + preview reading surfaces */
+.live-text { border-color: var(--hairline); border-radius: 12px; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%), var(--panel2); }
+
+body.light .live-text { background: var(--panel2); border-color: #dfe5ef; }
+
+.live-ref { letter-spacing: .04em; }
+
+.live-text sup.sn { transition: background .14s, transform .1s; }
+
+.preview-text { border: 1px solid var(--hairline); border-radius: 12px; }
+
+.float-nav { gap: 9px; }
+
+.float-nav button { box-shadow: 0 14px 34px -12px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.09); border-color: color-mix(in srgb, #ffffff 10%, var(--panel2)); }
+
+.float-nav button.primary { box-shadow: 0 16px 38px -12px rgba(79,140,255,.6), inset 0 1px 0 rgba(255,255,255,.2); }
+
+/* Floating glass widgets */
+#floatPreview, #floatEdit, .quickgo-results, #dockMenu, .more-menu {
+  border-color: var(--hairline);
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow: 0 1px 1px rgba(0,0,0,.18), 0 24px 60px -26px rgba(0,0,0,.65);
+  border-radius: 13px;
+}
+
+@media (prefers-reduced-transparency: reduce) { #floatPreview, #floatEdit, .quickgo-results, #dockMenu, .more-menu { background: var(--panel); backdrop-filter: none; -webkit-backdrop-filter: none; } }
+
+body.light #floatPreview, body.light #floatEdit, body.light .quickgo-results, body.light #dockMenu, body.light .more-menu {
+  background: rgba(255,255,255,.93);
+  box-shadow: 0 1px 2px rgba(20,30,60,.06), 0 24px 54px -26px rgba(20,30,60,.3);
+}
+
+.quickgo-results { border-radius: 12px; }
+
+.quickgo-item { border-bottom-color: var(--hairline); transition: background .12s; }
+
+.dockmenu-item { border-radius: 9px; transition: background .12s, color .12s; }
+
+.jump-sug button { border-radius: 9px; transition: background .12s; }
+
+/* Search and results rows */
+.search-results { border-radius: 12px; border-color: var(--hairline); }
+
+.search-item { border-bottom-color: var(--hairline); transition: background .12s; }
+
+.search-item:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+
+.search-ref { letter-spacing: .01em; }
+
+body.light .search-item:hover { background: rgba(47,107,255,.06); }
+
+/* Lyrics deck */
+.lyrics-find details { border-block-color: var(--hairline); }
+
+.lyric-slide { border-radius: 11px; border-color: color-mix(in srgb, #ffffff 15%, var(--hairline)); background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%), var(--panel2); transition: border-color .16s, box-shadow .2s, transform .12s; }
+
+.lyric-slide:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hairline)); transform: translateY(-1px); }
+
+@media (hover: touch) { .lyric-slide:hover { transform: none; } }
+
+.lyric-slide.is-live { box-shadow: 0 10px 30px -14px rgba(79,140,255,.5); outline: 0; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, var(--panel2)); }
+
+.lyric-take b { letter-spacing: .02em; }
+
+.lyrics-live-text { border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), 0 20px 44px -30px rgba(0,0,0,.7); }
+
+.lyrics-results button { border-radius: 9px; }
+
+.lyrics-results button:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+.lyrics-order button { border-radius: 8px; }
+
+#lyricsPastePanel { border-radius: 12px; border: 1px dashed var(--hairline); padding: 10px 12px; }
+
+/* Lyrics toolbar + deck cards spacing rhythm */
+.lyrics-deck > .card { box-shadow: 0 2px 6px rgba(0,0,0,.14); }
+
+/* Start gate: the first impression */
+#startGate { backdrop-filter: blur(18px) saturate(1.1); -webkit-backdrop-filter: blur(18px) saturate(1.1); }
+
+.gate-panel { border-color: var(--hairline); border-radius: 22px; box-shadow: 0 40px 110px -40px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.06); }
+
+.gate-head h1 { font-weight: 760; letter-spacing: -.02em; }
+
+.gate-mode { border-radius: 15px; border-color: var(--hairline); transition: border-color .18s ease, transform .18s ease, box-shadow .2s ease, background .18s ease; }
+
+.gate-mode:hover { box-shadow: -3px 0 0 var(--accent), 0 12px 30px -14px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04); }
+
+@media (hover: touch) { .gate-mode:hover { transform: none; box-shadow: -2px 0 0 var(--accent); } }
+
+.gate-ico { border-radius: 13px; border-color: var(--hairline); background: linear-gradient(180deg, rgba(255,255,255,.05), transparent 60%), var(--panel2); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+
+.gate-go { letter-spacing: .06em; }
+
+/* Comparisons, extra bibles, prepared passage */
+.comparison-card { border-radius: 11px; border-color: color-mix(in srgb, var(--accent) 45%, var(--hairline)); background: linear-gradient(180deg, rgba(255,255,255,.02), transparent 50%), var(--panel2); }
+
+.comparison-card p { font-size: 14px; }
+
+.prepared-panel { border-top: 2px solid transparent; border-image: linear-gradient(90deg, var(--accent), var(--accent-2)) 1; }
+
+.ver-row { border-color: var(--hairline); border-radius: 10px; transition: border-color .14s; }
+
+.ver-row:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--hairline)); }
+
+.install-path { border-radius: 13px; border-color: var(--hairline); }
+
+.safe-strip { border-radius: 12px; border-color: color-mix(in srgb, var(--ok) 32%, transparent); background: color-mix(in srgb, var(--ok) 9%, transparent); }
+
+/* Splitters & keepers */
+.splitter { background: repeating-linear-gradient(to bottom, color-mix(in srgb, var(--muted) 42%, transparent) 0 2px, transparent 2px 6px); border-radius: 999px; }
+
+.splitter:hover { background: repeating-linear-gradient(to bottom, var(--accent-2) 0 2px, transparent 2px 6px); }
+
+/* Thinking about every scrollbar like an Apple surface */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--muted) 34%, transparent) transparent; }
+
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+
+*::-webkit-scrollbar-track { background: transparent; }
+
+*::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--muted) 32%, transparent); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+
+*::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--muted) 55%, transparent); border: 2px solid transparent; background-clip: content-box; }
+
+body.light *::-webkit-scrollbar-thumb { background: rgba(90,105,135,.32); border: 2px solid transparent; background-clip: content-box; }
+
+*::-webkit-scrollbar-corner { background: transparent; }
+
+/* Focus: coherent ring everywhere */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.dock.toolbar select:focus-visible, .quickjump input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Motion respect */
+@media (prefers-reduced-motion: reduce) { *, *:before, *:after { transition: none !important; animation: none !important; } }
+
+/* Update toast: glass pill */
+.update-toast { backdrop-filter: blur(10px); border-radius: 999px; box-shadow: 0 16px 40px -12px rgba(36,89,216,.7); font-size: 13px; }
+
+/* Small screens: same feel, no new chrome */
+@media (max-width: 640px) {
+  .dock { border-radius: 13px; }
+  .topbar { box-shadow: none; }
+  .update-grid-grid, .lyrics-live-text { border-radius: 11px; }
+}

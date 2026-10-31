@@ -1,466 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KOGG Presenter — Free Church Presentation App</title>
-<meta name="description" content="KOGG Presenter is a free, offline-first church presentation app: five bundled Bibles, a one-page dock deck (Books, Chapters, Verses, Memory), quick jump by reference, voice control, service plans, lower thirds and a transparent OBS overlay. Choose your work mode: Base, Sync or Local.">
-<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<style>
-  @font-face {
-    font-family: 'Nunito Sans Expanded';
-    font-style: normal;
-    font-stretch: 125%;
-    font-weight: 200 1000;
-    src: url('fonts/NunitoSans-Variable.woff2') format('woff2-variations');
-    font-display: swap;
-  }
-  :root {
-    --bg:#0e1118; --panel:#161b26; --panel2:#1d2434; --line:#2a3348;
-    --text:#e9ecf4; --muted:#98a3bb; --accent:#4f8cff; --accent2:#7fb0ff;
-    --ok:#4ae3aa; --danger:#ff5c6c; --glow:rgba(79,140,255,.25);
-  }
-  body.light {
-    --bg:#f2f5fa; --panel:#ffffff; --panel2:#e9edf4; --line:#d6dcea;
-    --text:#1c2230; --muted:#5b6474; --accent:#2f6bff; --accent2:#1d54d8;
-    --glow:rgba(47,107,255,.18);
-  }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  html { scroll-behavior:smooth; }
-  body {
-    font-family:'Nunito Sans Expanded', 'Segoe UI', Roboto, Arial, sans-serif;
-    background:var(--bg); color:var(--text); line-height:1.65;
-    transition:background .3s, color .3s;
-    overflow-x:hidden;
-  }
-  .wrap { max-width:1100px; margin:0 auto; padding:0 22px; }
-  ::selection { background:var(--accent); color:#fff; }
-
-  /* ---------- scroll progress + nav ---------- */
-  #progress { position:fixed; top:0; left:0; height:3px; width:0; z-index:60; background:linear-gradient(90deg, var(--accent), #7fd7ff); }
-  header.nav { position:sticky; top:0; z-index:50; background:color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
-  .navrow { display:flex; align-items:center; gap:18px; padding:13px 0; }
-  .navrow img { width:30px; height:30px; border-radius:8px; }
-  .navname { font-weight:900; font-size:17px; letter-spacing:.02em; }
-  nav { margin-left:auto; display:flex; gap:20px; flex-wrap:wrap; align-items:center; }
-  nav a { color:var(--muted); text-decoration:none; font-size:14.5px; font-weight:700; }
-  nav a:hover { color:var(--text); }
-  .navcta { background:var(--accent); color:#fff !important; padding:8px 18px; border-radius:10px; }
-  #themeBtn { background:var(--panel2); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:8px 12px; cursor:pointer; font-size:15px; }
-
-  /* ---------- hero ---------- */
-  .hero { position:relative; padding:84px 0 40px; }
-  .orb { position:absolute; border-radius:50%; filter:blur(70px); opacity:.5; pointer-events:none; transition:transform .35s ease-out; }
-  .orb1 { width:420px; height:420px; background:radial-gradient(circle, rgba(79,140,255,.4), transparent 70%); top:-80px; right:-60px; }
-  .orb2 { width:340px; height:340px; background:radial-gradient(circle, rgba(255,140,66,.28), transparent 70%); bottom:-120px; left:-120px; }
-  .orb3 { width:260px; height:260px; background:radial-gradient(circle, rgba(74,227,170,.25), transparent 70%); top:40%; left:38%; }
-  .hero-inner { position:relative; display:grid; grid-template-columns:1.02fr .98fr; gap:46px; align-items:center; }
-  @media (max-width:900px){ .hero-inner { grid-template-columns:1fr; } .hero { padding-top:48px; } }
-  .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent2); font-weight:800; margin-bottom:16px; }
-  .eyebrow::before { content:''; width:26px; height:2px; background:var(--accent); border-radius:2px; }
-  .hero h1 { font-size:clamp(32px,4.8vw,54px); line-height:1.1; font-weight:900; margin-bottom:18px; letter-spacing:-.01em; }
-  .hero h1 .grad { background:linear-gradient(100deg, var(--accent2), #7fd7ff 55%, #ffb84f); -webkit-background-clip:text; background-clip:text; color:transparent; }
-  .hero p.lead { font-size:17.5px; color:var(--muted); max-width:560px; margin-bottom:26px; }
-  .cta-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
-  .btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; font-weight:800;
-         padding:14px 30px; border-radius:12px; font-size:15.5px; transition:transform .14s, box-shadow .14s;
-         box-shadow:0 8px 26px var(--glow); }
-  .btn:hover { transform:translateY(-2px) scale(1.015); }
-  .btn.ghost { background:var(--panel); border:1px solid var(--line); color:var(--text); box-shadow:none; }
-  .mini-tags { display:flex; flex-wrap:wrap; gap:8px; }
-  .tag { display:inline-block; background:var(--panel2); border:1px solid var(--line); color:var(--muted); border-radius:99px; padding:4px 13px; font-size:12.5px; font-weight:700; }
-
-  /* projector mock with live quick jump */
-  .proj {
-    background:linear-gradient(135deg,#1a2a6c,#b21f1f 62%,#fdbb2d);
-    border-radius:18px; padding:30px 26px 22px; text-align:center;
-    box-shadow:0 24px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.12);
-    position:relative; overflow:hidden;
-  }
-  .proj::after { content:''; position:absolute; inset:0; background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.14), transparent 45%); transform:translateX(-100%); animation:shine 5s ease-in-out infinite; }
-  @keyframes shine { 0%,55% { transform:translateX(-120%);} 75%,100% { transform:translateX(120%);} }
-  .proj .r { font-size:11px; letter-spacing:.16em; text-transform:uppercase; opacity:.8; font-weight:800; }
-  .proj .t { font-size:clamp(19px,2.6vw,27px); font-weight:900; line-height:1.32; margin:10px 0 4px; text-shadow:0 2px 12px rgba(0,0,0,.45); min-height:74px; display:flex; align-items:center; justify-content:center; }
-  .proj .flashmark { opacity:.9; font-size:12px; letter-spacing:.1em; }
-  .qjd { position:relative; margin-top:16px; }
-  .qjd input {
-    width:100%; padding:13px 16px; border-radius:12px; border:none; outline:none;
-    background:rgba(0,0,0,.32); color:#fff; font-size:15px; font-weight:700; font-family:inherit;
-    border:1px solid rgba(255,255,255,.25); backdrop-filter:blur(4px);
-  }
-  .qjd input:focus { border-color:#fff; }
-  .qjd input::placeholder { color:rgba(255,255,255,.65); font-weight:600; }
-
-  /* ---------- trust ---------- */
-  .trust { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin:42px 0 6px; }
-  .trust div { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:13px; color:var(--muted); font-weight:600; text-align:center; transition:transform .15s; }
-  .trust div:hover { transform:translateY(-3px); }
-  .trust div b { color:var(--text); display:block; font-size:14.5px; }
-
-  /* ---------- generic sections ---------- */
-  section { padding:64px 0 12px; }
-  h2 { font-size:clamp(24px,3.2vw,33px); font-weight:900; margin-bottom:8px; letter-spacing:-.01em; }
-  .sub { color:var(--muted); margin-bottom:26px; max-width:660px; font-size:15.5px; }
-
-  .reveal { opacity:0; transform:translateY(26px); transition:opacity .6s ease, transform .6s ease; }
-  .reveal.in { opacity:1; transform:none; }
-
-  /* ---------- mode cards ---------- */
-  .modes { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }
-  .mode { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:24px; overflow:hidden; cursor:pointer; transition:transform .18s, border-color .18s, box-shadow .18s; }
-  .mode:hover { transform:translateY(-6px); border-color:var(--accent); box-shadow:0 18px 44px var(--glow); }
-  .mode .num { position:absolute; top:12px; right:16px; font-size:44px; font-weight:900; opacity:.07; letter-spacing:-.03em; }
-  .mode .ico { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:14px; }
-  .mode:nth-child(1) .ico { background:rgba(112,224,124,.15); }
-  .mode:nth-child(2) .ico { background:rgba(79,140,255,.15); }
-  .mode:nth-child(3) .ico { background:rgba(255,184,79,.15); }
-  .mode h3 { font-size:18px; margin-bottom:6px; }
-  .mode p { color:var(--muted); font-size:14px; }
-  .mode p b { color:var(--text); }
-  .mode ul { margin:10px 0 0 16px; color:var(--muted); font-size:13.5px; line-height:1.9; }
-
-  /* ---------- interactive demo console ---------- */
-  #demo { padding-top:20px; }
-  .console { background:var(--panel); border:1px solid var(--line); border-radius:22px; padding:20px; box-shadow:0 22px 60px rgba(0,0,0,.28); }
-  .console-top { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
-  .badge { font-size:11.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; padding:6px 13px; border-radius:99px; background:rgba(74,227,170,.14); color:var(--ok); border:1px solid rgba(74,227,170,.4); }
-  .console-top .qjump { flex:1; min-width:230px; position:relative; }
-  .console-top input { width:100%; padding:12px 15px; border-radius:12px; border:1px solid var(--line); background:var(--panel2); color:var(--text); font:inherit; font-size:14.5px; font-weight:700; outline:none; }
-  .console-top input:focus { border-color:var(--accent); }
-  .demo-hint { font-size:12.5px; color:var(--muted); font-weight:700; }
-  .console-grid { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,2.4fr); gap:14px; }
-  @media (max-width:880px){ .console-grid { grid-template-columns:1fr; } }
-  .cdock { background:var(--panel2); border:1px solid var(--line); border-radius:16px; padding:14px; min-height:180px; }
-  .cdock h4 { font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:10px; font-weight:800; }
-  .bookgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr)); gap:5px; max-height:300px; overflow-y:auto; padding-right:4px; }
-  .bchip { border:none; border-radius:10px; padding:0; height:36px; font:inherit; font-size:12px; font-weight:800; cursor:pointer; transition:transform .1s, filter .1s; }
-  .bchip:hover { transform:scale(1.08); filter:brightness(1.2); }
-  .bchip.sel { outline:2px solid var(--accent); }
-  .g-T { background:rgba(255,179,66,.2); color:#ffb342; } .g-H { background:rgba(77,214,190,.18); color:#4dd6be; }
-  .g-P { background:rgba(255,124,160,.2); color:#ff7ca0; } .g-M { background:rgba(140,160,255,.22); color:#98a8ff; }
-  .g-m { background:rgba(80,200,255,.2); color:#50c8ff; } .g-G { background:rgba(112,224,124,.2); color:#70e07c; }
-  .g-A { background:rgba(255,150,80,.2); color:#ff9650; } .g-E { background:rgba(120,170,255,.2); color:#78aaff; }
-  .g-l { background:rgba(186,140,255,.2); color:#ba8cff; } .g-R { background:rgba(255,100,100,.2); color:#ff6464; }
-  body.light .g-T { background:rgba(200,120,20,.15); color:#8a5408; } body.light .g-H { background:rgba(20,140,120,.13); color:#0b6e5e; }
-  body.light .g-P { background:rgba(200,40,90,.12); color:#a01c46; } body.light .g-M { background:rgba(60,80,220,.13); color:#303c9c; }
-  body.light .g-m { background:rgba(20,120,200,.13); color:#0b5480; } body.light .g-G { background:rgba(40,150,60,.13); color:#1c6e2e; }
-  body.light .g-A { background:rgba(210,100,30,.13); color:#8a4310; } body.light .g-E { background:rgba(40,100,210,.13); color:#1c4c8a; }
-  body.light .g-l { background:rgba(120,60,230,.13); color:#5c2c96; } body.light .g-R { background:rgba(220,40,40,.13); color:#8a1c1c; }
-  .dots { display:grid; grid-template-columns:repeat(auto-fill,minmax(34px,1fr)); gap:5px; max-height:300px; overflow-y:auto; padding-right:4px; }
-  .dotn { border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:99px; height:34px; font:inherit; font-size:12.5px; font-weight:800; cursor:pointer; }
-  .dotn:hover { border-color:var(--accent); }
-  .dotn.sel { background:var(--accent); border-color:var(--accent); color:#fff; }
-  .demo-proj { background:linear-gradient(135deg,#16222a,#3a6073); border-radius:16px; padding:22px; text-align:center; min-height:150px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:inset 0 0 0 1px rgba(255,255,255,.1); }
-  .demo-proj .r { font-size:11px; letter-spacing:.14em; text-transform:uppercase; opacity:.75; font-weight:800; }
-  .demo-proj .t { font-size:clamp(16px,2vw,21px); font-weight:800; line-height:1.4; margin-top:8px; }
-  .demo-goal { grid-column:1 / -1; text-align:center; font-size:13px; color:var(--muted); font-weight:700; }
-  .demo-goal b { color:var(--ok); }
-
-  /* ---------- features ---------- */
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:16px; }
-  .card { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px; transition:transform .16s, box-shadow .16s, border-color .16s; }
-  .card:hover { transform:translateY(-4px); box-shadow:0 14px 38px var(--glow); border-color:color-mix(in srgb, var(--accent) 55%, var(--line)); }
-  .card h3 { margin-bottom:8px; font-size:16.5px; }
-  .card p { color:var(--muted); font-size:14px; }
-  .card .ficon { font-size:22px; margin-bottom:10px; display:inline-block; }
-  .card code { font-size:.92em; }
-
-  /* ---------- safety ---------- */
-  .safewrap { display:grid; grid-template-columns:.9fr 1.1fr; gap:16px; }
-  @media (max-width:880px){ .safewrap { grid-template-columns:1fr; } }
-  .safety { background:linear-gradient(180deg,#141c2c,#161b26); border:1px solid var(--line); border-radius:18px; padding:26px; }
-  body.light .safety { background:linear-gradient(180deg,#eef2f9,#ffffff); }
-  .safety ul { list-style:none; margin-top:16px; }
-  .safety li { display:flex; gap:12px; padding:9px 0; border-bottom:1px solid rgba(128,140,170,.12); font-size:14.5px; color:var(--muted); }
-  .safety li:last-child { border-bottom:none; }
-  .safety li b { color:var(--text); }
-  .lock { width:44px; height:44px; border-radius:12px; background:rgba(74,227,170,.12); border:1px solid rgba(74,227,170,.4);
-          display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:14px; }
-  .authbox { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:26px; }
-  .authbox h3 { font-size:18px; margin-bottom:4px; }
-  .authbox .why { font-size:13px; color:var(--muted); margin-bottom:18px; }
-  .field { margin-bottom:12px; }
-  .field label { display:block; font-size:12.5px; color:var(--muted); font-weight:800; margin-bottom:5px; letter-spacing:.03em; }
-  .fieldwrap { position:relative; }
-  .fieldwrap input { width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel2); color:var(--text); font-size:15px; font-family:inherit; }
-  .fieldwrap input:focus { outline:2px solid var(--glow); border-color:var(--accent); }
-  .peek { position:absolute; right:8px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--muted); font-size:12.5px; font-weight:800; cursor:pointer; padding:6px 10px; font-family:inherit; }
-  .field .note { font-size:12px; color:var(--muted); margin-top:4px; }
-  .authbtns { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-  .authbtns .go { background:var(--accent); border:none; color:#fff; font-weight:800; padding:12px 24px; border-radius:10px; cursor:pointer; font-size:15px; font-family:inherit; }
-  .authbtns .in { background:var(--panel2); border:1px solid var(--line); color:var(--text); font-weight:800; padding:12px 24px; border-radius:10px; cursor:pointer; font-size:15px; font-family:inherit; }
-  .lStatus { margin-top:12px; font-size:14px; color:var(--muted); min-height:20px; }
-  .lStatus.ok { color:var(--ok); }
-  .lStatus.err { color:var(--danger); }
-
-  /* ---------- platforms ---------- */
-  .plats { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
-  .pnum { color:var(--accent2); font-weight:900; font-size:13px; letter-spacing:.1em; }
-
-  /* ---------- FAQ ---------- */
-  details { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:4px 18px; margin-bottom:10px; transition:border-color .15s; }
-  details:hover { border-color:color-mix(in srgb, var(--accent) 55%, var(--line)); }
-  details summary { cursor:pointer; font-weight:800; font-size:15px; padding:14px 0; list-style:none; position:relative; padding-right:34px; }
-  details summary::-webkit-details-marker { display:none; }
-  details summary::after { content:'+'; position:absolute; right:8px; top:50%; transform:translateY(-50%); color:var(--accent2); font-size:19px; transition:transform .2s; }
-  details[open] summary::after { content:'–'; }
-  details p { color:var(--muted); font-size:14px; padding-bottom:14px; }
-  code { background:var(--panel2); border-radius:6px; padding:2px 7px; font-size:.92em; }
-
-  footer { margin-top:64px; border-top:1px solid var(--line); padding:32px 0 42px; text-align:center; color:var(--muted); font-size:13.5px; }
-  footer a { color:var(--accent2); text-decoration:none; }
-  .foot-links { margin-top:8px; display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
-</style>
-<style>@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } .reveal { opacity:1 !important; transform:none !important; } }</style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KOGG Presenter — Scripture & lyrics. Ready when you are.</title>
+<meta name="description" content="A lightweight church presentation tool for Scripture, lyrics and service plans. Three offline core Bibles, 300 included hymns, optional packs, connected translations, and Base, Local or Sync modes. Runs in your browser.">
+<meta name="theme-color" content="#f6f5ef"><meta property="og:title" content="KOGG Presenter — Stay with the moment."><meta property="og:description" content="Scripture, lyrics and your service plan. A lighter presentation tool for the local church."><meta property="og:type" content="website">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
-
-<div id="progress"></div>
-
-<header class="nav">
-  <div class="wrap navrow">
-    <img src="icons/icon.svg" alt="">
-    <span class="navname">KOGG Presenter</span>
-    <nav>
-      <a href="#modes">Work modes</a>
-      <a href="#demo">Try it live</a>
-      <a href="#features">Features</a>
-      <a href="#safety">Account &amp; Safety</a>
-      <a href="#get">Get it</a>
-      <a href="#faq">FAQ</a>
-      <button id="themeBtn" title="Light / dark mode">🌙</button>
-      <a class="navcta" href="index.html">Open the App</a>
-    </nav>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><div class="container nav-row">
+ <a class="brand" href="#" aria-label="KOGG Presenter home"><img src="icons/icon.svg" alt="" width="34" height="34"><span>KOGG<span class="brand-sub">PRESENTER</span></span></a>
+ <button id="menuToggle" class="menu-toggle" aria-expanded="false" aria-controls="siteNav">Menu</button>
+ <nav id="siteNav" aria-label="Main navigation"><a href="#demo">Explore</a><a href="#modes">Work modes</a><a href="#updates">What’s new</a><a href="#faq">Questions</a></nav>
+ <div class="nav-actions"><button id="themeBtn" class="theme-button" aria-label="Switch to dark appearance">◐</button><a href="index.html" class="button button-small">Open KOGG <span aria-hidden="true">↗</span></a></div>
+</div></header>
+<main id="main">
+<section class="hero container" aria-labelledby="hero-title">
+ <div class="hero-copy"><span class="eyebrow"><i></i> BUILT FOR THE LOCAL CHURCH</span><h1 id="hero-title">Stay with<br>the <em>moment.</em></h1>
+ <p class="lead">Scripture, lyrics and your service plan. A lightweight presentation tool that runs right in your browser—and keeps the essentials ready offline.</p>
+ <div class="actions"><a href="index.html" class="button">Start presenting <span aria-hidden="true">↗</span></a><a href="#demo" class="text-link">Try the preview <span aria-hidden="true">↓</span></a></div>
+ <p class="quiet">No account needed to start. No installation required.</p>
+ <div class="hero-caption"><span class="caption-line"></span><span>For the volunteer at the desk.<br>For the room waiting on the next verse.</span></div>
+ </div>
+ <div class="hero-product">
+  <div class="product-top"><span class="window-dots"><i></i><i></i><i></i></span><span>KOGG / PREVIEW</span><span class="preview-indicator">● INTERACTIVE</span></div>
+  <div class="preview-tabs" role="tablist" aria-label="Hero preview"><button id="hero-scripture-tab" role="tab" aria-selected="true" aria-controls="hero-scripture" data-hero-tab="scripture">Scripture</button><button id="hero-lyrics-tab" role="tab" aria-selected="false" aria-controls="hero-lyrics" tabindex="-1" data-hero-tab="lyrics">Lyrics</button></div>
+  <div id="hero-scripture" role="tabpanel" aria-labelledby="hero-scripture-tab">
+   <div class="hero-screen"><span class="screen-label">OUTPUT PREVIEW</span><p id="projText">Jesus wept.</p><span id="projRef">John 11:35 · KJV</span></div>
+   <div class="preview-controls"><label for="qj">JUMP TO A PASSAGE</label><div class="input-line"><input id="qj" type="search" autocomplete="off" spellcheck="false" placeholder="Try jn 3:16, then Enter" aria-describedby="heroInputHint"><span aria-hidden="true">↵</span></div>
+   <div class="sample-refs"><button data-sample-ref="John 11:35">John 11:35</button><button data-sample-ref="Psalm 23:1">Psalm 23:1</button><button data-sample-ref="John 3:16">John 3:16</button></div><p id="heroInputHint">A real KJV preview. Your projector stays untouched.</p></div>
   </div>
-</header>
-
-<div class="wrap">
-
-  <!-- HERO -->
-  <div class="hero">
-    <div class="orb orb1" data-depth="18"></div>
-    <div class="orb orb2" data-depth="-14"></div>
-    <div class="orb orb3" data-depth="9"></div>
-    <div class="hero-inner">
-      <div>
-        <span class="eyebrow">Free forever · offline-first</span>
-        <h1>Your scriptures live in <span class="grad">three taps</span>, not thirty clicks.</h1>
-        <p class="lead">A church presentation console that runs in the browser and on your phone.
-          Type <b>jn 3:16</b> and the projector follows you mid-sentence. Pick a work mode —
-          <b>Base</b>, <b>Sync</b> or <b>Local</b> — and it works even without the internet.</p>
-        <div class="cta-row">
-          <a class="btn" href="index.html">Open the App →</a>
-          <a class="btn ghost" href="#demo">Try it right here ↓</a>
-        </div>
-        <div class="mini-tags">
-          <span class="tag">5 Bible versions offline</span>
-          <span class="tag">One-page dock deck</span>
-          <span class="tag">Quick jump</span>
-          <span class="tag">Memory dock</span>
-          <span class="tag">Voice control</span>
-          <span class="tag">OBS overlay</span>
-        </div>
-      </div>
-      <div>
-        <div class="proj">
-          <div class="r" id="projRef">John 3:16</div>
-          <div class="t" id="projText">“For God so loved the world, that he gave his only begotten Son…”</div>
-          <div class="flashmark" id="projMark">● live · second screen</div>
-          <div class="qjd">
-            <input id="qj" type="search" autocomplete="off" spellcheck="false" placeholder="Quick jump — type: jn 3:16   ·   ps 23:1-4   ·   rom 8:28">
-          </div>
-        </div>
-        <p style="text-align:center; margin-top:12px; font-size:13px; color:var(--muted); font-weight:700">
-          This box is real — type a reference and watch the screen above change.</p>
-      </div>
-    </div>
+  <div id="hero-lyrics" role="tabpanel" aria-labelledby="hero-lyrics-tab" hidden>
+   <div class="hero-screen"><span class="screen-label">OUTPUT PREVIEW</span><p id="heroLyricText">Amazing grace, how sweet the sound<br>That saved a wretch like me</p><span id="heroLyricLabel">Amazing Grace · Verse 1</span></div>
+   <div class="preview-controls"><label>ONE TAP TO THE NEXT SECTION</label><div class="sample-refs"><button data-hero-verse="0" class="selected">Verse 1</button><button data-hero-verse="1">Verse 2</button></div><p>Slide changes here are only a preview. No audio playback.</p></div>
   </div>
+  <div class="product-bottom"><span><i></i> Browser-first</span><span>One screen for you. One for the room.</span></div>
+ </div>
+</section>
+<section class="facts container" aria-label="Included at the core"><div><b>03</b><span>core Bibles<br><small>KJV · BSB · KJV Strong’s</small></span></div><div><b>300<span>+</span></b><span>included hymns<br><small>262 more in an optional pack</small></span></div><div><b>01</b><span>lighter workspace<br><small>Desktop · tablet · phone</small></span></div></section>
+<section class="section container" id="demo">
+ <div class="section-heading"><div><span class="eyebrow">01 / LESS FRICTION</span><h2>From a thought<br>to the screen.</h2></div><p>Find the passage. Paste the song. Choose the slide.<br>Explore an isolated preview of the current tools.</p></div>
+ <div class="tour-tabs" role="tablist" aria-label="Product demo"><button id="tour-scripture-tab" data-tour-tab="scripture" role="tab" aria-selected="true" aria-controls="tour-scripture">01 · Scripture</button><button id="tour-lyrics-tab" data-tour-tab="lyrics" role="tab" aria-selected="false" tabindex="-1" aria-controls="tour-lyrics">02 · Lyrics</button></div>
+ <div id="tour-scripture" class="tour-panel" role="tabpanel" aria-labelledby="tour-scripture-tab">
+  <div class="tour-intro"><h3>Book. Chapter. Verse.</h3><p>Three taps to a passage. Or use a reference and Enter. In the full app, movable docks, reading history and remembered-word search keep the next verse close.</p><label class="demo-jump" for="demoQj"><span>Quick jump</span><input id="demoQj" type="search" placeholder="John 3:16, then Enter" autocomplete="off"></label><span id="demoLoad" class="small-note" role="status">The KJV loads only when you interact.</span></div>
+  <div class="mini-console"><div class="mini-docks"><div class="cdock"><h4>Books</h4><div class="bookgrid" id="demoBooks"></div></div><div class="cdock"><h4 id="demoChTitle">Chapters</h4><div class="dots" id="demoChapters"><span>Choose a book</span></div></div><div class="cdock"><h4 id="demoVersesTitle">Verses</h4><div class="dots" id="demoVerses"><span>Then a chapter</span></div></div></div><div class="demo-proj"><span id="demoRef">YOUR PASSAGE WILL APPEAR HERE</span><p id="demoText">Choose a verse above to preview it.</p></div></div>
+ </div>
+ <div id="tour-lyrics" class="tour-panel" role="tabpanel" aria-labelledby="tour-lyrics-tab" hidden>
+  <div class="tour-intro"><h3>One empty line.<br>A new slide.</h3><p>Paste the whole song. Blank lines split it into slides; [Verse] and [Chorus] headings become labels. Tap a card to preview that slide.</p><label for="demoLyrics">TRY EDITING THESE LYRICS</label><textarea id="demoLyrics" rows="8" maxlength="10000">[Verse 1]
+Amazing grace, how sweet the sound
+That saved a wretch like me
 
-  <!-- TRUST -->
-  <div class="trust reveal">
-    <div><b>No sign-up needed</b> use it before you trust it</div>
-    <div><b>Offline by design</b> Bibles live in the app</div>
-    <div><b>3 work modes</b> Base · Sync · Local</div>
-    <div><b>No ads, no trackers</b> nothing to sell</div>
-    <div><b>Made for volunteers</b> learn it in one minute</div>
-  </div>
-
-  <!-- MODES -->
-  <section id="modes" class="reveal">
-    <h2>Choose your work mode</h2>
-    <p class="sub">When the app opens it asks one simple question: how do you want to work today? Pick once, switch anytime from the top bar.</p>
-    <div class="modes">
-      <div class="mode"><span class="num">01</span><div class="ico">📖</div><h3>Base Mode</h3><p><b>Fresh &amp; fast.</b> The basics load once and scripture display keeps working offline after that — no cloud, no account. Great for a one-off projection.</p></div>
-      <div class="mode"><span class="num">02</span><div class="ico">☁️</div><h3>Sync Mode</h3><p><b>Your library, everywhere.</b> Sign in at the start — scriptures, songs, lyrics, schedules, logo and themes follow you to any device, auto-synced.</p></div>
-      <div class="mode"><span class="num">03</span><div class="ico">💾</div><h3>Local Mode</h3><p><b>The hybrid.</b> Everything saves on this device — Bibles, song schedules, lyrics, themes — on Windows, Android, macOS, iOS or Linux.</p></div>
-    </div>
-  </section>
-
-  <!-- INTERACTIVE DEMO -->
-  <section id="demo" class="reveal">
-    <h2>Try the core of the app — right here</h2>
-    <p class="sub">This is a miniature of the Scripture deck: color-coded books, chapter and verse number circles. Tap a colored book → tap a chapter → tap a verse. It's live below. <b id="demoLoad">The real KJV loads as you play.</b></p>
-    <div class="console">
-      <div class="console-top">
-        <span class="badge">● live demo</span>
-        <div class="qjump"><input id="demoQj" type="search" autocomplete="off" spellcheck="false" placeholder="or type it: jn 3:16, ps 23:3, pro 3:5 …"></div>
-        <span class="demo-hint">tap → tap → tap</span>
-      </div>
-      <div class="console-grid">
-        <div class="cdock"><h4>Books — colored by class</h4><div class="bookgrid" id="demoBooks"></div></div>
-        <div class="cdock"><h4 id="demoChTitle">Chapters</h4><div class="dots" id="demoChapters"><span class="demo-hint">pick a book first</span></div></div>
-        <div class="cdock"><h4 id="demoVersesTitle">Verses</h4><div class="dots" id="demoVerses"><span class="demo-hint">then a chapter</span></div></div>
-        <div class="demo-proj"><div class="r" id="demoRef">— nothing live yet</div><div class="t" id="demoText">Tap any number above and it appears on the “projector”.</div></div>
-        <div class="demo-goal">Color legend: <b class="g-T" style="padding:2px 9px;border-radius:6px">Moses</b> <b class="g-H" style="padding:2px 9px;border-radius:6px">History</b> <b class="g-P" style="padding:2px 9px;border-radius:6px">Poetry</b> <b class="g-M" style="padding:2px 9px;border-radius:6px">Major Prophets</b> <b class="g-m" style="padding:2px 9px;border-radius:6px">Minor Prophets</b> <b class="g-G" style="padding:2px 9px;border-radius:6px">Gospels</b> <b class="g-A" style="padding:2px 9px;border-radius:6px">Acts</b> <b class="g-E" style="padding:2px 9px;border-radius:6px">Paul's letters</b> <b class="g-l" style="padding:2px 9px;border-radius:6px">General letters</b> <b class="g-R" style="padding:2px 9px;border-radius:6px">Prophecy</b></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURES -->
-  <section id="features" class="reveal">
-    <h2>Everything a media team actually needs</h2>
-    <p class="sub">Built with real services in mind: speed to the projector, zero fuss, and hardware you already own.</p>
-    <div class="grid">
-      <div class="card"><span class="ficon">📖</span><h3>Five Bibles, always with you</h3><p>KJV, BSB, KJV with Strong's numbers, WEB and ASV — KJV, BSB and KJV with Strong’s prepare with the browser’s offline core. WEB and ASV cache when selected online. In the Strong's Bible, tap a word number and its Hebrew or Greek meaning takes the screen — tap again to return. Licensed translations (NIV, ESV…) can be imported in Sync/Local mode and stay on your device.</p></div>
-      <div class="card"><span class="ficon">🎛️</span><h3>One-page dock deck</h3><p>Books, Chapters, Verses, Memory, the projector preview, Quick jump and Whole-Bible search sit side by side. Drag any dock to reposition it, resize it freely with the corner handle, hide the ones you don't need — and lock the layout. It stays.</p></div>
-      <div class="card"><span class="ficon">⚡</span><h3>Number circles — tap &amp; it's live</h3><p>Chapters and verses are number bubbles you can always see. Tap a number and that verse is on the projector instantly — verse, range or whole-chapter mode.</p></div>
-      <div class="card"><span class="ficon">🚀</span><h3>Quick jump</h3><p>Type <code>jn 3:16</code>, <code>ps 23 4</code> or <code>1sam 2</code> — the book completes itself after one or two letters, then chapter, then verse. Or press 🎤 and just say it.</p></div>
-      <div class="card"><span class="ficon">🧠</span><h3>Memory dock</h3><p>Every scripture you've been in this service stays one tap away. The pastor says “take us back” — you already have. The grid shrinks to fit as the list grows.</p></div>
-      <div class="card"><span class="ficon">🌈</span><h3>Color-coded books</h3><p>Old and New Testament, each book colored by class — Moses/Torah, History, Poetry, Major &amp; Minor Prophets, Gospels, Paul's Letters, General Letters, Prophecy.</p></div>
-      <div class="card"><span class="ficon">🔎</span><h3>Find it when you can't quote it</h3><p>Type or speak the words you remember — <i>"sheep hear my voice"</i> — and go straight to the verse across the whole Bible you have loaded.</p></div>
-      <div class="card"><span class="ficon">🎵</span><h3>Song library &amp; 300 offline hymns</h3><p>Paste lyrics with one empty line between slides. Tap cards to display, reuse choruses, search LRCLIB online, or import your downloaded song text. Includes 300 basic hymns and an optional 262-hymn expansion. Local and Sync save songs; Base keeps a temporary session.</p></div>
-      <div class="card"><span class="ficon">⏱️</span><h3>Service plans &amp; universal Quick Go</h3><p>Queue songs and scriptures into a plan. One search bar at the top reaches every deck — reference, song, plan item or saved plan — and lets you project matching content or load a saved plan.</p></div>
-      <div class="card"><span class="ficon">🎤</span><h3>Voice control</h3><p>While the room is singing, just speak: <i>"next"</i>, <i>"blank"</i>, <i>"John three sixteen"</i>. The mic sits at the bottom of the console where your hand already is.</p></div>
-      <div class="card"><span class="ficon">🎨</span><h3>Themes &amp; your own backgrounds</h3><p>Four built-in themes, your own images, church logo, font, size, weight, alignment — adjustable live mid-service.</p></div>
-      <div class="card"><span class="ficon">🧩</span><h3>OBS overlay &amp; lower thirds</h3><p>An optional local bridge connects the operator to an OBS browser source for transparent slide text and lower thirds. Keep the bridge running; verify the setup before a service. A pre-service countdown is also included.</p></div>
-    </div>
-  </section>
-
-  <!-- SAFETY / ACCOUNT -->
-  <section id="safety" class="reveal">
-    <h2>Account &amp; data safety</h2>
-    <p class="sub">An account is optional — it only matters for <b>Sync Mode</b>. In Base and Local mode the app works fully on your device, forever. When you do create one, it exists for one reason: your library follows you between devices.</p>
-    <div class="safewrap">
-      <div class="safety">
-        <div class="lock">🔒</div>
-        <h3 style="font-size:19px">Designed to be trustable</h3>
-        <ul>
-          <li><b>🔒 Account provider</b> — sign-in and cloud libraries use Supabase. Use the HTTPS deployment; library access depends on the ownership policies configured by its administrator.</li>
-          <li><b>🪪 Account isolation</b> — the deployment must enable the documented ownership policy. Verify it before storing private library data.</li>
-          <li><b>Network services</b> — Bible files are served with the app. Account tools load a Supabase SDK from a CDN; cloud sync uses Supabase, and optional online lyrics search sends the requested URL to an external fetch service.</li>
-          <li><b>📤 Library backups</b> — Tools → Export Library includes songs, themes, service plans, settings and referenced images/custom Bibles in a versioned JSON backup. Keep a backup before switching devices or accounts.</li>
-          <li><b>📜 Text permissions</b> — check the source and licence terms for the texts you use. Import additional translations only when you have the necessary rights; imported versions stay on the device.</li>
-        </ul>
-      </div>
-      <div class="authbox">
-        <h3>Create your free account</h3>
-        <p class="why">We ask for an email and a password — nothing else. The email is used for sign-in and password resets only, and is never shared or used for marketing.</p>
-        <div id="landingAuthCfg" style="display:none">
-          <div class="field">
-            <label for="lEmail">Email address</label>
-            <div class="fieldwrap"><input id="lEmail" type="email" autocomplete="email" placeholder="you@church.org"></div>
-          </div>
-          <div class="field">
-            <label for="lPass">Choose a password</label>
-            <div class="fieldwrap">
-              <input id="lPass" type="password" autocomplete="new-password" placeholder="At least 6 characters">
-              <button type="button" class="peek" id="lPeek">Show</button>
-            </div>
-            <p class="note">✔ Minimum 6 characters · ✔ Stored hashed — even we can't read it</p>
-          </div>
-          <div class="authbtns">
-            <button class="go" id="lSignUp">Create Account</button>
-            <button class="in" id="lSignIn">Sign In</button>
-          </div>
-          <p id="lStatus" class="lStatus" role="status" aria-live="polite"></p>
-        </div>
-        <p id="landingAuthNone" class="why">Accounts open once cloud sync is enabled on this deployment — see README → “Enable cloud sync”. The app itself works fully without an account.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- GET IT -->
-  <section id="get" class="reveal">
-    <h2>Get it on any equipment</h2>
-    <p class="sub">The app is one web app at <code>https://kogg-presenter.pages.dev</code> — installable on all platforms.</p>
-    <div class="plats">
-      <div class="card"><span class="pnum">01</span><h3>Phone or tablet</h3><p><a href="index.html">Open the app</a> in Chrome → menu → <i>Add to Home screen</i>. It becomes a real app icon and works offline.</p></div>
-      <div class="card"><span class="pnum">02</span><h3>Android APK</h3><p>Android packaging is optional and not supplied here. A maintainer can prepare and test a package using <a href="https://www.pwabuilder.com" target="_blank" rel="noopener noreferrer">PWABuilder</a>. Most users can install the web app from their browser.</p></div>
-      <div class="card"><span class="pnum">03</span><h3>iPhone / iPad</h3><p>Safari → Share → <i>Add to Home Screen</i>. Full-screen and offline as a native-feeling app.</p></div>
-      <div class="card"><span class="pnum">04</span><h3>Windows, Mac, Linux</h3><p>Chrome or Edge → menu → <i>Install</i>. Standalone window, Start-menu icon, offline support.</p></div>
-      <div class="card"><span class="pnum">05</span><h3>Laptop + projector</h3><p>Operator on one screen, <code>display.html</code> on the projector — synced automatically, or via the Window Management API.</p></div>
-      <div class="card"><span class="pnum">06</span><h3>OBS Studio</h3><p>Start the local bridge described in the README, operate the app at <code>http://127.0.0.1:8766/</code>, and use its <code>display.html?overlay=1</code> URL in OBS. The hosted URL alone cannot share your browser's local state with OBS.</p></div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section id="faq" class="reveal">
-    <h2>Questions people ask</h2>
-    <details open><summary>What's the difference between Base, Sync and Local mode?</summary><p><b>Base Mode</b> works in your browser: open once online, wait for Ready offline, then present KJV, BSB, KJV Strong’s and saved content offline without an account or installation. <b>Sync Mode</b> signs you in at start; your library pulls on sign-in and pushes pending changes when online. Conflicting edits need attention rather than being overwritten. <b>Local Mode</b> is the hybrid: everything (Bibles, schedules, lyrics, themes) saves on this device only. Switch anytime from the top bar — none of the modes stop the app from working offline.</p></details>
-    <details><summary>Is it really free? Where's the catch?</summary><p>No catch: the app is static HTML/JS you can host anywhere for free, the Bibles may be used freely in church settings, sync uses Supabase's free tier. No server cost, no subscription — and nothing is sold. Not your data, not anything.</p></details>
-    <details><summary>Does it work without internet during a service?</summary><p>Yes — that's the whole point. Open the operator app online and wait for “Ready offline • 3 Bibles + basic hymnary”. Select any other translations you need while online so they cache too. Test it with Wi-Fi off before a service. Cached scripture and local libraries work offline; sign-in, cloud sync, online lyrics search and browser voice recognition need internet.</p></details>
-    <details><summary>Who can see my library if I create an account?</summary><p>The cloud deployment must enforce the ownership policy described in the README. Its administrator should test account isolation before use. Shared computers also retain local library data; export a backup before clearing local data or switching accounts.</p></details>
-    <details><summary>Can several people share one account?</summary><p>You can, but it's not designed that way — the library is per-account. Use one account for your own devices. Sync merges independent edits and stops on conflicting edits; resolve a conflict before continuing. Export backups before changing accounts on a shared device.</p></details>
-    <details><summary>What about modern translations like NIV or ESV?</summary><p>NIV and ESV are not bundled. If you have the required rights to a compatible text file, import it in Sync or Local Mode (Tools → Scripture versions). Imported Bibles stay on that device unless you transfer a full backup.</p></details>
-  </section>
-
-</div>
-
-<footer>
-  <div class="wrap">
-    <div>KOGG Presenter — free web app · Scriptures: KJV, BSB, WEB, ASV, Strong's</div>
-    <div class="foot-links">
-      <a href="index.html">Open App</a>
-      <a href="https://github.com/ukeme02/kogg-presenter">Source on GitHub</a>
-      <a id="fContact" href="mailto:koggpresenter@gmail.com">Contact: koggpresenter@gmail.com</a>
-    </div>
-    <p>Traditional hymn texts: <a href="data/hymnary-sources.txt">source credits</a>. Optional lyrics sources: <a href="https://lrclib.net/" target="_blank" rel="noopener">LRCLIB</a>, <a href="https://lyrics.ovh/" target="_blank" rel="noopener">lyrics.ovh</a>, and supported public-domain text imports from <a href="https://hymnary.org/" target="_blank" rel="noopener">Hymnary.org</a>. Song text imports retain their supplied credits. Online providers may be unavailable; saved songs and pasted lyrics work offline.</p>
-    <div style="margin-top:10px;opacity:.65">© 2026 KOGG Presenter · Made for the local church</div>
-  </div>
-</footer>
-
-<script src="js/supabase-config.js"></script>
-<script src="js/idb.js"></script>
-<script src="js/library.js"></script>
-<script src="js/sync.js"></script>
+[Verse 2]
+’Twas grace that taught my heart to fear
+And grace my fears relieved</textarea><button id="resetDemoLyrics" class="text-link">Reset example ↺</button><p class="small-note">Demo only. Text stays on this page and is not saved or sent to a lyrics service.</p></div>
+  <div class="lyric-demo"><div id="demoLyricCards" class="lyric-demo-cards"></div><div class="demo-proj"><span id="demoLyricRef">Amazing Grace · Verse 1</span><p id="demoLyricText"></p></div><p id="demoLyricCount" class="small-note" aria-live="polite"></p></div>
+ </div>
+ <div class="feature-line"><span>In the app</span><p>Split & merge slides</p><p>Reusable chorus order</p><p>Undo</p><p>Direct live display</p><a href="index.html">Open the full workspace ↗</a></div>
+</section>
+<section class="modes-section section" id="modes"><div class="container">
+ <div class="section-heading"><div><span class="eyebrow">02 / YOUR WAY TO WORK</span><h2>One tool.<br>Three ways in.</h2></div><p>Start without an account. Keep work on your device.<br>Or sign in to take your saved library with you.</p></div>
+ <div class="mode-explorer"><div class="mode-choices" role="tablist" aria-label="Explore work modes"><button id="mode-base" data-mode-demo="base" role="tab" aria-selected="true" aria-controls="modeDetails"><span>01</span><b>Base</b><small>Open and present</small><i>↗</i></button><button id="mode-local" data-mode-demo="local" role="tab" aria-selected="false" tabindex="-1" aria-controls="modeDetails"><span>02</span><b>Local</b><small>Keep it on this device</small><i>↗</i></button><button id="mode-sync" data-mode-demo="sync" role="tab" aria-selected="false" tabindex="-1" aria-controls="modeDetails"><span>03</span><b>Sync</b><small>Bring your library along</small><i>↗</i></button></div>
+ <div class="mode-detail"><div class="mode-detail-top"><span class="pill">MODE EXPLORER</span><button id="demoConnection" role="switch" aria-checked="true">Demo connection: online</button></div><div id="modeDetails" role="tabpanel" aria-labelledby="mode-base"><h3>Open once.<br>Be ready offline.</h3><p>Wait for Ready offline, then present the three core Bibles and included hymns without installing or signing in.</p><ul><li>Core Scripture and hymns stay available offline.</li><li>Base lyrics are temporary; End session clears that workspace.</li><li>Online lyrics search and connected translations need a connection.</li></ul></div><a class="text-link" href="index.html" id="modeCta">Open the app and choose Base ↗</a><p class="small-note">This explorer does not change your app’s mode or your connection.</p></div></div>
+</div></section>
+<section class="section container" id="library"><div class="section-heading"><div><span class="eyebrow">03 / READY AT THE CORE</span><h2>A useful library.<br>Room to grow.</h2></div><p>Keep your offline foundation dependable.<br>Add the connected sources you use.</p></div>
+ <div class="library-grid"><article class="library-card"><span class="card-number">01</span><span class="pill green">OFFLINE CORE</span><h3>Three Bibles.<br>Ready after setup.</h3><p>KJV, BSB and KJV Strong’s, including the Strong’s lexicon. Extra versions can be downloaded while connected for later offline use.</p><div class="chips"><span>KJV</span><span>BSB</span><span>KJV + Strong’s</span></div></article><article class="library-card"><span class="card-number">02</span><span class="pill">HYMNS & LYRICS</span><h3>Familiar hymns.<br>Your own songs.</h3><p>300 traditional hymns are included. Add 262 more, or the combined 562-hymn pack. Paste lyrics, import song text, or search connected sources.</p><div class="chips"><span>LRCLIB</span><span>lyrics.ovh</span><span>Supported Hymnary pages</span></div></article><article class="library-card"><span class="card-number">03</span><span class="pill">CONNECTED · ONLINE</span><h3>More translations.<br>Clear boundaries.</h3><p>NLT uses Tyndale’s online source. NIV, NKJV, Amplified, The Message and NASB use your API.Bible key and the access enabled for that account.</p><p class="small-note">Connected passages stay in session memory. They are not a full offline Bible download. Provider availability and terms apply.</p></article></div>
+</section>
+<section class="updates-section section" id="updates"><div class="container"><div class="section-heading"><div><span class="eyebrow">04 / CURRENT PROJECT STATE</span><h2>Built around<br>real service moments.</h2></div><span class="release-date">LATEST UPDATES · 31 OCT 2026</span></div><div class="update-grid"><article><span class="update-tag">SCRIPTURE</span><h3>A smoother path to the verse.</h3><p>Smart three-letter book completion, chapter-to-verse navigation, Enter to display, persistent history, bottom-edge navigation and centered output for short passages.</p></article><article><span class="update-tag">LYRICS</span><h3>Paste. Shape. Display.</h3><p>Blank-line slide splitting, editable cards, live markers and repeatable Verse/Chorus order. Local and Sync save songs; Base keeps its lyrics for the session.</p></article><article><span class="update-tag">SEARCH & OUTPUT</span><h3>More ways to find and present.</h3><p>Two connected lyrics sources, a Google-search fallback and supported-page import. Separate output, lower thirds and an optional local OBS bridge are available.</p></article></div><p class="release-footnote">Available now in the web app. Lyrics-interface simplification is a later refinement; native app packages and a dedicated standalone offline installer are not supplied here.</p></div></section>
+<section class="section container install-section" id="get"><div><span class="eyebrow">05 / USE THE EQUIPMENT YOU HAVE</span><h2>Browser today.<br>App icon when you want.</h2><p>Start on a laptop, tablet or phone. Prepare your offline content while connected, then install a browser app icon if it helps your workflow.</p><div class="device-choices" role="group" aria-label="Installation instructions"><button data-device="desktop" aria-pressed="true">Desktop</button><button data-device="android" aria-pressed="false">Android</button><button data-device="ios" aria-pressed="false">iPhone / iPad</button></div></div><div class="install-card"><span class="pill" id="deviceLabel">DESKTOP / CHROME OR EDGE</span><ol id="installSteps"><li>Open KOGG in Chrome or Edge.</li><li>Wait for “Ready offline” in the operator.</li><li>Choose Install app from your browser’s menu, if available.</li></ol><a href="index.html" class="button">Open KOGG <span>↗</span></a><p class="small-note">Installation support and storage persistence depend on your browser. Recheck offline readiness before your service.</p></div></section>
+<section class="section container faq-section" id="faq"><div><span class="eyebrow">A FEW PRACTICAL ANSWERS</span><h2>Before the<br>service starts.</h2><a href="index.html" class="text-link">Go to the app ↗</a></div><div class="faq-list">
+ <details><summary>What really works offline?</summary><p>After the app reports Ready offline, its interface, three core Bibles, Strong’s lexicon and basic hymnary are cached. Saved songs and previously downloaded packs work offline. Connected Bible passages, online lyrics search, sign-in and sync need internet. Browser storage can be cleared or evicted, so check readiness before a service.</p></details>
+ <details><summary>Will my work travel to another device?</summary><p>Use Sync mode and sign in to the same account. Saved songs, service plans, themes and referenced artwork use the existing cloud library. Let the sync complete before leaving, and open the next device online before travelling offline. Imported custom Bible files are device-local; use a full backup to transfer them.</p></details>
+ <details><summary>What happens to lyrics in Base mode?</summary><p>They stay in the current tab’s session workspace, including the draft and temporary Service items. A refresh preserves that workspace. End session clears it without deleting a saved Local/Sync library or the hymn packs. Save in Local or Sync when you want a permanent copy.</p></details>
+ <details><summary>Can I use NIV, NLT or an Efik Bible?</summary><p>Connected NLT and API.Bible translation controls are implemented. They need internet; API.Bible versions also need your own key and suitable account access. Provider limits and terms apply. Efik is not currently bundled. Compatible Bible JSON imports are available in Tools; connected access does not create an unrestricted offline download.</p></details>
+ <details><summary>Does the microphone work offline?</summary><p>The Speak buttons can fill Quick jump and Whole search, and voice commands can navigate the service. Chrome/Edge speech recognition may require internet and microphone permission. Keyboard and touch controls remain available. KOGG does not include music or audio-file playback.</p></details>
+ <details><summary>How do I connect a projector or OBS?</summary><p>Open Output from the operator. Where the browser supports screen selection, allow it to place the output on an extended screen; otherwise move the window yourself. For OBS, run the optional local bridge and use its overlay URL. The hosted app and OBS do not automatically share browser storage. <a href="https://github.com/ukeme02/kogg-presenter#readme" target="_blank" rel="noopener">Read the setup guide ↗</a></p></details>
+ <details><summary>Where do online lyrics come from?</summary><p>Search combines LRCLIB and lyrics.ovh. Google opens as a normal web search; KOGG does not scrape its results. Supported links include Hymnary text pages explicitly marked Public Domain, plus LRCLIB and lyrics.ovh API links. Other pages use copy/paste. Review imported words and keep the supplied credits; source availability does not grant every kind of reuse permission.</p></details>
+</div></section>
+<section class="closing container"><span class="eyebrow">THE NEXT VERSE IS WAITING.</span><h2>Ready for your<br>next service?</h2><a href="index.html" class="button">Start presenting <span>↗</span></a><p>Start in Base. Choose Local or Sync when you need to keep more.</p></section>
+</main>
+<footer class="site-footer"><div class="container"><div class="footer-top"><a class="brand" href="#"><img src="icons/icon.svg" alt="" width="30" height="30"><span>KOGG<span class="brand-sub">PRESENTER</span></span></a><p>A lighter presentation tool for the local church.</p><a href="https://github.com/ukeme02/kogg-presenter" target="_blank" rel="noopener">Project source ↗</a></div><div class="footer-bottom"><span>© 2026 KOGG Presenter</span><p>Sources: <a href="data/hymnary-sources.txt">hymn credits</a> · <a href="https://lrclib.net/" target="_blank" rel="noopener">LRCLIB</a> · <a href="https://lyrics.ovh/" target="_blank" rel="noopener">lyrics.ovh</a> · <a href="https://hymnary.org/" target="_blank" rel="noopener">Hymnary</a> · <a href="https://api.nlt.to/" target="_blank" rel="noopener">Tyndale</a> · <a href="https://api.bible/" target="_blank" rel="noopener">API.Bible</a>. Third-party names identify sources, not endorsements.</p></div></div></footer>
+<script src="js/lyrics.js"></script>
 <script>
-(function () {
-  'use strict';
-
-  /* ---------- theme ---------- */
-  const themeBtn = document.getElementById('themeBtn');
-  function applyLight(light) {
-    document.body.classList.toggle('light', light);
-    themeBtn.textContent = light ? '☀️' : '🌙';
-    try { localStorage.setItem('kogg-landing-theme', light ? 'light' : 'dark'); } catch {}
-  }
-  let stored = null;
-  try { stored = localStorage.getItem('kogg-landing-theme'); } catch {}
-  applyLight(stored ? stored === 'light' : window.matchMedia('(prefers-color-scheme: light)').matches);
-  themeBtn.addEventListener('click', () => applyLight(!document.body.classList.contains('light')));
-
-  /* ---------- scroll progress + header shadow ---------- */
-  const prog = document.getElementById('progress');
-  addEventListener('scroll', () => {
-    const h = document.documentElement;
-    prog.style.width = (h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight) * 100) + '%';
-  }, { passive: true });
-
-  /* ---------- reveal on scroll ---------- */
-  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  }), { threshold: .08 }) : null;
-  document.querySelectorAll('.reveal').forEach(el => { if (io) io.observe(el); else el.classList.add('in'); });
-
-  /* ---------- hero orbs parallax ---------- */
-  addEventListener('mousemove', e => {
-    const dx = (e.clientX / innerWidth - .5), dy = (e.clientY / innerHeight - .5);
-    document.querySelectorAll('.orb').forEach(o => {
-      const d = +o.dataset.depth || 10;
-      o.style.transform = `translate(${dx * d}px, ${dy * d}px)`;
-    });
-  }, { passive: true });
-
+(function(){
+'use strict';
   /* ---------- bible books meta (class + abbr) ---------- */
   const BOOKS = [
     ['Genesis','GEN','T'],['Exodus','EXO','T'],['Leviticus','LEV','T'],['Numbers','NUM','T'],['Deuteronomy','DEU','T'],
@@ -536,7 +159,9 @@
   }
   function showHit(ref, text, where) {
     document.getElementById(where + 'Ref').textContent = ref;
-    document.getElementById(where + 'Text').textContent = '“' + text + '”';
+    const output = document.getElementById(where + 'Text');
+    output.textContent = '“' + text + '”';
+    output.classList.toggle('long-passage', text.length > 120);
   }
   const stripS = t => String(t).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/\s{2,}/g, ' ');
   const pendingRefs = new Map();
@@ -558,9 +183,9 @@
   qj.addEventListener('input', () => {
     ensureBible();
     const r = parseQj(qj.value);
-    if (r) liveVerse(r, 'proj');
+    if (r) document.getElementById('heroInputHint').textContent='Press Enter to preview this passage.';
   });
-  qj.addEventListener('keydown', e => { if (e.key === 'Enter') { const r = parseQj(qj.value); if (r) liveVerse(r, 'proj'); } });
+  qj.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault();const r = parseQj(qj.value); if (r) liveVerse(r, 'proj');else showHit('Try a reference','For example: John 3:16 or Psalm 23:1','proj'); } });
 
   /* ---------- interactive demo console ---------- */
   const demoBooks = document.getElementById('demoBooks');
@@ -614,51 +239,12 @@
   });
   /* demo quick-jump input */
   const dq = document.getElementById('demoQj');
-  dq.addEventListener('input', () => { ensureBible(); const r = parseQj(dq.value); if (r) liveVerse(r, 'demo'); });
+  dq.addEventListener('input', () => { ensureBible(); });
   dq.addEventListener('keydown', e => { if (e.key === 'Enter') { const r = parseQj(dq.value); if (r) liveVerse(r, 'demo'); } });
 
-  /* ---------- landing account box ---------- */
-  const pass = document.getElementById('lPass');
-  document.getElementById('lPeek').addEventListener('click', () => {
-    pass.type = pass.type === 'password' ? 'text' : 'password';
-    document.getElementById('lPeek').textContent = pass.type === 'password' ? 'Show' : 'Hide';
-  });
-  const status = document.getElementById('lStatus');
-  const setStat = (msg, cls) => { status.textContent = msg; status.className = 'lStatus ' + (cls || ''); };
 
-  if (!(window.KOGGSync && window.KOGGSync.configured)) return;
-  document.getElementById('landingAuthCfg').style.display = 'block';
-  document.getElementById('landingAuthNone').style.display = 'none';
-
-  function validAuth() {
-    const email = document.getElementById('lEmail');
-    if (!email.value.trim() || !email.checkValidity() || pass.value.length < 6) { setStat('Enter a valid email and a password of at least six characters.', 'err'); return false; }
-    return true;
-  }
-  function authBusy(busy) { document.getElementById('lSignUp').disabled = busy; document.getElementById('lSignIn').disabled = busy; }
-  document.getElementById('lSignUp').addEventListener('click', async () => {
-    if (!validAuth()) return;
-    authBusy(true);
-    setStat('Creating your account…');
-    try {
-      await window.KOGGSync.signUp(document.getElementById('lEmail').value.trim(), pass.value);
-      setStat('✓ Account created — check your inbox if email confirmation is on, then sign in and open the app.', 'ok');
-    } catch (err) { setStat('Sign up failed: ' + err.message, 'err'); }
-    finally { authBusy(false); }
-  });
-  document.getElementById('lSignIn').addEventListener('click', async () => {
-    if (!validAuth()) return;
-    authBusy(true);
-    setStat('Signing in…');
-    try {
-      await window.KOGGSync.signIn(document.getElementById('lEmail').value.trim(), pass.value);
-      const settings = JSON.parse(localStorage.getItem('cp_settings') || '{}');
-      localStorage.setItem('cp_settings', JSON.stringify({...settings, mode:'sync'}));
-      setStat('✓ Signed in — open the app to load your library. Any sync conflict will be shown there.', 'ok');
-    } catch (err) { setStat('Sign in failed: ' + err.message, 'err'); }
-    finally { authBusy(false); }
-  });
+  document.querySelectorAll('[data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{qj.value=button.dataset.sampleRef;const ref=parseQj(qj.value);if(ref)liveVerse(ref,'proj');}));
 })();
 </script>
-</body>
-</html>
+<script src="js/landing.js"></script>
+</body></html>

@@ -303,3 +303,12 @@ Live Cloudflare verification identified an edge-runtime difference: fetch does n
 
 
 Live verification completed on Cloudflare production after the redirect correction: combined Amazing Grace search returned both LRCLIB and lyrics.ovh results; importing the supported Hymnary page produced six section/slide cards and retained source credits. The current projector remained unchanged. Deployment: https://61ef27f2.kogg-presenter.pages.dev (production alias kogg-presenter.pages.dev). No Brave signup, card entry or paid search plan was used.
+
+
+## Landing page refresh and project review — 31 October 2026
+
+Reviewed the committed Scripture, Lyrics, connected Bible providers, hymn catalogue, offline worker and recent changes. Replaced the outdated landing page with a responsive editorial design, light/dark appearance, keyboard-accessible previews, an editable blank-line lyrics demo, a three-mode connection explorer, device-specific browser-install instructions, current release notes and practical FAQs. Copy reflects three offline core Bibles, 300 included hymns plus 262 optional, session-only Base lyrics, saved Local/Sync libraries, connected translations and the no-account Google search fallback. Removed unsupported native-download and old account claims. Source credits remain available.
+
+Landing interactions are isolated from operator storage, auth, projector and work-mode selection; only appearance is stored under a landing-specific key. Reuses local font and existing lyrics parser, adds no package or external runtime, and loads real KJV only on preview interaction. New assets are precached in worker v43.
+
+Validation: 106 automated checks pass. Browser verified both appearances, real John 3:16 preview, editable lyrics splitting and card selection/reset, Sync/offline explanation and iOS instructions. Longer hero passages use a smaller type size with protected label spacing. Phone/tablet breakpoints implemented; physical-device checks and signed-in two-device sync are still outstanding. Lyrics interface simplification remains the next product refinement.

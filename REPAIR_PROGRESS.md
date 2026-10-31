@@ -373,3 +373,10 @@ Made capturing the existing Output window the recommended OBS route: Sources > W
 Fixed reduced-motion handling: visitors retain their OS preference by default, but Play motion now explicitly enables page animation for this visit, with Pause restoring stillness. Consolidated competing reduced-motion CSS blocks into one scoped rule so explicit opt-in works. Tickers now have two identical groups and continuous movement even on hover. Added prepared premium blue-glass gallery styling and an unshipped template under ignored work. Worker v62. Validation: 116 tests pass, including opt-in/play/pause with reduced-motion active.
 
 Screenshot carousel NOT complete/published: both CUA and native Computer Use node runtimes fail before initialization (missing kernel assets path), including after reset. Older saved Scripture/lyrics/landing captures were inspected and show superseded content; no current mode-chooser image exists. Need four current screenshots from recovered capture tools or user attachments before installing the carousel. Do not represent old captures as current screenshots.
+
+
+## Platform coverage and KOGG MEDIA attribution — 31 October 2026
+
+Added Windows, macOS, Linux, ChromeOS, Android, iOS/iPadOS and other compatible browser devices to landing installation choices, with browser/device-specific capability qualifications. Added KOGG MEDIA (Africa) developer attribution and the user-supplied vision of effective worship and broadcast worldwide. Copied the supplied logo unchanged into icons/kogg-media.png and added a seamless horizontal contributor-logo bar; only KOGG MEDIA is named as confirmed founding developer, with an aria-hidden repeat for looping. No unconfirmed sponsor logos. Logo is precached; worker v63.
+
+Verified git author labels: Ukeme Emmanuel Inyang-Otu, ukeme02 and local KOGG Presenter author. Discussion also confirms ZCode/OpenCode/Codex development assistance. Infrastructure and content-source credits must remain distinct from contributors/sponsors. Physical device coverage and fresh visual verification remain unverified; browser capture tools unavailable.

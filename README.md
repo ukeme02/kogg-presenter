@@ -240,3 +240,11 @@ Base songs/drafts and temporary Service items use the current tab's session stor
 Local saves songs, order and source credits on the device; Sync uses that local copy and the existing account sync when connected. Unsaved Local/Sync drafts remain on the device until a song is saved. Bundled hymn texts and saved songs work offline. Online search and account operations need a connection. LRCLIB is a community provider; results can vary or be unavailable. Source attribution does not itself grant performance or redistribution rights. SongSelect imports keep supplied credit text outside the projected lyrics.
 
 No audio playback, media library or extra runtime dependencies were added.
+
+## Wider lyrics search and supported links
+
+Online search combines LRCLIB plain-lyrics records with lyrics.ovh/Deezer song suggestions. A suggestion fetches lyrics only when selected. Either source may fail independently; saved songs, paste and import remain usable. The Google link opens an ordinary search in a new tab; Kogg does not scrape Google or require a paid search account.
+
+The existing Cloudflare Pages site runs a small `functions/api/lyrics.js` endpoint for source requests and supported-page imports. Import accepts only fixed source hosts: Hymnary `/text/` pages explicitly marking the **text** Public Domain, LRCLIB API song links, and lyrics.ovh API song links. Unsupported pages use copy/paste. Page imports discard page furniture and keep stanza boundaries and credits. Redirects, custom ports and credential-bearing URLs are rejected. Responses are `no-store`; the offline worker bypasses API routes so temporary Base lyrics do not become offline cache entries. Hymnary imports are spaced at least five seconds apart per running server instance. All other source requests have timeouts and size bounds.
+
+Deploy the committed website and `functions/` together with Wrangler Pages. Static-only hosting keeps browser source search and Google links, but supported-page imports need the Cloudflare endpoint. No Brave account or API key was created; its card-backed credits did not meet the requested fully-free fallback.

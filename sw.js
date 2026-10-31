@@ -1,9 +1,9 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v39';
+const CACHE = 'kogg-presenter-v40';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './css/app.css', './css/display.css', './js/app.js', './js/display.js',
-  './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/content.js', './js/lyrics.js',
+  './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/content.js', './js/lyrics.js', './js/lyrics-sources.js',
   './js/supabase-config.js', './js/idb.js', './data/kjv.json', './data/bsb.json', './data/kjvs.json', './data/strongs.json', './data/hymns.json', './data/content-catalog.json', './data/hymnary-sources.txt',
   './fonts/NunitoSans-Variable.woff2', './manifest.webmanifest',
   './icons/icon.svg', './icons/icon-maskable.svg',
@@ -72,7 +72,7 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  if (url.origin !== location.origin || url.pathname.startsWith('/__kogg/')) return;
+  if (url.origin !== location.origin || (url.pathname.startsWith('/__kogg/') || /\/api\//.test(url.pathname))) return;
   const cached = () => caches.open(CACHE).then(cache => cache.match(cacheKey(event.request)));
   const network = async () => {
     const response = usableResponse(await fetch(event.request,{redirect:'follow'}));

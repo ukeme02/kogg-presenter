@@ -11,3 +11,7 @@ test('a cache upgrade retains a downloaded hymn expansion for offline use',async
  await w.install();w.setOffline();
  assert.equal(await (await w.fetch('data/hymns-extra.json')).text(),'saved expansion');
 });
+
+test('online lyric API responses bypass offline cache interception',async()=>{
+ const w=worker();await w.install();assert.equal(await w.fetch('api/lyrics?action=search&q=test'),undefined);
+});

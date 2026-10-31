@@ -151,6 +151,8 @@
         <input id="songSearch" type="search" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
         <div class="row"><button id="btnNewSong" class="primary">+ New song</button><button id="btnSearchLyricsOnline">Search online</button></div>
         <p id="lyricsSearchStatus" class="hint" role="status"></p><div id="lyricsOnlineResults" class="lyrics-results"></div>
+        <p><a id="lyricsWebSearch" target="_blank" rel="noopener noreferrer" hidden>Search Google for this song ↗</a></p>
+        <details id="lyricsLinkImport"><summary>Import a source link</summary><input id="lyricsSourceUrl" type="url" placeholder="https://hymnary.org/text/…" aria-label="Lyrics source link"><button id="btnImportLyricsLink">Import lyrics</button><p class="hint">Supports public-domain Hymnary text pages and LRCLIB / lyrics.ovh API links. For other pages, copy the lyrics and paste them into the editor.</p><p id="lyricsLinkStatus" class="hint" role="status"></p></details>
         <details><summary>Hymn packs & imports</summary><div class="row"><button id="btnStarterHymns">+ Basic Hymnary</button><button id="btnMoreHymns">More hymns</button></div>
           <div id="extraHymnPacks" hidden></div><p id="hymnPackStatus" role="status"></p>
           <p class="hint"><a href="data/hymnary-sources.txt" target="_blank" rel="noopener">Hymn source credits</a></p>
@@ -533,6 +535,7 @@
 <script src="js/scripture-tools.js"></script>
 <script src="js/content.js"></script>
 <script src="js/lyrics.js"></script>
+<script src="js/lyrics-sources.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

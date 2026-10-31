@@ -93,19 +93,26 @@
  document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
  updateDots();
  $('copyObsGuide').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('obsGuideUrl').textContent);$('obsCopyStatus').textContent='OBS URL copied. Paste it into the Browser Source properties.';}catch{$('obsCopyStatus').textContent='Select and copy the URL above.';}});
- // Show one coherent chapter at a time; anchors and browser Back still work.
- const storyToggle=$('storyToggle');
- storyToggle?.addEventListener('click',()=>{const open=storyToggle.getAttribute('aria-expanded')!=='true';storyToggle.setAttribute('aria-expanded',String(open));document.querySelector('.chapter-nav')?.classList.toggle('story-open',open);});
- document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelector('.chapter-nav')?.classList.remove('story-open');storyToggle?.setAttribute('aria-expanded','false');}});
- document.addEventListener('click',event=>{if(!event.target.closest('.chapter-nav')){document.querySelector('.chapter-nav')?.classList.remove('story-open');storyToggle?.setAttribute('aria-expanded','false');}});
- const main=$('main'),chapterNodes=[...main.children];
- const chapters={welcome:['welcome'],explore:['demo'],screens:['display','obs'],modes:['modes','library'],updates:['updates','roadmap'],start:['get','faq'],mission:['partner']};
- const chapterFirst={welcome:'welcome',explore:'demo',screens:'display',modes:'modes',updates:'updates',start:'get',mission:'partner'};
- chapterNodes.forEach(node=>{let chapter=Object.keys(chapters).find(key=>chapters[key].includes(node.id));if(!chapter){if(node.matches('.hero,.facts,.service-flow'))chapter='welcome';else if(node.matches('.closing,.mission-ribbon'))chapter='mission';else if(node.matches('.ticker'))chapter=node.classList.contains('ticker-flip')?'start':'explore';}if(chapter){node.dataset.chapter=chapter;node.classList.add('chapter-pane');}});
- function selectChapter(id,scroll){const target=$(id),pane=target&&chapterNodes.find(node=>node===target||node.contains(target));const chapter=pane?.dataset.chapter||'welcome';chapterNodes.forEach(node=>{if(node.dataset.chapter)node.hidden=node.dataset.chapter!==chapter;});document.body.classList.add('chapter-view');document.querySelector('.chapter-nav')?.classList.remove('story-open');storyToggle?.setAttribute('aria-expanded','false');const storyCurrent=$('storyCurrent');if(storyCurrent){const order=Object.keys(chapters);storyCurrent.textContent='0'+(order.indexOf(chapter)+1)+' · '+({welcome:'Welcome',explore:'Explore',screens:'Screens & OBS',modes:'Work modes',updates:'Updates',start:'Get started',mission:'The mission'}[chapter]);}const controls=document.querySelector('.chapter-controls');if(controls){controls.hidden=false;const order=Object.keys(chapters),index=order.indexOf(chapter),names=['Welcome','Explore','Screens & OBS','Work modes','Updates','Get started','The mission'];$('chapterPosition').textContent=(index+1)+' / '+order.length+' · '+names[index];$('chapterPrevious').hidden=index===0;$('chapterNext').hidden=index===order.length-1;if(index>0)$('chapterPrevious').href='#'+chapterFirst[order[index-1]];if(index<order.length-1){$('chapterNext').href='#'+chapterFirst[order[index+1]];$('chapterNext').textContent='Next: '+names[index+1]+' →';}}document.querySelectorAll('[data-chapter-link]').forEach(link=>{if(link.dataset.chapterLink===chapter)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});if(scroll){(target||$('welcome')).scrollIntoView({behavior:'smooth',block:'start'});}requestAnimationFrame(progress);}
- document.addEventListener('click',event=>{const link=event.target.closest('a[href^="#"]');if(!link)return;const id=link.getAttribute('href').slice(1)||'welcome';if(!$(id))return;selectChapter(id,false);if(location.hash==='#'+id)$(id).scrollIntoView({behavior:'smooth',block:'start'});});
- window.addEventListener('hashchange',()=>selectChapter(location.hash.slice(1)||'welcome',true));
- selectChapter(location.hash.slice(1)||'welcome',false);
+ // Continuous page, with a temporary side guide rather than hidden chapter pages.
+ const rail=document.querySelector('.chapter-nav'),storyToggle=$('storyToggle'),storyReveal=$('storyReveal');
+ let railTimer=null,railFrame=0,railHovered=false;
+ function setRail(open){rail.classList.toggle('story-visible',open);rail.inert=!open;rail.setAttribute('aria-hidden',String(!open));storyToggle?.setAttribute('aria-expanded',String(open));}
+ function tuckRail(){clearTimeout(railTimer);railTimer=setTimeout(()=>{if(!railHovered&&!rail.contains(document.activeElement))setRail(false);},1350);}
+ function revealRail(){setRail(true);tuckRail();}
+ setRail(false);
+ storyReveal?.addEventListener('focus',revealRail);storyReveal?.addEventListener('click',()=>{revealRail();rail.querySelector('[aria-current="location"]')?.focus();});
+ storyToggle?.addEventListener('click',()=>setRail(false));
+ rail.addEventListener('pointerenter',()=>{railHovered=true;clearTimeout(railTimer);});rail.addEventListener('pointerleave',()=>{railHovered=false;tuckRail();});rail.addEventListener('focusin',()=>clearTimeout(railTimer));rail.addEventListener('focusout',tuckRail);
+ rail.addEventListener('click',event=>{if(event.target.closest('a')){railHovered=false;document.activeElement?.blur();setRail(false);}});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')setRail(false);});
+ window.addEventListener('scroll',()=>{if(!railFrame)railFrame=requestAnimationFrame(()=>{railFrame=0;if(scrollY>24)revealRail();else setRail(false);});},{passive:true});
+ const storySections={welcome:'welcome',demo:'explore',display:'screens',obs:'screens',modes:'modes',library:'modes',updates:'updates',roadmap:'updates',get:'start',faq:'start',partner:'mission'};
+ const storyNames={welcome:'Welcome',explore:'Explore',screens:'Screens & OBS',modes:'Work modes',updates:'Updates',start:'Get started',mission:'The mission'};
+ const storyOrder=Object.keys(storyNames);
+ function markStory(chapter){document.querySelectorAll('[data-chapter-link]').forEach(link=>{if(link.dataset.chapterLink===chapter)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});if($('storyCurrent'))$('storyCurrent').textContent='0'+(storyOrder.indexOf(chapter)+1)+' · '+storyNames[chapter];}
+ if('IntersectionObserver' in window){const storyObserver=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);if(visible[0])markStory(storySections[visible[0].target.id]);},{rootMargin:'-15% 0px -55% 0px',threshold:0});Object.keys(storySections).forEach(id=>{if($(id))storyObserver.observe($(id));});}
+ markStory(storySections[location.hash.slice(1)]||'welcome');
+ window.addEventListener('hashchange',()=>{const chapter=storySections[location.hash.slice(1)];if(chapter)markStory(chapter);tuckRail();});
  const share=$('shareKogg'),shareStatus=$('shareStatus');
  share.addEventListener('click',async()=>{
   const url='https://kogg-presenter.pages.dev/landing.html';

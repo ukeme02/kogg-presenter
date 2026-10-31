@@ -48,16 +48,10 @@
  function settleHeader(){headerFrame=0;header.classList.toggle('scrolled',scrollY>6);}
  document.addEventListener('click',e=>{if(!e.target.closest('.site-header')){menu.setAttribute('aria-expanded','false');$('siteNav').classList.remove('is-open');}});
  const stageCards=document.querySelectorAll('.mini-console,.lyric-demo,.display-card,.mode-detail,.library-card,.update-grid article,.install-card,.obs-quick,.obs-connection,.partnership-grid article,.closing');
- stageCards.forEach(card=>card.classList.add('stage-card'));
- // Three calm steps. One visible text change instead of perpetual scrolling layers.
- document.querySelectorAll('.step-flow').forEach(flow=>{
-  const messages=['Worship without limits.','Scripture ready. Focus on the service.','Built for the Body of Christ.'];let index=0,visible=false,interacting=false,timer;
-  function draw(){const text=flow.querySelector('.step-flow-text');text.textContent=messages[index];if(text.animate)text.animate([{opacity:.35,transform:'translateY(3px)'},{opacity:1,transform:'translateY(0)'}],{duration:320,easing:'ease-out'});flow.querySelector('.step-flow-count').textContent='0'+(index+1)+' / 03';}
-  function schedule(){clearTimeout(timer);if(!visible||interacting||document.hidden)return;timer=setTimeout(()=>{index=(index+1)%messages.length;draw();schedule();},8500);}
-  flow.querySelectorAll('[data-flow-dir]').forEach(button=>button.addEventListener('click',()=>{index=(index+Number(button.dataset.flowDir)+messages.length)%messages.length;draw();schedule();}));
-  flow.addEventListener('pointerenter',()=>{interacting=true;schedule();});flow.addEventListener('pointerleave',()=>{interacting=false;schedule();});flow.addEventListener('focusin',()=>{interacting=true;schedule();});flow.addEventListener('focusout',()=>{interacting=false;schedule();});document.addEventListener('visibilitychange',schedule);
-  if('IntersectionObserver' in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;schedule();},{threshold:.25}).observe(flow);
- });
+ stageCards.forEach(card=>{card.classList.add('stage-card');card.addEventListener('pointermove',event=>{if(event.pointerType!=='mouse'||!window.matchMedia('(hover:hover) and (pointer:fine)').matches)return;const r=card.getBoundingClientRect(),x=(event.clientX-r.left)/r.width,y=(event.clientY-r.top)/r.height;card.style.setProperty('--card-x',x*100+'%');card.style.setProperty('--card-y',y*100+'%');card.style.setProperty('--card-rx',((x-.5)*2)+'deg');card.style.setProperty('--card-ry',((.5-y)*2)+'deg');});card.addEventListener('pointerleave',()=>{card.style.setProperty('--card-rx','0deg');card.style.setProperty('--card-ry','0deg');});});
+ const product=document.querySelector('.hero-product');
+ product.addEventListener('pointermove',e=>{if(motionBlocked()||e.pointerType!=='mouse')return;const r=product.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;product.style.setProperty('--tilt-x',((x-.5)*5)+'deg');product.style.setProperty('--tilt-y',((.5-y)*4)+'deg');product.style.setProperty('--glow-x',x*100+'%');product.style.setProperty('--glow-y',y*100+'%');});
+ product.addEventListener('pointerleave',()=>{product.style.removeProperty('--tilt-x');product.style.removeProperty('--tilt-y');});
  document.querySelectorAll('[role="tab"],.sample-refs button').forEach(button=>button.addEventListener('click',()=>{if(motionBlocked())return;const panel=$(button.getAttribute('aria-controls'))||button.closest('[role="tabpanel"]');if(panel){panel.classList.remove('preview-arrival');void panel.offsetWidth;panel.classList.add('preview-arrival');}}));
 
  /* The hero runs on local preview text: no Bible download, synthetic clicks or focus stealing. */
@@ -99,6 +93,15 @@
  document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
  updateDots();
  $('copyObsGuide').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('obsGuideUrl').textContent);$('obsCopyStatus').textContent='OBS URL copied. Paste it into the Browser Source properties.';}catch{$('obsCopyStatus').textContent='Select and copy the URL above.';}});
+ // Show one coherent chapter at a time; anchors and browser Back still work.
+ const main=$('main'),chapterNodes=[...main.children];
+ const chapters={welcome:['welcome'],explore:['demo'],screens:['display','obs'],modes:['modes','library'],updates:['updates','roadmap'],start:['get','faq'],mission:['partner']};
+ const chapterFirst={welcome:'welcome',explore:'demo',screens:'display',modes:'modes',updates:'updates',start:'get',mission:'partner'};
+ chapterNodes.forEach(node=>{let chapter=Object.keys(chapters).find(key=>chapters[key].includes(node.id));if(!chapter){if(node.matches('.hero,.facts,.service-flow'))chapter='welcome';else if(node.matches('.closing,.mission-ribbon'))chapter='mission';else if(node.matches('.ticker'))chapter=node.classList.contains('ticker-flip')?'start':'explore';}if(chapter){node.dataset.chapter=chapter;node.classList.add('chapter-pane');}});
+ function selectChapter(id,scroll){const target=$(id),pane=target&&chapterNodes.find(node=>node===target||node.contains(target));const chapter=pane?.dataset.chapter||'welcome';chapterNodes.forEach(node=>{if(node.dataset.chapter)node.hidden=node.dataset.chapter!==chapter;});document.body.classList.add('chapter-view');const controls=document.querySelector('.chapter-controls');if(controls){controls.hidden=false;const order=Object.keys(chapters),index=order.indexOf(chapter),names=['Welcome','Explore','Screens & OBS','Work modes','Updates','Get started','The mission'];$('chapterPosition').textContent=(index+1)+' / '+order.length+' · '+names[index];$('chapterPrevious').hidden=index===0;$('chapterNext').hidden=index===order.length-1;if(index>0)$('chapterPrevious').href='#'+chapterFirst[order[index-1]];if(index<order.length-1){$('chapterNext').href='#'+chapterFirst[order[index+1]];$('chapterNext').textContent='Next: '+names[index+1]+' →';}}document.querySelectorAll('[data-chapter-link]').forEach(link=>{if(link.dataset.chapterLink===chapter)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});if(scroll){(target||$('welcome')).scrollIntoView({behavior:'smooth',block:'start'});}requestAnimationFrame(progress);}
+ document.addEventListener('click',event=>{const link=event.target.closest('a[href^="#"]');if(!link)return;const id=link.getAttribute('href').slice(1)||'welcome';if(!$(id))return;selectChapter(id,false);if(location.hash==='#'+id)$(id).scrollIntoView({behavior:'smooth',block:'start'});});
+ window.addEventListener('hashchange',()=>selectChapter(location.hash.slice(1)||'welcome',true));
+ selectChapter(location.hash.slice(1)||'welcome',false);
  const share=$('shareKogg'),shareStatus=$('shareStatus');
  share.addEventListener('click',async()=>{
   const url='https://kogg-presenter.pages.dev/landing.html';

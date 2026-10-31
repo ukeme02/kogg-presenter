@@ -414,3 +414,10 @@ Used the KOGG lettering from the supplied KOGG MEDIA artwork through a self-cont
 Created three original SVG monogram directions under docs/branding and rendered a comparison sheet (work/monogram-exploration.png). Current icon retained pending user selection; balanced existing symbol/wordmark arrangement in header/footer/operator with centred Presenter subtitle and mobile sizing.
 
 User reported site hangs. Replaced perpetual feature tickers with a three-step flow, manual Previous/Next and short opacity/translation transitions. Auto steps run only onscreen and pause for hover/focus or hidden tab. Removed per-pointer geometry reads/style writes, perpetual card sheen, huge blur/conic layers, background drift, fact bobbing, repeated glows and header backdrop blur. Mission ribbon is stationary and retains its compact CTA. Scroll progress writes directly to its own transform instead of inheriting a document-wide custom property. Hero retains its bounded visibility-aware alternating scenes. Worker v70. No claimed performance measurements: browser runtime remains unavailable and hardware retest required.
+
+
+## Restore motion and restructure landing into chapters — 31 October 2026
+
+Corrected interpretation: user wanted less continuous page length, not less animation. Restored continuous tagline tickers, compact moving mission ribbon, hero/card lighting/depth, ambient effects and pointer responses. Removed the temporary three-message strips and performance overrides. Retained the direct scroll-progress transform improvement.
+
+Added seven chapter views with sticky, horizontally scrollable navigation and Previous/Next controls: Welcome; Explore; Screens & OBS; Work modes; Updates; Get started; The mission. Only the selected chapter’s top-level sections show, while internal content remains ordinary scrollable HTML. Existing anchor links, direct hashes and Back/Forward select the right chapter; without JavaScript the full original content is available. New chapter behavior test plus existing checks: 117 pass. Worker v71. Current icon and monogram concepts unchanged. Fresh browser/physical-device QA still unavailable.

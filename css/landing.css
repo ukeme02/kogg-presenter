@@ -455,3 +455,13 @@ body.motion-paused #hero-scripture.preview-arrival .hero-screen:after,body.motio
 .display-card,.roadmap-row{will-change:transform}
 @media(max-width:1100px){.display-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.display-grid{grid-template-columns:1fr}.roadmap-row{flex-direction:column;align-items:flex-start;gap:12px}.screen-duo{flex-direction:column;gap:16px}.duo-link{width:2px;height:44px;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 35%,transparent))}.duo-link:before{left:50%;top:-4px;translate:-50% 0}.duo-link:after{left:50%;right:auto;top:auto;bottom:-4px;translate:-50% 0}.ticker-track{animation-duration:26s}}
+
+/* Smooth stage motion: keep the screen stable; animate its contents, not blurred panels. */
+#hero-scripture.preview-arrival .hero-screen,#hero-lyrics.preview-arrival .hero-screen,#hero-scripture.preview-arrival .preview-controls,#hero-lyrics.preview-arrival .preview-controls{animation:none}
+#hero-scripture.preview-arrival .hero-screen:after,#hero-lyrics.preview-arrival .hero-screen:after{display:none}
+.hero-product{animation:none}.hero-screen{min-height:clamp(330px,42vh,470px)}
+.scene-dots i.on:after{transform:scaleX(1);transition:transform 6.5s linear}.hero-product:hover .scene-dots i.on:after,.hero-product:focus-within .scene-dots i.on:after{transition:none}
+.partnership{border-block:1px solid var(--line);background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 9%,transparent),transparent 65%),var(--surface);margin-bottom:80px}
+.partnership-heading{max-width:780px}.partnership-heading h2{margin:22px 0}.partnership-heading>p{font-size:15px;line-height:1.9;max-width:730px}.partnership-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:38px;margin-top:48px}.partnership-grid article{border-top:2px solid var(--accent);padding-top:23px}.partner-number{font-size:10px;letter-spacing:.09em;color:var(--accent);font-weight:750}.partnership-grid h3{font-size:22px;margin:18px 0 15px}.partnership-grid p{font-size:13px;line-height:1.9}.partnership-grid .text-link{margin-top:20px}.partnership-grid .small-note{font-size:10px;margin-top:13px}.partnership-signoff{margin-top:42px;font-size:13px;font-weight:750;color:var(--ink)}
+@media(max-width:760px){.partnership-grid{grid-template-columns:1fr;gap:30px}.partnership{margin-bottom:45px}.partnership-heading>p{font-size:13px}.hero-screen{min-height:330px}}
+@media(prefers-reduced-motion:reduce){.motion-toggle{display:inline-block;font-size:9px;opacity:1}.scene-dots i.on:after{transition:none}.motion-toggle:disabled{color:var(--muted);cursor:default}}

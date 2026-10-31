@@ -30,10 +30,10 @@
  // Decorative motion never drives app state, network requests or presentation output.
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
  const motion=$('motionToggle');let paused=false,frame=0;
- function applyMotion(){document.body.classList.toggle('motion-paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused));motion.setAttribute('aria-label',paused?'Enable decorative motion':'Pause decorative motion');motion.innerHTML=paused?'Motion off <span aria-hidden="true">▷</span>':'Motion on <span aria-hidden="true">Ⅱ</span>';}
+ function applyMotion(){document.body.classList.toggle('motion-paused',paused||reduced.matches);motion.setAttribute('aria-pressed',String(paused));motion.setAttribute('aria-label',paused?'Enable decorative motion':'Pause decorative motion');motion.innerHTML=reduced.matches?'Reduced motion':paused?'Play motion <span aria-hidden="true">▷</span>':'Pause motion <span aria-hidden="true">Ⅱ</span>';motion.disabled=reduced.matches;motion.title=reduced.matches?'Your device requests reduced motion. Manual previews remain available.':'Pause or resume the page animations and hero demo';}
  motion.addEventListener('click',()=>{paused=!paused;applyMotion();});reduced.addEventListener('change',applyMotion);applyMotion();
  const revealTargets=document.querySelectorAll('.section-heading,.tour-panel,.mode-explorer,.library-card,.update-grid article,.install-card,.faq-list,.closing,.facts,.service-flow,.display-grid article,.roadmap-rows article');
- if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});revealTargets.forEach((el,i)=>{el.classList.add('reveal-ready');el.style.setProperty('--reveal-delay',el.matches('.library-card,.update-grid article')?i%3*80:el.matches('.display-grid article,.roadmap-rows article')?i%4*70:0+'ms');observer.observe(el);});}
+ if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});revealTargets.forEach((el,i)=>{el.classList.add('reveal-ready');el.style.setProperty('--reveal-delay',(el.matches('.library-card,.update-grid article')?i%3*80:el.matches('.display-grid article,.roadmap-rows article')?i%4*70:0)+'ms');observer.observe(el);});}
  function progress(){frame=0;const range=document.documentElement.scrollHeight-innerHeight;document.documentElement.style.setProperty('--read-progress',range>0?String(Math.min(1,Math.max(0,scrollY/range))):'0');}
  window.addEventListener('scroll',()=>{if(!frame)frame=requestAnimationFrame(()=>{progress();headerFrame=0;settleHeader();});},{passive:true});window.addEventListener('resize',()=>{headerFrame=0;settleHeader();progress();});
  const header=document.querySelector('.site-header');let headerFrame=0;
@@ -44,31 +44,51 @@
  product.addEventListener('pointerleave',()=>{product.style.removeProperty('--tilt-x');product.style.removeProperty('--tilt-y');});
  document.querySelectorAll('[role="tab"],.sample-refs button').forEach(button=>button.addEventListener('click',()=>{if(paused||reduced.matches)return;const panel=$(button.getAttribute('aria-controls'))||button.closest('[role="tabpanel"]');if(panel){panel.classList.remove('preview-arrival');void panel.offsetWidth;panel.classList.add('preview-arrival');}}));
 
- /* ---------- Immersive auto-demo: the hero stage plays itself ---------- */
- const heroTabsB=[...document.querySelectorAll('[data-hero-tab]')];
- const heroDots=[...document.querySelectorAll('.scene-dots i')];
- const heroSamples=['John 11:35','Psalm 23:1','John 3:16'];
- let heroSample=0,heroStep=0,engagedUntil=0;
- function bump(el){if(!el||paused)return;el.classList.remove('scene-swap');void el.offsetWidth;el.classList.add('scene-swap');}
- function showRef(i){const demo=window.heroDemoApi;if(!demo)return;const ref=heroSamples[i];const input=$('qj');if(input)input.value=ref;demo.ensureBible();const parsed=demo.parseQj(ref);if(parsed)demo.liveVerse(parsed,'proj');bump($('projText'));bump($('projRef'));}
- function heroVerse(i){const buttons=[...document.querySelectorAll('[data-hero-verse]')];buttons[i]?.click();bump($('heroLyricText'));bump($('heroLyricLabel'));}
- function sceneTab(i){if(heroTabsB[i].getAttribute('aria-selected')!=='true')heroTabsB[i].click();heroDots.forEach((d,di)=>d.classList.toggle('on',di===i));const panel=heroTabsB[i].getAttribute('aria-controls');if(panel){const el=$(panel);el.classList.remove('preview-arrival');void el.offsetWidth;el.classList.add('preview-arrival');}}
- const heroSteps=[
-  ()=>{sceneTab(0);showRef(heroSample);},
-  ()=>{showRef(heroSample);heroSample=(heroSample+1)%heroSamples.length;},
-  ()=>{sceneTab(1);heroVerse(0);},
-  ()=>{heroVerse(1);}
+ /* The hero runs on local preview text: no Bible download, synthetic clicks or focus stealing. */
+ const stage=document.querySelector('.hero-product');
+ const heroButtons=[...document.querySelectorAll('[data-hero-tab]')];
+ const dots=[...document.querySelectorAll('.scene-dots i')];
+ const scenes=[
+  {tab:0,ref:'John 11:35 · KJV',text:'Jesus wept.'},
+  {tab:0,ref:'Psalm 23:1 · KJV',text:'The LORD is my shepherd; I shall not want.'},
+  {tab:1,ref:'Amazing Grace · Verse 1',text:'Amazing grace, how sweet the sound\nThat saved a wretch like me'},
+  {tab:1,ref:'Amazing Grace · Verse 2',text:'’Twas grace that taught my heart to fear\nAnd grace my fears relieved'}
  ];
- function heroTick(){heroStep=(heroStep+1)%heroSteps.length;heroSteps[heroStep]();}
- setInterval(()=>{
-  if(document.hidden||paused||!inHero()||Date.now()<engagedUntil)return;
-  heroTick();
- },4600);
- function inHero(){return scrollY<window.innerHeight*1.15;}
- const heroProductStage=document.querySelector('.hero-product');
- heroProductStage.addEventListener('pointerdown',()=>{engagedUntil=Date.now()+12000;});
- $('qj')?.addEventListener('focus',()=>{engagedUntil=Date.now()+20000;});
- document.addEventListener('keydown',e=>{if(e.key==='Tab'&&document.activeElement&&heroProductStage.contains(document.activeElement))engagedUntil=Date.now()+12000;});
- setTimeout(()=>{if(!paused)heroTick();},1600);
- sceneTab(0);
+ let scene=0,stageVisible=false,hovered=false,heroTimer=null;
+ const sceneAnimations=new Map();
+ function animatePreview(element){
+  if(!element||paused||reduced.matches||!element.animate)return;
+  sceneAnimations.get(element)?.cancel();
+  sceneAnimations.set(element,element.animate([{opacity:.15,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],{duration:650,easing:'cubic-bezier(.2,.7,.2,1)'}));
+ }
+ function updateDots(){dots.forEach((dot,i)=>dot.classList.toggle('on',i===scene));}
+ function showScene(){
+  const next=scenes[scene],button=heroButtons[next.tab];
+  heroButtons.forEach(b=>{const active=b===button;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1;$(b.getAttribute('aria-controls')).hidden=!active;});
+  const text=$(next.tab?'heroLyricText':'projText'),label=$(next.tab?'heroLyricLabel':'projRef');
+  text.textContent=next.text;label.textContent=next.ref;text.classList.toggle('long-passage',next.text.length>120);
+  animatePreview($(button.getAttribute('aria-controls')).querySelector('.hero-screen'));updateDots();
+ }
+ function scheduleHero(){
+  clearTimeout(heroTimer);
+  if(paused||reduced.matches||document.hidden||!stageVisible||hovered||stage.contains(document.activeElement))return;
+  heroTimer=setTimeout(()=>{scene=(scene+1)%scenes.length;showScene();scheduleHero();},6500);
+ }
+ if('IntersectionObserver' in window){new IntersectionObserver(entries=>{stageVisible=entries[0].isIntersecting;scheduleHero();},{threshold:.25}).observe(stage);}
+ else {stageVisible=true;scheduleHero();}
+ stage.addEventListener('pointerenter',()=>{hovered=true;scheduleHero();});stage.addEventListener('pointerleave',()=>{hovered=false;scheduleHero();});
+ stage.addEventListener('focusin',scheduleHero);stage.addEventListener('focusout',()=>setTimeout(scheduleHero,0));
+ stage.addEventListener('input',scheduleHero);document.addEventListener('visibilitychange',scheduleHero);
+ motion.addEventListener('click',()=>{if(paused)sceneAnimations.forEach(a=>a.cancel());scheduleHero();});reduced.addEventListener('change',()=>{sceneAnimations.forEach(a=>a.cancel());scheduleHero();});
+ heroButtons.forEach((button,i)=>button.addEventListener('click',()=>{scene=i?2:0;updateDots();animatePreview($(button.getAttribute('aria-controls')).querySelector('.hero-screen'));scheduleHero();}));
+ document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
+ updateDots();
+ const share=$('shareKogg'),shareStatus=$('shareStatus');
+ share.addEventListener('click',async()=>{
+  const url='https://kogg-presenter.pages.dev/landing.html';
+  try{if(navigator.share){await navigator.share({title:'KOGG Presenter',text:'A lightweight Scripture and lyrics presentation tool, built to serve the church. Try it and share it with your media team.',url});shareStatus.textContent='Thank you for helping another church discover KOGG.';}
+  else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);shareStatus.textContent='Link copied. Share it with your church or media team.';}
+  else {shareStatus.textContent='Share this link: '+url;}}
+  catch(error){if(error.name!=='AbortError')shareStatus.textContent='Share this link: '+url;}
+ });
  })();

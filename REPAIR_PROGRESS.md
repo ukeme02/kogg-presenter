@@ -259,6 +259,20 @@ hosted or persisted — true offline independence stays with the bundled/public-
 - Legal note kept: NIV/NLT/NKJV/Amplified/The Message remain copyrighted; The Message's official
   live terms still need verification before it is offered as a choice.
 
+Release — same session:
+
+- Pushed `61f2268` + `32d1d50` to GitHub `origin/main`. The second commit tracks
+  `data/hymns-combined.json` (catalogue v4's "Complete basic hymnary", 562 hymns) after
+  converting it from UTF-16 LE to UTF-8 — the pack reader decodes UTF-8 only and would have
+  rejected the original bytes.
+- Production deploy succeeded via wrangler 4.78 (`d0196abe.kogg-presenter.pages.dev`, production
+  alias `kogg-presenter.pages.dev`). The staging copy excluded `.git`, `.wrangler`, `tests`,
+  `tools`, the internal `work/` scratch folder, stray `data/hymns-basic.json` and `*.md`.
+- Verified live on production: `sw.js` at v42 with `bible-providers.js` precached, the Connected
+  optgroup and Tools licensed panel present in `index.html`, LSV/BBE/ERV + combined hymnary
+  serving, and excluded paths return only the operator-page fallback, not their files.
+- API.Bible note: users set their own key in Tools; NLT streams key-free immediately.
+
 ## Centered short output passages — 31 October 2026
 
 Fixed output text sitting near the top of an 88vh box. Added a separate inline-content container inside a vertically centered flex box, preserving word highlighting and line breaks. Fit logic measures the content against the padded safe area. Short Scripture may enlarge up to 1.6 times the selected size (bounded by 12vh); long Scripture still shrinks to fit. Lyrics retain the selected font-size upper bound. Resize/font loading continue to trigger a fresh fit.

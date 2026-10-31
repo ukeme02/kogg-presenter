@@ -247,6 +247,7 @@ And grace my fears relieved</textarea><button id="resetDemoLyrics" class="text-l
 
 
   document.querySelectorAll('[data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{qj.value=button.dataset.sampleRef;const ref=parseQj(qj.value);if(ref)liveVerse(ref,'proj');}));
+  window.heroDemoApi = {ensureBible, parseQj, liveVerse};
 })();
 </script>
 <script src="js/landing.js"></script>

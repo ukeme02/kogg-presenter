@@ -50,7 +50,7 @@
  const heroSamples=['John 11:35','Psalm 23:1','John 3:16'];
  let heroSample=0,heroStep=0,engagedUntil=0;
  function bump(el){if(!el||paused)return;el.classList.remove('scene-swap');void el.offsetWidth;el.classList.add('scene-swap');}
- function showRef(i){const ref=heroSamples[i];const input=$('qj');if(input)input.value=ref;ensureBible();const parsed=parseQj(ref);if(parsed)liveVerse(parsed,'proj');bump($('projText'));bump($('projRef'));}
+ function showRef(i){const demo=window.heroDemoApi;if(!demo)return;const ref=heroSamples[i];const input=$('qj');if(input)input.value=ref;demo.ensureBible();const parsed=demo.parseQj(ref);if(parsed)demo.liveVerse(parsed,'proj');bump($('projText'));bump($('projRef'));}
  function heroVerse(i){const buttons=[...document.querySelectorAll('[data-hero-verse]')];buttons[i]?.click();bump($('heroLyricText'));bump($('heroLyricLabel'));}
  function sceneTab(i){if(heroTabsB[i].getAttribute('aria-selected')!=='true')heroTabsB[i].click();heroDots.forEach((d,di)=>d.classList.toggle('on',di===i));const panel=heroTabsB[i].getAttribute('aria-controls');if(panel){const el=$(panel);el.classList.remove('preview-arrival');void el.offsetWidth;el.classList.add('preview-arrival');}}
  const heroSteps=[

@@ -35,10 +35,11 @@
  document.querySelectorAll('[data-device]').forEach(b=>b.addEventListener('click',()=>{const device=devices[b.dataset.device];$('deviceLabel').textContent=device.label;$('installSteps').replaceChildren(...device.steps.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));document.querySelectorAll('[data-device]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
  // Decorative motion never drives app state, network requests or presentation output.
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
- const motion=$('motionToggle');let paused=false,frame=0,motionOverride=false;
- function motionBlocked(){return paused||(reduced.matches&&!motionOverride);}
- function applyMotion(){const blocked=motionBlocked();document.body.classList.toggle('motion-paused',blocked);document.body.classList.toggle('motion-enabled',motionOverride&&!paused);motion.setAttribute('aria-pressed',String(!blocked));motion.setAttribute('aria-label',blocked?'Play page motion':'Pause page motion');motion.innerHTML=blocked?'Play motion <span aria-hidden="true">▷</span>':'Pause motion <span aria-hidden="true">Ⅱ</span>';motion.disabled=false;motion.title=reduced.matches&&!motionOverride?'Your device prefers reduced motion. Choose Play motion to enable animations for this visit.':'Pause or resume scrolling strips and preview motion';}
- motion.addEventListener('click',()=>{if(reduced.matches&&!motionOverride){motionOverride=true;paused=false;}else paused=!paused;applyMotion();});reduced.addEventListener('change',()=>{motionOverride=false;applyMotion();});applyMotion();
+ // KOGG's decorative motion is enabled by default; no extra Play step.
+ const paused=false;let frame=0;
+ function motionBlocked(){return false;}
+ document.body.classList.remove('motion-paused');
+ document.body.classList.add('motion-enabled');
  const revealTargets=document.querySelectorAll('.section-heading,.tour-panel,.mode-explorer,.library-card,.update-grid article,.install-card,.faq-list,.closing,.facts,.service-flow,.display-grid article,.roadmap-rows article');
  if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});revealTargets.forEach((el,i)=>{el.classList.add('reveal-ready');el.style.setProperty('--reveal-delay',(el.matches('.library-card,.update-grid article')?i%3*80:el.matches('.display-grid article,.roadmap-rows article')?i%4*70:0)+'ms');observer.observe(el);});}
  function progress(){frame=0;const range=document.documentElement.scrollHeight-innerHeight;document.documentElement.style.setProperty('--read-progress',range>0?String(Math.min(1,Math.max(0,scrollY/range))):'0');}
@@ -86,7 +87,6 @@
  stage.addEventListener('pointerenter',()=>{hovered=true;scheduleHero();});stage.addEventListener('pointerleave',()=>{hovered=false;scheduleHero();});
  stage.addEventListener('focusin',scheduleHero);stage.addEventListener('focusout',()=>setTimeout(scheduleHero,0));
  stage.addEventListener('input',scheduleHero);document.addEventListener('visibilitychange',scheduleHero);
- motion.addEventListener('click',()=>{if(motionBlocked())sceneAnimations.forEach(a=>a.cancel());scheduleHero();});reduced.addEventListener('change',()=>{sceneAnimations.forEach(a=>a.cancel());scheduleHero();});
  heroButtons.forEach((button,i)=>button.addEventListener('click',()=>{scene=i?2:0;updateDots();animatePreview($(button.getAttribute('aria-controls')).querySelector('.hero-screen'));scheduleHero();}));
  document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
  updateDots();

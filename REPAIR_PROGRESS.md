@@ -380,3 +380,8 @@ Screenshot carousel NOT complete/published: both CUA and native Computer Use nod
 Added Windows, macOS, Linux, ChromeOS, Android, iOS/iPadOS and other compatible browser devices to landing installation choices, with browser/device-specific capability qualifications. Added KOGG MEDIA (Africa) developer attribution and the user-supplied vision of effective worship and broadcast worldwide. Copied the supplied logo unchanged into icons/kogg-media.png and added a seamless horizontal contributor-logo bar; only KOGG MEDIA is named as confirmed founding developer, with an aria-hidden repeat for looping. No unconfirmed sponsor logos. Logo is precached; worker v63.
 
 Verified git author labels: Ukeme Emmanuel Inyang-Otu, ukeme02 and local KOGG Presenter author. Discussion also confirms ZCode/OpenCode/Codex development assistance. Infrastructure and content-source credits must remain distinct from contributors/sponsors. Physical device coverage and fresh visual verification remain unverified; browser capture tools unavailable.
+
+
+## Default landing animation — 31 October 2026
+
+At the user’s explicit request, enabled decorative motion by default for every landing visit and removed the Play/Pause motion button. Hero playback continues to pause for hover/focus/offscreen/hidden-tab interaction. Updated tests for the new default. Worker v64. Screenshot slider remains blocked on four current captures: capture runtime still fails before browser initialization. Do not claim it is installed or reuse outdated screenshots as the current UI.

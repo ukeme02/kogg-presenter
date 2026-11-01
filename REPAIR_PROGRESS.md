@@ -2,6 +2,23 @@
 
 Updated: 1 November 2026 — sync session
 
+## Sync backend verified end-to-end (first time)
+
+With "Confirm email" disabled (found under Authentication → Sign In / Providers → User
+Signups), the production round-trip was driven via REST (work/kogg-roundtrip.mjs), replicating
+the app's exact write semantics:
+
+1. signup returns a live session immediately (no email) — 200 + access_token
+2. push: library insert — 201
+3. pull: row returns with songs, service items (themeId included) — 200
+4. conditional update guarded by updated_at — 1 row written (app race-safety)
+5. stale write (old updated_at) — 0 rows written, correctly rejected
+6. RLS isolation — a second account sees zero rows
+7. test rows deleted — 204
+
+The Supabase side of requirement #2 is proven. Remaining for the user: first in-app signup
+(koggpresenter@gmail.com) + Push, and optionally the Gmail SMTP connection for password resets.
+
 ## Backend made real; signup friction removed (user decisions)
 
 The user ran the setup SQL on the production project; `libraries` now exists and RLS was verified

@@ -225,7 +225,7 @@
   <!-- THEMES -->
   <section id="tab-themes" class="tab-panel">
     <div class="card">
-      <h2>Output Themes</h2>
+      <h2>Output Themes</h2><p class="hint">Style Scripture, lyrics and message points. Preview below, then apply to your output.</p>
       <div class="row">
         <label>Theme<br><select id="themeSelect"></select></label>
         <button id="btnNewTheme">+ New</button>
@@ -242,6 +242,7 @@
             <option value="Arial, sans-serif">Sans</option>
             <option value="'Times New Roman', serif">Times</option>
             <option value="Verdana, sans-serif">Verdana</option>
+<option value="system-ui, sans-serif">System UI</option><option value="Tahoma, Geneva, sans-serif">Tahoma</option><option value="Trebuchet MS, sans-serif">Trebuchet</option><option value="Palatino Linotype, Book Antiqua, Palatino, serif">Palatino</option><option value="Cambria, Georgia, serif">Cambria</option><option value="Garamond, Georgia, serif">Garamond</option><option value="Courier New, monospace">Courier</option><option value="Impact, Arial Black, sans-serif">Impact</option>
           </select>
         </label>
       </div>
@@ -249,7 +250,7 @@
         <label>Text alignment<br>
           <select id="themeAlign">
             <option value="center">Center</option>
-            <option value="left">Left</option>
+            <option value="left">Left</option><option value="right">Right</option>
           </select>
         </label>
         <label>Font weight<br>
@@ -279,14 +280,35 @@
           <option value="linear-gradient(135deg,#870000,#190a05)">Crimson</option>
           <option value="image">Custom image…</option>
         </select></label>
-        <label>Custom image<br><input id="themeBgImage" type="file" accept="image/*"></label>
+        <label>Upload background<br><input id="themeBgImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><button id="btnClearThemeImage">Remove image</button>
       </div>
+      <details class="theme-controls" open><summary>Display controls</summary><div class="row">
+<label>Vertical position<select id="themeVertical"><option value="center">Middle</option><option value="top">Top</option><option value="bottom">Bottom</option></select></label>
+<label>Line spacing<input id="themeLineHeight" type="number" min="1" max="2" step="0.05"></label>
+<label>Side margin (%)<input id="themeMargin" type="number" min="2" max="18" step="1"></label>
+<label>Letter spacing (em)<input id="themeSpacing" type="number" min="0" max="0.15" step="0.01"></label>
+<label>Image fit<select id="themeImageFit"><option value="cover">Fill screen (crop edges)</option><option value="contain">Show whole image</option></select></label>
+<label>Background dimming (%)<input id="themeDim" type="number" min="0" max="85" step="5"></label>
+<label>Reference size (vh)<input id="themeLabelSize" type="number" min="1.5" max="5" step="0.25"></label>
+<label><input id="themeShowLabel" type="checkbox"> Show Scripture reference / slide label</label>
+<label><input id="themeShadow" type="checkbox"> Text shadow</label>
+<label><input id="themeAutoGrow" type="checkbox"> Enlarge short Scripture</label>
+</div></details>
+<div id="themePreview" class="theme-preview"><div id="themePreviewText">For God, who commanded the light to shine out of darkness, hath shined in our hearts.</div><small id="themePreviewLabel">2 Corinthians 4:6 · KJV</small></div>
+<p id="themeStatus" class="hint" role="status">Nunito is bundled offline. Other fonts use fonts installed on the presenting device, with fallbacks.</p>
       <div class="row">
         <button id="btnSaveTheme" class="primary">Save Theme</button>
         <button id="btnApplyTheme">Apply to Live</button>
         <button id="btnResetThemes" title="Restores Black, Sunset, Deep Blue and Emerald and makes Black the output default">Reset to Default Themes</button>
       </div>
     </div>
+
+<div class="card logo-settings"><h2>Logo screen</h2><p class="hint">Choose a KOGG style or upload your church logo. Changing styles keeps your uploaded logo available.</p>
+<div class="logo-options"><button id="btnLogoCombination"><img src="icons/kogg-symbol-light.svg" alt=""><b>Combination</b><small>Mark + KOGG Presenter</small></button><button id="btnLogoWordmark"><img src="icons/kogg-wordmark.svg" alt=""><b>Wordmark</b><small>KOGG Presenter typography</small></button><button id="btnLogoMark"><img src="icons/kogg-symbol-light.svg" alt=""><b>Mark</b><small>Standalone screen monogram</small></button></div>
+<div class="row"><label>Selected style<select id="logoStyle"><option value="combination">KOGG · Combination</option><option value="wordmark">KOGG · Wordmark</option><option value="mark">KOGG · Mark only</option><option value="custom">My uploaded logo</option></select></label><button id="btnCycleLogo">Next KOGG style ↻</button><button id="btnPreviewLogo" class="primary">Display logo</button></div>
+<div id="logoPreview" class="logo-design-preview"></div>
+<div class="row"><label>Upload your logo<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><button id="btnLogoClear">Remove uploaded logo</button></div><p id="logoStatus" class="hint" role="status"></p>
+</div>
   </section>
 
   <!-- TOOLS (grouped, collapsible) -->
@@ -383,18 +405,6 @@
       </details>
     </div>
 
-    <div class="card">
-      <div class="group-label">Branding &amp; appearance</div>
-      <details class="group">
-        <summary>Church Logo</summary>
-        <p class="hint">Your picture shows on the <b>Logo</b> screen (and replaces the app placeholder). Stored on this device and synced with your account.</p>
-        <div class="row">
-          <label style="flex:1">Logo image<br><input id="logoFile" type="file" accept="image/*"></label>
-          <button id="btnLogoClear">Remove Logo</button>
-        </div>
-        <div id="logoStatus" class="hint"></div>
-      </details>
-    </div>
     <div class="card">
       <div class="group-label">Extra</div>
       <details class="group">

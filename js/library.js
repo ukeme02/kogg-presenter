@@ -36,7 +36,7 @@
     if (d.settings !== undefined) {
       if (!d.settings || typeof d.settings !== 'object' || Array.isArray(d.settings)) fail('Invalid settings');
       const settings = d.settings;
-      for (const key of ['currentThemeId','currentTranslation','logoId','logoImage','logoName','layoutVer']) if (settings[key] !== undefined && !text(settings[key])) fail('Invalid setting: ' + key);
+      for (const key of ['currentThemeId','currentTranslation','logoId','logoImage','logoName','logoStyle','layoutVer']) if (settings[key] !== undefined && !text(settings[key])) fail('Invalid setting: ' + key);
       for (const key of ['light','strongsOn','panesLocked','fpFold','showFloatPreview','showFloatNav','showFloatEdit','starterSeeded','dirtyLibrary']) if (settings[key] !== undefined && typeof settings[key] !== 'boolean') fail('Invalid setting: ' + key);
       if (settings.mode !== undefined && !['','base','local','sync'].includes(settings.mode)) fail('Invalid work mode');
       if (settings.verseMode !== undefined && !['verse','range','chapter'].includes(settings.verseMode)) fail('Invalid verse mode');
@@ -60,7 +60,7 @@
   function mergeRecords(local, incoming) { return [...new Map([...local, ...incoming].map(v => [v.id, v])).values()]; }
   function portableSettings(settings) {
     const result = {};
-    for (const k of ['logoId','logoImage','logoName']) if (settings[k] !== undefined) result[k] = settings[k];
+    for (const k of ['logoId','logoImage','logoName','logoStyle']) if (settings[k] !== undefined) result[k] = settings[k];
     return result;
   }
   // A three-way merge detects conflicts instead of overwriting either device.
@@ -84,7 +84,7 @@
       const v = choose(base.plans?.[key],local.plans?.[key],remote.plans?.[key],'plan/' + key);
       if (v !== undefined) plans[key] = v;
     }
-    for (const key of ['logoId','logoImage','logoName']) {
+    for (const key of ['logoId','logoImage','logoName','logoStyle']) {
       const v = choose(base.settings?.[key],local.settings?.[key],remote.settings?.[key],'settings/' + key);
       if (v !== undefined) settings[key] = v;
     }

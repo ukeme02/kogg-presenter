@@ -38,7 +38,7 @@ function themeBgUrl(t) {
 }
 async function preloadBg(id) {
   if (!window.KOGGAssets || bgCache.has(id)) return;
-  const v = await window.KOGGAssets.get(id);
+  let v;try{v=await window.KOGGAssets.get(id);}catch{return;}
   if (v) {
     bgCache.set(id, v);
     const state = getLive();       // re-render with the image
@@ -47,13 +47,16 @@ async function preloadBg(id) {
   }
 }
 
+function displayNumber(value,fallback,min,max){const n=Number(value);return value!==undefined&&value!==null&&Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
+function themeBackground(t){const src=themeBgUrl(t),dim=displayNumber(t.dim,0,0,85)/100,shade=`linear-gradient(rgba(0,0,0,${dim}),rgba(0,0,0,${dim}))`;
+ return src?`${shade},url("${src}") center/${t.imageFit==='contain'?'contain':'cover'} no-repeat ${t.bg?.startsWith('#')?t.bg:'#000'}`:`${shade},${t.bg?.startsWith('#')?`linear-gradient(${t.bg},${t.bg})`:t.bg||'#000'}`;
+}
 function applyTheme(state) {
   const t = themeById(getThemes(), state.themeId);
   if (OVERLAY) {
     screenEl.style.background = 'transparent';   // OBS composites over video
   } else {
-    const url = themeBgUrl(t);
-    screenEl.style.background = url ? `url("${url}") center/cover no-repeat` : t.bg;
+    screenEl.style.background=themeBackground(t);
   }
   screenEl.style.color = t.textColor;
   textEl.style.fontFamily = t.font;
@@ -61,6 +64,13 @@ function applyTheme(state) {
   textEl.style.fontSize = t.fontSize + 'vh';
   textEl.style.textAlign = t.align || 'center';
   textEl.style.fontWeight = t.weight || '700';
+  textEl.style.lineHeight=displayNumber(t.lineHeight,1.35,1,2);
+  textEl.style.letterSpacing=displayNumber(t.spacing,0,0,.15)+'em';
+  textEl.style.padding=`6vh ${displayNumber(t.margin,8,2,18)}vw`;
+  textEl.style.alignItems=t.vertical==='top'?'flex-start':t.vertical==='bottom'?'flex-end':'center';
+  textEl.style.textShadow=t.shadow===false?'none':'0 2px 10px rgba(0,0,0,.55)';
+  labelEl.style.fontSize=displayNumber(t.labelSize,3,1.5,5)+'vh';
+  labelEl.style.visibility=t.showLabel===false?'hidden':'visible';
   return t;
 }
 
@@ -104,7 +114,7 @@ function render(state) {
       contentEl.innerHTML = renderSlideText(slide, state);   // always clean text — numbers live only in the operator preview
       labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : '');
       textEl.style.fontSize = t.fontSize + 'vh';
-      requestAnimationFrame(()=>fitText(!!state.scripture || / \d+:\d+/.test(slide.label || '')));
+      requestAnimationFrame(()=>fitText(t.autoGrow!==false && (!!state.scripture || / \d+:\d+/.test(slide.label || ''))));
     }
   } else if (!OVERLAY) {
     applyBackdrops(state);
@@ -150,21 +160,15 @@ function renderStrongsCard(card, t) {
 /* church logo screen — custom logo image if the operator uploaded one */
 let logoToken = 0;
 async function renderLogo(state) {
-  const on = state.mode === 'logo' && !OVERLAY;
-  $('logoScreen').classList.toggle('on', on);
-  if (!on) return;
-  const token = ++logoToken;
-  const s = getSettings();
-  let src = '';
-  if (s.logoId && window.KOGGAssets) src = (await window.KOGGAssets.get(s.logoId)) || '';
-  if (!src && s.logoImage) src = s.logoImage;
-  if (token !== logoToken) return;   // superseded by a newer render
-  const img = $('logoImg');
-  const svg = $('logoSvg');
-  if (src) { img.src = src; img.hidden = false; svg.hidden = true; }
-  else { img.hidden = true; svg.hidden = false; }
-  if(!src&&!s.logoName)$('logoName').innerHTML='<span class="output-kogg-wordmark" role="img" aria-label="KOGG"></span><span class="output-presenter">Presenter</span>';
-  else $('logoName').textContent=s.logoName||'KOGG Presenter';
+ const token=++logoToken,on=state.mode==='logo'&&!OVERLAY;$('logoScreen').classList.toggle('on',on);if(!on)return;
+ const s=getSettings();let style=['combination','wordmark','mark','custom'].includes(s.logoStyle)?s.logoStyle:(s.logoId||s.logoImage?'custom':'combination'),src='';
+ const img=$('logoImg'),svg=$('logoSvg'),name=$('logoName');img.hidden=true;svg.hidden=true;name.hidden=true;
+ if(style==='custom'){try{if(s.logoId&&window.KOGGAssets)src=await window.KOGGAssets.get(s.logoId)||'';}catch{}if(!src&&s.logoImage)src=s.logoImage;if(!src)style='combination';}
+ if(token!==logoToken)return;
+ $('logoScreen').className='on logo-'+style;
+ if(src){img.src=src;img.hidden=false;name.textContent=s.logoName||'';name.hidden=!s.logoName;}
+ else{svg.hidden=style==='wordmark';name.hidden=style==='mark';name.innerHTML='<span class="output-kogg-wordmark" role="img" aria-label="KOGG"></span><span class="output-presenter">Presenter</span>';}
+ const tagline=$('logoTagline');if(tagline)tagline.hidden=style==='custom'||style==='mark';
 }
 
 function renderNotesAlert(alert){
@@ -189,11 +193,7 @@ function renderLowerThird(lt) {
 function applyBackdrops(state) {
   const t = themeById(getThemes(), state.themeId);
   if (OVERLAY) return;
-  if (state.mode === 'countdown') {
-    const url = themeBgUrl(t);
-    $('countdown').style.background = url ? `url("${url}") center/cover no-repeat` : t.bg;
-    $('countdown').style.color = t.textColor;
-  }
+  if(state.mode==='countdown'||state.mode==='logo'){const el=$(state.mode==='logo'?'logoScreen':'countdown');el.style.background=themeBackground(t);el.style.color=state.mode==='logo'?'#f3f7ff':t.textColor;}
 }
 
 /* countdown ticker */

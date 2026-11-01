@@ -1670,32 +1670,38 @@ function renderThemesTab() {
   $('themeSelect').value = currentThemeId;
   loadThemeForm();
 }
+const themeControlDefaults={themeVertical:['vertical','center'],themeLineHeight:['lineHeight',1.35],themeMargin:['margin',8],themeSpacing:['spacing',0],themeImageFit:['imageFit','cover'],themeDim:['dim',0],themeLabelSize:['labelSize',3],themeShowLabel:['showLabel',true],themeShadow:['shadow',true],themeAutoGrow:['autoGrow',true]};
+let themePreviewToken=0;
+function themeNumber(value,fallback,min,max){const n=Number(value);return value!==''&&Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
 function loadThemeForm() {
-  const t = themeById($('themeSelect').value);
-  $('themeName').value = t.name;
-  $('themeTextColor').value = t.textColor;
-  $('themeFontSize').value = t.fontSize;
-  $('themeFont').value = t.font;
-  $('themeAlign').value = t.align || 'center';
-  $('themeWeight').value = t.weight || '400';
-  const opt = [...$('themeBg').options].find(o => o.value === t.bg);
-  $('themeBg').value = opt ? t.bg : ((t.bgImage || t.bgImageId) ? 'image' : $('themeBg').options[0].value);
+ const t=themeById($('themeSelect').value);
+ $('themeName').value=t.name;$('themeTextColor').value=t.textColor;$('themeFontSize').value=t.fontSize;$('themeFont').value=t.font;$('themeAlign').value=t.align||'center';$('themeWeight').value=t.weight||'700';
+ $('themeBg').value=(t.bgImage||t.bgImageId)?'image':([...$('themeBg').options].some(o=>o.value===t.bg)?t.bg:$('themeBg').options[0].value);
+ Object.entries(themeControlDefaults).forEach(([id,[key,fallback]])=>{if(typeof fallback==='boolean')$(id).checked=t[key]!==false;else $(id).value=t[key]??fallback;});
+ updateThemePreview();
 }
-$('themeSelect').addEventListener('change', loadThemeForm);
-$('themeBgImage').addEventListener('change', () => {
-  const file = $('themeBgImage').files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const t = themeById($('themeSelect').value);
-    const stored = await storeImage(reader.result, 'bg');
-    if (typeof stored === 'string') { t.bgImage = stored; delete t.bgImageId; }
-    else { t.bgImageId = stored.id; t.bgImage = ''; }
-    themeSave();
-    flash($('themeBgImage'), 'Image loaded ✓');
-  };
-  reader.readAsDataURL(file);
+function readThemeForm(){const t={...themeById($('themeSelect').value)};t.name=$('themeName').value.trim()||t.name;t.textColor=$('themeTextColor').value;t.fontSize=themeNumber($('themeFontSize').value,7,3,15);t.font=$('themeFont').value||DEFAULT_FONT;t.align=$('themeAlign').value||'center';t.weight=$('themeWeight').value||'700';
+ Object.entries(themeControlDefaults).forEach(([id,[key,fallback]])=>{t[key]=typeof fallback==='boolean'?$(id).checked:$(id).value;});
+ t.lineHeight=themeNumber(t.lineHeight,1.35,1,2);t.margin=themeNumber(t.margin,8,2,18);t.spacing=themeNumber(t.spacing,0,0,.15);t.dim=themeNumber(t.dim,0,0,85);t.labelSize=themeNumber(t.labelSize,3,1.5,5);
+ if($('themeBg').value!=='image'){t.bg=$('themeBg').value;t.bgImage='';delete t.bgImageId;}return t;
+}
+async function updateThemePreview(){const token=++themePreviewToken,t=readThemeForm();let src=t.bgImage||'';if(t.bgImageId&&window.KOGGAssets){try{src=await window.KOGGAssets.get(t.bgImageId)||'';}catch{src='';}}if(token!==themePreviewToken)return;
+ const box=$('themePreview'),text=$('themePreviewText'),label=$('themePreviewLabel'),shade=`linear-gradient(rgba(0,0,0,${t.dim/100}),rgba(0,0,0,${t.dim/100}))`;
+ box.style.background=src?`${shade},url("${src}") center/${t.imageFit==='contain'?'contain':'cover'} no-repeat ${t.bg?.startsWith('#')?t.bg:'#000'}`:`${shade},${t.bg.startsWith('#')?`linear-gradient(${t.bg},${t.bg})`:t.bg}`;
+ box.style.color=t.textColor;text.style.fontFamily=t.font;text.style.fontSize=t.fontSize*3+'px';text.style.fontWeight=t.weight;text.style.lineHeight=t.lineHeight;text.style.letterSpacing=t.spacing+'em';text.style.textAlign=t.align;text.style.padding=`24px ${t.margin}%`;text.style.justifyContent=t.vertical==='top'?'flex-start':t.vertical==='bottom'?'flex-end':'center';text.style.textShadow=t.shadow?'0 2px 8px #0009':'none';label.hidden=!t.showLabel;label.style.fontFamily=t.font;label.style.fontSize=t.labelSize*3+'px';
+}
+function saveThemeForm(){const t=readThemeForm();if($('themeBg').value==='image'&&!t.bgImage&&!t.bgImageId){$('themeStatus').textContent='Upload a background image first.';return false;}Object.assign(themeById(t.id),t);themeSave();markDirty();return true;}
+// Decode and resize uploads before storing, preserving transparent logo pixels.
+function readPresentationImage(file,logo=false){return new Promise((resolve,reject)=>{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)||file.size>12*1024*1024){reject(new Error('Choose a PNG, JPEG, WebP or GIF image under 12 MB.'));return;}const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read the image.'));reader.onload=()=>{const image=new Image();image.onerror=()=>reject(new Error('This image could not be opened. Try another file.'));image.onload=()=>{try{const scale=Math.min(1,(logo?1600:2560)/Math.max(image.naturalWidth,image.naturalHeight));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL(logo?'image/png':'image/jpeg',.88));}catch{reject(new Error('Could not prepare this image.'));}};image.src=reader.result;};reader.readAsDataURL(file);});}
+$('themeSelect').addEventListener('change',loadThemeForm);
+['themeName','themeTextColor','themeFontSize','themeFont','themeAlign','themeWeight','themeBg',...Object.keys(themeControlDefaults)].forEach(id=>$(id).addEventListener('input',updateThemePreview));
+let themeUploadToken=0;
+$('themeBg').addEventListener('input',()=>{themeUploadToken++;});
+$('themeBgImage').addEventListener('change',async()=>{const file=$('themeBgImage').files[0];if(!file)return;const t=themeById($('themeSelect').value),token=++themeUploadToken;$('themeStatus').textContent='Preparing background…';
+ try{const data=await readPresentationImage(file);if(token!==themeUploadToken||!themes.includes(t))return;const stored=await storeImage(data,'bg');if(token!==themeUploadToken||!themes.includes(t))return;if(typeof stored==='string'){t.bgImage=stored;delete t.bgImageId;}else{t.bgImageId=stored.id;t.bgImage='';}themeSave();markDirty();if($('themeSelect').value===t.id){$('themeBg').value='image';updateThemePreview();}$('themeStatus').textContent='Background saved. Click Apply to Live to use it.';}
+ catch(error){$('themeStatus').textContent=error.message;}finally{$('themeBgImage').value='';}
 });
+$('btnClearThemeImage').addEventListener('click',()=>{themeUploadToken++;const t=themeById($('themeSelect').value);t.bgImage='';delete t.bgImageId;$('themeBg').value='#000000';themeSave();markDirty();updateThemePreview();$('themeStatus').textContent='Image removed. Click Apply to Live to use the selected background.';});
 $('btnNewTheme').addEventListener('click', () => {
   const t = { id: uid(), name: 'New Theme', bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
               bgImage: '', textColor: '#ffffff', font: DEFAULT_FONT, fontSize: 7, align: 'center', weight: '700' };
@@ -1712,26 +1718,8 @@ $('btnDeleteTheme').addEventListener('click', () => {
   LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentThemeId }));
   renderThemesTab();
 });
-$('btnSaveTheme').addEventListener('click', () => {
-  const t = themeById($('themeSelect').value);
-  t.name = $('themeName').value.trim() || t.name;
-  t.textColor = $('themeTextColor').value;
-  t.fontSize = +$('themeFontSize').value || 7;
-  t.font = $('themeFont').value;
-  t.align = $('themeAlign').value;
-  t.weight = $('themeWeight').value;
-  const bgVal = $('themeBg').value;
-  if (bgVal === 'image') { if (!t.bgImage && !t.bgImageId) { alert('Pick a custom image file first.'); return; } }
-  else { t.bg = bgVal; t.bgImage = ''; delete t.bgImageId; }
-  LS.set(K.themes, themes);
-  flash($('btnSaveTheme'), 'Saved ✓');
-});
-$('btnApplyTheme').addEventListener('click', () => {
-  currentThemeId = $('themeSelect').value;
-  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { currentThemeId }));
-  pushLive({ themeId: currentThemeId });
-  flash($('btnApplyTheme'), 'Applied ✓');
-});
+$('btnSaveTheme').addEventListener('click',()=>{if(!saveThemeForm())return;$('themeStatus').textContent='Theme saved. Apply to Live sends it to the output.';updateThemePreview();flash($('btnSaveTheme'),'Saved ✓');});
+$('btnApplyTheme').addEventListener('click',()=>{if(!saveThemeForm())return;currentThemeId=$('themeSelect').value;LS.set(K.settings,Object.assign(LS.get(K.settings,{}),{currentThemeId}));pushLive({themeId:currentThemeId});$('themeStatus').textContent='Theme applied to live output.';flash($('btnApplyTheme'),'Applied ✓');});
 $('btnResetThemes').addEventListener('click', () => {
   if (!confirm('Restore the four default themes (Black, Sunset, Deep Blue, Emerald)? Custom themes will be replaced.')) return;
   themes = DEFAULT_THEMES.map(t => Object.assign({}, t));
@@ -2771,44 +2759,21 @@ $('bibleList').addEventListener('click', async e => {
 });
 
 /* ---------- church logo (Logo screen + countdown) ---------- */
-function refreshLogoStatus() {
-  const s = LS.get(K.settings, {});
-  $('logoStatus').textContent = (s.logoId || s.logoImage)
-    ? `Logo set — shows on the Logo screen.`
-    : 'No logo yet — the app placeholder is used.';
+let logoPreviewToken=0,logoUploadToken=0;
+function selectedLogoStyle(settings){return ['combination','wordmark','mark','custom'].includes(settings.logoStyle)?settings.logoStyle:(settings.logoId||settings.logoImage?'custom':'combination');}
+async function refreshLogoStatus(){const token=++logoPreviewToken,s=LS.get(K.settings,{}),style=selectedLogoStyle(s);$('logoStyle').value=style;$('btnLogoClear').disabled=!(s.logoId||s.logoImage);$('logoStatus').textContent=style==='custom'?'Your uploaded logo is selected.':'KOGG '+style+' selected.';
+ ['Combination','Wordmark','Mark'].forEach(name=>$("btnLogo"+name).setAttribute('aria-pressed',String(style===name.toLowerCase())));
+ let src=s.logoImage||'';if(style==='custom'&&s.logoId&&window.KOGGAssets){try{src=await window.KOGGAssets.get(s.logoId)||'';}catch{src='';}}if(token!==logoPreviewToken)return;
+ $('logoPreview').className='logo-design-preview logo-'+style;
+ $('logoPreview').innerHTML=style==='custom'?(src?`<img class="custom-logo-preview" src="${esc(src)}" alt="Your logo">`:'<span>Upload a logo below to use this style.</span>'):`${style!=='wordmark'?'<img class="preset-symbol" src="icons/kogg-symbol-light.svg" alt="">':''}${style!=='mark'?'<div><img class="preset-wordmark" src="icons/kogg-wordmark.svg" alt="KOGG"><span>Presenter</span></div>':''}`;
 }
-$('logoFile').addEventListener('change', () => {
-  const file = $('logoFile').files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const settings = LS.get(K.settings, {});
-    const stored = await storeImage(reader.result, 'logo');
-    if (typeof stored === 'string') {
-      settings.logoImage = stored; settings.logoId = '';
-    } else {
-      settings.logoId = stored.id; settings.logoImage = '';
-    }
-    settings.logoName = file.name.replace(/\.[a-z0-9]+$/i, '').slice(0, 40);
-    LS.set(K.settings, settings);
-    markDirty();
-    pushLive({});
-    refreshLogoStatus();
-    flash($('btnLogoClear'), 'Logo saved ✓');
-  };
-  reader.readAsDataURL(file);
-});
-$('btnLogoClear').addEventListener('click', () => {
-  const settings = LS.get(K.settings, {});
-  settings.logoImage = '';
-  settings.logoId = '';
-  settings.logoName = '';
-  LS.set(K.settings, settings);
-  markDirty();
-  refreshLogoStatus();
-  pushLive({});
-  flash($('btnLogoClear'), 'Removed ✓');
-});
+function chooseLogoStyle(style){const settings=LS.get(K.settings,{});if(style==='custom'&&!settings.logoId&&!settings.logoImage){refreshLogoStatus();$('logoStatus').textContent='Upload your logo below first.';return;}logoUploadToken++;settings.logoStyle=style;LS.set(K.settings,settings);markDirty();refreshLogoStatus();pushLive({});}
+['Combination','Wordmark','Mark'].forEach(name=>$('btnLogo'+name).addEventListener('click',()=>chooseLogoStyle(name.toLowerCase())));
+$('logoStyle').addEventListener('change',()=>chooseLogoStyle($('logoStyle').value));
+$('btnCycleLogo').addEventListener('click',()=>{const styles=['combination','wordmark','mark'];chooseLogoStyle(styles[(styles.indexOf(selectedLogoStyle(LS.get(K.settings,{})))+1)%3]);});
+$('btnPreviewLogo').addEventListener('click',()=>pushLive({mode:'logo'}));
+$('logoFile').addEventListener('change',async()=>{const file=$('logoFile').files[0];if(!file)return;const token=++logoUploadToken;$('logoStatus').textContent='Preparing logo…';try{const data=await readPresentationImage(file,true);if(token!==logoUploadToken)return;const stored=await storeImage(data,'logo');if(token!==logoUploadToken)return;const settings=LS.get(K.settings,{});if(typeof stored==='string'){settings.logoImage=stored;settings.logoId='';}else{settings.logoId=stored.id;settings.logoImage='';}settings.logoName='';settings.logoStyle='custom';LS.set(K.settings,settings);markDirty();pushLive({});refreshLogoStatus();}catch(error){$('logoStatus').textContent=error.message;}finally{$('logoFile').value='';}});
+$('btnLogoClear').addEventListener('click',()=>{logoUploadToken++;const settings=LS.get(K.settings,{});settings.logoImage='';settings.logoId='';settings.logoName='';settings.logoStyle='combination';LS.set(K.settings,settings);markDirty();refreshLogoStatus();pushLive({});});
 refreshLogoStatus();
 
 /* ---------- bundled traditional hymnary and optional expansion ---------- */

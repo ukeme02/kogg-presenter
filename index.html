@@ -17,7 +17,7 @@
     <button id="modeChip" class="mode-chip" title="Change work mode">…</button>
   </div>
   <div class="quickgo">
-    <input id="quickGo" type="search" autocomplete="off" placeholder="Find scripture, remembered words or songs…  (/ to focus, Enter to present)">
+    <input id="quickGo" type="search" autocomplete="off" name="kogg-quickgo" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder="Find scripture, remembered words or songs…  (/ to focus, Enter to present)">
     <div id="quickGoResults" class="quickgo-results" hidden></div>
   </div>
   <div class="quick-actions">
@@ -120,7 +120,7 @@
           <div class="dock-head"><span class="grip"><i class="dock-ico">⚡</i>Quick jump</span></div>
           <p class="hint dock-hint">Type <b>jn 3:16</b> / <b>ps 23:1-4</b> / <b>rom 8</b> — type three book letters, then chapter and verse. <b>→</b> accepts each step; <b>Enter</b> displays.</p>
           <div class="quickjump">
-            <input id="bookSearch" type="search" autocomplete="off"
+            <input id="bookSearch" type="search" autocomplete="off" name="kogg-jump" data-1pignore="true" data-lpignore="true" data-form-type="other"
                    placeholder="Joh → 3 → 16 → Enter" aria-describedby="jumpHint" enterkeyhint="go">
             <span id="bookGhost"></span>
             <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
@@ -135,7 +135,7 @@
           <div class="dock-head"><span class="grip"><i class="dock-ico">🔎</i>Whole-Bible search</span></div>
           <p class="hint dock-hint">Find verses by the words you remember — <i>"sheep hear my voice"</i>. Quotes = exact phrase.</p>
           <div class="row">
-            <input id="bibleSearch" type="search" autocomplete="off" placeholder='sheep hear my voice  ·  "no man cometh to the Father"'>
+            <input id="bibleSearch" type="search" autocomplete="off" name="kogg-bible-search" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder='sheep hear my voice  ·  "no man cometh to the Father"'>
             <button id="btnVoiceSearch" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
           </div>
           <div id="bibleResults" class="search-results scroll" hidden></div>
@@ -160,7 +160,7 @@
     <div class="lyrics-deck">
       <div class="lyrics-side">
         <section class="card lyrics-find"><h2>Find a song</h2>
-          <input id="songSearch" type="search" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
+          <input id="songSearch" type="search" autocomplete="off" name="kogg-song-search" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
           <div class="row"><button id="btnNewSong" class="primary">+ New song</button><button id="btnSearchLyricsOnline">Search online</button></div>
           <p class="lyrics-result-hint">Tap a song title to display. Choose Edit to review.</p>
           <p id="lyricsSearchStatus" class="hint" role="status"></p><div id="lyricsOnlineResults" class="lyrics-results"></div>
@@ -203,40 +203,45 @@
   <section id="tab-notes" class="tab-panel">
    <div class="notes-toolbar"><div><h2>Notes</h2><p id="notesStorageStatus" class="hint"></p></div><span class="notes-tip">Write a point. Tap its card. Keep up with the message.</span></div>
    <div class="notes-deck">
-    <aside class="card notes-library"><h2>Quick start</h2><div class="notes-templates"><button data-note-template="sermon">Message points</button><button data-note-template="announcement">Announcement</button><button data-note-template="minister">Now ministering</button><button data-note-template="alert">Scrolling alert</button><button data-note-template="welcome">Welcome screen</button></div><h2>Saved notes</h2><div id="notesSaved" class="notes-saved"></div><button id="btnNewNotes">+ New note</button></aside>
-    <section class="card notes-editor"><h2>Write & present</h2><div class="notes-steps"><span>1 · Choose a format</span><span>2 · Write your text</span><span>3 · Tap Display or a preview card</span></div><div class="row"><label>Title<input id="notesTitle" maxlength="140" placeholder="Message or announcement title" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><label>Display as<select id="notesMode"><option value="points">Bulleted points</option><option value="fullscreen">Full-screen text</option><option value="tag">Now ministering / tag</option><option value="alert">Scrolling alert</option></select></label></div><label>Text<textarea id="notesBody" rows="8" maxlength="30000" placeholder="Type your first point. Press Enter for the next bullet. Leave an empty line to start another slide." spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea></label><div id="notesSplitControls" class="row"><label>Points per slide<select id="notesSplit"><option value="0">Keep together · auto-fit</option><option value="3">3 points</option><option value="4">4 points</option><option value="5">5 points</option><option value="6">6 points</option></select></label><button id="btnNotesBreak" type="button">New slide at cursor</button></div><label id="notesSubtitleLabel">Role / second line<input id="notesSubtitle" maxlength="200" placeholder="Now ministering · message title or role" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><p id="notesModeHint" class="hint"></p><p class="hint writing-help">Spelling suggestions and autocorrect use your browser or keyboard settings. Right-click an underlined word for suggestions.</p><div class="notes-actions"><button id="btnNotesDisplay" class="primary">▶ Display</button><button id="btnSaveNotes">Save note</button><button id="btnHideNotes">Clear notes from output</button></div><label class="notes-follow"><input type="checkbox" id="notesFollow"> Update live as I type (after Display)</label><p id="notesStatus" class="hint" role="status">Typing stays in the preview until you display.</p><div id="notesCards" class="notes-cards"></div></section>
-    <aside class="card notes-output"><h2>On the projector</h2><div class="notes-actions"><button id="btnNotesAnnotate" aria-pressed="false">Yellow emphasis</button><button id="btnNotesClearHighlight">Clear emphasis</button></div><p class="hint">Turn emphasis on, then tap or drag over words below. Works on live bullet points and full-screen text.</p><p id="notesLiveLabel" class="hint"></p><div id="notesLiveText" class="notes-live-text"></div><div class="notes-actions"><button id="btnNotesPrev">← Previous slide</button><button id="btnNotesNext">Next slide →</button></div><p class="hint">Tags and scrolling alerts can sit over Scripture or lyrics. Clear notes removes only Notes content.</p></aside>
+    <aside class="dock notes-library"><div class="dock-head"><span class="grip"><i class="dock-ico">📚</i>Quick start</span></div><div class="notes-templates"><button data-note-template="sermon">Message points</button><button data-note-template="announcement">Announcement</button><button data-note-template="minister">Now ministering</button><button data-note-template="alert">Scrolling alert</button><button data-note-template="welcome">Welcome screen</button></div><h2>Saved notes</h2><div id="notesSaved" class="notes-saved"></div><button id="btnNewNotes">+ New note</button></aside>
+    <section class="dock notes-editor"><div class="dock-head"><span class="grip"><i class="dock-ico">📝</i>Write & present</span></div><div class="notes-steps"><span>1 · Choose a format</span><span>2 · Write your text</span><span>3 · Tap Display or a preview card</span></div><div class="row"><label>Title<input id="notesTitle" maxlength="140" placeholder="Message or announcement title" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><label>Display as<select id="notesMode"><option value="points">Bulleted points</option><option value="fullscreen">Full-screen text</option><option value="tag">Now ministering / tag</option><option value="alert">Scrolling alert</option></select></label></div><label>Text<textarea id="notesBody" rows="8" maxlength="30000" placeholder="Type your first point. Press Enter for the next bullet. Leave an empty line to start another slide." spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea></label><div id="notesSplitControls" class="row"><label>Points per slide<select id="notesSplit"><option value="0">Keep together · auto-fit</option><option value="3">3 points</option><option value="4">4 points</option><option value="5">5 points</option><option value="6">6 points</option></select></label><button id="btnNotesBreak" type="button">New slide at cursor</button></div><label id="notesSubtitleLabel">Role / second line<input id="notesSubtitle" maxlength="200" placeholder="Now ministering · message title or role" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><p id="notesModeHint" class="hint"></p><p class="hint writing-help">Spelling suggestions and autocorrect use your browser or keyboard settings. Right-click an underlined word for suggestions.</p><div class="notes-actions"><button id="btnNotesDisplay" class="primary">▶ Display</button><button id="btnSaveNotes">Save note</button><button id="btnHideNotes">Clear notes from output</button></div><label class="notes-follow"><input type="checkbox" id="notesFollow"> Update live as I type (after Display)</label><p id="notesStatus" class="hint" role="status">Typing stays in the preview until you display.</p><div id="notesCards" class="notes-cards"></div></section>
+    <aside class="dock notes-output"><div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>On the projector</span></div><div class="notes-actions"><button id="btnNotesAnnotate" aria-pressed="false">Yellow emphasis</button><button id="btnNotesClearHighlight">Clear emphasis</button></div><p class="hint">Turn emphasis on, then tap or drag over words below. Works on live bullet points and full-screen text.</p><p id="notesLiveLabel" class="hint"></p><div id="notesLiveText" class="notes-live-text"></div><div class="notes-actions"><button id="btnNotesPrev">← Previous slide</button><button id="btnNotesNext">Next slide →</button></div><p class="hint">Tags and scrolling alerts can sit over Scripture or lyrics. Clear notes removes only Notes content.</p></aside>
    </div>
   </section>
 
   <!-- SERVICE -->
   <section id="tab-service" class="tab-panel">
-    <div class="card">
-      <h2>Service Plan</h2>
-      <details class="plan-fold">
-        <summary>Save / load plans</summary>
-        <div class="row">
-          <input id="planName" type="text" placeholder="Plan name (e.g. Sunday 26 Oct)" spellcheck="true" autocorrect="on" autocapitalize="sentences">
-          <button id="btnSavePlan">Save Plan</button>
-        </div>
-        <div class="row" style="align-items:center">
-          <select id="planSelect"></select>
-          <button id="btnLoadPlan">Load</button>
-          <button id="btnDeletePlan" class="danger">Delete</button>
-        </div>
-      </details>
-      <ul id="serviceList" class="item-list"></ul>
-      <div class="row">
-        <button id="btnLiveService" class="primary">▶ Start Service Live</button>
-        <button id="btnClearService" class="danger">Clear All</button>
+    <div class="service-deck">
+      <div class="dock service-queue">
+        <div class="dock-head"><span class="grip"><i class="dock-ico">🧩</i>Service plan</span><span class="dock-head-hint">tap ▶ to put an item live</span></div>
+        <ul id="serviceList" class="item-list scroll"></ul>
+        <div class="dock-foot"><button id="btnLiveService" class="primary">▶ Start Service Live</button><button id="btnClearService" class="danger">Clear All</button></div>
+      </div>
+      <div class="dock service-plans">
+        <div class="dock-head"><span class="grip"><i class="dock-ico">🗂️</i>Named plans</span></div>
+        <details class="plan-fold" open>
+          <summary>Save / load plans</summary>
+          <div class="row">
+            <input id="planName" type="text" placeholder="Plan name (e.g. Sunday 26 Oct)" spellcheck="true" autocorrect="on" autocapitalize="sentences">
+            <button id="btnSavePlan">Save Plan</button>
+          </div>
+          <div class="row" style="align-items:center">
+            <select id="planSelect"></select>
+            <button id="btnLoadPlan">Load</button>
+            <button id="btnDeletePlan" class="danger">Delete</button>
+          </div>
+        </details>
+        <p class="hint">Plans save the whole queue in order. Load one to swap the service in seconds — plans sync with your account.</p>
       </div>
     </div>
   </section>
 
   <!-- THEMES -->
   <section id="tab-themes" class="tab-panel">
-    <div class="card">
-      <h2>Output Themes</h2><p class="hint">Style Scripture, lyrics and message points. Preview below, then apply to your output.</p>
+    <div class="themes-deck">
+      <div class="dock themes-studio">
+      <div class="dock-head"><span class="grip"><i class="dock-ico">🎨</i>Theme studio</span><span class="dock-head-hint">Style Scripture, lyrics and message points</span></div>
+      <div class="themes-scroll">
       <div class="row">
         <label>Theme<br><select id="themeSelect"></select></label>
         <button id="btnNewTheme">+ New</button>
@@ -306,8 +311,6 @@
 <label><input id="themeShadow" type="checkbox"> Text shadow</label>
 <label><input id="themeAutoGrow" type="checkbox"> Enlarge short Scripture</label>
 </div></details>
-<div id="themePreview" class="theme-preview"><div id="themePreviewText">For God, who commanded the light to shine out of darkness, hath shined in our hearts.</div><small id="themePreviewLabel">2 Corinthians 4:6 · KJV</small></div>
-<p id="themeStatus" class="hint" role="status">Nunito is bundled offline. Other fonts use fonts installed on the presenting device, with fallbacks.</p>
       <div class="row">
         <button id="btnSaveTheme" class="primary">Save Theme</button>
         <button id="btnApplyTheme">Apply to Live</button>
@@ -319,6 +322,13 @@
 <button id="btnPreviewLogo">Show logo</button><button id="btnLogoClear">Remove upload</button>
 <div hidden><button id="btnLogoCombination">Combination</button><button id="btnLogoWordmark">Wordmark</button><button id="btnLogoMark">Mark</button><button id="btnCycleLogo">Next style</button></div>
 <div id="logoPreview" hidden></div><p id="logoStatus" class="hint" role="status"></p>
+      </div>
+      </div>
+      </div>
+      <div class="dock themes-preview">
+        <div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>Preview</span><span class="dock-head-hint">what the room will see</span></div>
+        <div id="themePreview" class="theme-preview"><div id="themePreviewText">For God, who commanded the light to shine out of darkness, hath shined in our hearts.</div><small id="themePreviewLabel">2 Corinthians 4:6 · KJV</small></div>
+        <p id="themeStatus" class="hint" role="status">Nunito is bundled offline. Other fonts use fonts installed on the presenting device, with fallbacks.</p>
       </div>
     </div>
   </section>

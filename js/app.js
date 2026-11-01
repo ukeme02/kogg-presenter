@@ -82,6 +82,13 @@ themes = themes.map(t => {
 });
 LS.set(K.themes, themes);
 let currentThemeId = LS.get(K.settings, {}).currentThemeId || themes[0].id;
+/* The emphasis colour is central: the live theme's picked colour feeds every deck's
+   word highlights through the --kogg-hl variable (KOGG yellow by default). */
+function applyEmphasisColor() {
+  const t = themes.find(x => x.id === currentThemeId) || themes[0];
+  document.documentElement?.style?.setProperty?.('--kogg-hl', /^#[0-9a-fA-F]{6}$/.test(t?.hlColor || '') ? t.hlColor : '#ffd83d');
+}
+applyEmphasisColor();
 
 const $ = id => document.getElementById(id);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1786,7 +1793,7 @@ async function updateThemePreview(){const token=++themePreviewToken,t=readThemeF
  box.style.background=src?`${shade},url("${src}") center/${t.imageFit==='contain'?'contain':'cover'} no-repeat ${t.bg?.startsWith('#')?t.bg:'#000'}`:`${shade},${t.bg.startsWith('#')?`linear-gradient(${t.bg},${t.bg})`:t.bg}`;
  box.style.color=t.textColor;text.style.fontFamily=t.font;text.style.fontSize=t.fontSize*3+'px';text.style.fontWeight=t.weight;text.style.lineHeight=t.lineHeight;text.style.letterSpacing=t.spacing+'em';text.style.textAlign=t.align;text.style.padding=`24px ${t.margin}%`;text.style.justifyContent=t.vertical==='top'?'flex-start':t.vertical==='bottom'?'flex-end':'center';text.style.textShadow=t.shadow?'0 2px 8px #0009':'none';label.hidden=!t.showLabel;label.style.fontFamily=t.font;label.style.fontSize=t.labelSize*3+'px';
 }
-function saveThemeForm(){const t=readThemeForm();if($('themeBg').value==='image'&&!t.bgImage&&!t.bgImageId){$('themeStatus').textContent='Upload a background image first.';return false;}Object.assign(themeById(t.id),t);themeSave();markDirty();return true;}
+function saveThemeForm(){const t=readThemeForm();if($('themeBg').value==='image'&&!t.bgImage&&!t.bgImageId){$('themeStatus').textContent='Upload a background image first.';return false;}Object.assign(themeById(t.id),t);themeSave();markDirty();applyEmphasisColor();return true;}
 // Decode and resize uploads before storing, preserving transparent logo pixels.
 function readPresentationImage(file,logo=false){return new Promise((resolve,reject)=>{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)||file.size>12*1024*1024){reject(new Error('Choose a PNG, JPEG, WebP or GIF image under 12 MB.'));return;}const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read the image.'));reader.onload=()=>{const image=new Image();image.onerror=()=>reject(new Error('This image could not be opened. Try another file.'));image.onload=()=>{try{const scale=Math.min(1,(logo?1600:2560)/Math.max(image.naturalWidth,image.naturalHeight));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL(logo?'image/png':'image/jpeg',.88));}catch{reject(new Error('Could not prepare this image.'));}};image.src=reader.result;};reader.readAsDataURL(file);});}
 $('themeSelect').addEventListener('change',loadThemeForm);
@@ -1815,7 +1822,7 @@ $('btnDeleteTheme').addEventListener('click', () => {
   renderThemesTab();
 });
 $('btnSaveTheme').addEventListener('click',()=>{if(!saveThemeForm())return;$('themeStatus').textContent='Theme saved. Apply to Live sends it to the output.';updateThemePreview();flash($('btnSaveTheme'),'Saved ✓');});
-$('btnApplyTheme').addEventListener('click',()=>{if(!saveThemeForm())return;currentThemeId=$('themeSelect').value;LS.set(K.settings,Object.assign(LS.get(K.settings,{}),{currentThemeId}));pushLive({themeId:currentThemeId});$('themeStatus').textContent='Theme applied to live output.';flash($('btnApplyTheme'),'Applied ✓');});
+$('btnApplyTheme').addEventListener('click',()=>{if(!saveThemeForm())return;currentThemeId=$('themeSelect').value;LS.set(K.settings,Object.assign(LS.get(K.settings,{}),{currentThemeId}));applyEmphasisColor();pushLive({themeId:currentThemeId});$('themeStatus').textContent='Theme applied to live output.';flash($('btnApplyTheme'),'Applied ✓');});
 $('btnResetThemes').addEventListener('click', () => {
   if (!confirm('Restore the four default themes (Black, Sunset, Deep Blue, Emerald)? Custom themes will be replaced.')) return;
   themes = DEFAULT_THEMES.map(t => Object.assign({}, t));
@@ -2231,6 +2238,7 @@ async function applyCloudLibrary(raw, revision) {
   }
   songs = writes[K.songs]; themes = writes[K.themes]; service = [...writes[K.service],...temporaryQueue];
   if (!themes.some(t => t.id === currentThemeId)) currentThemeId = themes[0].id;
+  applyEmphasisColor();
   refreshLogoStatus(); renderSongList(); renderPlans(); renderService(); renderThemesTab();
   return true;
 }

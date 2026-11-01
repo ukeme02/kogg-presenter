@@ -2,6 +2,31 @@
 
 Updated: 1 November 2026 — sync session
 
+## Every deck is one docked screen; emphasis colour central; autofill guarded
+
+User follow-up: every deck must fill the desktop viewport with no page scroll, all tools grouped
+as docks, and the emphasis colour must be central from Themes.
+
+- **Notes deck** — the three cards became real docks (📚 Quick start, 📝 Write & present,
+  🖥️ On the projector) with internal scrolling; the notes output dock flexes like its scripture
+  and lyrics counterparts.
+- **Service deck** — rebuilt as two docks: 🧩 Service plan (queue + Start/Clear foot) and
+  🗂️ Named plans; queue scrolls internally.
+- **Themes deck** — rebuilt as 🎨 Theme studio (all controls in a scrolling dock, Save/Apply in
+  reach) and 🖥️ Preview (live theme preview fills the dock). One nesting bug (preview accidentally
+  inside the studio dock) was caught by screenshot and fixed.
+- **Tools deck** — the panel is the one-screen surface; each tool card renders as dock groups in
+  a two-column grid; scrolling happens inside the panel only.
+- **Central emphasis colour** — applyEmphasisColor() publishes the live theme's hlColor as
+  --kogg-hl on the document root (and display.js sets it on the output screen): the Scripture
+  preview marks, Notes emphasis toggle/marks, Lyrics marks and the output all follow the Themes
+  picker. Yellow stays the default.
+- **Search autofill fix** — all search inputs now carry autocomplete=off plus password-manager
+  ignore hints (data-1pignore/data-lpignore/data-form-type=other). The email/password suggestions
+  the user saw came from the browser's saved logins for this site (created during sign-up
+  testing), not app data.
+- Verified in-browser at 1280×800: all six decks measure zero page overflow. SW v95. Tests: 168 pass.
+
 ## Landing refresh: features current, hero annotated, emphasis colour picker
 
 - **Landing page** — hero output preview marks "knowledge" (2 Corinthians 4:6) with the default

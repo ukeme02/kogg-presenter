@@ -700,9 +700,9 @@ body.books-hidden .splitter[data-key="books"] { display: none; }
   touch-action: none;
 }
 .lk:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
-.lk.marked { background: color-mix(in srgb, var(--accent) 26%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+.lk.marked { background: var(--kogg-hl,#ffd83d); color: #101010; box-shadow: 0 0 0 1px rgba(0,0,0,.18); }
 body.light .lk:hover { background: rgba(47,107,255,.1); }
-body.light .lk.marked { background: rgba(47,107,255,.22); box-shadow: 0 0 0 1px rgba(47,107,255,.45); }
+body.light .lk.marked { background: var(--kogg-hl,#ffd83d); color: #101010; box-shadow: 0 0 0 1px rgba(0,0,0,.18); }
 #liveText { -webkit-user-select: none; user-select: none; }
 
 /* Whole-Bible search dock */
@@ -1635,7 +1635,7 @@ button.mic-toggle{color:#fff!important;background:#2459d8!important;border:1px s
 .brand,.site-footer .brand{gap:3px;color:#2459d8}.brand>.brand-symbol{content:url(../icons/kogg-symbol.svg);width:40px;height:40px;filter:none}.brand .brand-kogg{display:block;background:currentColor;mask:url(../icons/kogg-wordmark.svg) center/contain no-repeat;-webkit-mask:url(../icons/kogg-wordmark.svg) center/contain no-repeat;filter:none!important}.brand .brand-sub{color:inherit}.brand-wordmark{gap:2px}
 body:not(.light) .brand{color:#fff}body:not(.light) .brand>.brand-symbol{content:url(../icons/kogg-symbol-white.svg)}
 
-.logo-design-preview{gap:6px}.logo-design-preview .preset-symbol{filter:brightness(0) invert(1)}.logo-design-preview>div{gap:6px}.theme-dim-control{min-width:250px!important}.theme-dim-control input[type=range]{width:100%;accent-color:#2459d8;cursor:pointer}.theme-dim-control output{font-weight:800}.notes-live-text.annotating{touch-action:none;user-select:none;cursor:crosshair}.note-word.marked{background:var(--kogg-hl,#ffd83d);color:#101010;border-radius:3px}#btnNotesAnnotate[aria-pressed=true]{background:#ffd83d;color:#101010;border-color:#ffd83d}
+.logo-design-preview{gap:6px}.logo-design-preview .preset-symbol{filter:brightness(0) invert(1)}.logo-design-preview>div{gap:6px}.theme-dim-control{min-width:250px!important}.theme-dim-control input[type=range]{width:100%;accent-color:#2459d8;cursor:pointer}.theme-dim-control output{font-weight:800}.notes-live-text.annotating{touch-action:none;user-select:none;cursor:crosshair}.note-word.marked{background:var(--kogg-hl,#ffd83d);color:#101010;border-radius:3px}#btnNotesAnnotate[aria-pressed=true]{background:var(--kogg-hl,#ffd83d);color:#101010;border-color:var(--kogg-hl,#ffd83d)}
 
 .logo-picker{border-top:1px solid var(--line,#66708555);padding-top:16px;margin-top:20px}.logo-picker #logoStatus{flex-basis:100%;margin:0;font-size:12px}.logo-picker [hidden]{display:none!important}.logo-picker label{max-width:320px}
 
@@ -1665,4 +1665,32 @@ body:not(.light) .brand{color:#fff}body:not(.light) .brand>.brand-symbol{content
   .notes-deck>.card{min-height:0;overflow:auto;}
   /* Quick jump suggestions live inside their dock — boxed, not floating over it */
   .dock[data-dock="quickgo"] .quickgo-results{position:static;margin-top:6px;max-height:170px;overflow:auto;box-shadow:none;}
+}
+
+/* ============ EVERY DECK IS ONE DOCKED SCREEN (desktop) ============
+   Service, Themes and Tools join Scripture, Lyrics and Notes: fixed deck
+   height, tools grouped as docks, all scrolling happens inside docks. */
+@media (min-width:1101px){
+  .service-deck{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,.9fr);gap:12px;height:calc(100dvh - 216px);min-height:0;align-items:stretch;}
+  .service-queue{min-height:0;}
+  .service-queue .item-list{flex:1 1 0;min-height:0;overflow:auto;}
+  .themes-deck{display:grid;grid-template-columns:minmax(360px,1.45fr) minmax(300px,1fr);gap:12px;height:calc(100dvh - 216px);min-height:0;align-items:stretch;}
+  .themes-studio{min-height:0;}
+  .themes-scroll{flex:1 1 0;min-height:0;overflow:auto;overscroll-behavior:contain;}
+  .themes-preview{min-height:0;overflow:hidden;}
+  .themes-preview .theme-preview{flex:1 1 0;min-height:0;max-height:none;overflow:hidden;display:flex;flex-direction:column;justify-content:center;}
+  /* Tools: the panel is the one-screen surface; each tool card is a dock group */
+  #tab-tools.tab-panel.active{display:block;height:calc(100dvh - 152px);min-height:0;overflow:auto;overscroll-behavior:contain;}
+  #tab-tools .card{height:auto;min-height:0;overflow:visible;display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;background:transparent;border:0;box-shadow:none;padding:0 0 14px;}
+  #tab-tools .card>details.group{break-inside:avoid;margin:0 0 12px;border:1px solid var(--hairline);border-radius:14px;background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 130%);overflow:hidden;box-shadow:0 1px 1px rgba(0,0,0,.16),0 14px 34px -22px rgba(0,0,0,.5);}
+  #tab-tools .card>details.group>summary{list-style:none;cursor:pointer;font-weight:700;padding:10px 14px;border-bottom:1px solid var(--hairline);background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 130%);}
+  #tab-tools .card>details.group>summary::-webkit-details-marker{display:none;}
+  #tab-tools details.group>*:not(summary){margin-left:12px;margin-right:12px;}
+  /* Notes docks */
+  .notes-deck .dock{min-height:0;}
+  .notes-library{overflow:auto;}
+  .notes-editor{overflow:auto;}
+  .notes-output{display:flex;flex-direction:column;overflow:hidden;position:static;}
+  .notes-live-text{flex:1 1 0;min-height:0;max-height:none;}
+  .notes-output .notes-actions{flex:0 0 auto;}
 }

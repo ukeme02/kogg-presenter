@@ -235,7 +235,9 @@ function chooseStandaloneScreen() {
   const same = (a,b) => a && b && a.left === b.left && a.top === b.top;
   const existing = screens.find(s => same(s, standaloneTarget));
   if (screens.length < 2) { standaloneTarget = null; standalonePlacement = ''; return null; }
-  standaloneTarget = existing || screens.find(s => !same(s, standaloneHome)) || null;
+  standaloneTarget = existing
+    || screens.find(s => !same(s, standaloneHome) && s.isInternal === false)   // prefer an external display
+    || screens.find(s => !same(s, standaloneHome)) || null;
   return standaloneTarget;
 }
 async function placeStandaloneOutput() {
@@ -274,6 +276,7 @@ if (!OVERLAY) document.addEventListener('click', async () => {
   if (!managedOutput) await hookOutputScreens();
   const target = !managedOutput && chooseStandaloneScreen();
   try { await document.documentElement.requestFullscreen(target ? {screen:target} : undefined); } catch {}
+  void requestOutputWakeLock();
 });
 // Reuse an existing grant on a directly opened display, without an unsolicited prompt.
 if (!OVERLAY && !managedOutput && navigator.permissions?.query) {
@@ -297,11 +300,37 @@ window.addEventListener('message', event => {
   if (event.data?.type === 'output-fullscreen') void enterOutputFullscreen();
 });
 
+/* Report fullscreen changes so the operator console can warn when the output
+   dropped out of fullscreen (e.g. after Esc) before the congregation notices. */
+document.addEventListener('fullscreenchange', () => {
+  const message = { type: 'output-fullscreen-state', fullscreen: !!document.fullscreenElement };
+  try { window.opener?.postMessage(message, location.origin); } catch {}
+  if (channel) channel.postMessage(message);
+});
+
+/* Keep the projector screen awake during a service (Screen Wake Lock API —
+   Chrome/Edge/Android; silently skipped where unsupported). */
+let outputWakeLock = null;
+async function requestOutputWakeLock() {
+  if (OVERLAY || outputWakeLock || duplicateOutput || !navigator.wakeLock) return;
+  try {
+    outputWakeLock = await navigator.wakeLock.request('screen');
+    outputWakeLock.addEventListener?.('release', () => { outputWakeLock = null; });
+  } catch {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !outputWakeLock) void requestOutputWakeLock();
+});
+
 // Web Locks arbitrate across presenter tabs without timer-based leader races.
 if (!OVERLAY && navigator.locks?.request) {
+  // Extra output windows opened by the operator carry ?out=<n> and claim their own
+  // lock, so several screens can mirror the operator without counting as duplicates.
+  const outputId = String(new URLSearchParams(location.search).get('out') || '').match(/^[1-9][0-9]{0,3}$/)?.[0] || '';
+  const outputLock = 'kogg-presentation-output' + (outputId ? '-' + outputId : '');
   duplicateOutput = true;
   screenEl.style.visibility = 'hidden';
-  navigator.locks.request('kogg-presentation-output',{ifAvailable:true},async lock => {
+  navigator.locks.request(outputLock,{ifAvailable:true},async lock => {
     if (!lock) {
       duplicateOutput = true;
       try { window.opener?.postMessage({type:'output-duplicate'},location.origin); } catch {}
@@ -315,6 +344,7 @@ if (!OVERLAY && navigator.locks?.request) {
     duplicateOutput = false;
     screenEl.style.visibility = 'visible';
     render(getLive());
+    void requestOutputWakeLock();
     // Succeeds automatically only where browser permission/settings allow it.
     if (window.opener) void enterOutputFullscreen();
     await new Promise(resolve=>window.addEventListener('pagehide',()=>{screenEl.style.visibility='hidden';resolve();},{once:true}));

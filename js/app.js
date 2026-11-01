@@ -2323,35 +2323,54 @@ $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'bl
 $('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
 $('btnOpenDisplay').addEventListener('click', openDisplayWindow);
 
-/* Open the output window directly on the extended screen when one exists.
+/* Open the output window directly on the chosen extended screen when one exists.
    Uses the Window Management API (Chrome/Edge) — asks permission once. */
-let displayWindow = null;
+let displayWindow = null;             // primary output popup
+let displayWindows = [];              // extra output popups ("send to all screens")
 function outputUrl() {
   // Cloudflare Pages canonicalises HTML routes; avoid its redirect on a new output window.
   const path = location.hostname?.endsWith('.pages.dev') ? 'display' : 'display.html';
   return new URL(path, location.href).href;
 }
-function setOutputStatus(message) { $('outputStatus').textContent = message; }
+/* Output status line: transient message plus a persistent warning whenever a
+   connected output window has dropped out of fullscreen (e.g. after Esc). */
+let outputStatusBase = '', outputFullscreen = null;
+const outputPlacedScreens = new Map();   // popup -> screen key, for picker badges
+function outputWindowOpen() { return [displayWindow, ...displayWindows].some(w => w && !w.closed); }
+function outputFullscreenWarning() {
+  return outputWindowOpen() && outputFullscreen === false ? ' — not fullscreen: click the output once' : '';
+}
+function setOutputStatus(message) {
+  outputStatusBase = message;
+  $('outputStatus').textContent = message + outputFullscreenWarning();
+}
+function refreshOutputStatus() { $('outputStatus').textContent = outputStatusBase + outputFullscreenWarning(); }
 function outputConnected() {
   outputIsConnected = true;
   setOutputStatus(live.mode === 'blank' ? 'Output connected • screen blank' : 'Output connected');
   if (channel) channel.postMessage(live);
 }
-if (channel) channel.onmessage = event => { if (event.data?.type === 'display-ready') outputConnected(); };
+if (channel) channel.onmessage = event => {
+  if (event.data?.type === 'display-ready') outputConnected();
+  if (event.data?.type === 'output-fullscreen-state') { outputFullscreen = event.data.fullscreen === true; refreshOutputStatus(); }
+};
 window.addEventListener('message', event => {
-  if (event.origin !== location.origin || event.source !== displayWindow) return;
+  if (event.origin !== location.origin) return;
+  const ours = [displayWindow, ...displayWindows].filter(Boolean);
+  if (!ours.includes(event.source)) return;
   if (event.data?.type === 'output-duplicate') { displayWindow=null;setOutputStatus('Output is already open in another presenter tab — reuse that output');return; }
+  if (event.data?.type === 'output-fullscreen-state') { outputFullscreen = event.data.fullscreen === true; refreshOutputStatus(); return; }
   if (event.data?.type !== 'display-ready') return;
   outputConnected();
-  displayWindow.postMessage({type:'output-state', live}, location.origin);
+  event.source.postMessage({type:'output-state', live}, location.origin);
   // Reapply after navigation: some browsers ignore moves while the popup loads.
   outputLastPlacement = '';
-  void placeOutputOnExtended(true);
+  void placeOutputOnScreens(true);
 });
 async function openDisplayWindow() {
   if (displayWindow && !displayWindow.closed) {
     try { displayWindow.focus(); } catch {}
-    await placeOutputOnExtended(true);
+    await placeOutputOnScreens(true);
     try { displayWindow.postMessage({type:'output-fullscreen'},location.origin); } catch {}
     return;
   }
@@ -2364,51 +2383,171 @@ async function openDisplayWindow() {
   try { w.focus(); } catch {}
   try {
     if ('getScreenDetails' in window) {
-      const details = await window.getScreenDetails();
-      hookOutputScreens(details);
-      await placeOutputOnExtended(true);
+      hookOutputScreens(await window.getScreenDetails());
+      await placeOutputOnScreens(true);
     } else setOutputStatus('Output open — move it to the projector screen (automatic placement needs Chrome or Edge)');
   } catch {
     setOutputStatus('Output open — screen permission unavailable; move it manually');
   }
 }
 
-/* Only the operator places its popup. The output must not compete with it. */
+/* Only the operator places its popups. The output must not compete with it. */
 let outputScreensDetails = null;
 let outputLastPlacement = '';
+
+/* ---- pure screen-choice helpers (unit-tested in tests/output-screens.cjs) ---- */
+function screenKey(s) { return [s.left, s.top, s.width, s.height].join(':'); }
+function outputOtherScreens(details) {
+  const cur = details.currentScreen;
+  return details.screens.filter(s => s.left !== cur.left || s.top !== cur.top);
+}
+function pickPreferredScreen(others) {
+  // The operator's remembered screen wins while it still exists, then any external
+  // (non-internal) display, then the first screen the browser lists.
+  const remembered = LS.get(K.settings, {}).outputScreen;
+  if (remembered) {
+    const match = others.find(s => s.left === remembered.left && s.top === remembered.top);
+    if (match) return match;
+  }
+  return others.find(s => s.isInternal === false) || others[0];
+}
+/* ----------------------------------------------------------------------------- */
+
 function hookOutputScreens(details) {
   if (!details || outputScreensDetails === details) return;
   outputScreensDetails = details;
-  details.addEventListener?.('screenschange', () => placeOutputOnExtended(true));
-  details.addEventListener?.('currentscreenchange', () => placeOutputOnExtended(true));
-  details.screens.forEach(screen => screen.addEventListener?.('change', () => placeOutputOnExtended(true)));
+  details.addEventListener?.('screenschange', onOutputScreensChanged);
+  details.addEventListener?.('currentscreenchange', onOutputScreensChanged);
+  details.screens.forEach(screen => screen.addEventListener?.('change', onOutputScreensChanged));
 }
-async function placeOutputOnExtended(showNote) {
-  if (!displayWindow || displayWindow.closed || !outputScreensDetails) return;
-  const details = outputScreensDetails, cur = details.currentScreen;
+function outputPopups() { return [displayWindow, ...displayWindows].filter(w => w && !w.closed); }
+function placePopupOnScreen(popup, screen) {
+  try {
+    const doc = popup.document;
+    if (doc?.fullscreenElement) void doc.exitFullscreen();
+    if (popup.closed) return;
+    popup.moveTo(screen.left, screen.top);
+    popup.resizeTo(screen.width, screen.height);
+    try { popup.postMessage({type:'output-fullscreen'},location.origin); } catch {}
+  } catch {}
+}
+async function placeOutputOnScreens(showNote) {
+  const popups = outputPopups();
+  if (!popups.length || !outputScreensDetails) return;
   // Coordinates work even when screen objects are recreated by the browser.
-  const other = details.screens.find(s => s.left !== cur.left || s.top !== cur.top);
-  if (!other) {
+  const others = outputOtherScreens(outputScreensDetails);
+  if (!others.length) {
     outputLastPlacement = '';
     if (showNote) setOutputStatus('Output open — waiting for an extended screen; choose Extend in your computer display settings');
     return;
   }
-  const key = [other.left,other.top,other.width,other.height].join(':');
-  if (outputLastPlacement === key) return;
-  const popup = displayWindow;
-  try {
-    const doc = popup.document;
-    if (doc?.fullscreenElement) await doc.exitFullscreen();
-    if (popup.closed || popup !== displayWindow) return;
-    popup.moveTo(other.left, other.top);
-    popup.resizeTo(other.width, other.height);
-    outputLastPlacement = key;
-    try { popup.postMessage({type:'output-fullscreen'},location.origin); } catch {}
-    if (showNote) setOutputStatus('Output placed on extended screen — if not fullscreen, click it once; Esc exits');
-  } catch {
-    if (showNote) setOutputStatus('Output open — automatic placement unavailable; move it manually');
-  }
+  const primary = pickPreferredScreen(others);
+  const targets = [primary, ...others.filter(s => s !== primary)];
+  popups.forEach((popup, i) => {
+    const screen = targets[i % targets.length];
+    const key = screenKey(screen);
+    // Unchanged screens must not be moved again — that would drop fullscreen.
+    if (outputPlacedScreens.get(popup) === key) return;
+    placePopupOnScreen(popup, screen);
+    outputPlacedScreens.set(popup, key);
+  });
+  outputLastPlacement = screenKey(primary);
+  if (showNote) setOutputStatus('Output placed on extended screen — if not fullscreen, click it once; Esc exits');
 }
+function onOutputScreensChanged() {
+  if (!outputScreensDetails) return;
+  // Hotplug: if the screen the output was placed on disappeared (projector cable
+  // pulled, display switched off), tell the operator and re-place on what remains.
+  if (outputLastPlacement && !outputScreensDetails.screens.some(s => screenKey(s) === outputLastPlacement)) {
+    outputLastPlacement = '';
+    const others = outputOtherScreens(outputScreensDetails);
+    setOutputStatus(others.length
+      ? 'Projector screen disconnected — output moved to the remaining screen'
+      : 'Projector screen disconnected — reconnect it or move the output window');
+  }
+  void placeOutputOnScreens(false);
+}
+
+/* Screen picker — choose which monitor carries the output; the choice is
+   remembered on this device (never synced: screens are per-machine). */
+$('btnScreens').addEventListener('click', async () => {
+  const picker = $('screenPicker');
+  if (!picker.hidden) { picker.hidden = true; return; }
+  picker.hidden = false;
+  renderScreenPicker();   // fallback hint shows while the screen permission prompt is pending
+  try { if ('getScreenDetails' in window) hookOutputScreens(await window.getScreenDetails()); } catch {}
+  renderScreenPicker();
+});
+function renderScreenPicker() {
+  const list = $('screenPickerList');
+  list.textContent = '';
+  if (!outputScreensDetails) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = 'Automatic screen choice needs Chrome or Edge — allow the screen permission when asked. Until then, open the output and drag it to the projector.';
+    list.appendChild(p);
+    return;
+  }
+  const cur = outputScreensDetails.currentScreen;
+  outputScreensDetails.screens.forEach((s, i) => {
+    const here = s.left === cur.left && s.top === cur.top;
+    const live = [...outputPlacedScreens.entries()].some(([w, key]) => w && !w.closed && key === screenKey(s));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'screen-option' + (live ? ' live' : '');
+    const name = document.createElement('span');
+    name.textContent = s.label || 'Display ' + (i + 1);
+    const tags = document.createElement('span');
+    tags.className = 'screen-tags';
+    tags.textContent = [live ? 'output' : '', here ? 'this screen' : '', s.isPrimary ? 'main' : ''].filter(Boolean).join(' · ') || (s.width + '×' + s.height);
+    btn.append(name, tags);
+    btn.addEventListener('click', async () => {
+      LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { outputScreen: { left: s.left, top: s.top } }));
+      if (!displayWindow || displayWindow.closed) await openDisplayWindow();
+      else {
+        placePopupOnScreen(displayWindow, s);
+        outputPlacedScreens.set(displayWindow, screenKey(s));
+        outputLastPlacement = screenKey(s);
+        setOutputStatus('Output moved to ' + (s.label || 'Display ' + (i + 1)) + ' — if not fullscreen, click it once');
+      }
+      renderScreenPicker();
+    });
+    list.appendChild(btn);
+  });
+}
+$('btnAllScreens').addEventListener('click', async () => {
+  $('screenPicker').hidden = true;
+  try { if ('getScreenDetails' in window) hookOutputScreens(await window.getScreenDetails()); } catch {}
+  if (!outputScreensDetails) { setOutputStatus('Automatic multi-screen output needs Chrome or Edge — open the output and drag it manually'); return; }
+  if (!displayWindow || displayWindow.closed) await openDisplayWindow();
+  if (!displayWindow || displayWindow.closed) return;
+  const others = outputOtherScreens(outputScreensDetails);
+  displayWindows = displayWindows.filter(w => w && !w.closed);
+  for (let i = displayWindows.length + 1; i < others.length; i++) {
+    const w = window.open(outputUrl() + '?out=' + (i + 1), 'kogg_display_' + (i + 1), 'popup=yes');
+    if (w) displayWindows.push(w);
+  }
+  outputLastPlacement = '';
+  await placeOutputOnScreens(false);
+  const n = Math.min(outputPopups().length, others.length);
+  setOutputStatus('Output sent to ' + n + ' screen' + (n === 1 ? '' : 's') + ' — if not fullscreen, click each once');
+});
+
+/* Keep the operator console awake during a service (Screen Wake Lock API —
+   silently skipped where unsupported). */
+let consoleWakeLock = null;
+async function requestConsoleWakeLock() {
+  if (consoleWakeLock || !navigator.wakeLock) return;
+  try {
+    consoleWakeLock = await navigator.wakeLock.request('screen');
+    consoleWakeLock.addEventListener?.('release', () => { consoleWakeLock = null; });
+  } catch {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && !consoleWakeLock) void requestConsoleWakeLock();
+});
+document.addEventListener('pointerdown', () => void requestConsoleWakeLock(), { once: true });
+void requestConsoleWakeLock();
 
 document.addEventListener('keydown', e => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;

@@ -25,6 +25,12 @@
     <button id="btnLogo" class="ctrl" title="Logo screen (L)">Logo</button>
     <span id="outputStatus" class="hint" role="status" aria-live="polite"></span>
     <button id="btnOpenDisplay" class="ctrl primary" title="Open output screen">Output</button>
+    <button id="btnScreens" class="ctrl" title="Choose which screen shows the output">🖥️</button>
+    <div id="screenPicker" class="screen-picker" hidden>
+      <p class="hint">Tap a screen to send the output there.</p>
+      <div id="screenPickerList"></div>
+      <button id="btnAllScreens" type="button" class="screen-all">Send to all secondary screens</button>
+    </div>
     <button id="btnFloatEditToggle" class="ctrl" title="Show/hide the floating console — text size, alignment, voice, theme, lock, work mode, docks">✏️</button>
   </div>
 </header>

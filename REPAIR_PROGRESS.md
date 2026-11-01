@@ -1,6 +1,38 @@
 # KOGG Presenter repair progress
 
-Updated: 30 October 2026 — evening session
+Updated: 1 November 2026
+
+## Output screens: picker, memory, wake lock, hotplug recovery
+
+Session slice (all committed together):
+
+- **Screen picker** — new 🖥️ button next to Output opens a popover listing every monitor
+  (browser-provided label, "main"/"this screen" tags, live-output badge). Tapping a screen moves
+  the output there and remembers the choice in device settings (`outputScreen` — deliberately not
+  synced; screens are per-machine). Auto-detect now prefers an **external** (non-internal) display
+  over the first non-current screen, and falls back gracefully when a remembered screen is gone.
+- **Send to all secondary screens** — the picker's button opens one extra output popup per
+  additional display (`?out=<n>`); each claims its own Web Lock (`kogg-presentation-output-<n>`)
+  so multi-screen output never counts as a duplicate. Operator-side placement and the
+  display-ready/postMessage handshake track every popup.
+- **Wake Lock** — both the operator console and the output request a Screen Wake Lock
+  (re-acquired on visibilitychange) so neither sleeps during a service; silently skipped where
+  the API is unsupported (Firefox/Safari, OBS overlay).
+- **Hotplug recovery** — when the screen the output was placed on disappears, the operator is
+  told ("Projector screen disconnected — output moved to the remaining screen") and the output
+  re-places automatically on what remains.
+- **Fullscreen warning** — the output reports `fullscreenchange` to the operator; whenever a
+  connected output is not fullscreen (e.g. after Esc), the status line persists
+  " — not fullscreen: click the output once" until it returns.
+- Unchanged-screen events no longer move or un-fullscreen popups (per-popup placement memory);
+  one missed "don't move again" short-circuit was caught by the operator-smoke regression and restored.
+- Service Worker bumped to v87 (app.js, display.js, index.html, app.css).
+
+Tests: `node --test tests/*.cjs` → 158 pass, 0 fail (output-screens grew 4 → 9: external-screen
+preference standalone + operator, remembered-screen win, remembered-screen-gone fallback, `?out`
+lock name). `node --check` clean on app.js/display.js/sw.js. Browser smoke on a local server:
+console boots, picker renders (with its Chrome/Edge fallback hint while the permission prompt is
+pending), Output popup handshake connects, John 3:16 sent live rendered on the output.
 
 ## Quick jump / Whole-Bible search docks restored
 

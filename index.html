@@ -301,14 +301,14 @@
         <button id="btnApplyTheme">Apply to Live</button>
         <button id="btnResetThemes" title="Restores Black, Sunset, Deep Blue and Emerald and makes Black the output default">Reset to Default Themes</button>
       </div>
+      <div class="logo-picker row">
+<label>Logo<select id="logoStyle"><option value="combination">KOGG · Combination</option><option value="wordmark">KOGG · Wordmark</option><option value="mark">KOGG · Mark only</option><option value="custom">My uploaded logo</option></select></label>
+<label>Custom logo<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+<button id="btnPreviewLogo">Show logo</button><button id="btnLogoClear">Remove upload</button>
+<div hidden><button id="btnLogoCombination">Combination</button><button id="btnLogoWordmark">Wordmark</button><button id="btnLogoMark">Mark</button><button id="btnCycleLogo">Next style</button></div>
+<div id="logoPreview" hidden></div><p id="logoStatus" class="hint" role="status"></p>
+      </div>
     </div>
-
-<div class="card logo-settings"><h2>Logo screen</h2><p class="hint">Choose a KOGG style or upload your church logo. Changing styles keeps your uploaded logo available.</p>
-<div class="logo-options"><button id="btnLogoCombination"><img src="icons/kogg-symbol-light.svg" alt=""><b>Combination</b><small>Mark + KOGG Presenter</small></button><button id="btnLogoWordmark"><img src="icons/kogg-wordmark.svg" alt=""><b>Wordmark</b><small>KOGG Presenter typography</small></button><button id="btnLogoMark"><img src="icons/kogg-symbol-light.svg" alt=""><b>Mark</b><small>Standalone screen monogram</small></button></div>
-<div class="row"><label>Selected style<select id="logoStyle"><option value="combination">KOGG · Combination</option><option value="wordmark">KOGG · Wordmark</option><option value="mark">KOGG · Mark only</option><option value="custom">My uploaded logo</option></select></label><button id="btnCycleLogo">Next KOGG style ↻</button><button id="btnPreviewLogo" class="primary">Display logo</button></div>
-<div id="logoPreview" class="logo-design-preview"></div>
-<div class="row"><label>Upload your logo<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><button id="btnLogoClear">Remove uploaded logo</button></div><p id="logoStatus" class="hint" role="status"></p>
-</div>
   </section>
 
   <!-- TOOLS (grouped, collapsible) -->

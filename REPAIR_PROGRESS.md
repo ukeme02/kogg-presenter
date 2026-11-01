@@ -503,3 +503,6 @@ Points mode now turns each entered line into a real output list bullet; blank li
 ## Unified lockups, background slider and Notes emphasis — 1 November 2026
 Tightened logo/wordmark gaps and unified colours across app/landing headers, footer, loader, logo studio and output presets. Wordmarks use current-colour masks: blue on light and white on dark. Background dimming is now a 0–100% range slider with a live percentage. Notes output has explicit yellow-emphasis activation, tap/drag word ranges and Clear; works for bullets and full-screen text. Highlight identity includes Notes key, slide index and exact text, clears on new slides/edits, and cancels stale drags. Landing mentions emphasis. Worker v85. Full suite: 153 pass; final slider changes: all 52 focused operator/output checks pass. No fresh browser visual verification. Regenerated matching social artwork and final proof, inspected the proof and rebuilt the brand-kit ZIP.
 
+
+Logo picker correction: removed the separate logo card, large thumbnails and preview from the visible Themes layout. Logo style and custom upload now sit inline inside the existing Themes card, with small Show/remove actions. Existing preset/output/upload behavior preserved. Worker v86. Operator smoke checks pass.
+

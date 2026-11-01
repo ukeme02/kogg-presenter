@@ -1598,3 +1598,5 @@ button.mic-toggle{color:#fff!important;background:#2459d8!important;border:1px s
 body:not(.light) .brand{color:#fff}body:not(.light) .brand>.brand-symbol{content:url(../icons/kogg-symbol-white.svg)}
 
 .logo-design-preview{gap:6px}.logo-design-preview .preset-symbol{filter:brightness(0) invert(1)}.logo-design-preview>div{gap:6px}.theme-dim-control{min-width:250px!important}.theme-dim-control input[type=range]{width:100%;accent-color:#2459d8;cursor:pointer}.theme-dim-control output{font-weight:800}.notes-live-text.annotating{touch-action:none;user-select:none;cursor:crosshair}.note-word.marked{background:#ffd83d;color:#101010;border-radius:3px}#btnNotesAnnotate[aria-pressed=true]{background:#ffd83d;color:#101010;border-color:#ffd83d}
+
+.logo-picker{border-top:1px solid var(--line,#66708555);padding-top:16px;margin-top:20px}.logo-picker #logoStatus{flex-basis:100%;margin:0;font-size:12px}.logo-picker [hidden]{display:none!important}.logo-picker label{max-width:320px}

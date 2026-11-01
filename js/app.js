@@ -1368,55 +1368,8 @@ $('bibleSearch').addEventListener('keydown', e => {
   }
 });
 
-/* speak straight into the Bible search bar */
-$('btnVoiceSearch').addEventListener('click', () => {
-  if (!SR) { alert('Voice input needs Chrome or Edge (Web Speech API), online.'); return; }
-  const btn = $('btnVoiceSearch');
-  try {
-    const r1 = new SR();
-    r1.lang = navigator.language || 'en-US';
-    r1.interimResults = false;
-    r1.maxAlternatives = 1;
-    btn.classList.add('active');
-    flash(btn, 'Listening…');
-    r1.onresult = e => {
-      const text = e.results[0][0].transcript.trim();
-      $('bibleSearch').value = text;
-      renderBibleSearch();
-      flash(btn, 'Heard ✓');
-    };
-    r1.onerror = e => flash(btn, microphoneError(e.error));
-    r1.onend = () => btn.classList.remove('active');
-    r1.start();
-  } catch (err) { flash(btn, 'Mic failed'); }
-});
-/* speak straight into the Quick jump bar — "John three sixteen" jumps live */
-$('btnVoiceJump').addEventListener('click', () => {
-  if (!SR) { alert('Voice input needs Chrome or Edge (Web Speech API), online.'); return; }
-  const btn = $('btnVoiceJump');
-  try {
-    const r1 = new SR();
-    r1.lang = navigator.language || 'en-US';
-    r1.interimResults = false;
-    r1.maxAlternatives = 1;
-    btn.classList.add('active');
-    flash(btn, '…');
-    r1.onresult = e => {
-      const text = e.results[0][0].transcript.trim().toLowerCase()
-        .replace(/^(read|go(?:\s+to)?|show|open|find|turn to)\s+/, '');
-      const words = text.split(/\s+/).filter(w =>
-        w !== 'and' && w !== 'chapter' && w !== 'verse' && w !== 'verses' && w !== 'please');
-      $('bookSearch').value = numberize(words).join(' ');
-      commitJump($('bookSearch').value);
-      renderBookChips($('bookSearch').value);
-      renderBookGhost();
-      flash(btn, 'Heard ✓');
-    };
-    r1.onerror = e => flash(btn, microphoneError(e.error));
-    r1.onend = () => btn.classList.remove('active');
-    r1.start();
-  } catch (err) { flash(btn, 'Mic failed'); }
-});
+$('btnVoiceSearch').addEventListener('click',()=>toggleMicrophone('search'));
+$('btnVoiceJump').addEventListener('click',()=>toggleMicrophone('jump'));
 $('bibleResults').addEventListener('click', e => {
   const row = e.target.closest('.search-item');
   if (!row) return;
@@ -1615,15 +1568,15 @@ function saveNotesWorkspace(){if(!NT||!notesState)return;const value={draft:NT.n
 function loadNotesWorkspace(){if(!NT)return;clearTimeout(notesFollowTimer);const store=readNotesStore();notesState=NT.normalise(store.draft);if(!notesState.id)notesState.id=uid();notesSaved=Array.isArray(store.saved)?store.saved.slice(0,60).map(NT.normalise).filter(n=>n.id&&n.body.trim()):[];$('notesFollow').checked=false;writeNotesFields();renderNotes();}
 function writeNotesFields(){$('notesTitle').value=notesState.title;$('notesBody').value=notesState.body;$('notesSubtitle').value=notesState.subtitle;$('notesMode').value=notesState.mode;}
 function readNotesFields(){notesState=NT.normalise({...notesState,title:$('notesTitle').value,body:$('notesBody').value,subtitle:$('notesSubtitle').value,mode:$('notesMode').value});}
-function renderNotes(){if(!NT||!notesState)return;const list=NT.slides(notesState);notesState.index=Math.min(notesState.index,Math.max(0,list.length-1));const overlay=['tag','alert'].includes(notesState.mode);$('notesSubtitleLabel').hidden=notesState.mode!=='tag';$('notesModeHint').textContent=notesState.mode==='points'?'One empty line creates the next point. Tap any card to display it.':notesState.mode==='tag'?'Displays a name/tag over the current output. If output is blank, the tag appears by itself.':notesState.mode==='alert'?'Scrolls a notice across the bottom without replacing the current verse or lyrics.':'The whole text becomes one full-screen slide.';$('notesCards').innerHTML=list.map((slide,i)=>`<button data-note-point="${i}" class="${i===notesState.index?'selected':''}"><b>${overlay?esc(notesState.mode==='tag'?'Tag preview':'Alert preview'):i+1+'. '+esc(notesState.title)}</b><span>${esc(slide.text)}</span><small>${overlay?'Preview — use Display':'Tap to display'}</small></button>`).join('')||'<p class="hint">Type your first point or choose a template.</p>';$('notesStorageStatus').textContent=baseLyrics()?'Base · notes saved for this tab session':'Device notes · saved locally (not cloud-synced)';$('notesSaved').innerHTML=notesSaved.map(n=>`<button data-note-load="${esc(n.id)}"><b>${esc(n.title)}</b><small>${esc(n.mode)}</small></button>`).join('')||'<p class="hint">Save a note to reuse it.</p>';renderNotesLive();}
+function renderNotes(){if(!NT||!notesState)return;const list=NT.slides(notesState);notesState.index=Math.min(notesState.index,Math.max(0,list.length-1));const overlay=['tag','alert'].includes(notesState.mode);$('notesSubtitleLabel').hidden=notesState.mode!=='tag';$('notesModeHint').textContent=notesState.mode==='points'?'One empty line creates the next point. Tap any card to display it.':notesState.mode==='tag'?'Displays a name/tag over the current output. If output is blank, the tag appears by itself.':notesState.mode==='alert'?'Scrolls a notice across the bottom without replacing the current verse or lyrics.':'The whole text becomes one full-screen slide.';$('btnNotesDisplay').disabled=!list.length;$('btnSaveNotes').disabled=!list.length;$('notesCards').innerHTML=list.map((slide,i)=>`<button data-note-point="${i}" class="${i===notesState.index?'selected':''}"><b>${overlay?esc(notesState.mode==='tag'?'Tag preview':'Alert preview'):i+1+'. '+esc(notesState.title)}</b><span>${esc(slide.text)}</span><small>${overlay?'Tap to display over current output':'Tap to display'}</small></button>`).join('')||'<p class="hint">Type your first point or choose a template.</p>';$('notesStorageStatus').textContent=baseLyrics()?'Base · notes saved for this tab session':'Device notes · saved locally (not cloud-synced)';$('notesSaved').innerHTML=notesSaved.map(n=>`<button data-note-load="${esc(n.id)}"><b>${esc(n.title)}</b><small>${esc(({points:"Message points",fullscreen:"Full-screen text",tag:"Name tag",alert:"Scrolling alert"})[n.mode])}</small></button>`).join('')||'<p class="hint">Save a note to reuse it.</p>';renderNotesLive();}
 function renderNotesLive(){if(!notesState||!NT)return;const content=[],labels=[];if(live.mode!=='blank'){if(live.notesKey){content.push(live.slides[live.index]?.text||'');labels.push(live.slides[live.index]?.label||'Notes');if(live.notesKey===notesState.id)notesState.index=live.index;}if(live.lowerThird?.on&&live.lowerThird.notesKey){content.push([live.lowerThird.l1,live.lowerThird.l2].filter(Boolean).join('\n'));labels.push('tag');}if(live.alert?.on&&live.alert.notesKey){content.push(live.alert.text);labels.push('scrolling alert');}}$('notesLiveLabel').textContent=labels.length?'LIVE · '+labels.join(' + '):'No Notes content live';$('notesLiveText').textContent=content.join('\n\n');document.querySelectorAll('#notesCards [data-note-point]').forEach(button=>{const active=live.mode==='normal'&&live.notesKey===notesState.id&&+button.dataset.notePoint===live.index;button.classList.toggle('selected',active);button.setAttribute('aria-pressed',String(active));});$('btnNotesPrev').disabled=notesState.mode!=='points'||notesState.index<=0;$('btnNotesNext').disabled=notesState.mode!=='points'||notesState.index>=NT.slides(notesState).length-1;}
 
 function displayNotes(){readNotesFields();try{pushLive(NT.patch(notesState,currentThemeId,live));saveNotesWorkspace();$('notesStatus').textContent=$('notesFollow').checked?'LIVE typing is on for this Notes item.':'Notes displayed. Typing stays in preview unless Live typing is enabled.';renderNotes();}catch(error){$('notesStatus').textContent=error.message;}}
 if(NT){loadNotesWorkspace();window.__notesReady=true;
- ['notesTitle','notesBody','notesSubtitle','notesMode'].forEach(id=>$(id).addEventListener(id==='notesMode'?'change':'input',()=>{readNotesFields();saveNotesWorkspace();renderNotes();clearTimeout(notesFollowTimer);if($('notesFollow').checked&&NT.owns(notesState,live))notesFollowTimer=setTimeout(()=>{if($('notesFollow').checked&&NT.owns(notesState,live))displayNotes();},180);}));
+ ['notesTitle','notesBody','notesSubtitle','notesMode'].forEach(id=>$(id).addEventListener(id==='notesMode'?'change':'input',()=>{if(id==='notesMode'){$('notesFollow').checked=false;notesState.index=0;$('notesStatus').textContent='Format changed. Review the preview, then Display.';}readNotesFields();saveNotesWorkspace();renderNotes();clearTimeout(notesFollowTimer);if($('notesFollow').checked&&NT.owns(notesState,live))notesFollowTimer=setTimeout(()=>{if($('notesFollow').checked&&NT.owns(notesState,live))displayNotes();},180);}));
  $('notesFollow').addEventListener('change',()=>{$('notesStatus').textContent=$('notesFollow').checked?'Live typing armed. Click Display to put this item live first.':'Live typing off. Editing stays in preview.';});
  $('btnNotesDisplay').addEventListener('click',displayNotes);
- $('notesCards').addEventListener('click',event=>{const button=event.target.closest('[data-note-point]');if(!button)return;notesState.index=+button.dataset.notePoint;if(['tag','alert'].includes(notesState.mode)){renderNotes();return;}displayNotes();});
+ $('notesCards').addEventListener('click',event=>{const button=event.target.closest('[data-note-point]');if(!button)return;notesState.index=+button.dataset.notePoint;displayNotes();});
  ['btnNotesPrev','btnNotesNext'].forEach((id,i)=>$(id).addEventListener('click',()=>{notesState.index=Math.max(0,Math.min(NT.slides(notesState).length-1,notesState.index+(i?1:-1)));displayNotes();}));
  document.querySelectorAll('[data-note-template]').forEach(button=>button.addEventListener('click',()=>{if(notesState.body.trim()&&!confirm('Replace the editor with this template? Saved notes and live output stay.'))return;$('notesFollow').checked=false;notesState=NT.normalise({...NT.templates[button.dataset.noteTemplate],id:uid()});writeNotesFields();saveNotesWorkspace();renderNotes();$('notesStatus').textContent='Template ready. Replace its example text, then Display.';}));
  $('btnSaveNotes').addEventListener('click',()=>{readNotesFields();if(!notesState.body.trim()){$('notesStatus').textContent='Type some notes before saving.';return;}notesSaved=notesSaved.filter(n=>n.id!==notesState.id).concat(NT.normalise(notesState)).slice(-60);saveNotesWorkspace();renderNotes();$('notesStatus').textContent=baseLyrics()?'Saved for this tab session.':'Saved on this device.';});
@@ -2472,7 +2425,6 @@ $('btnEndCountdown').addEventListener('click', () => pushLive({ mode: 'normal' }
 /* Voice control — navigate the service by speaking (Web Speech API) */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 let voiceOn = false;
-let rec = null;
 const NUMWORDS = {
   one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
   ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15,
@@ -2556,49 +2508,28 @@ function processVoice(raw) {
 function microphoneError(error) {
   return ({'not-allowed':'Allow microphone access','service-not-allowed':'Voice service blocked','audio-capture':'Microphone unavailable','network':'Voice needs a connection','no-speech':'No speech heard — retry','aborted':'Listening stopped'})[error] || 'Microphone error — retry';
 }
-function startVoice() {
-  if (!SR) {
-    alert('Voice control needs Chrome or Edge (Web Speech API). Voice input also requires an internet connection.');
-    return;
-  }
-  try {
-    rec = new SR();
-    rec.continuous = true;
-    rec.interimResults = false;
-    rec.lang = navigator.language || 'en-US';
-    rec.onresult = e => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) processVoice(e.results[i][0].transcript);
-      }
-    };
-    rec.onend = () => {
-      if (voiceOn) { try { rec.start(); } catch {} }   // keep the mic open
-      else voiceBtnSync(false);
-    };
-    rec.onerror = e => {
-      if(e.error==='no-speech' || e.error==='aborted')return;
-      stopVoice();flash($('feVoice'),microphoneError(e.error));
-      if(e.error==='not-allowed' || e.error==='service-not-allowed')alert('Allow microphone access for this site in your browser. Voice recognition may need internet in Chrome/Edge.');
-    };
-    rec.start();
-    voiceOn = true;
-    voiceBtnSync(true);
-    flash($('feVoice'), 'Listening…');
-  } catch (err) {
-    alert('Could not start voice control: ' + err.message);
-  }
+function createMicrophoneController(Recognition,handlers){
+ let session=null;
+ function stop(){const old=session;session=null;if(old){clearTimeout(old.timer);try{old.rec.abort();}catch{}}handlers.state(null,false);}
+ function toggle(kind){if(session?.kind===kind){stop();return;}stop();if(!Recognition){handlers.error(kind,'unsupported');return;}const current={kind,rec:null,timer:null};session=current;
+ try{const r=current.rec=new Recognition();r.continuous=true;r.interimResults=false;r.maxAlternatives=1;r.lang=handlers.language||'en-US';
+ r.onstart=()=>{if(session===current)handlers.state(kind,true);};
+ r.onresult=e=>{if(session!==current)return;for(let i=e.resultIndex||0;i<e.results.length;i++)if(e.results[i].isFinal!==false)handlers.result(kind,e.results[i][0].transcript);};
+ r.onerror=e=>{if(session!==current)return;stop();handlers.error(kind,e.error);};
+ r.onend=()=>{if(session!==current)return;handlers.state(kind,false);current.timer=setTimeout(()=>{if(session!==current)return;try{r.start();}catch{stop();handlers.error(kind,'audio-capture');}},250);};handlers.state(kind,false);r.start();
+ }catch{stop();handlers.error(kind,'audio-capture');}}
+ return {toggle,stop};
 }
-function stopVoice() {
-  voiceOn = false;
-  voiceBtnSync(false);
-  try { if (rec) rec.stop(); } catch {}
-}
-$('feVoice').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
-$('btnVoice2').addEventListener('click', () => voiceOn ? stopVoice() : startVoice());
-function voiceBtnSync(on) {
-  $('feVoice').classList.toggle('active', on);
-  $('btnVoice2').classList.toggle('active', on);
-}
+const micButtons={search:['btnVoiceSearch'],jump:['btnVoiceJump'],control:['feVoice','btnVoice2']};
+function microphoneState(kind,listening){voiceOn=kind==='control';Object.entries(micButtons).forEach(([key,ids])=>ids.forEach(id=>{const btn=$(id),on=key===kind&&listening;btn.classList.add('mic-toggle');btn.classList.toggle('mic-listening',on);btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(key===kind));btn.setAttribute('aria-label',key===kind?'Stop microphone':key==='jump'?'Speak a scripture reference':key==='search'?'Speak Bible search words':'Start voice commands');btn.title=key===kind?(listening?'Listening — click to close microphone':'Opening microphone — click to cancel'):'Click to open microphone';}));}
+const microphones=createMicrophoneController(SR,{language:navigator.language,state:microphoneState,error:(kind,error)=>flash($(micButtons[kind][0]),error==='unsupported'?'Voice unavailable in this browser':microphoneError(error)),result:(kind,raw)=>{
+ if(kind==='control'){processVoice(raw);return;}if(kind==='search'){$('bibleSearch').value=raw.trim();renderBibleSearch();return;}
+ const text=raw.trim().toLowerCase().replace(/^(read|go(?:\s+to)?|show|open|find|turn to)\s+/,'');const words=text.split(/\s+/).filter(w=>!['and','chapter','verse','verses','please'].includes(w));$('bookSearch').value=numberize(words).join(' ');commitJump($('bookSearch').value);renderBookChips($('bookSearch').value);renderBookGhost();
+}});
+function toggleMicrophone(kind){microphones.toggle(kind);}
+function startVoice(){toggleMicrophone('control');}
+function stopVoice(){microphones.stop();}
+$('feVoice').addEventListener('click',startVoice);$('btnVoice2').addEventListener('click',startVoice);window.addEventListener('pagehide',stopVoice);microphoneState(null,false);
 
 /* Quick font size / alignment on the current theme — the floating quick-edit
    widget and the ⋯ menu share these */

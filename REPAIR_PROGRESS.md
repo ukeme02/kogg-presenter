@@ -487,3 +487,7 @@ Applied selected direction C with a screen frame and stand to communicate presen
 
 Logo refinement: increased screen/stand stroke from 7 to 10 and corner radius from 13 to 18 for balance with the folded K. Regenerated all raster icons and brand proof; inspected the app icon. Worker v81.
 
+
+## Microphone toggles and Notes clarity — 1 November 2026
+All four mic buttons share one exclusive recognition session: second click aborts, switching stops previous mic, stale results ignored, restart cancelled after stop/error. Blue idle and red listening glow with accessible pressed state. Notes has three-step guidance, all preview cards display on tap, empty actions disabled, friendly saved-format names and live typing disabled on format change. Worker v82. 136 automated checks pass including mic stop/switch/error/restart tests. Physical microphone/browser permission QA remains unverified because browser control is unavailable.
+

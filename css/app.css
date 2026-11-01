@@ -1586,3 +1586,6 @@ body.light .more-menu,body.light .quickgo-results,body.light #floatPreview,body.
 
 .brand>.brand-symbol{border-radius:0;box-shadow:none;object-fit:contain}body.dark .brand>.brand-symbol{content:url(../icons/kogg-symbol-light.svg)}
 body:not(.light) .brand>.brand-symbol{content:url(../icons/kogg-symbol-light.svg)}
+
+button.mic-toggle{color:#fff!important;background:#2459d8!important;border:1px solid #71a3ff!important;box-shadow:none}button.mic-toggle.mic-listening{background:#b91c32!important;border-color:#ff9baa!important;box-shadow:0 0 0 3px #ef334033,0 0 19px #ef334088!important}
+.notes-editor>label{display:block;margin:14px 0}.notes-editor textarea{width:100%;box-sizing:border-box;line-height:1.6;min-height:180px;resize:vertical}.notes-steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;font-size:13px}.notes-steps span{padding:6px 10px;border:1px solid currentColor;border-radius:20px}.notes-editor .notes-follow{display:flex;gap:8px;align-items:flex-start}.notes-editor .notes-follow input{flex:none;margin-top:3px}

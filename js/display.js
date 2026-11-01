@@ -111,7 +111,8 @@ function render(state) {
       renderStrongsCard(card, t);   // the projector shows the word meaning — the verse stays queued
     } else {
       const slide = state.slides[state.index] || { text: '', label: '' };
-      contentEl.innerHTML = renderSlideText(slide, state);   // always clean text — numbers live only in the operator preview
+      contentEl.innerHTML = renderSlideText(slide, state);
+      if(slide.bullets)textEl.style.textAlign='left';   // always clean text — numbers live only in the operator preview
       labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : '');
       textEl.style.fontSize = t.fontSize + 'vh';
       requestAnimationFrame(()=>fitText(t.autoGrow!==false && (!!state.scripture || / \d+:\d+/.test(slide.label || ''))));
@@ -126,6 +127,7 @@ function render(state) {
 /* word highlight — the operator drags over words in the preview; the matching
    verse (label ends "…:<verse>") gets those words marked, live, on screen. */
 function renderSlideText(slide, state) {
+  if(slide.bullets)return '<ul class="notes-bullet-list">'+plain(slide.text).split('\n').filter(line=>line.trim()).map(line=>'<li>'+esc(line.replace(/^•\s*/,''))+'</li>').join('')+'</ul>';
   const words = plain(slide.text).trim().split(/([\r\n]+)/).flatMap(part => /^[\r\n]+$/.test(part) ? [part] : part.split(/[^\S\r\n]+/).filter(Boolean));
   let hl = null;
   if (state.highlight) {

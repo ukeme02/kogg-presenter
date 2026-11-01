@@ -172,9 +172,9 @@
       </div>
       <section class="card lyrics-edit" id="songEditor"><h2 id="songEditorTitle">Paste & split</h2>
         <details id="lyricsPastePanel" open><summary id="lyricsPasteSummary">Paste / edit lyrics</summary>
-        <div class="row"><label>Title<input id="songTitle" type="text" placeholder="Song title"></label><label>Artist / author<input id="songAuthor" type="text" placeholder="Artist or author"></label></div>
+        <div class="row"><label>Title<input id="songTitle" type="text" placeholder="Song title" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><label>Artist / author<input id="songAuthor" type="text" placeholder="Artist or author" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label></div>
         <label>One empty line = a new slide. Optional [Verse 1] / [Chorus] headings label slides.
-          <textarea id="songLyrics" rows="6" placeholder="[Verse 1]&#10;First line&#10;Second line&#10;&#10;[Chorus]&#10;Chorus lines…"></textarea>
+          <textarea id="songLyrics" rows="6" placeholder="[Verse 1]&#10;First line&#10;Second line&#10;&#10;[Chorus]&#10;Chorus lines…" spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea>
         </label><p id="lyricsSource" class="hint"></p></details>
         <div class="row"><button id="btnLyricsUndo">Undo</button><button id="btnLyricsSplitLines">Split into 4 lines</button><button id="btnLyricsDefaultOrder">Reset order</button></div>
         <div class="row"><button id="btnSaveSong" class="primary">Save song</button><button id="btnAddLyricsService">+ Service</button><button id="btnLiveSong">▶ Display first slide</button><button id="btnCancelSong">Clear editor</button></div>
@@ -193,8 +193,8 @@
    <div class="notes-toolbar"><div><h2>Notes</h2><p id="notesStorageStatus" class="hint"></p></div><span class="notes-tip">Write a point. Tap its card. Keep up with the message.</span></div>
    <div class="notes-deck">
     <aside class="card notes-library"><h2>Quick start</h2><div class="notes-templates"><button data-note-template="sermon">Message points</button><button data-note-template="announcement">Announcement</button><button data-note-template="minister">Now ministering</button><button data-note-template="alert">Scrolling alert</button><button data-note-template="welcome">Welcome screen</button></div><h2>Saved notes</h2><div id="notesSaved" class="notes-saved"></div><button id="btnNewNotes">+ New note</button></aside>
-    <section class="card notes-editor"><h2>Write & present</h2><div class="notes-steps"><span>1 · Choose a format</span><span>2 · Write your text</span><span>3 · Tap Display or a preview card</span></div><div class="row"><label>Title<input id="notesTitle" maxlength="140" placeholder="Message or announcement title"></label><label>Display as<select id="notesMode"><option value="points">Point by point</option><option value="fullscreen">Full-screen text</option><option value="tag">Now ministering / tag</option><option value="alert">Scrolling alert</option></select></label></div><label>Text<textarea id="notesBody" rows="8" maxlength="30000" placeholder="Type a point, then leave an empty line for the next point…"></textarea></label><label id="notesSubtitleLabel">Role / second line<input id="notesSubtitle" maxlength="200" placeholder="Now ministering · message title or role"></label><p id="notesModeHint" class="hint"></p><div class="notes-actions"><button id="btnNotesDisplay" class="primary">▶ Display</button><button id="btnSaveNotes">Save note</button><button id="btnHideNotes">Clear notes from output</button></div><label class="notes-follow"><input type="checkbox" id="notesFollow"> Update live as I type (after Display)</label><p id="notesStatus" class="hint" role="status">Typing stays in the preview until you display.</p><div id="notesCards" class="notes-cards"></div></section>
-    <aside class="card notes-output"><h2>On the projector</h2><p id="notesLiveLabel" class="hint"></p><div id="notesLiveText" class="notes-live-text"></div><div class="notes-actions"><button id="btnNotesPrev">← Previous point</button><button id="btnNotesNext">Next point →</button></div><p class="hint">Tags and scrolling alerts can sit over Scripture or lyrics. Hide notes output removes only Notes content.</p></aside>
+    <section class="card notes-editor"><h2>Write & present</h2><div class="notes-steps"><span>1 · Choose a format</span><span>2 · Write your text</span><span>3 · Tap Display or a preview card</span></div><div class="row"><label>Title<input id="notesTitle" maxlength="140" placeholder="Message or announcement title" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><label>Display as<select id="notesMode"><option value="points">Bulleted points</option><option value="fullscreen">Full-screen text</option><option value="tag">Now ministering / tag</option><option value="alert">Scrolling alert</option></select></label></div><label>Text<textarea id="notesBody" rows="8" maxlength="30000" placeholder="Type your first point. Press Enter for the next bullet. Leave an empty line to start another slide." spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea></label><div id="notesSplitControls" class="row"><label>Points per slide<select id="notesSplit"><option value="0">Keep together · auto-fit</option><option value="3">3 points</option><option value="4">4 points</option><option value="5">5 points</option><option value="6">6 points</option></select></label><button id="btnNotesBreak" type="button">New slide at cursor</button></div><label id="notesSubtitleLabel">Role / second line<input id="notesSubtitle" maxlength="200" placeholder="Now ministering · message title or role" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><p id="notesModeHint" class="hint"></p><p class="hint writing-help">Spelling suggestions and autocorrect use your browser or keyboard settings. Right-click an underlined word for suggestions.</p><div class="notes-actions"><button id="btnNotesDisplay" class="primary">▶ Display</button><button id="btnSaveNotes">Save note</button><button id="btnHideNotes">Clear notes from output</button></div><label class="notes-follow"><input type="checkbox" id="notesFollow"> Update live as I type (after Display)</label><p id="notesStatus" class="hint" role="status">Typing stays in the preview until you display.</p><div id="notesCards" class="notes-cards"></div></section>
+    <aside class="card notes-output"><h2>On the projector</h2><p id="notesLiveLabel" class="hint"></p><div id="notesLiveText" class="notes-live-text"></div><div class="notes-actions"><button id="btnNotesPrev">← Previous slide</button><button id="btnNotesNext">Next slide →</button></div><p class="hint">Tags and scrolling alerts can sit over Scripture or lyrics. Clear notes removes only Notes content.</p></aside>
    </div>
   </section>
 
@@ -205,7 +205,7 @@
       <details class="plan-fold">
         <summary>Save / load plans</summary>
         <div class="row">
-          <input id="planName" type="text" placeholder="Plan name (e.g. Sunday 26 Oct)">
+          <input id="planName" type="text" placeholder="Plan name (e.g. Sunday 26 Oct)" spellcheck="true" autocorrect="on" autocapitalize="sentences">
           <button id="btnSavePlan">Save Plan</button>
         </div>
         <div class="row" style="align-items:center">
@@ -232,7 +232,7 @@
         <button id="btnDeleteTheme" class="danger">Delete</button>
       </div>
       <div class="row">
-        <label>Name<br><input id="themeName" type="text"></label>
+        <label>Name<br><input id="themeName" type="text" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label>
         <label>Text color<br><input id="themeTextColor" type="color"></label>
         <label>Font size (vh)<br><input id="themeFontSize" type="number" min="3" max="15" step="0.5"></label>
         <label>Font<br>
@@ -386,8 +386,8 @@
       <details class="group">
         <summary>Lower Thirds (names &amp; titles)</summary>
         <div class="row">
-          <label style="flex:1">Main line<br><input id="ltLine1" type="text" placeholder="Pastor John Smith"></label>
-          <label style="flex:1">Sub line<br><input id="ltLine2" type="text" placeholder="Senior Pastor"></label>
+          <label style="flex:1">Main line<br><input id="ltLine1" type="text" placeholder="Pastor John Smith" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label>
+          <label style="flex:1">Sub line<br><input id="ltLine2" type="text" placeholder="Senior Pastor" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label>
         </div>
         <div class="row">
           <button id="btnLtShow" class="primary">Show Lower Third</button>

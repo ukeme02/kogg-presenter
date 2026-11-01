@@ -1004,6 +1004,8 @@ body.light .gate-mode, body.light .gate-ico { border-color: #c9d2e0; }
 .gate-go { font-size: 13px; font-weight: 800; color: var(--accent2); white-space: nowrap; }
 .gate-back { margin-bottom: 10px; display: inline-block; }
 .gate-field { display: block; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+.gate-status { margin: 12px 0 4px; padding: 11px 13px; border-radius: 9px; font-size: 14px; font-weight: 600; line-height: 1.5; background: rgba(127,140,170,.09); border: 1px solid rgba(127,140,170,.28); }
+.gate-status:empty { display: none; }
 .gate-row { display: flex; gap: 10px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
 
 /* local-mode device guide */

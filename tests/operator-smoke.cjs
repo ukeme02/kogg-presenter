@@ -203,3 +203,16 @@ test('service items remember their theme and fire with it on any device',async()
  fire();
  assert.equal(JSON.parse(storage.get('cp_live')).themeId,'t1');   // missing theme falls back to this device's choice
 });
+test('gate signup shows a prominent friendly error and re-enables the buttons',async()=>{
+ const {context,elements}=boot();await new Promise(r=>setImmediate(r));
+ context.window.KOGGSync={configured:true,getClient:async()=>({}),signUp:async()=>{throw new Error('email rate limit exceeded');}};
+ elements.get('btnGateUp').textContent='Create Account';elements.get('btnGateIn').textContent='Sign In';
+ elements.get('gateEmail').value='you@church.org';elements.get('gatePass').value='secret1';
+ await elements.get('btnGateUp').handlers.click[0]();await new Promise(r=>setImmediate(r));
+ assert.match(elements.get('gateStatus').textContent,/email service is busy/);
+ assert.equal(elements.get('btnGateUp').disabled,false);
+ assert.equal(elements.get('btnGateUp').textContent,'Create Account');
+ context.window.KOGGSync.signIn=async()=>{throw new Error('Invalid login credentials');};
+ await elements.get('btnGateIn').handlers.click[0]();await new Promise(r=>setImmediate(r));
+ assert.match(elements.get('gateStatus').textContent,/Wrong email or password/);
+});

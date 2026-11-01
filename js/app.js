@@ -2167,7 +2167,7 @@ $('btnSignUp').addEventListener('click', async () => {
   try {
     await window.KOGGSync.signUp($('authEmail').value.trim(), $('authPassword').value);
     status.textContent = 'Account created. If email confirmation is on, check your inbox, then sign in.';
-  } catch (err) { status.textContent = 'Sign up failed: ' + err.message; }
+  } catch (err) { status.textContent = 'Sign up failed: ' + friendlyAuthError(err && err.message); }
 });
 $('btnSignIn').addEventListener('click', async () => {
   const status = $('authStatus');
@@ -2182,7 +2182,7 @@ $('btnSignIn').addEventListener('click', async () => {
     } else {
       status.textContent = 'Signed in.';
     }
-  } catch (err) { status.textContent = 'Sign in failed: ' + err.message; }
+  } catch (err) { status.textContent = 'Sign in failed: ' + friendlyAuthError(err && err.message); }
 });
 $('btnSignOut').addEventListener('click', async () => {
   try { await window.KOGGSync.signOut(); } catch (err) { alert('Sign out failed: ' + err.message); return; }
@@ -2381,14 +2381,28 @@ $('btnGateSkip').addEventListener('click', () => {
 $('btnGateLater').addEventListener('click', closeGate);
 $('modeChip').addEventListener('click', showGate);
 $('feMode').addEventListener('click', () => showGate());
+/* Human wording for the auth errors real users actually hit. */
+function friendlyAuthError(raw) {
+  const msg = String(raw || '');
+  if (/rate limit/i.test(msg)) return 'The email service is busy right now (free-tier limit). Wait a few minutes and try again.';
+  if (/invalid login credentials/i.test(msg)) return 'Wrong email or password. Try again, or create the account first.';
+  if (/email not confirmed/i.test(msg)) return 'Check your inbox and click the confirmation link first, then sign in here.';
+  if (/valid email/i.test(msg)) return 'Type a valid email address (like you@church.org) and a password of at least 6 characters.';
+  if (/Password should be at least/i.test(msg)) return 'Choose a password of at least 6 characters.';
+  return msg || 'Sign-in failed — check your connection.';
+}
 async function gateAuth(up) {
   const st = $('gateStatus');
-  st.textContent = 'Connecting…';
+  const buttons = [$('btnGateIn'), $('btnGateUp')];
+  const busy = up ? 1 : 0;
+  buttons.forEach((b, i) => { b.disabled = true; if (i === busy) { b.dataset.label = b.textContent; b.textContent = up ? 'Creating…' : 'Signing in…'; } });
+  st.textContent = up ? 'Creating your account…' : 'Signing you in…';
+  st.classList.add('active');
   st.style.color = '';
   try {
     if (up) {
       const result = await window.KOGGSync.signUp($('gateEmail').value.trim(), $('gatePass').value);
-      if (!result.session) { st.textContent = 'Check your email to confirm the account, then sign in here.'; return; }
+      if (!result.session) { st.textContent = '✓ Almost there — check your email and click the confirmation link, then sign in here.'; return; }
     }
     else await window.KOGGSync.signIn($('gateEmail').value.trim(), $('gatePass').value);
     setWorkMode('sync');
@@ -2398,8 +2412,11 @@ async function gateAuth(up) {
   } catch (err) {
     st.textContent = err && err.message === 'not-configured'
       ? 'Cloud sync is not configured on this deployment yet — pick a different mode, or see README → "Enable cloud sync".'
-      : ((err && err.message) || 'Sign-in failed — check your connection.');
+      : friendlyAuthError(err && err.message);
     st.style.color = 'var(--danger)';
+  }
+  finally {
+    buttons.forEach(b => { b.disabled = false; if (b.dataset.label) { b.textContent = b.dataset.label; delete b.dataset.label; } });
   }
 }
 $('btnGateIn').addEventListener('click', () => gateAuth(false));

@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v95';
+const CACHE = 'kogg-presenter-v96';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',
@@ -37,11 +37,14 @@ async function prepareOffline() {
   if (preparing) return preparing;
   preparing = (async () => {
     const cache = await caches.open(CACHE);
-    // Keep already-downloaded optional data from the previous verified data version.
+    // Version upgrades carry every already-downloaded asset forward — Bibles, fonts,
+    // hymn packs and the app shell are NOT re-downloaded on church Wi-Fi. The network
+    // is only asked for files the previous cache never had. (If a data file ever
+    // changes its contents, its cache entry must be cleared or renamed in the same release.)
     for (const prior of (await caches.keys()).filter(key => key.startsWith('kogg-presenter-') && key !== CACHE).reverse()) {
       if (!(await caches.keys()).includes(prior)) continue;
       const old = await caches.open(prior);
-      for (const asset of OPTIONAL_ASSETS) {
+      for (const asset of new Set([...ASSETS,...OPTIONAL_ASSETS])) {
         const response = await old.match(cacheKey(asset));
         if (response && !await cache.match(cacheKey(asset))) await cache.put(cacheKey(asset),usableResponse(response));
       }
@@ -87,7 +90,14 @@ self.addEventListener('fetch', event => {
     // Reopening a cached Bible does not start another multi-megabyte background download.
     event.respondWith(cached().then(response => response ? usableResponse(response) : network()).catch(offline));
   } else {
-    event.respondWith(network().then(async response => response.ok ? response : usableResponse(await cached() || response))
-      .catch(async () => { const response = await cached(); return response ? usableResponse(response) : offline(); }));
+    // Offline-first: the cached shell answers instantly (no waiting on church Wi-Fi);
+    // the network only refreshes the copy in the background.
+    event.respondWith(cached().then(cachedResponse => {
+      if (cachedResponse) {
+        event.waitUntil?.(network().catch(() => {}));
+        return usableResponse(cachedResponse);
+      }
+      return network().catch(async () => { const response = await cached(); return response ? usableResponse(response) : offline(); });
+    }).catch(async () => { const response = await cached(); return response ? usableResponse(response) : offline(); }));
   }
 });

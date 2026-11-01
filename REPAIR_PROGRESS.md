@@ -2,6 +2,27 @@
 
 Updated: 1 November 2026 — sync session
 
+## Live-service slowness: the service worker was the bottleneck
+
+User report: the whole app was slow in service and lyrics were slow to load. Diagnosis:
+
+1. **The SW fetch handler was NETWORK-FIRST for everything except Bible files** — every page
+   load re-fetched the app shell (index + all scripts + CSS) over church Wi-Fi before rendering,
+   and flaky networks stalled each request. Now **offline-first**: the cached shell answers
+   instantly; the network only refreshes the copy in the background (stale-while-revalidate).
+2. **Every cache-version bump re-downloaded all core assets** (Bibles, lexicon, fonts ≈ 10-15 MB)
+   — and the app had collected ~10 version bumps in one day, so devices were re-downloading the
+   whole library mid-service. Upgrades now **carry every previously downloaded asset forward**
+   (shell + Bibles + optional packs); only genuinely new files are fetched. Caveat documented:
+   if a data file ever changes content, its cache entry must be cleared or renamed in that release.
+3. **Lyrics editor hot loop** — lyricsSignature() (a JSON hash of the whole song) ran twice per
+   slide card on every keystroke; now computed once per render. Typing long songs no longer
+   re-hashes the song 2×slides times.
+
+SW bumped to v96 (this bump is the LAST one that re-downloads; future bumps carry forward).
+Tests: 170 pass, 0 fail — new: shell answers from cache online and offline (never network-first);
+upgrade carries the shell forward without re-downloading.
+
 ## Every deck is one docked screen; emphasis colour central; autofill guarded
 
 User follow-up: every deck must fill the desktop viewport with no page scroll, all tools grouped

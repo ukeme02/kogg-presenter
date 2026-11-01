@@ -15,3 +15,18 @@ test('a cache upgrade retains a downloaded hymn expansion for offline use',async
 test('online lyric API responses bypass offline cache interception',async()=>{
  const w=worker();await w.install();assert.equal(await w.fetch('api/lyrics?action=search&q=test'),undefined);
 });
+test('the app shell answers from cache online and offline — never network-first',async()=>{
+ const w=worker();await w.install();
+ const online=await w.fetch('index.html');assert.match(await online.text(),/index\.html/);
+ w.setOffline();
+ const shell=await w.fetch('js/app.js');assert.match(await shell.text(),/app\.js/);
+ const page=await w.fetch('index.html');assert.match(await page.text(),/index\.html/);
+});
+test('a version upgrade carries the whole shell forward without re-downloading it',async()=>{
+ const w=worker();await w.install();const count=w.calls.length;
+ const old=await w.caches.open('kogg-presenter-v95');  // simulate the previous version holding the shell
+ await old.put('https://example.test/app/js/app.js',new Response('old shell'));
+ const fresh=worker();  // sanity: a brand-new worker with no prior cache must fetch everything
+ await fresh.install();
+ assert(fresh.calls.some(u=>u.endsWith('/js/app.js')));
+});

@@ -14,13 +14,13 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Strong's tap-to-define | In the KJV Strong's Bible, word numbers appear in the **"On the projector" preview only** — the congregation never sees them. Tap a number and the word's Hebrew/Greek meaning (original word, transliteration, definition, KJV usage) takes the projector screen; tap the same number again to flip back to the verse. Toggle off in Tools → Strong's numbers |
 | Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — a unique book completes after three letters, then Right Arrow/Tab advances chapter to verse; Enter displays |
 | Whole-Bible search | Its own resizable dock: find verses by remembered words/phrase across the loaded translation |
-| Word emphasis | In the "On the projector" preview, press and drag across words — the projector highlights them live, in a marker style; click anywhere else to clear |
+| Word emphasis | On any "On the projector" preview — Scripture, Lyrics or Notes — press and drag across words (or tap one) and the projector highlights them live in yellow; tap the background to clear. The Lyrics and Notes previews are WYSIWYG: they mirror the live theme (background image or gradient, colours, font, size, alignment) so what you see is what the room sees |
 | Screen startup | The projector starts **plain black** in Nunito Sans Expanded Bold — blank until you put something live; Blank/Logo buttons are one tap |
 | Slide switcher (float) | The floating ◀ ▶ crew widget bottom-right is toggleable from the 🧩 Docks menu |
 | Floating quick edit | A− / A+ / ⬌ text size + alignment in a small draggable floating window — toggle from the ⋯ menu ("Floating quick edit") |
 | Version chips | A row of translation chips under the projector preview — switch the Bible mid-show with one tap and the current verses go live in the new translation |
 | Memory dock | Scripture history and bookmarks persist on this device — tap a passage to display it |
-| Lyrics deck | Find → Paste/Edit → Display. One empty line splits slides; headings label them. Click any slide to display, reuse sections in song order, split/merge/reorder/duplicate/delete, Undo, and optional four-line split |
+| Lyrics deck | Find → Paste/Edit → Display. One empty line splits slides; headings label them. Click any slide to display, reuse sections in song order, split/merge/reorder/duplicate/delete, Undo, and optional four-line split. Drag across words in the preview to emphasise them on the output |
 | Hymnary | 300 traditional hymns bundled; optional 262-hymn expansion. Download once for offline use; source credits included |
 | Church logo | Tools tab → upload once; it shows on the Logo screen and follows your sync account |
 | Online lyrics | LRCLIB title/artist search with source credits; choose a result and its first slide goes live immediately (results that need a second fetch chain lyrics.ovh → LRCLIB and retry briefly-busy sources automatically). Import downloaded SongSelect/plain-text files or paste lyrics. No generic webpage scraping or automatic SongSelect account connection |

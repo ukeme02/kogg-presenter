@@ -75,6 +75,12 @@ body {
 .screen-close { color: var(--danger); }
 .screen-close:hover { border-color: var(--danger); }
 
+/* Word emphasis on the lyrics projector preview (same yellow as Notes emphasis) */
+.lyrics-live-text .lyw { cursor: text; border-radius: 3px; }
+.lyrics-live-text .lyw.marked { background: #ffd83d; color: #101010; }
+.lyrics-live-text .lyw:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.lyrics-live-text .lyw.marked:hover { background: #ffd83d; }
+
 button {
   font: inherit;
   background: var(--panel2);

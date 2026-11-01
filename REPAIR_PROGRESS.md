@@ -1,8 +1,34 @@
 # KOGG Presenter repair progress
 
-Updated: 1 November 2026 — second session
+Updated: 1 November 2026 — third session
 
-## Online lyrics clicks that never arrived + output close/windowed return
+## Emphasis everywhere + WYSIWYG previews (core feature)
+
+User direction: word emphasis is a core feature — "the capacity to lay emphasis on anything on
+the screen" — and the Lyrics/Notes "On the projector" previews must show what the output truly
+shows. Implemented:
+
+- **Lyrics word emphasis** — the Lyrics preview now renders per-word spans (like Scripture and
+  Notes): press-drag marks a range, a single tap marks one word, tapping the same word again
+  clears, tapping the background clears. Stored via the shared `live.textHighlight` with the
+  lyrics key; `display.js` renders the same `<mark class="whl">` mechanism for lyrics slides
+  (`state.notesKey || state.lyricsKey`). Clearing on slide change applies automatically.
+- **WYSIWYG previews** — new shared `applyOutputLook()` mirrors the live theme onto the Lyrics
+  and Notes preview boxes: theme background (gradient or IndexedDB image with dim/fit, cached),
+  text colour, font family/weight/size (scaled to the preview), line height, letter spacing,
+  alignment and shadow. Asset loads re-render both previews.
+- Preview selects no longer steal text selection while dragging (pointerdown preventDefault).
+- **Landing page** — updated the Scripture/Lyrics/Notes/output cards and the connect-a-room
+  walkthrough: emphasis everywhere, WYSIWYG previews, the 🖥️ screen picker, close output,
+  wake locks and the fullscreen warning.
+- Service Worker bumped to v89.
+
+Tests: `node --test tests/*.cjs` — new display-side test (lyrics slides render whl marks, none on
+other slides/text) and operator-side test (spans render, theme styles applied, tap marks word 2,
+same-word tap toggles off, background tap clears); the existing lyrics-paste test was updated to
+assert the span-wrapped preview HTML. All pass.
+
+## 1 November 2026 — second session: online lyrics clicks that never arrived + output close/windowed return
 
 Root cause of "search finds songs, clicking does nothing": the live search endpoint was returning
 **only `pending` lyrics.ovh candidates** (`"partial":true`) because the LRCLIB leg of the server

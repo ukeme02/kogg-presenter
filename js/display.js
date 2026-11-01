@@ -127,7 +127,8 @@ function render(state) {
 /* word highlight — the operator drags over words in the preview; the matching
    verse (label ends "…:<verse>") gets those words marked, live, on screen. */
 function renderSlideText(slide, state) {
-  if(state.notesKey){const hl=state.textHighlight,active=hl&&hl.key===state.notesKey&&hl.index===state.index&&hl.text===slide.text;let word=0;const annotate=line=>plain(line).split(/(\s+)/).map(token=>{if(!token.trim())return esc(token);word++;return active&&word>=hl.from&&word<=hl.to?'<mark class="whl">'+esc(token)+'</mark>':esc(token);}).join('');return slide.bullets?'<ul class="notes-bullet-list">'+slide.text.split('\n').filter(line=>line.trim()).map(line=>'<li>'+annotate(line.replace(/^•\s*/,''))+'</li>').join('')+'</ul>':annotate(slide.text);}
+  const hlKey = state.notesKey || state.lyricsKey;   // Notes and Lyrics emphasis share one mechanism
+  if(hlKey){const hl=state.textHighlight,active=hl&&hl.key===hlKey&&hl.index===state.index&&hl.text===slide.text;let word=0;const annotate=line=>plain(line).split(/(\s+)/).map(token=>{if(!token.trim())return esc(token);word++;return active&&word>=hl.from&&word<=hl.to?'<mark class="whl">'+esc(token)+'</mark>':esc(token);}).join('');return slide.bullets?'<ul class="notes-bullet-list">'+slide.text.split('\n').filter(line=>line.trim()).map(line=>'<li>'+annotate(line.replace(/^•\s*/,''))+'</li>').join('')+'</ul>':annotate(slide.text);}
   if(slide.bullets)return '<ul class="notes-bullet-list">'+plain(slide.text).split('\n').filter(line=>line.trim()).map(line=>'<li>'+esc(line.replace(/^•\s*/,''))+'</li>').join('')+'</ul>';
   const words = plain(slide.text).trim().split(/([\r\n]+)/).flatMap(part => /^[\r\n]+$/.test(part) ? [part] : part.split(/[^\S\r\n]+/).filter(Boolean));
   let hl = null;

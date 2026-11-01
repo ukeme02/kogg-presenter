@@ -99,8 +99,8 @@ function fillLyrics(elements,title='Example',lyrics='[Verse 1]\nOne\nTwo\n\n[Cho
 test('lyrics paste produces escaped cards and direct slide display without publishing edits',async()=>{
  const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));const before=storage.get('cp_live');
  fillLyrics(elements,'Test','[Verse]\n<hello>\n\n[Chorus]\nWorld');assert.match(elements.get('songSlidesPreview').innerHTML,/&lt;hello&gt;/);assert.equal(storage.get('cp_live'),before);
- vm.runInContext('displayLyrics(1)',context);assert.equal(JSON.parse(storage.get('cp_live')).slides[1].text,'World');assert.equal(JSON.parse(storage.get('cp_live')).index,1);assert.equal(elements.get('lyricsLiveText').textContent,'World');
- elements.get('songLyrics').value='Changed';elements.get('songLyrics').handlers.input[0]();assert.equal(elements.get('lyricsLiveText').textContent,'World');
+ vm.runInContext('displayLyrics(1)',context);assert.equal(JSON.parse(storage.get('cp_live')).slides[1].text,'World');assert.equal(JSON.parse(storage.get('cp_live')).index,1);assert.match(elements.get('lyricsLiveText').innerHTML,/data-lyric-word="1">World</);
+ elements.get('songLyrics').value='Changed';elements.get('songLyrics').handlers.input[0]();assert.match(elements.get('lyricsLiveText').innerHTML,/data-lyric-word="1">World</);
 });
 test('Local and Sync save lyrics with order and source for offline use',async()=>{
  for(const mode of ['local','sync']){const {context,elements,storage}=boot();await new Promise(resolve=>setImmediate(resolve));vm.runInContext(`LS.set(K.settings,{...LS.get(K.settings,{}),mode:'${mode}'})`,context);
@@ -173,3 +173,20 @@ test('a delayed background upload belongs to the original theme after selection 
 test('Notes Enter adds bullets on one slide and split control groups points without changing private output',async()=>{const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));elements.get('notesBody').value='One\nTwo\nThree\nFour';elements.get('notesBody').handlers.input[0]();elements.get('btnNotesDisplay').click();let live=JSON.parse(storage.get('cp_live'));assert.equal(live.slides.length,1);assert.equal(live.slides[0].bullets,true);assert.equal(live.slides[0].text,'• One\n• Two\n• Three\n• Four');elements.get('notesSplit').value='3';elements.get('notesSplit').handlers.change[0]();assert.equal(JSON.parse(storage.get('cp_live')).slides.length,1);elements.get('btnNotesDisplay').click();live=JSON.parse(storage.get('cp_live'));assert.equal(live.slides.length,2);assert.equal(live.slides[1].text,'• Four');});
 test('Notes emphasis activates from live preview, reaches output and clears on a new slide',async()=>{const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));elements.get('notesBody').value='First point\nSecond point\n\nAnother slide';elements.get('notesBody').handlers.input[0]();elements.get('btnNotesDisplay').click();elements.get('btnNotesAnnotate').click();assert.match(elements.get('notesLiveText').innerHTML,/data-note-word="2"/);const word={dataset:{noteWord:'2'}};elements.get('notesLiveText').handlers.pointerdown[0]({target:{closest:()=>word},pointerId:1,preventDefault(){}});let live=JSON.parse(storage.get('cp_live'));assert.equal(live.textHighlight.from,2);assert.equal(live.textHighlight.key,live.notesKey);assert.match(elements.get('notesLiveText').innerHTML,/note-word marked/);elements.get('btnNotesClearHighlight').click();assert.equal(JSON.parse(storage.get('cp_live')).textHighlight,null);elements.get('notesLiveText').handlers.pointerdown[0]({target:{closest:()=>word},pointerId:1,preventDefault(){}});elements.get('btnNotesNext').click();assert.equal(JSON.parse(storage.get('cp_live')).textHighlight,null);});
 test('background darkening slider updates its percentage and saves the chosen opacity',async()=>{const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));vm.runInContext('renderThemesTab()',context);elements.get('themeDim').value='67';await elements.get('themeDim').handlers.input[0]();assert.equal(elements.get('themeDimValue').textContent,'67%');elements.get('btnApplyTheme').click();assert.equal(JSON.parse(storage.get('cp_themes'))[0].dim,67);assert.match(html,/id="themeDim" type="range"/);});
+test('Lyrics preview emphasis marks words live and mirrors the output theme',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ fillLyrics(elements);elements.get('btnLiveSong').click();
+ const box=elements.get('lyricsLiveText');
+ assert.match(box.innerHTML,/data-lyric-word="1"/);
+ assert.ok(box.style.fontFamily);assert.ok(box.style.background);   // WYSIWYG: live theme applied
+ const word={dataset:{lyricWord:'2'}};
+ box.handlers.pointerdown[0]({target:{closest:()=>word},pointerId:1,preventDefault(){}});
+ assert.match(box.innerHTML,/class="lyw marked"/);
+ assert.equal(JSON.parse(storage.get('cp_live')).textHighlight.from,2);
+ box.handlers.pointerup[0]();
+ box.handlers.pointerdown[0]({target:{closest:()=>word},pointerId:1,preventDefault(){}});
+ box.handlers.pointerup[0]();
+ assert.equal(JSON.parse(storage.get('cp_live')).textHighlight ?? null,null);   // same-word tap toggles off
+ box.handlers.pointerdown[0]({target:{closest:()=>null},pointerId:1,preventDefault(){}});
+ assert.equal(JSON.parse(storage.get('cp_live')).textHighlight ?? null,null);
+});

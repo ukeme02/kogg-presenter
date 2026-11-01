@@ -1,6 +1,39 @@
 # KOGG Presenter repair progress
 
-Updated: 1 November 2026 — third session
+Updated: 1 November 2026 — sync session
+
+## Cloud sync: missing backend found, schedule look travels, live multi-device updates
+
+Verified the real Supabase project for the first time (`ibzbtthorsjtkvlmzsps`):
+
+- **Auth works** (signup returns 200, email confirmation enabled — normal).
+- **The `libraries` table does not exist** (`PGRST205`, schema cache lists no tables). The setup
+  SQL was documented but never run against this project, so every real push/pull would fail with
+  "Could not find the table 'public.libraries'". **Action required: run the SQL block from
+  README.md (now including the realtime publication line) in the Supabase SQL editor.**
+
+Client work in the same slice:
+
+- **Service items now carry `themeId`** when added to the queue (scripture and song). Firing an
+  item uses its prepared theme when this device has it, else the device's current theme — so the
+  schedule looks the same on the road laptop without one device's choice clobbering another's
+  mid-service (currentThemeId stays device-local by design).
+- **Live multi-device sync** — `KOGGSync.subscribe/unsubscribe` open a Supabase Realtime
+  postgres_changes channel on the signed-in user's library row; app.js pulls (debounced 1.2 s,
+  guarded against in-flight sync) when another device writes. Own writes are recognised via a
+  stored `cp_sync_stamp` and never re-pulled. The subscription is torn down on sign-out, local
+  mode and SIGNED_OUT; it degrades silently when Realtime is not enabled for the table.
+- README SQL block completed (drop-if-exists policy + `alter publication supabase_realtime add
+  table libraries`) and the Cloud sync feature row updated.
+- Service Worker bumped to v90.
+
+Tests: `node --test tests/*.cjs` → 165 pass, 0 fail. New: realtime subscription registers on the
+right table/filter, delivers foreign updates, own-write stamps detect echoes, unsubscribe cleans
+up; service items remember their theme and fire with it, with a fallback when the theme is
+missing on the presenting device. The sync client mock now matches supabase-js's three-argument
+`channel.on(type, filter, callback)` signature.
+
+## 1 November 2026 — third session: emphasis everywhere + WYSIWYG previews
 
 ## Emphasis everywhere + WYSIWYG previews (core feature)
 

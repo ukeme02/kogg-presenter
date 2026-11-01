@@ -49,6 +49,27 @@
   function remember(id,row) {
     const data = {...(row?.data || {})}; delete data.assets;
     localStorage.setItem(baseKey(id),JSON.stringify({data,revision:row?.updated_at || null}));
+    try { localStorage.setItem('cp_sync_stamp_' + id, row?.updated_at || ''); } catch {}
+  }
+  // True when a realtime update echoes this device's own last write.
+  function isOwnWrite(id,stamp) { return !!stamp && stamp === localStorage.getItem('cp_sync_stamp_' + id); }
+  /* Live updates: while signed in, a change written by another device pulls
+     automatically. Degrades silently when Realtime is not enabled for the table. */
+  let libraryChannel = null;
+  async function subscribe(onRemoteChange) {
+    const client = await getClient(), user = await currentUser();
+    if (!user) throw new Error('not-signed-in');
+    unsubscribe();
+    libraryChannel = client
+      .channel('kogg-libraries-' + user.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'libraries', filter: 'user_id=eq.' + user.id },
+        payload => { try { onRemoteChange?.(payload); } catch {} });
+    libraryChannel.subscribe();
+  }
+  function unsubscribe() {
+    if (!libraryChannel) return;
+    try { libraryChannel.unsubscribe(); } catch {}
+    libraryChannel = null;
   }
   async function libraryPayload() {
     const payload = {songs:read('cp_songs',[]),service:read('cp_service',[]),themes:read('cp_themes',[]),plans:read('cp_plans',{}),settings:window.KOGGLibrary.portableSettings(read('cp_settings',{})),assets:{}};
@@ -100,5 +121,5 @@
       return merged;
     } finally { writing = false; }
   }
-  window.KOGGSync = {configured,getClient,currentUser,signUp,signIn,signOut,resetPassword,updatePassword,push,pull,libraryPayload};
+  window.KOGGSync = {configured,getClient,currentUser,signUp,signIn,signOut,resetPassword,updatePassword,push,pull,libraryPayload,subscribe,unsubscribe,isOwnWrite};
 })();

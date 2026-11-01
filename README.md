@@ -29,7 +29,7 @@ browser, and can be packaged for Windows, iOS, and desktop.
 | Extended screen | Output window opens straight onto the second monitor (Chrome/Edge Window Management API — allow once). The 🖥️ picker next to the Output button lists every connected monitor — tap one to send the output there (your choice is remembered on that device), tap **this screen** to bring the output back as a normal window beside the console, use **Close output window** to shut it down, and **Send to all secondary screens** mirrors the output onto every projector/foyer display at once. If the projector is unplugged mid-service, the output re-places itself and the console tells you. Tip: browsers allow fullscreen only after one click on the output — for a fully automatic projector laptop, launch the browser in kiosk mode pointed at `display.html` |
 | Awake screens | The console and the projector output hold a Screen Wake Lock (Chrome/Edge/Android) so neither the laptop nor the projector sleeps mid-service; the output also reports if it drops out of fullscreen so you can click it back before anyone notices |
 | Work modes | Choose on first load: **Base Mode** (basics once, offline scripture display, no cloud), **Sync Mode** (sign in — library follows the account), **Local Mode** (everything saved on this device — Windows/Android/macOS/iOS/Linux) |
-| Cloud sync | Free Supabase account: songs, themes, plans **and your logo/background images** follow you to any PC or phone. Changes auto-push when you're signed in online; the Account tab shows synced/unsynced status |
+| Cloud sync | Free Supabase account: songs, themes, plans, **your current service schedule** and your logo/background images follow you to any PC or phone — every queue item carries the theme it was prepared with, so it fires looking the same on your other device. Changes auto-push when signed in online, and **other devices update live** (no manual pull needed); the Account tab shows synced/unsynced status |
 | Typography | **Nunito Sans Expanded Bold** by default; font, size (+/− live in the top bar), weight and text alignment per theme |
 | Light/dark | Operator console has light and dark modes |
 | Landing page | `landing.html` — public page explaining the app with install/download steps |
@@ -81,9 +81,13 @@ Accounts and library sync use [Supabase](https://supabase.com)'s free tier (no c
      updated_at timestamptz not null default now()
    );
    alter table libraries enable row level security;
+   drop policy if exists "own library" on libraries;
    create policy "own library" on libraries
      for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+   -- live multi-device updates (optional but recommended):
+   alter publication supabase_realtime add table libraries;
    ```
+   Run the whole block — without the table, sign-in works but every push/pull fails.
 
 3. In Project Settings → API copy the **Project URL** and the **anon public key**.
 4. Paste both into `js/supabase-config.js`, deploy, done. The Account tab (and the signup card on

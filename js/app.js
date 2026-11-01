@@ -1388,6 +1388,7 @@ $('btnAddScripture').addEventListener('click', () => {
     id: uid(), type: 'scripture',
     title: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`,
     slides: scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo),
+    themeId: currentThemeId,   // the look travels with the schedule to any device
   });
   LS.set(K.service, service);
   flash($('btnAddScripture'), 'Added ✓');
@@ -1444,7 +1445,7 @@ function displayLyrics(index=0){
 function addLyricsService(song=editorSong()){
  const slides=songToSlides(song);if(!slides.length){$('lyricsStatus').textContent='Add lyrics before adding to Service.';return;}
  const temporary=baseLyrics()||lyricSession.songs.some(s=>s.id===song.id);
- service.push({id:uid(),type:'song',title:song.title,slides,sessionOnly:temporary,lyricsSession:temporary?lyricSession.id:null});
+ service.push({id:uid(),type:'song',title:song.title,slides,themeId:currentThemeId,sessionOnly:temporary,lyricsSession:temporary?lyricSession.id:null});
  LS.set(K.service,service);renderService();$('lyricsStatus').textContent=temporary?'Added to this session’s Service queue.':'Added to Service.';
 }
 $('songList').addEventListener('click',e=>{
@@ -1698,7 +1699,9 @@ $('serviceList').addEventListener('click', e => {
   const i = service.findIndex(s => s.id === id);
   const act = btn.dataset.act;
   if (act === 'live') {
-    pushLive({ mode: 'normal', slides: service[i].slides, index: 0, title: service[i].title, themeId: currentThemeId });
+    // Fire with the theme the item was prepared with; fall back when this device lacks it.
+    const themeId = themes.some(t => t.id === service[i].themeId) ? service[i].themeId : currentThemeId;
+    pushLive({ mode: 'normal', slides: service[i].slides, index: 0, title: service[i].title, themeId });
   } else if (act === 'up' && i > 0) {
     [service[i - 1], service[i]] = [service[i], service[i - 1]];
   } else if (act === 'down' && i < service.length - 1) {
@@ -1711,7 +1714,8 @@ $('serviceList').addEventListener('click', e => {
 });
 $('btnLiveService').addEventListener('click', () => {
   if (!service.length) { alert('Service is empty.'); return; }
-  pushLive({ mode: 'normal', slides: service.flatMap(i => i.slides), index: 0, title: 'Service', themeId: currentThemeId });
+  const themeId = themes.some(t => t.id === service[0].themeId) ? service[0].themeId : currentThemeId;
+  pushLive({ mode: 'normal', slides: service.flatMap(i => i.slides), index: 0, title: 'Service', themeId });
 });
 $('btnClearService').addEventListener('click', () => {
   if (confirm('Clear the whole service plan?')) { service = []; LS.set(K.service, service); renderService(); }
@@ -2110,7 +2114,7 @@ function cloudEnabled() {
     (workMode()==='sync' || !!window._koggUser || LS.get('cp_cloud_enabled',false));
 }
 async function refreshUser() {
-  if(workMode()==='local'){window._koggUser=null;syncUI();refreshModeChip();return;}
+  if(workMode()==='local'){window._koggUser=null;stopLibraryRealtime();syncUI();refreshModeChip();return;}
   if(!navigator.onLine){window._koggUser=LS.get('cp_account_profile',null);syncUI();refreshModeChip();return;}
   if(!cloudEnabled()){syncUI();refreshModeChip();return;}
   try {
@@ -2126,7 +2130,22 @@ async function refreshUser() {
     await pullCloud(true);
     if(syncDirty())scheduleSync();
   }
+  if(window._koggUser)startLibraryRealtime();else stopLibraryRealtime();
 }
+/* While signed in, a change pushed by another device pulls itself in live
+   (Supabase Realtime; degrades silently when the table isn't enabled). */
+let libraryRealtimeTimer = null;
+function startLibraryRealtime() {
+  if (!window._koggUser || !window.KOGGSync?.subscribe) return;
+  window.KOGGSync.subscribe(payload => {
+    if (!window._koggUser || syncInFlight) return;
+    const stamp = payload?.new?.updated_at || payload?.old?.updated_at;
+    if (stamp && window.KOGGSync.isOwnWrite?.(window._koggUser.id, stamp)) return;   // our own push echoed back
+    clearTimeout(libraryRealtimeTimer);
+    libraryRealtimeTimer = setTimeout(() => { if (window._koggUser && !syncInFlight && navigator.onLine) pullCloud(true); }, 1200);
+  }).catch(() => {});
+}
+function stopLibraryRealtime() { clearTimeout(libraryRealtimeTimer); try { window.KOGGSync?.unsubscribe?.(); } catch {} }
 $('btnShowPass').addEventListener('click', () => {
   const p = $('authPassword');
   p.type = p.type === 'password' ? 'text' : 'password';
@@ -2168,6 +2187,7 @@ $('btnSignIn').addEventListener('click', async () => {
 $('btnSignOut').addEventListener('click', async () => {
   try { await window.KOGGSync.signOut(); } catch (err) { alert('Sign out failed: ' + err.message); return; }
   clearTimeout(syncTimer); syncError = '';
+  stopLibraryRealtime();
   window._koggUser = null;
   LS.set('cp_cloud_enabled',false); LS.set('cp_account_profile',null);
   syncUI(); refreshModeChip();
@@ -3216,7 +3236,7 @@ if (authObserved || !window.KOGGSync?.configured) return;
   window.KOGGSync.getClient().then(client => {
   client.auth.onAuthStateChange(event => {
     if (event === 'PASSWORD_RECOVERY') $('passwordRecovery').hidden = false;
-    if (event === 'SIGNED_OUT') { window._koggUser = null; LS.set('cp_cloud_enabled',false);LS.set('cp_account_profile',null);syncUI();refreshModeChip(); }
+    if (event === 'SIGNED_OUT') { stopLibraryRealtime(); window._koggUser = null; LS.set('cp_cloud_enabled',false);LS.set('cp_account_profile',null);syncUI();refreshModeChip(); }
     if(event==='SIGNED_IN' || event==='TOKEN_REFRESHED')setTimeout(()=>refreshUser(),0);
   });
   if (new URLSearchParams(location.hash.slice(1)).get('type') === 'recovery') $('passwordRecovery').hidden = false;

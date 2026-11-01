@@ -8,7 +8,7 @@ function setup({remote=null,local=[],base=null,owner=null,loseRace=false}={}) {
   if(base)storage.set('cp_sync_base_user',JSON.stringify({data:base,revision:'old'}));
   if(owner)storage.set('cp_libraryOwner',owner);
   const state={remote,writes:0,last:null,failSDK:false,scriptCount:0};
-  const client={auth:{getUser:async()=>({data:{user:{id:'user'}}})},from(){
+  const client={auth:{getUser:async()=>({data:{user:{id:'user'}}})},channel(name){state.channelName=name;return {on(spec,filters,cb){state.channelFilters=filters;state.channelHandler=cb;return this;},subscribe(){state.subscribed=true;return this;},unsubscribe(){state.subscribed=false;}};},from(){
     let action='read',data,filters={};
     const q={select(){return q;},eq(k,v){filters[k]=v;return q;},update(value){action='update';data=value;return q;},insert(value){action='insert';data=value;return q;},async maybeSingle(){if(action==='read')return {data:state.remote};if(loseRace)return {data:null};assert.equal(filters.updated_at,state.remote.updated_at);state.writes++;state.last=data;state.remote={data:data.data,updated_at:data.updated_at};return {data:{updated_at:data.updated_at}};},async single(){assert.equal(action,'insert');assert.equal(state.remote,null);state.writes++;state.last=data;state.remote={data:data.data,updated_at:data.updated_at};return {data:{updated_at:data.updated_at}};}};return q;
   }};
@@ -21,3 +21,19 @@ test('actual client never writes when both devices edited the same song',async()
 test('actual client conditional write detects a racing cloud update',async()=>{const {api,state}=setup({local:[song('Local')],base:payload([song('Old')]),remote:{data:payload([song('Old')]),updated_at:'new'},loseRace:true});await assert.rejects(api.push(),/changed during sync/);assert.equal(state.writes,0);});
 test('different-account library is blocked before data upload',async()=>{const {api,state}=setup({owner:'someone-else',local:[song('Private')]});await assert.rejects(api.push(),/different account/);assert.equal(state.writes,0);});
 test('SDK download can retry after an initial network failure',async()=>{const {api,state}=setup();state.failSDK=true;await assert.rejects(api.getClient(),/Could not load/);state.failSDK=false;assert(await api.getClient());assert.equal(state.scriptCount,2);});
+
+test('realtime subscription registers, delivers updates, and own-write stamps detect echoes',async()=>{
+ const {api,state,storage}=setup({local:[song('Local')]});
+ await api.push();
+ let got=null;
+ await api.subscribe(p=>got=p);
+ assert.equal(state.subscribed,true);
+ assert.equal(state.channelFilters.table,'libraries');assert.equal(state.channelFilters.filter,'user_id=eq.user');
+ const stamp=storage.get('cp_sync_stamp_user');
+ state.channelHandler({new:{updated_at:stamp}});
+ assert.equal(got.new.updated_at,stamp);
+ assert.equal(api.isOwnWrite('user',stamp),true);
+ assert.equal(api.isOwnWrite('user','another-device-stamp'),false);
+ api.unsubscribe();
+ assert.equal(state.subscribed,false);
+});

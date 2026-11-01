@@ -190,3 +190,16 @@ test('Lyrics preview emphasis marks words live and mirrors the output theme',asy
  box.handlers.pointerdown[0]({target:{closest:()=>null},pointerId:1,preventDefault(){}});
  assert.equal(JSON.parse(storage.get('cp_live')).textHighlight ?? null,null);
 });
+test('service items remember their theme and fire with it on any device',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ vm.runInContext("currentThemeId='t2';goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:16})",context);
+ elements.get('btnAddScripture').click();
+ assert.equal(JSON.parse(storage.get('cp_service'))[0].themeId,'t2');
+ vm.runInContext("currentThemeId='t1'",context);
+ const fire=()=>{const id=JSON.parse(storage.get('cp_service'))[0].id;const btn={dataset:{act:'live'},closest:s=>s==='li'?{dataset:{id}}:btn};elements.get('serviceList').handlers.click[0]({target:{closest:()=>btn}});};
+ fire();
+ assert.equal(JSON.parse(storage.get('cp_live')).themeId,'t2');   // the prepared look travels with the schedule
+ vm.runInContext("service[0].themeId='theme-not-on-this-device'",context);
+ fire();
+ assert.equal(JSON.parse(storage.get('cp_live')).themeId,'t1');   // missing theme falls back to this device's choice
+});

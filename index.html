@@ -337,6 +337,7 @@
           <div class="row">
             <label style="flex:2">Password<br><input id="authPassword" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
             <button id="btnShowPass" type="button" title="Show or hide password">Show</button>
+            <label id="authPass2Label" style="flex:2">Re-type password (when creating the account)<br><input id="authPass2" type="password" autocomplete="new-password" placeholder="same password again"></label>
           </div>
           <div class="row" style="align-items:center">
             <button id="btnSignIn" class="primary">Sign In</button>
@@ -534,7 +535,10 @@
     <p class="hint">One free account keeps your whole library with you on every device. Everything still works without one.</p>
     <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS.</div>
     <label class="gate-field">Email<br><input id="gateEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
-    <label class="gate-field">Password<br><input id="gatePass" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+    <label class="gate-field">Password<br>
+      <span class="pass-wrap"><input id="gatePass" type="password" autocomplete="new-password" placeholder="min. 6 characters"><button type="button" id="btnGateShow" aria-pressed="false" title="Show or hide password">Show</button></span>
+    </label>
+    <label class="gate-field">Re-type password (double-check before it matters)<br><input id="gatePass2" type="password" autocomplete="new-password" placeholder="same password again"></label>
     <div class="gate-row">
       <button id="btnGateIn" class="primary">Sign In</button>
       <button id="btnGateUp">Create Account</button>

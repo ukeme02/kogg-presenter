@@ -2163,6 +2163,8 @@ $('btnForgot').addEventListener('click', async () => {
 });
 $('btnSignUp').addEventListener('click', async () => {
   const status = $('authStatus');
+  const pass = $('authPassword').value;
+  if ($('authPass2') && $('authPass2').value !== pass) { status.textContent = 'The two passwords don\'t match — re-type it to confirm.'; return; }
   status.textContent = 'Creating account…';
   try {
     await window.KOGGSync.signUp($('authEmail').value.trim(), $('authPassword').value);
@@ -2401,6 +2403,11 @@ async function gateAuth(up) {
   st.style.color = '';
   try {
     if (up) {
+      // No confirmation email — the double-typed password is the confirmation.
+      const pass = $('gatePass').value;
+      if (!$('gateEmail').value.trim()) { st.textContent = 'Type your email first.'; st.style.color = 'var(--danger)'; return; }
+      if (pass.length < 6) { st.textContent = 'Choose a password of at least 6 characters.'; st.style.color = 'var(--danger)'; return; }
+      if ($('gatePass2').value !== pass) { st.textContent = 'The two passwords don\'t match — re-type it to confirm.'; st.style.color = 'var(--danger)'; return; }
       const result = await window.KOGGSync.signUp($('gateEmail').value.trim(), $('gatePass').value);
       if (!result.session) { st.textContent = '✓ Almost there — check your email and click the confirmation link, then sign in here.'; return; }
     }
@@ -2419,6 +2426,14 @@ async function gateAuth(up) {
     buttons.forEach(b => { b.disabled = false; if (b.dataset.label) { b.textContent = b.dataset.label; delete b.dataset.label; } });
   }
 }
+$('btnGateShow').addEventListener('click', () => {
+  const show = $('gatePass').type === 'password';
+  $('gatePass').type = show ? 'text' : 'password';
+  $('gatePass2').type = show ? 'text' : 'password';
+  const btn = $('btnGateShow');
+  btn.textContent = show ? 'Hide' : 'Show';
+  btn.setAttribute('aria-pressed', String(show));
+});
 $('btnGateIn').addEventListener('click', () => gateAuth(false));
 $('btnGateUp').addEventListener('click', () => gateAuth(true));
 refreshModeChip();

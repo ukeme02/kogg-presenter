@@ -216,3 +216,16 @@ test('gate signup shows a prominent friendly error and re-enables the buttons',a
  await elements.get('btnGateIn').handlers.click[0]();await new Promise(r=>setImmediate(r));
  assert.match(elements.get('gateStatus').textContent,/Wrong email or password/);
 });
+test('gate signup double-confirms the password before calling the cloud',async()=>{
+ const {context,elements}=boot();await new Promise(r=>setImmediate(r));
+ let calls=0;context.window.KOGGSync={configured:true,getClient:async()=>({}),signUp:async()=>{calls++;return {session:null};}};
+ elements.get('btnGateUp').textContent='Create Account';
+ elements.get('gateEmail').value='you@church.org';elements.get('gatePass').value='secret1';elements.get('gatePass2').value='different1';
+ await elements.get('btnGateUp').handlers.click[0]();await new Promise(r=>setImmediate(r));
+ assert.match(elements.get('gateStatus').textContent,/match/);assert.equal(calls,0);
+ assert.equal(elements.get('btnGateUp').disabled,false);
+ elements.get('gatePass2').value='secret1';
+ await elements.get('btnGateUp').handlers.click[0]();await new Promise(r=>setImmediate(r));
+ assert.equal(calls,1);
+ assert.match(elements.get('gateStatus').textContent,/Almost there/);
+});

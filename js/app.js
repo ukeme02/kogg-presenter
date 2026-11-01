@@ -1505,6 +1505,7 @@ function applyOutputLook(box){
   const sp = Number(t.spacing);
   box.style.letterSpacing = (Number.isFinite(sp) ? Math.max(0, Math.min(.15, sp)) : 0) + 'em';
   box.style.textShadow = t.shadow === false ? 'none' : '0 2px 8px rgba(0,0,0,.55)';
+  box.style.setProperty?.('--kogg-hl', /^#[0-9a-fA-F]{6}$/.test(t.hlColor || '') ? t.hlColor : '#ffd83d');
   return t;
 }
 function renderLyricsLive(){
@@ -1765,7 +1766,7 @@ function renderThemesTab() {
   $('themeSelect').value = currentThemeId;
   loadThemeForm();
 }
-const themeControlDefaults={themeVertical:['vertical','center'],themeLineHeight:['lineHeight',1.35],themeMargin:['margin',8],themeSpacing:['spacing',0],themeImageFit:['imageFit','cover'],themeDim:['dim',0],themeLabelSize:['labelSize',3],themeShowLabel:['showLabel',true],themeShadow:['shadow',true],themeAutoGrow:['autoGrow',true]};
+const themeControlDefaults={themeVertical:['vertical','center'],themeLineHeight:['lineHeight',1.35],themeMargin:['margin',8],themeSpacing:['spacing',0],themeImageFit:['imageFit','cover'],themeDim:['dim',0],themeLabelSize:['labelSize',3],themeShowLabel:['showLabel',true],themeShadow:['shadow',true],themeAutoGrow:['autoGrow',true],themeHlColor:['hlColor','#ffd83d']};
 let themePreviewToken=0;
 function themeNumber(value,fallback,min,max){const n=Number(value);return value!==''&&Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
 function loadThemeForm() {

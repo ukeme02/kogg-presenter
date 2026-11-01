@@ -2,6 +2,20 @@
 
 Updated: 1 November 2026 — sync session
 
+## Landing refresh: features current, hero annotated, emphasis colour picker
+
+- **Landing page** — hero output preview marks "knowledge" (2 Corinthians 4:6) with the default
+  yellow emphasis (static HTML + the rotating scene carries an html variant; scene switching uses
+  innerHTML only for that entry). "One screen for you. One for the room." card 03 rebalanced to
+  match its neighbours. New SYNC update card (live multi-device sync, schedule carries themes,
+  seconds-long signup); Sync mode explorer copy updated; badge reads EMPHASIS EVERYWHERE · LIVE SYNC.
+- **Emphasis colour picker** — Themes deck gains "Emphasis colour" (color input, default
+  #ffd83d). Stored as theme.hlColor; display.js sets --kogg-hl on the output screen; the operator
+  WYSIWYG previews (lyrics + notes) inherit the same variable, so yellow remains the default
+  everywhere and follows the theme when changed. Verified in-browser: green chosen → mark renders
+  green; yellow stays the default for all themes.
+- SW v94. Tests: 168 pass (style.setProperty guarded for vm harnesses).
+
 ## Decks fit the screen; lyrics projector becomes a dock; star toggles
 
 User direction: every deck should fill the desktop viewport with no page scroll — the scripture

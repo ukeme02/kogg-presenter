@@ -44,7 +44,7 @@ body.overlay #screen { background: transparent !important; }
 }
 
 #slideText mark.whl {
-  background: #ffd83d;
+  background: var(--kogg-hl, #ffd83d);   /* theme-controlled emphasis colour, default yellow */
   color: #101010;
   text-shadow: none;
   border-radius: .09em;

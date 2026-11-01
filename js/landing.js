@@ -25,7 +25,7 @@
   $('demoLyricRef').textContent=slides[lyricIndex]?.label||'No slide selected';$('demoLyricText').textContent=slides[lyricIndex]?.text||'Paste a few lines to start.';$('demoLyricCount').textContent=slides.length+' slide'+(slides.length===1?'':'s')+' · blank lines create new slides';
  }
  $('demoLyrics').addEventListener('input',drawLyrics);$('resetDemoLyrics').addEventListener('click',()=>{$('demoLyrics').value=original;lyricIndex=0;drawLyrics();});drawLyrics();
- const modes={base:{title:'Open once.<br>Be ready offline.',intro:'Wait for Ready offline, then present the three core Bibles and included hymns without installing or signing in.',points:['Core Scripture and hymns stay available offline.','Base lyrics are temporary; End session clears that workspace.']},local:{title:'Your songs.<br>Your device.',intro:'Keep saved songs, service plans, themes and downloaded content on this device. An installed browser app icon is optional.',points:['Saved songs and downloaded content work offline.','Use a full library backup when you want to transfer device-local work.']},sync:{title:'Your library.<br>A little more portable.',intro:'Sign in to keep a local working copy and sync saved songs, service plans, themes and artwork when connected.',points:['Open another device online and let it sync before travelling.','Custom Bible files remain device-local; conflicts are shown for attention.']}};
+ const modes={base:{title:'Open once.<br>Be ready offline.',intro:'Wait for Ready offline, then present the three core Bibles and included hymns without installing or signing in.',points:['Core Scripture and hymns stay available offline.','Base lyrics are temporary; End session clears that workspace.']},local:{title:'Your songs.<br>Your device.',intro:'Keep saved songs, service plans, themes and downloaded content on this device. An installed browser app icon is optional.',points:['Saved songs and downloaded content work offline.','Use a full library backup when you want to transfer device-local work.']},sync:{title:'Your library.<br>On every device.',intro:'A free account syncs saved songs, named plans, themes, artwork and the current service schedule. Changes auto-push when online and appear on your other devices live.',points:['Open another device online and let it sync before travelling.','Queue items carry their theme, so the schedule looks the same anywhere.']}};
  let mode='base',online=true;
  function drawMode(){const data=modes[mode],panel=$('modeDetails');panel.setAttribute('aria-labelledby','mode-'+mode);panel.innerHTML='<h3>'+data.title+'</h3><p>'+data.intro+'</p><ul>'+data.points.map(p=>'<li>'+p+'</li>').join('')+'<li>'+(online?(mode==='sync'?'Online: saved changes can sync; source services are reachable when available.':'Online: lyrics search and connected Bible sources can be used.'):(mode==='sync'?'Offline: your prepared local copy works; sync waits for reconnection.':'Offline: use cached content, saved songs and pasted lyrics; online sources wait.'))+'</li></ul>';$('modeCta').textContent='Open the app and choose '+mode[0].toUpperCase()+mode.slice(1)+' ↗';}
  tabs('[data-mode-demo]',b=>{mode=b.dataset.modeDemo;drawMode();});$('demoConnection').addEventListener('click',()=>{online=!online;$('demoConnection').setAttribute('aria-checked',String(online));$('demoConnection').textContent='Demo connection: '+(online?'online':'offline');drawMode();});drawMode();
@@ -65,7 +65,7 @@
  const heroButtons=[...document.querySelectorAll('[data-hero-tab]')];
  const dots=[...document.querySelectorAll('.scene-dots i')];
  const scenes=[
-  {tab:0,ref:'2 Corinthians 4:6 · KJV',text:"For God, who commanded the light to shine out of darkness, hath shined in our hearts, to give the light of the knowledge of the glory of God in the face of Jesus Christ."},
+  {tab:0,ref:'2 Corinthians 4:6 · KJV',text:"For God, who commanded the light to shine out of darkness, hath shined in our hearts, to give the light of the knowledge of the glory of God in the face of Jesus Christ.",html:'For God, who commanded the light to shine out of darkness, hath shined in our hearts, to give the light of the <mark class="whl">knowledge</mark> of the glory of God in the face of Jesus Christ.'},
   {tab:0,ref:'Psalm 23:1 · KJV',text:'The LORD is my shepherd; I shall not want.'},
   {tab:1,ref:'Amazing Grace · Verse 1',text:'Amazing grace, how sweet the sound\nThat saved a wretch like me'},
   {tab:1,ref:'Amazing Grace · Verse 2',text:'’Twas grace that taught my heart to fear\nAnd grace my fears relieved'}
@@ -82,7 +82,7 @@
   const next=scenes[scene],button=heroButtons[next.tab];
   heroButtons.forEach(b=>{const active=b===button;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1;$(b.getAttribute('aria-controls')).hidden=!active;});
   const text=$(next.tab?'heroLyricText':'projText'),label=$(next.tab?'heroLyricLabel':'projRef');
-  text.textContent=next.text;label.textContent=next.ref;text.classList.toggle('long-passage',next.text.length>120);
+  if(next.html)text.innerHTML=next.html;else text.textContent=next.text;label.textContent=next.ref;text.classList.toggle('long-passage',next.text.length>120);
   animatePreview($(button.getAttribute('aria-controls')).querySelector('.hero-screen'));updateDots();
  }
  function scheduleHero(){

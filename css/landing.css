@@ -533,3 +533,6 @@ html{scroll-padding-top:100px}.section[id]{scroll-margin-top:100px}@media(max-wi
 /* One compact, single-colour lockup. */
 .brand,.site-footer .brand{gap:3px;color:#2459d8}.brand>.brand-symbol{content:url(../icons/kogg-symbol.svg);width:40px;height:40px;filter:none}.brand .brand-kogg{display:block;background:currentColor;mask:url(../icons/kogg-wordmark.svg) center/contain no-repeat;-webkit-mask:url(../icons/kogg-wordmark.svg) center/contain no-repeat;filter:none!important}.brand .brand-sub{color:inherit}.brand-wordmark{gap:2px}
 body.dark .brand{color:#fff}body.dark .brand>.brand-symbol{content:url(../icons/kogg-symbol-white.svg)}
+
+/* Word emphasis in the hero preview — the default KOGG yellow annotation */
+.hero-screen mark.whl{background:#ffd83d;color:#101010;text-shadow:none;border-radius:.09em;padding:.02em .14em;box-decoration-break:clone;-webkit-box-decoration-break:clone}

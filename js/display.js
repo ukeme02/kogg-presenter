@@ -59,6 +59,7 @@ function applyTheme(state) {
     screenEl.style.background=themeBackground(t);
   }
   screenEl.style.color = t.textColor;
+  screenEl.style.setProperty?.('--kogg-hl', /^#[0-9a-fA-F]{6}$/.test(t.hlColor || '') ? t.hlColor : '#ffd83d');   // word-emphasis colour, default yellow
   textEl.style.fontFamily = t.font;
   labelEl.style.fontFamily = t.font;
   textEl.style.fontSize = t.fontSize + 'vh';

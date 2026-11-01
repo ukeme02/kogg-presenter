@@ -207,7 +207,7 @@ test('gate signup shows a prominent friendly error and re-enables the buttons',a
  const {context,elements}=boot();await new Promise(r=>setImmediate(r));
  context.window.KOGGSync={configured:true,getClient:async()=>({}),signUp:async()=>{throw new Error('email rate limit exceeded');}};
  elements.get('btnGateUp').textContent='Create Account';elements.get('btnGateIn').textContent='Sign In';
- elements.get('gateEmail').value='you@church.org';elements.get('gatePass').value='secret1';
+ elements.get('gateEmail').value='you@church.org';elements.get('gatePass').value='secret1';elements.get('gatePass2').value='secret1';
  await elements.get('btnGateUp').handlers.click[0]();await new Promise(r=>setImmediate(r));
  assert.match(elements.get('gateStatus').textContent,/email service is busy/);
  assert.equal(elements.get('btnGateUp').disabled,false);

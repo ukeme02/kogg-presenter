@@ -484,3 +484,6 @@ Prepared A Connected KP, B Projected K and C Folded K as original SVG directions
 
 Applied selected direction C with a screen frame and stand to communicate presenting. Added blue, light, white and ink symbols, app and maskable icons, Apple touch icon and a light/dark brand proof. Updated landing, launcher, operator and default output branding while preserving custom church logos. Worker v80 caches the new assets. Validation: 132 automated checks pass; vector proof and app icon rendered and visually inspected. Live browser/device verification remains unavailable because capture tools fail at initialization.
 
+
+Logo refinement: increased screen/stand stroke from 7 to 10 and corner radius from 13 to 18 for balance with the folded K. Regenerated all raster icons and brand proof; inspected the app icon. Worker v81.
+

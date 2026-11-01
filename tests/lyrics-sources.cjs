@@ -28,7 +28,27 @@ test('supported hymn page extracts stanza text and credits without page furnitur
 test('tune/page public-domain notices do not authorise importing a copyrighted text',()=>{
  assert.throws(()=>S.hymnary(hymn.replace('Public Domain','© Publisher')+'<p>Tune: Public Domain</p>','https://hymnary.org/text/title'),/does not mark the hymn text/);
 });
-function endpoint(fetcher){const source=fs.readFileSync('functions/api/lyrics.js','utf8').replace("import sources from '../../js/lyrics-sources.js';",'').replace('export async function','async function');const c=vm.createContext({sources:S,URL,Response,AbortController,setTimeout,clearTimeout,fetch:fetcher});vm.runInContext(source,c);return c.onRequestGet;}
+test('a lyrics.ovh miss falls back to the LRCLIB exact title/artist record',async()=>{
+ const song=await S.lookup({title:'Example',author:'Singer',pending:true,provider:'lyrics.ovh'},{server:false,fetcher:async url=>{
+  if(url.includes('api.lyrics.ovh'))return response({error:'No lyrics'});
+  assert.match(url,/lrclib\.net\/api\/get\?/);assert.match(url,/artist_name=Singer/);
+  return response({id:9,trackName:'Example',artistName:'Singer',plainLyrics:'From LRCLIB'});
+ }});
+ assert.equal(song.lyrics,'From LRCLIB');assert.equal(song.source.name,'LRCLIB');
+});
+test('a briefly unavailable source is retried once before giving up',async()=>{
+ let calls=0;const song=await S.lookup({title:'Example',author:'Singer',pending:true,provider:'lyrics.ovh'},{server:false,fetcher:async()=>{
+  calls++;
+  if(calls===1)return new Response('busy',{status:503,headers:{'Content-Type':'text/plain'}});
+  return response({lyrics:'Second try'});
+ }});
+ assert.equal(calls,2);assert.equal(song.lyrics,'Second try');
+});
+test('source fetches identify themselves with a User-Agent header',async()=>{
+ let ua;await S.readJSON('https://example.test/x',{fetcher:async(url,init)=>{ua=init.headers['User-Agent'];return response({ok:1});}});
+ assert.match(String(ua),/KOGGPresenter/);
+});
+function endpoint(fetcher){const source=fs.readFileSync('functions/api/lyrics.js','utf8').replace("import sources from '../../js/lyrics-sources.js';",'').replace("import lyricsCore from '../../js/lyrics.js';",'').replace('export async function','async function');const c=vm.createContext({sources:S,lyricsCore:require('../js/lyrics.js'),URL,URLSearchParams,Response,AbortController,setTimeout,clearTimeout,fetch:fetcher});vm.runInContext(source,c);return c.onRequestGet;}
 test('Cloudflare importer rejects unrelated hosts before fetching and marks all responses no-store',async()=>{
  let fetched=false;const handle=endpoint(async()=>{fetched=true;return new Response('');});
  const r=await handle({request:new Request('https://kogg.test/api/lyrics?action=import&url='+encodeURIComponent('https://127.0.0.1/private'))});assert.equal(r.status,400);assert.equal(fetched,false);assert.equal(r.headers.get('cache-control'),'no-store');

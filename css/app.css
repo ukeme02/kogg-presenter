@@ -72,6 +72,8 @@ body {
   font-size: 13px; cursor: pointer;
 }
 .screen-all:hover { border-color: var(--accent); }
+.screen-close { color: var(--danger); }
+.screen-close:hover { border-color: var(--danger); }
 
 button {
   font: inherit;

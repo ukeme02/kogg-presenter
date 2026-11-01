@@ -1,4 +1,8 @@
 import sources from '../../js/lyrics-sources.js';
+import lyricsCore from '../../js/lyrics.js';
+// How the module graph is bundled decides whether lyrics-sources can require its own
+// core helpers; injecting them here keeps record mapping working in every shape.
+sources.setCore(lyricsCore);
 let lastHymnaryRequest=0;
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 export async function onRequestGet({request}){
@@ -8,7 +12,7 @@ export async function onRequestGet({request}){
  try{
   const action=incoming.searchParams.get('action')||'search';
   if(action==='search')return json(await sources.searchDirect(incoming.searchParams.get('q')||'',options));
-  if(action==='lookup')return json({song:await sources.lookupDirect({pending:true,provider:'lyrics.ovh',title:incoming.searchParams.get('title'),author:incoming.searchParams.get('artist')},options)});
+  if(action==='lookup')return json({song:await sources.lookup({pending:true,provider:'lyrics.ovh',title:incoming.searchParams.get('title'),author:incoming.searchParams.get('artist')},{...options,server:false})});
   if(action!=='import')return json({error:'Unknown action'},400);
   const target=sources.importTarget(incoming.searchParams.get('url')||'');
   if(target.type==='lyrics.ovh')return json({song:await sources.lookupDirect({pending:true,provider:'lyrics.ovh',title:target.title,author:target.artist},options)});

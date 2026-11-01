@@ -1542,8 +1542,8 @@ $('lyricsOnlineResults').addEventListener('click',async e=>{
  const button=e.target.closest('button[data-import-lyric]');if(!button||!lyricsOnline[+button.dataset.importLyric])return;
  const candidate=lyricsOnline[+button.dataset.importLyric],token=lyricsSearchToken;button.disabled=true;
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
- try{const song=await window.KOGGLyricsSources.lookup(candidate,{signal:controller.signal});if(token!==lyricsSearchToken)return;openSongEditor(song);displayLyrics(0);$('lyricsStatus').textContent='First slide is live. Tap another slide, or edit/save the song.';}
- catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'This source timed out. Try another version or paste lyrics.':err.message;}
+ try{const song=await window.KOGGLyricsSources.lookup(candidate,{signal:controller.signal});if(token!==lyricsSearchToken)return;openSongEditor(song);displayLyrics(0);$('lyricsStatus').textContent='First slide is live. Tap another slide, or Save to keep it in your library.';}
+ catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'This result timed out — try another version, or paste the lyrics.':'Could not fetch this one ('+err.message+'). Try another result, or paste the lyrics.';}
  finally{clearTimeout(timeout);button.disabled=false;}
 });
 $('btnImportLyricsLink').addEventListener('click',async()=>{
@@ -2421,14 +2421,15 @@ function hookOutputScreens(details) {
   details.screens.forEach(screen => screen.addEventListener?.('change', onOutputScreensChanged));
 }
 function outputPopups() { return [displayWindow, ...displayWindows].filter(w => w && !w.closed); }
-function placePopupOnScreen(popup, screen) {
+function placePopupOnScreen(popup, screen, sendFullscreen = true) {
   try {
     const doc = popup.document;
     if (doc?.fullscreenElement) void doc.exitFullscreen();
     if (popup.closed) return;
     popup.moveTo(screen.left, screen.top);
     popup.resizeTo(screen.width, screen.height);
-    try { popup.postMessage({type:'output-fullscreen'},location.origin); } catch {}
+    // The operator's own screen keeps the output windowed so it never covers the console.
+    if (sendFullscreen) { try { popup.postMessage({type:'output-fullscreen'},location.origin); } catch {} }
   } catch {}
 }
 async function placeOutputOnScreens(showNote) {
@@ -2502,13 +2503,17 @@ function renderScreenPicker() {
     tags.textContent = [live ? 'output' : '', here ? 'this screen' : '', s.isPrimary ? 'main' : ''].filter(Boolean).join(' · ') || (s.width + '×' + s.height);
     btn.append(name, tags);
     btn.addEventListener('click', async () => {
+      const here = s.left === cur.left && s.top === cur.top;
       LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { outputScreen: { left: s.left, top: s.top } }));
       if (!displayWindow || displayWindow.closed) await openDisplayWindow();
       else {
-        placePopupOnScreen(displayWindow, s);
+        // Sending the output back to this screen keeps it as a normal window beside the console.
+        placePopupOnScreen(displayWindow, s, !here);
         outputPlacedScreens.set(displayWindow, screenKey(s));
-        outputLastPlacement = screenKey(s);
-        setOutputStatus('Output moved to ' + (s.label || 'Display ' + (i + 1)) + ' — if not fullscreen, click it once');
+        outputLastPlacement = here ? '' : screenKey(s);
+        setOutputStatus(here
+          ? 'Output moved back to this screen — it stays a normal window next to the console'
+          : 'Output moved to ' + (s.label || 'Display ' + (i + 1)) + ' — if not fullscreen, click it once');
       }
       renderScreenPicker();
     });
@@ -2531,6 +2536,14 @@ $('btnAllScreens').addEventListener('click', async () => {
   await placeOutputOnScreens(false);
   const n = Math.min(outputPopups().length, others.length);
   setOutputStatus('Output sent to ' + n + ' screen' + (n === 1 ? '' : 's') + ' — if not fullscreen, click each once');
+});
+$('btnCloseOutput').addEventListener('click', () => {
+  $('screenPicker').hidden = true;
+  let closed = 0;
+  [displayWindow, ...displayWindows].forEach(w => { if (w && !w.closed) { try { w.close(); closed++; } catch {} } });
+  displayWindow = null; displayWindows = [];
+  outputPlacedScreens.clear(); outputLastPlacement = ''; outputFullscreen = null; outputIsConnected = false;
+  setOutputStatus(closed ? 'Output closed' : 'Output was not open');
 });
 
 /* Keep the operator console awake during a service (Screen Wake Lock API —

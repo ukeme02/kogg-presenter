@@ -1,15 +1,29 @@
 /* Small source adapters shared by the browser and Cloudflare. */
 (function(scope){
  'use strict';
- const core=typeof module!=='undefined'?require('./lyrics.js'):scope.KOGGLyrics;
+ let core=typeof module!=='undefined'?require('./lyrics.js'):scope.KOGGLyrics;
+ function setCore(lyricsCore){if(lyricsCore&&typeof lyricsCore.fromRecord==='function')core=lyricsCore;}
+ function fromRecord(row){return core?core.fromRecord(row):null;}
  function checked(value,max=200){return typeof value==='string'&&value.trim()&&value.length<=max?value.trim():null;}
+ // Cloudflare's outgoing fetches send no User-Agent; LRCLIB (and friends) are friendlier to one.
+ const serverHeaders=typeof window==='undefined'?{'User-Agent':'KOGGPresenter/1.0 (https://kogg-presenter.pages.dev)'}:undefined;
  async function readJSON(url,{fetcher=fetch,signal}={}){
-  const response=await fetcher(url,{signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual'});
-  if((response.status>=300&&response.status<400)||response.type==='opaqueredirect')throw new Error('This source redirected. Use its final supported source link instead.');
-  const type=response.headers?.get('content-type')||'';
-  if(type && !type.includes('json'))throw new Error('Invalid source response');
-  const raw=await response.text();if(raw.length>2000000)throw new Error('Source response too large');const data=JSON.parse(raw);
-  if(!response.ok)throw new Error(typeof data.error==='string'?data.error:response.status===429?'Source is busy. Try again shortly.':'Source unavailable');return data;
+  const once=async()=>{
+   const response=await fetcher(url,{signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual',headers:serverHeaders});
+   if((response.status>=300&&response.status<400)||response.type==='opaqueredirect')throw new Error('This source redirected. Use its final supported source link instead.');
+   if(response.status>=500)throw new Error('Source unavailable');
+   const type=response.headers?.get('content-type')||'';
+   if(type && !type.includes('json'))throw new Error('Invalid source response');
+   const raw=await response.text();if(raw.length>2000000)throw new Error('Source response too large');const data=JSON.parse(raw);
+   if(!response.ok)throw new Error(typeof data.error==='string'?data.error:response.status===429?'Source is busy. Try again shortly.':'Source unavailable');return data;
+  };
+  try{return await once();}
+  catch(err){
+   // These sources briefly return 503 under load — one quiet retry recovers most failures.
+   if(signal?.aborted||err.message!=='Source unavailable')throw err;
+   await new Promise((resolve,reject)=>{const timer=setTimeout(resolve,800);if(signal)signal.addEventListener('abort',()=>{clearTimeout(timer);reject(new DOMException('Cancelled','AbortError'));},{once:true});});
+   return once();
+  }
  }
  function candidate(r){const title=checked(r?.title),author=checked(r?.artist?.name);if(!title||!author)return null;
   return {title,author,pending:true,provider:'lyrics.ovh',source:{name:'lyrics.ovh',url:'https://api.lyrics.ovh/v1/'+encodeURIComponent(author)+'/'+encodeURIComponent(title)}};
@@ -43,7 +57,19 @@
  async function lookup(song,options={}){
   if(!song.pending)return song;
   if(options.server!==false){try{const data=await request('lookup',{title:song.title,artist:song.author},options);if(data.song)return data.song;}catch(e){if(options.signal?.aborted)throw e;}}
-  return lookupDirect(song,options);
+  try{return await lookupDirect(song,options);}
+  catch(e){
+   if(options.signal?.aborted)throw e;
+   // lyrics.ovh often has no text for a version — try LRCLIB's exact title/artist record before giving up.
+   const title=checked(song.title),author=checked(song.author);
+   if(!author)throw e;
+   try{
+    const row=await readJSON('https://lrclib.net/api/get?'+new URLSearchParams({artist_name:author,track_name:title}),options);
+    const mapped=fromRecord(row);
+    if(mapped)return mapped;
+   }catch(_){}
+   throw e;
+  }
  }
  function importTarget(raw){let url;try{url=new URL(raw);}catch{throw new Error('Paste a complete https:// source link.');}
   if(url.protocol!=='https:'||url.username||url.password||url.port)throw new Error('Use a supported https:// source link.');
@@ -78,6 +104,6 @@
  }
  async function importLink(raw,options={}){const target=importTarget(raw);const data=await request('import',{url:target.url},options);if(!data.song)throw new Error(data.error||'Page import is unavailable here. Paste the lyrics instead.');return data.song;}
  function google(q){return 'https://www.google.com/search?'+new URLSearchParams({q:q.trim()+' lyrics'});}
- const api={readJSON,candidate,searchDirect,search,lookupDirect,lookup,importTarget,hymnary,importLink,google};
+ const api={readJSON,candidate,searchDirect,search,lookupDirect,lookup,importTarget,hymnary,importLink,google,setCore,fromRecord};
  if(typeof module!=='undefined')module.exports=api;else scope.KOGGLyricsSources=api;
 })(typeof window!=='undefined'?window:globalThis);

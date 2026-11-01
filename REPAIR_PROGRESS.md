@@ -1,8 +1,40 @@
 # KOGG Presenter repair progress
 
-Updated: 1 November 2026
+Updated: 1 November 2026 — second session
 
-## Output screens: picker, memory, wake lock, hotplug recovery
+## Online lyrics clicks that never arrived + output close/windowed return
+
+Root cause of "search finds songs, clicking does nothing": the live search endpoint was returning
+**only `pending` lyrics.ovh candidates** (`"partial":true`) because the LRCLIB leg of the server
+search was failing — LRCLIB intermittently answers 503 under load (verified from two networks,
+with and without a User-Agent). Those pending results require a second fetch on click, which
+itself often failed on lyrics.ovh ("no lyrics for this version"), so the click appeared dead.
+
+Repairs:
+
+- `lookup` now chains **lyrics.ovh → LRCLIB exact title/artist record** (`/api/get`) before giving
+  up, both in the browser and in the Cloudflare function (lookup action uses the same chain with
+  `server:false`).
+- `readJSON` retries **once** on a 5xx "Source unavailable" after 800 ms (abort-aware), and treats
+  any 5xx as a busy source regardless of body type. Server-side fetches now send a meaningful
+  `User-Agent` (browser fetches keep their own).
+- The function injects the lyrics core (`sources.setCore`) so record mapping works however the
+  bundle resolves the dual CJS/ESM module.
+- Click feedback improved: failures say what to try next; success points at Save.
+
+Output additions (user request):
+
+- **Close output window** button in the 🖥️ picker — closes every output popup and resets status.
+- Tapping **this screen** in the picker brings the output back to the operator's screen as a
+  **normal windowed window** (no fullscreen request), so it never covers the console.
+- Fullscreen remains best-effort after placement (browsers require a click in the output window);
+  the picker states this and the README documents kiosk mode for a fully automatic projector laptop.
+- Service Worker bumped to v88.
+
+Tests: `node --test tests/*.cjs` → 161 pass, 0 fail (lyrics-sources grew 5 new: ovh→LRCLIB chain,
+503 retry, UA header, plus the function harness now injects the core). Deployed and verified live.
+
+## Earlier session: output screens picker, memory, wake lock, hotplug recovery
 
 Session slice (all committed together):
 

@@ -2,6 +2,27 @@
 
 Updated: 1 November 2026 — sync session
 
+## Mode trap fixed: Base is reachable again after Sync
+
+User report: after using Sync Mode they could not get back to Base (their most-used mode). Root
+cause: choosing Base never cleared the signed-in user or the cloud flag — cloudEnabled() treated
+any signed-in session as cloud-on in every non-local mode, so the app kept syncing, the chip kept
+reading "☁️ Sync", and refreshUser kept pulling the sync library.
+
+Fix — cloud is now a property of the MODE, not of lingering sign-in state:
+
+- cloudEnabled() is true only in Sync mode (configured). Base and Local are cloud-free by
+  contract, whatever the browser still remembers.
+- setWorkMode('base') behaves like Local for cloud: timer cleared, realtime torn down, cloud
+  identity dropped from memory. The Supabase session itself persists, so returning to Sync
+  signs back in silently — no password re-typing.
+- refreshUser() exits early for any non-Sync mode.
+- The mode chip keys off the chosen mode first ("📖 Base • online" stays Base even minutes
+  after signing out of view).
+
+Verified by a new regression test: sync→base stops cloud work but keeps the local dirty change;
+base→sync re-signs-in from the persisted session and resumes. SW v97. Tests: 171 pass.
+
 ## Live-service slowness: the service worker was the bottleneck
 
 User report: the whole app was slow in service and lyrics were slow to load. Diagnosis:

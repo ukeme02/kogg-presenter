@@ -229,3 +229,17 @@ test('gate signup double-confirms the password before calling the cloud',async()
  assert.equal(calls,1);
  assert.match(elements.get('gateStatus').textContent,/Almost there/);
 });
+test('Sync to Base stops all cloud work, and back to Sync resumes without re-typing',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ context.navigator.onLine=true;let userCalls=0;context.window.KOGGSync={configured:true,getClient:async()=>({}),currentUser:async()=>{userCalls++;return {id:'u1',email:'a@b.org'};},signUp:async()=>({}),signIn:async()=>({}),subscribe:async()=>{},unsubscribe(){},isOwnWrite:()=>false,push:async()=>{throw new Error('no push');},pull:async()=>{throw new Error('no pull');}};
+ await vm.runInContext("setWorkMode('sync')",context);await new Promise(r=>setImmediate(r));
+ assert.ok(vm.runInContext('window._koggUser',context),'signed in');
+ vm.runInContext("markDirty()",context);   // a pending change while signed in
+ vm.runInContext("setWorkMode('base')",context);await new Promise(r=>setImmediate(r));
+ assert.equal(vm.runInContext('window._koggUser',context),null,'base holds no cloud identity');
+ assert.equal(JSON.parse(storage.get('cp_settings')).dirtyLibrary,true,'base still keeps the local change');
+ assert.equal(JSON.parse(storage.get('cp_settings')).mode,'base');
+ vm.runInContext("setWorkMode('sync')",context);await new Promise(r=>setImmediate(r));
+ assert.equal(vm.runInContext('window._koggUser && window._koggUser.id',context),'u1','back to Sync re-signs-in from the persisted session');
+ assert.match(elements.get('modeChip').textContent,/Base • online|Sync/);
+});

@@ -2135,11 +2135,12 @@ function syncUI() {
   refreshSyncBadge();
 }
 function cloudEnabled() {
-  return workMode()!=='local' && !!window.KOGGSync?.configured &&
-    (workMode()==='sync' || !!window._koggUser || LS.get('cp_cloud_enabled',false));
+  // Cloud work happens in Sync mode only. Base and Local are cloud-free by contract,
+  // no matter whether a signed-in session still exists in the browser.
+  return workMode()==='sync' && !!window.KOGGSync?.configured;
 }
 async function refreshUser() {
-  if(workMode()==='local'){window._koggUser=null;stopLibraryRealtime();syncUI();refreshModeChip();return;}
+  if(workMode()!=='sync'){window._koggUser=null;stopLibraryRealtime();syncUI();refreshModeChip();return;}
   if(!navigator.onLine){window._koggUser=LS.get('cp_account_profile',null);syncUI();refreshModeChip();return;}
   if(!cloudEnabled()){syncUI();refreshModeChip();return;}
   try {
@@ -2281,7 +2282,9 @@ function workMode() { return LS.get(K.settings, {}).mode || ''; }
 const MODE_LABEL = { base: '📖 Base', sync: '☁️ Sync', local: '💾 Local' };
 function refreshModeChip() {
   const m = workMode();
-  $('modeChip').textContent = m==='local' ? MODE_LABEL.local : window._koggUser ? (navigator.onLine ? (syncError ? '☁️ Sync • attention' : '☁️ Sync') : '📖 Base • offline') : m ? (navigator.onLine ? '📖 Base • online' : '📖 Base • offline') : 'Choose mode';
+  $('modeChip').textContent = m==='local' ? MODE_LABEL.local
+    : m==='sync' ? (window._koggUser ? (navigator.onLine ? (syncError ? '☁️ Sync • attention' : '☁️ Sync') : '☁️ Sync • offline') : '☁️ Sync • sign in')
+    : m ? (navigator.onLine ? '📖 Base • online' : '📖 Base • offline') : 'Choose mode';
   $('modeChip').classList.toggle('unset', !m);
   if (typeof updateAddVersionsGate === 'function') updateAddVersionsGate();
 }
@@ -2292,8 +2295,8 @@ function setWorkMode(m) {
   refreshModeChip();
   if(window.__lyricsReady){loadLyricsDraft();renderSongList();}
   if(window.__notesReady)loadNotesWorkspace();
-  if (m === 'local') { clearTimeout(syncTimer); window._koggUser = null; syncUI(); }
-  else { if(cloudEnabled())startAuthObserver();refreshUser(); }
+  if (m === 'sync') { if(cloudEnabled())startAuthObserver();refreshUser(); }
+  else { clearTimeout(syncTimer); stopLibraryRealtime(); window._koggUser = null; syncUI(); }
 }
 function showGate() {
   $('startGate').hidden = false;

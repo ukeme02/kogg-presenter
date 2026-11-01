@@ -163,7 +163,8 @@ async function renderLogo(state) {
   const svg = $('logoSvg');
   if (src) { img.src = src; img.hidden = false; svg.hidden = true; }
   else { img.hidden = true; svg.hidden = false; }
-  $('logoName').textContent = s.logoName || 'KOGG Presenter';
+  if(!src&&!s.logoName)$('logoName').innerHTML='<span class="output-kogg-wordmark" role="img" aria-label="KOGG"></span><span class="output-presenter">Presenter</span>';
+  else $('logoName').textContent=s.logoName||'KOGG Presenter';
 }
 
 function renderNotesAlert(alert){

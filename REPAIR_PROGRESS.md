@@ -479,3 +479,8 @@ Final Notes guard: Blank also suspends live-follow for active tags/alerts, so ty
 ## Refined monogram review — 1 November 2026
 
 Prepared A Connected KP, B Projected K and C Folded K as original SVG directions. Comparison includes supplied KOGG lettering plus Nunito Presenter, dark/light horizontal lockups, standalone blue marks, one-colour white/ink variants and small app icons. Rendered with the official Nunito TTF loaded for design-only use; source font stays in ignored work and adds no website dependency. Inspected final PNG and corrected the light-wordmark rendering before delivery. Saved the comparison under docs/branding. No live branding change pending user preference.
+
+## Folded K Screen logo — 1 November 2026
+
+Applied selected direction C with a screen frame and stand to communicate presenting. Added blue, light, white and ink symbols, app and maskable icons, Apple touch icon and a light/dark brand proof. Updated landing, launcher, operator and default output branding while preserving custom church logos. Worker v80 caches the new assets. Validation: 132 automated checks pass; vector proof and app icon rendered and visually inspected. Live browser/device verification remains unavailable because capture tools fail at initialization.
+

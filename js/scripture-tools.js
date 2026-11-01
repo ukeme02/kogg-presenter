@@ -7,6 +7,10 @@
     const items = Array.isArray(history) ? history.filter(e => valid(e?.r) && typeof e.translation === 'string') : [];
     return [entry,...items.filter(e => !same(e,entry))].slice(0,limit);
   }
+  function forget(history,entry) {
+    const items = Array.isArray(history) ? history.filter(e => valid(e?.r) && typeof e.translation === 'string') : [];
+    return items.filter(e => !same(e,entry));
+  }
   function adjacent(books,r,dir) {
     if (!valid(r) || !books[r.bookIdx]?.chapters[r.ch-1] || ![1,-1].includes(dir)) return null;
     let b=r.bookIdx,c=r.ch,v=dir>0?r.vTo:r.vFrom;
@@ -26,6 +30,6 @@
     for(let v=r.vFrom;v<=Math.min(r.vTo,chapter.length);v++)if(chapter[v-1]?.trim())lines.push(v+' '+chapter[v-1]);
     return lines.join('\n');
   }
-  const api={valid,same,remember,adjacent,passage};
+  const api={valid,same,remember,forget,adjacent,passage};
   if(typeof module!=='undefined')module.exports=api;else scope.KOGGScripture=api;
 })(typeof window!=='undefined'?window:globalThis);

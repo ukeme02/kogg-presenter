@@ -318,6 +318,7 @@ function renderLiveText() {
   const ref = book.name + ' ' + previewRef.ch + (previewRef.vTo > previewRef.vFrom ? ':' + previewRef.vFrom + '-' + previewRef.vTo : ':' + previewRef.vFrom);
   const liveOnProjector = live.strongsShowing && live.strongsCard ? '<span class="lt-note">word meaning on screen — tap the number again to flip back</span>' : '';
   box.innerHTML = `<div class="live-ref">${esc(ref)}${nums ? '<span class="lt-tip">tap a word number → its meaning takes the screen</span>' : ''}${liveOnProjector}</div>${parts.join(' ')}`;
+  refreshBookmarkButton();
 }
 
 /* ---------- Strong's tap-to-define — numbers live in the preview only;
@@ -1909,11 +1910,26 @@ async function navigateScripture(dir) {
   // semantics intact (window size and whole-chapter steps) and goes live as it walks
   stepVerse(dir);
 }
+/* ☆ Save / ★ Saved — a full toggle: the same button removes the bookmark. */
+function bookmarkedNow() {
+  if (!liveRef) return null;
+  const entry = { r: { ...liveRef }, translation: loadedBibleFile };
+  return bookmarks.find(b => window.KOGGScripture.same(b, entry)) || null;
+}
+function refreshBookmarkButton() {
+  const btn = $('btnBookmarkScripture');
+  if (!btn) return;
+  const on = bookmarkedNow();
+  btn.textContent = on ? '★ Saved' : '☆ Save';
+  btn.title = on ? 'Remove this bookmark' : 'Save this passage';
+}
 $('btnBookmarkScripture').addEventListener('click',()=>{
   if(!liveRef)return;
   const entry={r:{...liveRef},translation:loadedBibleFile,title:refOf(liveRef),ref:refOf(liveRef),short:shortRef(liveRef)};
-  bookmarks=window.KOGGScripture.remember(bookmarks,entry,50);
-  LS.set('cp_scripture_bookmarks',bookmarks);renderMemory();flash($('btnBookmarkScripture'),'Saved ★');
+  const exists=!!bookmarkedNow();
+  bookmarks=exists?window.KOGGScripture.forget(bookmarks,entry):window.KOGGScripture.remember(bookmarks,entry,50);
+  LS.set('cp_scripture_bookmarks',bookmarks);renderMemory();refreshBookmarkButton();
+  flash($('btnBookmarkScripture'),exists?'Removed ☆':'Saved ★');
 });
 function goLiveScripture(r) {
   if (!bible) return false;

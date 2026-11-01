@@ -2,6 +2,27 @@
 
 Updated: 1 November 2026 — sync session
 
+## Decks fit the screen; lyrics projector becomes a dock; star toggles
+
+User direction: every deck should fill the desktop viewport with no page scroll — the scripture
+deck is the model — and the lyrics "On the projector" preview must be a balanced dock like its
+scripture counterpart. Implemented (desktop ≥1101px):
+
+- **Lyrics deck** — fixed height (like scripture-deck), each card scrolls internally: the find
+  card scrolls its list, the paste/split card keeps its controls fixed while slide cards scroll,
+  and the output dock flexes. Zero page overflow measured at 1280×800 for scripture, lyrics and
+  notes.
+- **Lyrics "On the projector"** — rebuilt as a real dock: dock-head with 🖥️ icon, LIVE label,
+  theme-mirroring preview that flexes to fill, Previous/Next foot, hint. No more sticky/deformed
+  card.
+- **Notes deck** — same fixed-height, internally-scrolling card treatment.
+- **Quick jump suggestions** now render inside their dock (boxed) instead of floating over it.
+- **Star toggle** — the scripture "On the projector" head button is ☆ Save / ★ Saved and removes
+  the bookmark on the second tap (KOGGScripture.forget added; the button label follows the live
+  passage). Verified in-browser after a service-worker refresh — stale cached files were the
+  reason an earlier attempt appeared broken.
+- SW bumped to v93. Tests: 168 pass, 0 fail (new forget regression).
+
 ## Sync backend verified end-to-end (first time)
 
 With "Confirm email" disabled (found under Authentication → Sign In / Providers → User

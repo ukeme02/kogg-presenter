@@ -27,3 +27,11 @@ test('theme deletion preserves unrelated preferences',()=>{const settings={mode:
 test('landing demo rejects zero/out-of-bounds chapters and preserves current input',()=>{const src=[...landing.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('function liveVerse'))[1];const i=src.indexOf('  function liveVerse('),j=src.indexOf("  qj.addEventListener",i);let hit;const c=vm.createContext({window:{KOGGLyrics:require('../js/lyrics.js')},bible,Number,pendingRefs:new Map(),ensureBible(){},showHit:(...args)=>hit=args,stripS:s=>s});vm.runInContext(src.slice(i,j),c);vm.runInContext('liveVerse({bi:42,ch:0,v:1,vTo:1},"proj")',c);assert.equal(hit[0],'Invalid reference');vm.runInContext('liveVerse({bi:42,ch:3,v:16,vTo:16},"proj")',c);assert.equal(hit[0],'John 3:16');assert.match(hit[1],/God so loved/);});
 
 test('invalid saved dock and mode settings are rejected before restoration',()=>{for(const settings of [{hiddenDocks:3},{dockSizes:'wrong'},{mode:'unknown'},{fpPos:{x:'bad',y:3}}])assert.throws(()=>lib.validate({...payload([]),settings}));});
+test('scripture bookmarks forget the exact entry, leaving the rest intact',()=>{
+ const T=require('../js/scripture-tools.js');
+ const a={r:{bookIdx:42,ch:3,vFrom:16,vTo:16},translation:'data/kjv.json',short:'Joh 3:16'};
+ const b={r:{bookIdx:1,ch:1,vFrom:1,vTo:1},translation:'data/kjv.json',short:'Gen 1:1'};
+ const kept=T.forget([a,b],a);
+ assert.equal(kept.length,1);assert.equal(kept[0].short,'Gen 1:1');
+ assert.deepEqual(T.forget([],a),[]);
+});

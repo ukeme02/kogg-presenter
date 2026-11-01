@@ -1638,3 +1638,31 @@ body:not(.light) .brand{color:#fff}body:not(.light) .brand>.brand-symbol{content
 .logo-design-preview{gap:6px}.logo-design-preview .preset-symbol{filter:brightness(0) invert(1)}.logo-design-preview>div{gap:6px}.theme-dim-control{min-width:250px!important}.theme-dim-control input[type=range]{width:100%;accent-color:#2459d8;cursor:pointer}.theme-dim-control output{font-weight:800}.notes-live-text.annotating{touch-action:none;user-select:none;cursor:crosshair}.note-word.marked{background:#ffd83d;color:#101010;border-radius:3px}#btnNotesAnnotate[aria-pressed=true]{background:#ffd83d;color:#101010;border-color:#ffd83d}
 
 .logo-picker{border-top:1px solid var(--line,#66708555);padding-top:16px;margin-top:20px}.logo-picker #logoStatus{flex-basis:100%;margin:0;font-size:12px}.logo-picker [hidden]{display:none!important}.logo-picker label{max-width:320px}
+
+/* ============ DECKS FIT THE SCREEN (desktop) ============
+   The scripture deck already packs its docks into one screen. Lyrics and
+   Notes now do the same: fixed deck height, each card scrolls inside
+   itself, no page scroll. The lyrics projector preview becomes a real
+   dock — same head, body and foot as its scripture counterpart. */
+@media (min-width:1101px){
+  .lyrics-deck{height:calc(100dvh - 276px);min-height:0;align-items:stretch;}
+  .lyrics-toolbar{padding:8px 3px 12px;}
+  .lyrics-side{display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden;}
+  .lyrics-side>.card{min-height:0;overflow:auto;}
+  .lyrics-edit{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+  .lyrics-edit #lyricsPastePanel{flex:0 0 auto;}
+  .lyrics-edit #songSlidesPreview{flex:1 1 0;min-height:0;max-height:none;overflow:auto;}
+  .lyrics-output{display:flex;flex-direction:column;min-height:0;overflow:hidden;position:static;
+    border-radius:14px;background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 130%);
+    box-shadow:0 1px 1px rgba(0,0,0,.16),0 14px 34px -22px rgba(0,0,0,.5),inset 0 0 0 1px var(--hairline),inset 0 1px 0 rgba(255,255,255,.045);}
+  .lyrics-output .dock-head{margin-bottom:4px;}
+  .lyrics-live-label{flex:0 0 auto;margin:0 0 6px;}
+  .lyrics-live-text{flex:1 1 0;min-height:0;max-height:none;margin-bottom:8px;}
+  .lyrics-output-foot{flex:0 0 auto;margin:0 0 4px;}
+  .lyrics-foot-hint{flex:0 0 auto;margin:0;}
+  .notes-deck{height:calc(100dvh - 288px);min-height:0;align-items:stretch;}
+  .notes-toolbar{padding:8px 3px 12px;}
+  .notes-deck>.card{min-height:0;overflow:auto;}
+  /* Quick jump suggestions live inside their dock — boxed, not floating over it */
+  .dock[data-dock="quickgo"] .quickgo-results{position:static;margin-top:6px;max-height:170px;overflow:auto;box-shadow:none;}
+}

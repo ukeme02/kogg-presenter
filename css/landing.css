@@ -529,3 +529,7 @@ html{scroll-padding-top:100px}.section[id]{scroll-margin-top:100px}@media(max-wi
 
 .brand>.brand-symbol{border-radius:0;box-shadow:none;object-fit:contain}body.dark .brand>.brand-symbol{content:url(../icons/kogg-symbol-light.svg)}
 .intro-symbol{display:block;width:60px;height:60px;margin-bottom:5px}.watch-mark{display:grid;place-items:center;pointer-events:none}.watch-mark img{grid-area:1/1;border-radius:0;box-shadow:none;width:40px;height:40px}.watch-mark-blue{display:none}.dark .watch-mark-blue{display:block}.dark .watch-mark-white{display:none}.watch-centre img{width:39px;height:39px}@media(max-width:760px){.watch-mark img{width:36px;height:36px}}
+
+/* One compact, single-colour lockup. */
+.brand,.site-footer .brand{gap:3px;color:#2459d8}.brand>.brand-symbol{content:url(../icons/kogg-symbol.svg);width:40px;height:40px;filter:none}.brand .brand-kogg{display:block;background:currentColor;mask:url(../icons/kogg-wordmark.svg) center/contain no-repeat;-webkit-mask:url(../icons/kogg-wordmark.svg) center/contain no-repeat;filter:none!important}.brand .brand-sub{color:inherit}.brand-wordmark{gap:2px}
+body.dark .brand{color:#fff}body.dark .brand>.brand-symbol{content:url(../icons/kogg-symbol-white.svg)}

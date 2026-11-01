@@ -2,6 +2,18 @@
 
 Updated: 1 November 2026 — sync session
 
+## Backend made real; signup friction removed (user decisions)
+
+The user ran the setup SQL on the production project; `libraries` now exists and RLS was verified
+live (anonymous writes rejected with 42501, owner-only policy). Decisions taken with the user:
+
+- **No confirmation email** — the gate now double-confirms the password (Show toggle, match
+  check) instead; the Supabase "Confirm email" toggle goes OFF. Signups need no email at all.
+- **Custom SMTP = the operator's Gmail** (`koggpresenter@gmail.com`) via app password, for
+  password resets only. Setup steps are now in the README (steps 3–4 of Enable cloud sync).
+- **Google Drive sync rejected** — Supabase stays the sync engine (free at church scale, realtime
+  + RLS already built); the existing versioned backup export covers "data in the user's hands".
+
 ## Cloud sync: missing backend found, schedule look travels, live multi-device updates
 
 Verified the real Supabase project for the first time (`ibzbtthorsjtkvlmzsps`):

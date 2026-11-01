@@ -89,8 +89,16 @@ Accounts and library sync use [Supabase](https://supabase.com)'s free tier (no c
    ```
    Run the whole block — without the table, sign-in works but every push/pull fails.
 
-3. In Project Settings → API copy the **Project URL** and the **anon public key**.
-4. Paste both into `js/supabase-config.js`, deploy, done. The Account tab (and the signup card on
+3. **Authentication → Sign In / Providers → Email**: turn **"Confirm email" OFF**. Accounts
+   are confirmed by the double-typed password at creation, so signups need no email at all
+   (no rate limits, no delay).
+4. **Password-reset emails** (optional but recommended): connect your own SMTP —
+   Project Settings → Authentication → SMTP Settings → Enable Custom SMTP. With a Gmail
+   sender: enable 2-Step Verification, create an **App password** (Security → App passwords),
+   then set Host `smtp.gmail.com`, Port `587`, Username/ Sender = your Gmail address,
+   Password = the app password. ~500 reset emails/day — far more than a church team ever sends.
+5. In Project Settings → API copy the **Project URL** and the **anon public key**.
+6. Paste both into `js/supabase-config.js`, deploy, done. The Account tab (and the signup card on
    the landing page) come alive: sign up, sign in on any device, **Push/Pull** your library.
    Data is protected by row-level security — only you can read or write your row. The anon key
    is safe to ship publicly.

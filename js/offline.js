@@ -26,7 +26,7 @@
     navigator.serviceWorker.addEventListener('message', event => {
       const data = event.data;
       if (data?.type !== 'offline-status') return;
-      if (data.ready) show('Ready offline • 3 Bibles + basic hymnary');
+      if (data.ready) show(registration?.waiting?'Update ready — close app and Output, then reopen after service':'Ready offline • 3 Bibles + basic hymnary');
       else if (data.error) show('Offline setup incomplete — retry while online', true);
       else show(`Preparing offline… ${data.done}/${data.total}`);
     });
@@ -38,7 +38,7 @@
         const worker = registration.installing;
         worker?.addEventListener('statechange', () => {
           if (worker.state === 'redundant') show('Offline setup incomplete — retry while online', true);
-          else requestStatus();
+          else {if(worker.state==='installed'&&registration.active)show('Update ready — close app and Output, then reopen after service');else requestStatus();}
         });
       });
       requestStatus();

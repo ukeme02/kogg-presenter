@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v97';
+const CACHE = 'kogg-presenter-v98';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',
@@ -10,6 +10,65 @@ const ASSETS = [
 ];
 // Base prepares exactly KJV, BSB and KJV Strong’s plus its lexicon. Extra translations cache only when used.
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
+// BEGIN ASSET HASHES
+const ASSET_HASHES = {
+  "./": "49ccc47ad1f3bc5e969295332fc1367ba4dd0c264233d0890ce7e4de54bfb70a",
+  "./index.html": "49ccc47ad1f3bc5e969295332fc1367ba4dd0c264233d0890ce7e4de54bfb70a",
+  "./display.html": "61320fc552512d3ef7b32ca71c8505815617c5dbe7a432f4574921416761cd9e",
+  "./landing.html": "69010846d9fe90dfa53133a861e03a107e5cdf4ba4a1056bd731b5158e880ad3",
+  "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
+  "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
+  "./css/app.css": "1ca80b042058f84b0623563c4681e5dd577989c197296ebd72846596f20caf73",
+  "./css/display.css": "8f5180229c276742858b38d5c0a2773a7b5aca85e07020deef5b06bcdbb51976",
+  "./css/landing.css": "a3607bd85ef87ab9aa980493a5c76fc9b04bfca37e93e0fce75eae4fc5147401",
+  "./js/landing.js": "1284add4208bf7efa25bd391823476e81832713edc0dbdf2cbb7ea3e3ed03c39",
+  "./js/app.js": "47a40127753eafa088925705a618b8dbcf3643f85922436be18e83acb2182a72",
+  "./js/display.js": "b8131cc687b8b8645572e6748aed3ff178b1bd9fcee43c1b1050ee639c2ca14e",
+  "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
+  "./js/library.js": "7fc15fa8e4acb383c51ea76d0307ccc8c56622d06266353018bf99dd4f3a4f26",
+  "./js/relay.js": "7fc7630eda8e0b65c780e995edfbef1e4d2ed7e9a29bfb367b351f1d87941f63",
+  "./js/offline.js": "b3dff202ffd9c9fb5d32765e55f56be7895add817ade94064ce7a84d8c52138a",
+  "./js/scripture-tools.js": "31c0dba75d46a86efec7112bac9db32d06ea04f0ab018b88af5782300ead9a28",
+  "./js/bible-providers.js": "0483b7b0adba1ac49017722f7d9e52e09fe0c2e2d66a6ddc0b0bea15477fe0f1",
+  "./js/content.js": "ecca94b0c53ad29bda1f7da84fb43029e136d6070025f851da142405947c137d",
+  "./js/notes.js": "6617ef19ce9c5c6a7cd8190ddd191311eef41ccab3d78bda7b6e0b625d366fa2",
+  "./js/lyrics.js": "3d81bec572db4ddb26924c42b0896abd80f74b2113f7dfc030ae44e022761de5",
+  "./js/lyrics-sources.js": "cccc9a6e53020d32c5312b06e0cc5347621f989f3e4c1bf72492f15d2a7e2f63",
+  "./js/supabase-config.js": "5c3ebf851c7a921f6fc47a847ebb46a2abb507d228f8839cc760f1802c80abe5",
+  "./js/idb.js": "9d2b847520d2e7fb9f2046e8be8e9362848c225980f71d62a9806e23dbae4d0f",
+  "./data/kjv.json": "ab22e4f47e597771af955496f73a597f912abe31ed470390170e39c9fa9823c0",
+  "./data/bsb.json": "b7020de50a79027c7df3b80bef74de882bf613cbc08094f5bfd192b05876d9e8",
+  "./data/kjvs.json": "f60939897ef101d0b364093d01ec3a9f0fbcd016beb1c3117bd99cc361b10c2c",
+  "./data/strongs.json": "ba4c61ee811ea77baef46ff8005f474c3ca17e82789f35555a7dec526dcae2d3",
+  "./data/hymns.json": "72971f0b07610cff43aacdaa7155af61ce61e3e9599d1f4a31d77018e74b3fb6",
+  "./data/content-catalog.json": "9939776f3690b781f2c574dc6eef1d2804e7b4aa7b46f261510d841e6b9a48c8",
+  "./data/hymnary-sources.txt": "9b2bf737a72571c502c81769d25cd5b6888e55e9c546b87c8a07774484429361",
+  "./fonts/NunitoSans-Variable.woff2": "2aa25c4d77cd59bc487ac0318544c175a33b8fd3cf6df4583854b07dcf9497a5",
+  "./manifest.webmanifest": "9b5a303c853a7c975a43ad932c5542363cd06bf3ebc733844c5ab97c193724bf",
+  "./icons/kogg-symbol.svg": "182327147c07285aa5d839c0fa4701d1dd3f35a2018d821e0f90c84c19a0a4ca",
+  "./icons/kogg-symbol-light.svg": "22f7fe9f168bb86ecb27a83c4749504f0132c73bf502f54901f5c543b0712fd2",
+  "./icons/kogg-symbol-white.svg": "0578bc70b82a13978981edd3292e18f3795f008b10647a1140c096a84d39617e",
+  "./icons/kogg-symbol-ink.svg": "6c085d79eaefda3acc04404283550aec742fd802f354e284c4eca65a68f10341",
+  "./icons/icon-192.png": "cc502ad57df5015fb97855b5f0b7b8c9eaae2932291af006e455564926bd89b1",
+  "./icons/icon-512.png": "815bddb79ec14395bca695335e31c6bd7d954eb87abd17917f17fe9962c0f626",
+  "./icons/icon-maskable-512.png": "7d23e38042e3a6930ad8b6281ac9c8838d0713293604aa7d8333b189af7828a7",
+  "./icons/apple-touch-icon.png": "a5b631a16c43bc5e5eb3afa00983c35e57ba9ea8048feb40c3f991b0ac249294",
+  "./icons/icon.svg": "5a0f198d5f641be8ba303ba04515bd2a317c912f50445e1c33b89a2ca995b30a",
+  "./icons/icon-maskable.svg": "3bae5f287c463637c98be5d0a4bef622d7d07d5d0eee6a33cc0d7585d946d4fd",
+  "./data/hymns-extra.json": "9f30b9660889ba3a54068ffa56674df34d9a8698519067ef8e164f4a5de432fb",
+  "./data/web.json": "29ef26a1b12dde5612d4cabd2a6b08d6925e1375244bc38aacc8fbf2864566e8",
+  "./data/asv.json": "698bd7d0b21ecdf17061c43edf6aee8e13a45a755a6bdc6221300f39693b53e8",
+  "./data/ylt.json": "94ded2ddfa69ce361ad257e2a2b5534f5a130dd5b0e213653b0a44b1de4afffc",
+  "./data/darby.json": "0ccea1fe1c7257adbe098c8017c16bc7292c18e9e34c5a9ee6fd43fa065bee35",
+  "./data/akjv.json": "facc7c20df5925e996bcadf7bbcc8edc935477d4a5e025ef3bc3e9a09ffd82ec",
+  "./data/webster.json": "b647825d5f976de341fa9fed94b0afc0ab4e97ca7cd2687174fe0a42333d993d",
+  "./data/geneva1599.json": "22ec538e99b823acb4a0783f037d79f23b6f4851cd6b48f98ae92240593c643a",
+  "./data/lsv.json": "0645e5b2bacd0ec8ec450ebb3324a2f147e7ec19a63f198ea9e9de6426f1b28b",
+  "./data/bbe.json": "4ab11d2c8143c2f2610dac80d832128f6a1db9d943581a4e7941986166e2a512",
+  "./data/erv.json": "b8a3a9f70ef06dfc2c3e5b6c1669f3b3225760a103415f74c6fb30741613ca2b"
+};
+// END ASSET HASHES
+const HASH_KEY = './__asset_hashes__';
 const BIG = /\.(json|woff2)$/;
 let preparing = null;
 function cacheKey(input) {
@@ -37,20 +96,22 @@ async function prepareOffline() {
   if (preparing) return preparing;
   preparing = (async () => {
     const cache = await caches.open(CACHE);
-    // Version upgrades carry every already-downloaded asset forward — Bibles, fonts,
-    // hymn packs and the app shell are NOT re-downloaded on church Wi-Fi. The network
-    // is only asked for files the previous cache never had. (If a data file ever
-    // changes its contents, its cache entry must be cleared or renamed in the same release.)
-    for (const prior of (await caches.keys()).filter(key => key.startsWith('kogg-presenter-') && key !== CACHE).reverse()) {
-      if (!(await caches.keys()).includes(prior)) continue;
-      const old = await caches.open(prior);
-      for (const asset of new Set([...ASSETS,...OPTIONAL_ASSETS])) {
-        const response = await old.match(cacheKey(asset));
-        if (response && !await cache.match(cacheKey(asset))) await cache.put(cacheKey(asset),usableResponse(response));
+    const refreshOptional=new Set();
+    // Carry only verified unchanged content; legacy caches are hashed once.
+    for(const prior of (await caches.keys()).filter(key=>key.startsWith('kogg-presenter-')&&key!==CACHE).reverse()){
+      const old=await caches.open(prior);let priorHashes={};
+      try{const metadata=await old.match(cacheKey(HASH_KEY));if(metadata)priorHashes=await metadata.json();}catch{}
+      for(const asset of new Set([...ASSETS,...OPTIONAL_ASSETS])){
+        if(await cache.match(cacheKey(asset)))continue;
+        const response=await old.match(cacheKey(asset));if(!response)continue;
+        let unchanged=priorHashes[asset]&&priorHashes[asset]===ASSET_HASHES[asset];
+        if(!priorHashes[asset]&&typeof crypto!=='undefined'&&crypto.subtle){const digest=await crypto.subtle.digest('SHA-256',await response.clone().arrayBuffer());unchanged=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('')===ASSET_HASHES[asset];}
+        if(unchanged)await cache.put(cacheKey(asset),usableResponse(response));
+        else if(OPTIONAL_ASSETS.includes(asset))refreshOptional.add(asset);
       }
     }
     await notify();
-    await Promise.all(ASSETS.map(async asset => {
+    await Promise.all([...ASSETS,...refreshOptional].map(async asset => {
       const key = cacheKey(asset);
       if (!await cache.match(key)) {
         const response = await fetch(key,{cache:'reload',redirect:'follow'});
@@ -59,10 +120,11 @@ async function prepareOffline() {
       }
       await notify();
     }));
+    await cache.put(cacheKey(HASH_KEY),new Response(JSON.stringify(ASSET_HASHES),{headers:{'Content-Type':'application/json'}}));
   })().catch(async error => { await notify(error.message); throw error; }).finally(() => { preparing = null; });
   return preparing;
 }
-self.addEventListener('install', event => { event.waitUntil(prepareOffline().then(() => self.skipWaiting())); });
+self.addEventListener('install', event => { event.waitUntil(prepareOffline()); });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys()
     .then(keys => Promise.all(keys.filter(key => key.startsWith('kogg-presenter-') && key !== CACHE).map(key => caches.delete(key))))
@@ -86,18 +148,7 @@ self.addEventListener('fetch', event => {
     return response;
   };
   const offline = () => new Response('Not available offline yet. Reconnect in the operator and retry preparing offline.',{status:503});
-  if (BIG.test(url.pathname)) {
-    // Reopening a cached Bible does not start another multi-megabyte background download.
-    event.respondWith(cached().then(response => response ? usableResponse(response) : network()).catch(offline));
-  } else {
-    // Offline-first: the cached shell answers instantly (no waiting on church Wi-Fi);
-    // the network only refreshes the copy in the background.
-    event.respondWith(cached().then(cachedResponse => {
-      if (cachedResponse) {
-        event.waitUntil?.(network().catch(() => {}));
-        return usableResponse(cachedResponse);
-      }
-      return network().catch(async () => { const response = await cached(); return response ? usableResponse(response) : offline(); });
-    }).catch(async () => { const response = await cached(); return response ? usableResponse(response) : offline(); }));
-  }
+  // A release stays immutable. Update installation prepares the next complete
+  // release separately; it activates after old operator/output tabs are closed.
+  event.respondWith(cached().then(response=>response?usableResponse(response):network()).catch(offline));
 });

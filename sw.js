@@ -22,7 +22,7 @@ const ASSET_HASHES = {
   "./css/display.css": "8f5180229c276742858b38d5c0a2773a7b5aca85e07020deef5b06bcdbb51976",
   "./css/landing.css": "a3607bd85ef87ab9aa980493a5c76fc9b04bfca37e93e0fce75eae4fc5147401",
   "./js/landing.js": "1284add4208bf7efa25bd391823476e81832713edc0dbdf2cbb7ea3e3ed03c39",
-  "./js/app.js": "47a40127753eafa088925705a618b8dbcf3643f85922436be18e83acb2182a72",
+  "./js/app.js": "f564ad5df75d01821ef1734e23ee12e8f1e3e5419701af404321ed854ce6901d",
   "./js/display.js": "b8131cc687b8b8645572e6748aed3ff178b1bd9fcee43c1b1050ee639c2ca14e",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
   "./js/library.js": "7fc15fa8e4acb383c51ea76d0307ccc8c56622d06266353018bf99dd4f3a4f26",

@@ -130,7 +130,7 @@ function pushLive(patch = {}) {
   live = Object.assign({}, live, patch);
   live.strongsOn = LS.get(K.settings, {}).strongsOn !== false;
   if (patch.slides !== undefined && patch.scripture === undefined) live.scripture = null;
-  if (patch.slides !== undefined) live.notesKey=patch.notesKey||null;
+  if (patch.slides !== undefined) {live.notesKey=patch.notesKey||null;live.serviceFrames=patch.serviceFrames||null;}
   if(patch.slides!==undefined||patch.index!==undefined)live.textHighlight=null;
   if (patch.slides !== undefined) { live.strongsShowing = false; live.strongsCard = null; live.highlight = null; }   // new content → word card and highlight close
   LS.set(K.live, live);
@@ -1453,7 +1453,7 @@ function displayLyrics(index=0){
 function addLyricsService(song=editorSong()){
  const slides=songToSlides(song);if(!slides.length){$('lyricsStatus').textContent='Add lyrics before adding to Service.';return;}
  const temporary=baseLyrics()||lyricSession.songs.some(s=>s.id===song.id);
- service.push({id:uid(),type:'song',title:song.title,slides,themeId:currentThemeId,sessionOnly:temporary,lyricsSession:temporary?lyricSession.id:null});
+ service.push({id:uid(),type:'song',title:song.title,slides,themeId:currentThemeId,lyricsKey:lyricsSignature(song),sessionOnly:temporary,lyricsSession:temporary?lyricSession.id:null});
  LS.set(K.service,service);renderService();$('lyricsStatus').textContent=temporary?'Added to this session’s Service queue.':'Added to Service.';
 }
 $('songList').addEventListener('click',e=>{
@@ -1598,7 +1598,7 @@ $('btnSaveSong').addEventListener('click',()=>{
 $('btnEndLyricsSession').addEventListener('click',()=>{
  if(!confirm('End this Base session and clear its temporary songs, draft and Service items? Saved libraries and hymn packs stay.'))return;
  clearTimeout(lyricsAutoTimer);lyricsSearchToken++;lyricsSearchAbort?.abort();lyricsOnline=[];$('lyricsOnlineResults').innerHTML='';
- if(live.lyricsSession===lyricSession.id)pushLive({mode:'blank',slides:[],index:0,lyricsSession:null,lyricsKey:null});
+ if(live.lyricsSession===lyricSession.id||live.serviceFrames?.some(frame=>frame.lyricsSession===lyricSession.id))pushLive({mode:'blank',slides:[],index:0,lyricsSession:null,lyricsKey:null});
  service=service.filter(s=>!s.sessionOnly);LS.set(K.service,service);renderService();
  lyricSession={id:uid(),songs:[],draft:null};lyricsUndo=[];saveLyricSession();restoreLyricsDraft(null);renderSongList();$('lyricsStatus').textContent='Session cleared. Saved libraries and bundled hymns are unchanged.';
 });
@@ -1709,9 +1709,7 @@ $('serviceList').addEventListener('click', e => {
   const i = service.findIndex(s => s.id === id);
   const act = btn.dataset.act;
   if (act === 'live') {
-    // Fire with the theme the item was prepared with; fall back when this device lacks it.
-    const themeId = themes.some(t => t.id === service[i].themeId) ? service[i].themeId : currentThemeId;
-    pushLive({ mode: 'normal', slides: service[i].slides, index: 0, title: service[i].title, themeId });
+    presentServiceItems([service[i]]);
   } else if (act === 'up' && i > 0) {
     [service[i - 1], service[i]] = [service[i], service[i - 1]];
   } else if (act === 'down' && i < service.length - 1) {
@@ -1722,11 +1720,10 @@ $('serviceList').addEventListener('click', e => {
   LS.set(K.service, service);
   renderService();
 });
-$('btnLiveService').addEventListener('click', () => {
-  if (!service.length) { alert('Service is empty.'); return; }
-  const themeId = themes.some(t => t.id === service[0].themeId) ? service[0].themeId : currentThemeId;
-  pushLive({ mode: 'normal', slides: service.flatMap(i => i.slides), index: 0, title: 'Service', themeId });
-});
+function serviceFrame(item){return {themeId:themes.some(t=>t.id===item.themeId)?item.themeId:currentThemeId,lyricsSession:item.lyricsSession||null,lyricsKey:item.type==='song'?(item.lyricsKey||'service:'+item.id):null,itemId:item.id};}
+function presentServiceItems(items){const slides=[],frames=[];for(const item of items){for(const slide of item.slides){slides.push(slide);frames.push(serviceFrame(item));}}if(!slides.length)return;pushLive({mode:'normal',slides,index:0,title:items.length===1?items[0].title:'Service',...frames[0],serviceFrames:frames});}
+function advanceLiveSlide(dir){if(live.mode!=='normal')return;const index=live.index+dir;if(index<0||index>=live.slides.length)return;const frame=live.serviceFrames?.[index];pushLive({index,...(frame?{...frame,themeId:themes.some(t=>t.id===frame.themeId)?frame.themeId:currentThemeId}:{}),strongsShowing:false,strongsCard:null,highlight:null});}
+$('btnLiveService').addEventListener('click',()=>{if(!service.length){alert('Service is empty.');return;}presentServiceItems(service);});
 $('btnClearService').addEventListener('click', () => {
   if (confirm('Clear the whole service plan?')) { service = []; LS.set(K.service, service); renderService(); }
 });
@@ -1977,7 +1974,7 @@ function quickGoLive(item) {
   }
   else if (item.type === 'service') {
     const i = service.findIndex(s => s.id === item.id);
-    if (i >= 0) pushLive({ mode: 'normal', slides: service[i].slides, index: 0, title: service[i].title, themeId: currentThemeId });
+    if (i >= 0) presentServiceItems([service[i]]);
   }
   else if (item.type === 'plan') {
     const plans = LS.get(K.plans, {});
@@ -2446,8 +2443,8 @@ if (!workMode()) showGate();
 /* =========================================================
    GLOBAL CONTROLS
 ========================================================= */
-function next() { if(live.scripture)navigateScripture(1);else if(live.mode === 'normal' && live.index < live.slides.length-1)pushLive({index:live.index+1,strongsShowing:false,strongsCard:null,highlight:null}); }
-function prev() { if(live.scripture)navigateScripture(-1);else if(live.mode === 'normal' && live.index>0)pushLive({index:live.index-1,strongsShowing:false,strongsCard:null,highlight:null}); }
+function next(){if(live.scripture)navigateScripture(1);else advanceLiveSlide(1);}
+function prev(){if(live.scripture)navigateScripture(-1);else advanceLiveSlide(-1);}
 $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
 $('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
 $('btnOpenDisplay').addEventListener('click', openDisplayWindow);
@@ -2819,20 +2816,21 @@ $('feVoice').addEventListener('click',startVoice);$('btnVoice2').addEventListene
 
 /* Quick font size / alignment on the current theme — the floating quick-edit
    widget and the ⋯ menu share these */
+function activeThemeId(){return live.mode==='normal'&&themes.some(t=>t.id===live.themeId)?live.themeId:currentThemeId;}
 function patchTheme(patch) {
-  const t = themeById(currentThemeId);
+  const id=activeThemeId(),t = themeById(id);
   Object.assign(t, patch);
   LS.set(K.themes, themes);
-  pushLive({ themeId: currentThemeId });
+  applyEmphasisColor();pushLive({ themeId:id });
 }
 function quickFontSize(dir, flashBtn) {
-  const t = themeById(currentThemeId);
+  const t = themeById(activeThemeId());
   const size = Math.max(3, Math.min(15, (+t.fontSize || 7) + dir * 0.5));
   patchTheme({ fontSize: size });
   if (flashBtn) flash(flashBtn, dir > 0 ? `A+ ${size}` : `A− ${size}`);
 }
 function quickCycleAlign(flashBtn) {
-  const t = themeById(currentThemeId);
+  const t = themeById(activeThemeId());
   const nextAlign = t.align === 'left' ? 'center' : 'left';
   patchTheme({ align: nextAlign });
   if (flashBtn) flash(flashBtn, nextAlign === 'left' ? '⬅ Left' : '⬌ Center');

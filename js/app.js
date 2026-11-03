@@ -1178,6 +1178,8 @@ function toggleDockMenu(e) {
   if(!$('dockMenu').hidden){closeDockMenu();return;}
   renderDockMenu();
   const menu = $('dockMenu');
+  // Explorer can open this from Lyrics/Notes while the Scripture tab is hidden.
+  if(menu.parentElement!==document.body)document.body.appendChild(menu);
   menu.hidden = false;
   menu.showModal?.();
   $('btnDocks').setAttribute('aria-expanded','true');

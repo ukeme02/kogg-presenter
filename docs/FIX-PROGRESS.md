@@ -10,7 +10,7 @@ Lyrics search separates local results from online sources, labels offline hymns/
 
 Every lyric slide has Quick Edit, preserving repeated order and requiring an explicit Display to update output. Notes adds text import/export and Ctrl/Cmd+Enter to display. Notes previews include underlying live Scripture/lyrics when showing a tag or alert. Existing bullets, splitting, live typing and yellow emphasis remain.
 
-Validation: 193 automated checks pass. Browser widths checked: 320, 390, 820 and 1440 pixels. No horizontal page overflow at the measured phone/tablet widths. Verified modal behavior, Bible search, offline hymn display, quick editing, Notes bullets, and 16:9 monitors. Browser console had no warnings/errors in the final local check. Evidence is in docs/deck-evidence-2026-11-03. These are browser viewport tests, not physical iOS/Android tests. Release cache v102.
+Validation: 193 automated checks pass. Browser widths checked: 320, 390, 820 and 1440 pixels. No horizontal page overflow at the measured phone/tablet widths. Verified modal behavior, Bible search, offline hymn display, quick editing, Notes bullets, and 16:9 monitors. Browser console had no warnings/errors in the final local check. Evidence is in docs/deck-evidence-2026-11-03. These are browser viewport tests, not physical iOS/Android tests. Final cross-deck fix moves the modal outside the hidden Scripture tab; 63 relevant checks pass afterward, and opening/closing it from Lyrics was browser-verified. Release cache v103 supersedes v102.
 
 Audit baseline: dec9301. Separate tested commits; no database schema changes.
 

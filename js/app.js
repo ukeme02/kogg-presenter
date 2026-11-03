@@ -1647,7 +1647,8 @@ $('btnEndLyricsSession').addEventListener('click',()=>{
  service=service.filter(s=>!s.sessionOnly);LS.set(K.service,service);renderService();
  lyricSession={id:uid(),songs:[],draft:null};lyricsUndo=[];saveLyricSession();restoreLyricsDraft(null);renderSongList();$('lyricsStatus').textContent='Session cleared. Saved libraries and bundled hymns are unchanged.';
 });
-function refreshLyricsWebLink(){const q=$('songSearch').value.trim(),link=$('lyricsWebSearch');link.hidden=q.length<3;link.href=window.KOGGLyricsSources.google(q);}
+function refreshLyricsWebLink(){const q=$('songSearch').value.trim(),link=$('lyricsWebSearch');link.hidden=q.length<3;link.href=window.KOGGLyricsSources.google(q,$('lyricsSearchScope').value);}
+$('lyricsSearchScope').addEventListener('change',()=>{clearTimeout(lyricsAutoTimer);lyricsSearchToken++;lyricsSearchAbort?.abort();lyricsOnline=[];$('lyricsOnlineResults').innerHTML='';refreshLyricsWebLink();if($('songSearch').value.trim().length>=3)searchLyricsOnline();});
 $('songSearch').addEventListener('input',()=>{clearTimeout(lyricsAutoTimer);lyricsListLimit=60;lyricsSearchToken++;lyricsSearchAbort?.abort();lyricsOnline=[];$('lyricsOnlineResults').innerHTML='';$('lyricsSearchStatus').textContent='';refreshLyricsWebLink();renderSongList();const q=$('songSearch').value.trim().toLowerCase();if(q.length>=3&&!allLyricsSongs().some(song=>[song.title,song.author||'',song.lyrics].join(' ').toLowerCase().includes(q))){if(navigator.onLine){$('lyricsSearchStatus').textContent='No saved match — searching online shortly…';lyricsAutoTimer=setTimeout(()=>{if($('songSearch').value.trim().toLowerCase()===q)searchLyricsOnline();},650);}else $('lyricsSearchStatus').textContent='No saved match. Reconnect to search online, or paste lyrics.';}});
 window.addEventListener('online',()=>{const q=$('songSearch').value.trim().toLowerCase();if(q.length>=3&&!allLyricsSongs().some(song=>[song.title,song.author||'',song.lyrics].join(' ').toLowerCase().includes(q)))searchLyricsOnline();});
 $('songSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('btnSearchLyricsOnline').click();}});
@@ -1659,11 +1660,11 @@ async function searchLyricsOnline(){
  $('lyricsSearchStatus').textContent='Searching connected lyrics sources…';$('lyricsOnlineResults').innerHTML='';
  const timeout=setTimeout(()=>controller.abort(),18000);
  try{
-  const result=await window.KOGGLyricsSources.search(q,{signal:controller.signal});if(token!==lyricsSearchToken)return;
+  const result=await window.KOGGLyricsSources.search(q,{signal:controller.signal,scope:$('lyricsSearchScope').value||'christian'});if(token!==lyricsSearchToken)return;
   lyricsOnline=result.items;
   $('lyricsOnlineResults').innerHTML=lyricsOnline.map((song,i)=>`<button data-import-lyric="${i}"><b>${esc(song.title)}</b><span>${esc(song.author)} • ${esc(song.source.name)}${song.pending?' • title match, lyrics unconfirmed':' • lyrics ready'}</span><em>${song.pending?'Find lyrics →':'Display first slide →'}</em></button>`).join('');
   $('lyricsSearchStatus').textContent=lyricsOnline.length?'Lyrics-ready results display immediately. Title matches must fetch text first.'+(result.partial?' One source is unavailable.':''):result.available?'No match found. Try title + artist, use Google search below, or paste a supported source link.':'Lyrics sources are unavailable. Use Google search below, paste lyrics, or open a saved song.';
- }catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'Search timed out. Use Google search below, or paste lyrics.':'Could not reach the lyrics sources. Saved songs and the editor still work.';}
+ }catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'Search timed out. Use Google search below, or paste lyrics.':($('lyricsSearchScope').value==='all'?'Could not reach the lyrics sources. Saved songs and the editor still work.':'Christian sources are unavailable. Try Christian Google search or import a hymn page. General music results remain excluded.');}
  finally{clearTimeout(timeout);}
 }
 $('btnSearchLyricsOnline').addEventListener('click',searchLyricsOnline);

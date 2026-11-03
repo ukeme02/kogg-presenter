@@ -1,5 +1,13 @@
 # Repair progress - 3 November 2026
 
+## Christian online sources and automatic imports
+
+Release v104 adds Christian songs & hymns as the default online scope. Hymnary's documented CSV search returns source-labeled hymn candidates; selecting one imports its public-domain text into slides. Supported hymnal.net page links import MusicComposition structured lyric text, preserving stanza breaks and source credits. Existing LRCLIB/lyrics.ovh retrieval stays available under the explicit All music sources scope. A failed Christian search never silently queries general databases.
+
+Google discovery follows the chosen scope: Christian mode restricts its link to Hymnary, hymnal.net and hymnlyrics.org; All music sources uses general search. Google results themselves are not scraped or automatically imported; supported source links are pasted into the importer. This is source-based selection, not a claim to classify every song's theology. Christian-only coverage can miss modern worship songs available in general databases. Musixmatch still requires API access and is not advertised as connected.
+
+Validation: 198 checks pass; 38 relevant checks passed again after updating landing source credits. Verified live Hymnary CSV and public-domain page formats; live hymnal.net import returned Amazing Grace with four stanzas. Local DNS failures intermittently affect Hymnary probes. Imports enforce fixed host/path allowlists, reject redirects, limit responses and time out; structured content is parsed as data and escaped in the operator. User's untracked hymn file remains excluded.
+
 ## Responsive Lyrics and Notes repair
 
 Removed fixed viewport heights that collapsed the two projector monitors. Both retain 16:9 frames with fitted text, references and tag/alert placement. Desktop uses three columns; tablets place the monitor above the editor beside the library; phones stack readable controls and a rectangular monitor. Compact Scripture docks discard desktop grid spans. Docks settings now use a native modal dialog with opaque background, focus isolation, Close and Escape.

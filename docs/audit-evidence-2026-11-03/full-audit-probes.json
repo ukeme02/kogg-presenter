@@ -1,0 +1,54 @@
+[
+  {
+    "probe": "quick-size changes prepared theme",
+    "before": "t2",
+    "after": "t1"
+  },
+  {
+    "probe": "whole-service next item theme",
+    "actual": "t2",
+    "expected": "t3"
+  },
+  {
+    "probe": "Quick Go bypasses prepared theme",
+    "actual": "t1",
+    "expected": "t2"
+  },
+  {
+    "probe": "Base session-only plan save is blocked",
+    "blocked": true
+  },
+  {
+    "probe": "temporary lyrics remain live after whole-service End session",
+    "mode": "normal",
+    "text": "Private session lyric"
+  },
+  {
+    "probe": "accepted install success UI",
+    "message": "",
+    "buttonHidden": false
+  },
+  {
+    "probe": "in-flight Sync currentUser after switching to Base",
+    "mode": "base",
+    "userReinstated": true
+  },
+  {
+    "probe": "two remaining outputs are placed on the same screen after monitor removal",
+    "placements": [
+      [
+        1280,
+        0
+      ],
+      [
+        1280,
+        0
+      ]
+    ]
+  },
+  {
+    "probe": "operator preview whitespace normalization",
+    "input": "First paragraph\n\nSecond paragraph",
+    "preview": "First paragraph Second paragraph"
+  }
+]

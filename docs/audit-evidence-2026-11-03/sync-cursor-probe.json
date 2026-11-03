@@ -1,0 +1,6 @@
+{
+  "mergedRemoteTitle": "New remote A",
+  "applyRejected": true,
+  "remoteTitleAfterNextPush": "Old A",
+  "localEditRetained": "Local edited B"
+}

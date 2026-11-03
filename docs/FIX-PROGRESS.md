@@ -28,3 +28,9 @@ Run node scripts/update-asset-manifest.cjs before tests/deployment after cached-
 Step 5: surplus windows retire after hot-unplug; Lyrics taps toggle from pre-gesture state; hidden controls stay hidden; paragraph breaks are preserved; accepted installation feedback resolves the platform in scope; manual hero selection preserves knowledge emphasis.
 
 Step 6: Explorer is now the app quick-settings launcher. It opens circular size, alignment, docks, voice, theme, lock and mode controls; it is draggable, closes outside/Escape, and indicates active microphone listening. It starts closed unless the user explicitly saved it open. Landing features include automatic full-screen fitting and Explorer settings.
+
+Step 7: 187 checks pass. Theme edits broadcast explicitly to existing outputs and also respond to storage events; fitting runs immediately in background/OBS windows and after fonts load. Output placement waits for fullscreen exit before moving; an output deliberately opened on the console screen stays windowed. Release cache: v101.
+
+Browser verification: fresh Base installation, 2 Corinthians 4:6 at maximum fit, live decrease/increase (70.7047px to 67.1695px and back at 1280x720), long Esther 8:9, Lyrics first-tap emphasis, hidden Notes controls, corrected KJV punctuation, and landing sample knowledge emphasis. No warning/error logs on the final projection and landing checks. Previous-release cache migration was exercised locally; updates intentionally wait for all old app and Output clients to close.
+
+Projection proof: docs/repair-evidence-2026-11-03/projection-max-fit.jpg. The old functional audit remains the before-fix record. Hardware, browser-permission, provider-backed content and authenticated two-device gates remain unverified; backend advisory settings are separate review items. The user's untracked data/hymns-basic.json was not changed or included in the release.

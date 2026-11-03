@@ -19,6 +19,7 @@ const LS = {
       notice.style.cssText = 'position:fixed;bottom:0;left:0;right:0;padding:16px;background:#9b2020;color:white;z-index:99999';
       throw err;
     }
+    if(window.__koggBoot&&key===K.themes&&channel)channel.postMessage({type:'themes-update',themes:value});
     // library changes mark the cloud copy out of date (auto-sync — see CLOUD section)
     if (window.__koggBoot &&
         (key === K.songs || key === K.themes || key === K.service || key === K.plans)) markDirty();
@@ -2221,6 +2222,7 @@ async function applyCloudLibrary(raw, revision, isCurrent=()=>true) {
     for (const [key,value] of Object.entries(before)) { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key,value); }
     throw err;
   }
+  if(channel)channel.postMessage({type:'themes-update',themes:writes[K.themes]});
   songs = writes[K.songs]; themes = writes[K.themes]; service = [...writes[K.service],...temporaryQueue];
   if (!themes.some(t => t.id === currentThemeId)) currentThemeId = themes[0].id;
   applyEmphasisColor();
@@ -2505,7 +2507,9 @@ async function openDisplayWindow() {
     return;
   }
   // Navigate during the click itself: never leave a blank page waiting on permission.
-  const w = window.open(outputUrl(), 'kogg_display', 'popup=yes');
+  const selected=LS.get(K.settings,{}),home=outputScreensDetails?.currentScreen;
+  const windowed=!selected.outputAllScreens&&home&&selected.outputScreen?.left===home.left&&selected.outputScreen?.top===home.top;
+  const w = window.open(outputUrl()+(windowed?'?windowed=1':''), 'kogg_display', 'popup=yes');
   if (!w) { setOutputStatus('Output blocked — allow popups for this site'); flash($('btnOpenDisplay'), 'Allow popups to open output'); return; }
   displayWindow = w;
   outputLastPlacement = '';
@@ -2551,10 +2555,10 @@ function hookOutputScreens(details) {
   details.screens.forEach(screen => screen.addEventListener?.('change', onOutputScreensChanged));
 }
 function outputPopups() { return [displayWindow, ...displayWindows].filter(w => w && !w.closed); }
-function placePopupOnScreen(popup, screen, sendFullscreen = true) {
+async function placePopupOnScreen(popup, screen, sendFullscreen = true) {
   try {
     const doc = popup.document;
-    if (doc?.fullscreenElement) void doc.exitFullscreen();
+    if (doc?.fullscreenElement) await doc.exitFullscreen();
     if (popup.closed) return;
     popup.moveTo(screen.left, screen.top);
     popup.resizeTo(screen.width, screen.height);
@@ -2568,7 +2572,7 @@ async function placeOutputOnScreens(showNote) {
   // Coordinates work even when screen objects are recreated by the browser.
   const others = outputOtherScreens(outputScreensDetails);
   if (!others.length) {
-    for(const popup of popups.slice(1)){try{popup.close?.();}catch{}}displayWindows=[];if(outputPlacedScreens.has(popups[0])&&outputPlacedScreens.get(popups[0])!==screenKey(outputScreensDetails.currentScreen)){placePopupOnScreen(popups[0],outputScreensDetails.currentScreen,false);outputPlacedScreens.set(popups[0],screenKey(outputScreensDetails.currentScreen));}
+    for(const popup of popups.slice(1)){try{popup.close?.();}catch{}}displayWindows=[];if(outputPlacedScreens.has(popups[0])&&outputPlacedScreens.get(popups[0])!==screenKey(outputScreensDetails.currentScreen)){await placePopupOnScreen(popups[0],outputScreensDetails.currentScreen,false);outputPlacedScreens.set(popups[0],screenKey(outputScreensDetails.currentScreen));}
     outputLastPlacement = '';
     if (showNote) setOutputStatus('Output open — waiting for an extended screen; choose Extend in your computer display settings');
     return;
@@ -2580,12 +2584,12 @@ async function placeOutputOnScreens(showNote) {
   // Retire surplus outputs instead of stacking several windows on one screen.
   for(const popup of popups.slice(targets.length)){try{popup.close?.();}catch{}outputPlacedScreens.delete(popup);}
   displayWindows=displayWindows.filter(w=>w&&!w.closed&&popups.indexOf(w)<targets.length);
-  popups.slice(0,targets.length).forEach((popup,i)=>{const screen=targets[i],key=screenKey(screen);if(outputPlacedScreens.get(popup)===key)return;const here=screen.left===outputScreensDetails.currentScreen.left&&screen.top===outputScreensDetails.currentScreen.top;placePopupOnScreen(popup,screen,!here);outputPlacedScreens.set(popup,key);});
+  for(let i=0;i<Math.min(popups.length,targets.length);i++){const popup=popups[i],screen=targets[i],key=screenKey(screen);if(outputPlacedScreens.get(popup)===key)continue;const here=screen.left===outputScreensDetails.currentScreen.left&&screen.top===outputScreensDetails.currentScreen.top;await placePopupOnScreen(popup,screen,!here);if(!popup.closed)outputPlacedScreens.set(popup,key);}
   const here=primary.left===outputScreensDetails.currentScreen.left&&primary.top===outputScreensDetails.currentScreen.top;
   outputLastPlacement=here?'':screenKey(primary);
   if (showNote) setOutputStatus(here?'Output open on this screen — windowed beside the console':'Output placed on extended screen — if not fullscreen, click it once; Esc exits');
 }
-function onOutputScreensChanged() {
+async function onOutputScreensChanged() {
   if (!outputScreensDetails) return;
   // Hotplug: if the screen the output was placed on disappeared (projector cable
   // pulled, display switched off), tell the operator and re-place on what remains.
@@ -2596,7 +2600,7 @@ function onOutputScreensChanged() {
       ? 'Projector screen disconnected — output moved to the remaining screen'
       : 'Projector screen disconnected — reconnect it or move the output window');
   }
-  void placeOutputOnScreens(false);
+  await placeOutputOnScreens(false);
 }
 
 /* Screen picker — choose which monitor carries the output; the choice is
@@ -2638,7 +2642,7 @@ function renderScreenPicker() {
       if (!displayWindow || displayWindow.closed) await openDisplayWindow();
       else {
         // Sending the output back to this screen keeps it as a normal window beside the console.
-        placePopupOnScreen(displayWindow, s, !here);
+        await placePopupOnScreen(displayWindow, s, !here);
         outputPlacedScreens.set(displayWindow, screenKey(s));
         outputLastPlacement = here ? '' : screenKey(s);
         setOutputStatus(here

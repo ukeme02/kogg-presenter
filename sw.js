@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v98';
+const CACHE = 'kogg-presenter-v101';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',
@@ -22,8 +22,8 @@ const ASSET_HASHES = {
   "./css/display.css": "7889a2dcac9ecd4801a69e3103a44029dbd4f47d2752722f55691f5c2a250a74",
   "./css/landing.css": "a3607bd85ef87ab9aa980493a5c76fc9b04bfca37e93e0fce75eae4fc5147401",
   "./js/landing.js": "1284add4208bf7efa25bd391823476e81832713edc0dbdf2cbb7ea3e3ed03c39",
-  "./js/app.js": "39f768b6563f66cbcc435e0d1e0a18b3cd2a20390b1cc4825923d3f1107df761",
-  "./js/display.js": "38a29ae7139d1fcd149ad206cf48115e009e67d276279105ff4b47546eb34e0f",
+  "./js/app.js": "5557c87413b883c92eb27d25272546c5415c2ef8b77e1361202ddb77858672e1",
+  "./js/display.js": "97b69be3df79a27eeed283e30ec611e1cabce2df1e6428950c1f2e80221deb26",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
   "./js/library.js": "0814ecb5e4801cb0883772c996dc9b83eb29155005d02a32adf9c26d13510bd8",
   "./js/relay.js": "7fc7630eda8e0b65c780e995edfbef1e4d2ed7e9a29bfb367b351f1d87941f63",

@@ -1,4 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+test('theme edits reach an existing output without waiting for another verse',()=>{
+ const src=fs.readFileSync('js/display.js','utf8'),a=src.indexOf('const channel ='),b=src.indexOf('// The operator owns',a),renders=[],listeners={};let receiver;
+ const c=vm.createContext({window:{BroadcastChannel:true,addEventListener:(name,fn)=>listeners[name]=fn},BroadcastChannel:class{constructor(){receiver=this;}},publishedThemes:null,render:s=>renders.push(s),getLive:()=>({mode:'normal',index:0})});
+ vm.runInContext(src.slice(a,b),c);receiver.onmessage({data:{type:'themes-update',themes:[{id:'t1',fontScale:.95}]}});
+ assert.equal(vm.runInContext('publishedThemes[0].fontScale',c),.95);assert.equal(renders.length,1);
+ listeners.storage({key:'cp_themes',newValue:JSON.stringify([{id:'t1',fontScale:1}])});assert.equal(vm.runInContext('publishedThemes[0].fontScale',c),1);assert.equal(renders.length,2);
+});
 test('overlay boot makes root transparent and blank suppresses active lower thirds',()=>{const nodes=new Map();const node=id=>{if(!nodes.has(id))nodes.set(id,{style:{},classList:{values:new Map(),add(k){this.values.set(k,true);},toggle(k,v){this.values.set(k,v);},remove(k){this.values.set(k,false);}}});return nodes.get(id);};const live={mode:'blank',slides:[],index:0,lowerThird:{on:true,l1:'Must hide'}};const c=vm.createContext({window:{addEventListener(){}},document:{getElementById:node,body:node('body'),documentElement:node('html'),addEventListener(){}},location:{search:'?overlay=1'},URLSearchParams,localStorage:{getItem:k=>k==='cp_live'?JSON.stringify(live):null},setInterval(){},requestAnimationFrame(){}});vm.runInContext(fs.readFileSync('js/display.js','utf8'),c);assert.equal(node('html').classList.values.get('overlay'),true);assert.equal(node('body').classList.values.get('overlay'),true);assert.equal(node('lowerThird').classList.values.get('lt-hidden'),true);assert.equal(node('slideText').style.display,'none');});
 
 test('screen-fill enlarges short text, fits long passages and preserves explicit manual size',()=>{

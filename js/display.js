@@ -8,11 +8,14 @@ const contentEl = $('slideContent');
 const labelEl = $('slideLabel');
 const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS transparent mode
 
+let publishedThemes=null;
+
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function plain(s) { return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/ {2,}/g, ' '); }
 
 function themeById(themes, id) { return themes.find(t => t.id === id) || themes[0]; }
 function getThemes() {
+  if(publishedThemes)return publishedThemes;
   try { const t = JSON.parse(localStorage.getItem('cp_themes')); if (t && t.length) return t; } catch {}
   return [{ id: 't1', name: 'Black', bg: '#000000', bgImage: '', textColor: '#fff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, margin:4, lineHeight:1.18, weight: '700' }];
 }
@@ -115,7 +118,7 @@ function render(state) {
       if(slide.bullets)textEl.style.textAlign='left';   // always clean text — numbers live only in the operator preview
       labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : '');
       textEl.style.fontSize = t.fontSize + 'vh';
-      requestAnimationFrame(()=>fitText(false,t.fillScreen!==false,displayNumber(t.fontScale,1,.2,1)));
+      fitText(false,t.fillScreen!==false,displayNumber(t.fontScale,1,.2,1));
     }
   } else if (!OVERLAY) {
     applyBackdrops(state);
@@ -219,11 +222,12 @@ setInterval(() => {
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
 if (channel) {
   channel.onmessage = e => {
+    if(e.data?.type==='themes-update'){if(Array.isArray(e.data.themes)&&e.data.themes.length){publishedThemes=e.data.themes;render(getLive());}return;}
     if (e.data && e.data.type) return;   // messages from other displays, not state
     render(e.data);
   };
 }
-window.addEventListener('storage', e => { if (e.key === 'cp_live') render(getLive()); });
+window.addEventListener('storage', e => {if(e.key==='cp_themes'){try{const value=JSON.parse(e.newValue);if(Array.isArray(value)&&value.length)publishedThemes=value;}catch{}}if(e.key==='cp_live'||e.key==='cp_themes')render(getLive());});
 
 // The operator owns popup placement. A standalone output can manage itself.
 let duplicateOutput = false;
@@ -347,8 +351,12 @@ if (!OVERLAY && navigator.locks?.request) {
     render(getLive());
     void requestOutputWakeLock();
     // Succeeds automatically only where browser permission/settings allow it.
-    if (window.opener) void enterOutputFullscreen();
+    if (window.opener&&!new URLSearchParams(location.search).has('windowed')) void enterOutputFullscreen();
     await new Promise(resolve=>window.addEventListener('pagehide',()=>{screenEl.style.visibility='hidden';resolve();},{once:true}));
   }).catch(()=>{duplicateOutput=false;screenEl.style.visibility='visible';});
   window.addEventListener('pageshow',event=>{if(event.persisted)location.reload();});
 }
+
+// Background/OBS windows may throttle animation frames; fit immediately on render
+// and once again when the bundled projection font finishes loading.
+document.fonts?.ready?.then(()=>render(getLive())).catch(()=>{});

@@ -12,6 +12,11 @@ test('metadata selection fetches plain lyrics and retains provenance',async()=>{
  const song=await S.lookupDirect({title:'Example',author:'Singer',pending:true,provider:'lyrics.ovh'},{fetcher:async url=>{assert.match(url,/\/Singer\/Example$/);return response({lyrics:'One\n\nTwo'});}});
  assert.equal(song.lyrics,'One\n\nTwo');assert.equal(song.source.name,'lyrics.ovh');
 });
+
+test('a slow metadata provider does not hold up lyrics available at the other source',async()=>{
+ const pending={title:'Example',author:'Singer',pending:true,provider:'lyrics.ovh'};const abort=new AbortController();
+ try{const result=await Promise.race([S.lookup(pending,{server:false,signal:abort.signal,fetcher:async(url,{signal})=>{if(url.includes('lyrics.ovh'))return new Promise((resolve,reject)=>signal.addEventListener('abort',()=>reject(new DOMException('Cancelled','AbortError')),{once:true}));return response({id:8,trackName:'Example',artistName:'Singer',plainLyrics:'Available text'});}}),new Promise((_,reject)=>setTimeout(()=>reject(Error('Lookup waited for the slow provider')),200))]);assert.equal(result.lyrics,'Available text');}finally{abort.abort();}
+});
 test('web search is a normal encoded Google link, not an automated Google request',()=>{
  const url=new URL(S.google('title & artist'));assert.equal(url.hostname,'www.google.com');assert.equal(url.searchParams.get('q'),'title & artist lyrics');
 });
@@ -37,7 +42,7 @@ test('a lyrics.ovh miss falls back to the LRCLIB exact title/artist record',asyn
  assert.equal(song.lyrics,'From LRCLIB');assert.equal(song.source.name,'LRCLIB');
 });
 test('a briefly unavailable source is retried once before giving up',async()=>{
- let calls=0;const song=await S.lookup({title:'Example',author:'Singer',pending:true,provider:'lyrics.ovh'},{server:false,fetcher:async()=>{
+ let calls=0;const song=await S.lookupDirect({title:'Example',author:'Singer',pending:true,provider:'lyrics.ovh'},{server:false,fetcher:async()=>{
   calls++;
   if(calls===1)return new Response('busy',{status:503,headers:{'Content-Type':'text/plain'}});
   return response({lyrics:'Second try'});

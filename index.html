@@ -70,7 +70,7 @@
         <span id="liveRef" class="livedot" hidden></span>
         <div class="more-wrap">
           <button id="btnDocks" title="Choose which docks are on screen">🧩 Docks</button>
-          <div id="dockMenu" class="more-menu" hidden></div>
+          <dialog id="dockMenu" class="more-menu" aria-label="Arrange Scripture docks" hidden></dialog>
         </div>
       </div>
 
@@ -134,10 +134,10 @@
         <div class="dock legacy-lookup" data-dock="search">
           <div class="dock-head"><span class="grip"><i class="dock-ico">🔎</i>Whole-Bible search</span></div>
           <p class="hint dock-hint">Find verses by the words you remember — <i>"sheep hear my voice"</i>. Quotes = exact phrase.</p>
-          <div class="row">
-            <input id="bibleSearch" type="search" autocomplete="off" name="kogg-bible-search" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder='sheep hear my voice  ·  "no man cometh to the Father"'>
-            <button id="btnVoiceSearch" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
-          </div>
+          <form class="row" id="bibleSearchForm" role="search" autocomplete="off">
+            <input id="bibleSearch" type="search" aria-label="Search Bible words — no sign-in needed" autocomplete="off" name="verse-keywords" data-1pignore="true" data-lpignore="true" data-bwignore="true" data-form-type="other" placeholder='sheep hear my voice  ·  "no man cometh to the Father"'>
+            <button id="btnVoiceSearch" type="button" title="Speak the words you remember — Chrome/Edge, online">🎤</button>
+          </form>
           <div id="bibleResults" class="search-results scroll" hidden></div>
         </div>
 
@@ -162,16 +162,18 @@
         <section class="card lyrics-find"><h2>Find a song</h2>
           <input id="songSearch" type="search" autocomplete="off" name="kogg-song-search" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
           <div class="row"><button id="btnNewSong" class="primary">+ New song</button><button id="btnSearchLyricsOnline">Search online</button></div>
-          <p class="lyrics-result-hint">Tap a song title to display. Choose Edit to review.</p>
-          <p id="lyricsSearchStatus" class="hint" role="status"></p><div id="lyricsOnlineResults" class="lyrics-results"></div>
-          <p><a id="lyricsWebSearch" target="_blank" rel="noopener noreferrer" hidden>Search Google for this song ↗</a></p>
+          <p class="lyrics-result-hint">Search your library first. Online matches are listed separately below.</p>
+          <label class="lyrics-filter">On this device<select id="lyricsLocalFilter"><option value="all">All local lyrics</option><option value="saved">My songs / session</option><option value="hymns">Hymnary</option></select></label>
+          <ul id="songList" class="item-list"></ul>
+          <h3 class="result-section-title">Online sources</h3><p id="lyricsSearchStatus" class="hint" role="status">Search online when connected. Title matches may not include lyrics.</p><div id="lyricsOnlineResults" class="lyrics-results"></div>
+          <details class="lyrics-external"><summary>Find on a lyrics website</summary><p class="hint">Open a source, then paste the words into Paste & split. These links do not import lyrics automatically.</p><div class="source-links"><a id="lyricsWebSearch" target="_blank" rel="noopener noreferrer" hidden>Google ↗</a><a href="https://www.azlyrics.com/" target="_blank" rel="noopener noreferrer">AZLyrics ↗</a><a href="https://www.musixmatch.com/" target="_blank" rel="noopener noreferrer">Musixmatch ↗</a></div></details>
           <details id="lyricsLinkImport"><summary>Import a source link</summary><input id="lyricsSourceUrl" type="url" placeholder="https://hymnary.org/text/…" aria-label="Lyrics source link"><button id="btnImportLyricsLink">Import lyrics</button><p class="hint">Supports public-domain Hymnary text pages and LRCLIB / lyrics.ovh API links. For other pages, copy the lyrics and paste them into the editor.</p><p id="lyricsLinkStatus" class="hint" role="status"></p></details>
           <details><summary>Hymn packs & imports</summary><div class="row"><button id="btnStarterHymns">+ Basic Hymnary</button><button id="btnMoreHymns">More hymns</button></div>
             <div id="extraHymnPacks" hidden></div><p id="hymnPackStatus" role="status"></p>
             <p class="hint"><a href="data/hymnary-sources.txt" target="_blank" rel="noopener">Hymn source credits</a></p>
             <label>Import song text (.txt)<input id="lyricsTextFile" type="file" accept="text/plain,.txt"></label>
             <p class="hint">Import your downloaded SongSelect text, or paste lyrics. <a href="https://songselect.ccli.com/" target="_blank" rel="noopener">Open SongSelect</a></p>
-          </details><ul id="songList" class="item-list"></ul>
+          </details>
         </section>
         <section class="card lyrics-order-dock"><h2>Song order</h2>
           <p class="hint">Tap a section to add it again, or remove an order chip.</p>
@@ -199,12 +201,18 @@
     </div>
   </section>
 
+  <dialog id="lyricsQuickEdit" aria-labelledby="lyricsQuickEditTitle" class="editor-dialog">
+    <h2 id="lyricsQuickEditTitle">Quick edit slide</h2><p class="hint">Edits this section wherever it appears in the song order. Display again when ready.</p>
+    <label>Slide text<textarea id="lyricsQuickText" rows="8" spellcheck="true" autocorrect="on"></textarea></label>
+    <div class="row"><button id="btnLyricsQuickSave" class="primary">Apply edit</button><button id="btnLyricsQuickCancel">Cancel</button></div>
+  </dialog>
+
   <!-- NOTES -->
   <section id="tab-notes" class="tab-panel">
    <div class="notes-toolbar"><div><h2>Notes</h2><p id="notesStorageStatus" class="hint"></p></div><span class="notes-tip">Write a point. Tap its card. Keep up with the message.</span></div>
    <div class="notes-deck">
-    <aside class="dock notes-library"><div class="dock-head"><span class="grip"><i class="dock-ico">📚</i>Quick start</span></div><div class="notes-templates"><button data-note-template="sermon">Message points</button><button data-note-template="announcement">Announcement</button><button data-note-template="minister">Now ministering</button><button data-note-template="alert">Scrolling alert</button><button data-note-template="welcome">Welcome screen</button></div><h2>Saved notes</h2><div id="notesSaved" class="notes-saved"></div><button id="btnNewNotes">+ New note</button></aside>
-    <section class="dock notes-editor"><div class="dock-head"><span class="grip"><i class="dock-ico">📝</i>Write & present</span></div><div class="notes-steps"><span>1 · Choose a format</span><span>2 · Write your text</span><span>3 · Tap Display or a preview card</span></div><div class="row"><label>Title<input id="notesTitle" maxlength="140" placeholder="Message or announcement title" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><label>Display as<select id="notesMode"><option value="points">Bulleted points</option><option value="fullscreen">Full-screen text</option><option value="tag">Now ministering / tag</option><option value="alert">Scrolling alert</option></select></label></div><label>Text<textarea id="notesBody" rows="8" maxlength="30000" placeholder="Type your first point. Press Enter for the next bullet. Leave an empty line to start another slide." spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea></label><div id="notesSplitControls" class="row"><label>Points per slide<select id="notesSplit"><option value="0">Keep together · auto-fit</option><option value="3">3 points</option><option value="4">4 points</option><option value="5">5 points</option><option value="6">6 points</option></select></label><button id="btnNotesBreak" type="button">New slide at cursor</button></div><label id="notesSubtitleLabel">Role / second line<input id="notesSubtitle" maxlength="200" placeholder="Now ministering · message title or role" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><p id="notesModeHint" class="hint"></p><p class="hint writing-help">Spelling suggestions and autocorrect use your browser or keyboard settings. Right-click an underlined word for suggestions.</p><div class="notes-actions"><button id="btnNotesDisplay" class="primary">▶ Display</button><button id="btnSaveNotes">Save note</button><button id="btnHideNotes">Clear notes from output</button></div><label class="notes-follow"><input type="checkbox" id="notesFollow"> Update live as I type (after Display)</label><p id="notesStatus" class="hint" role="status">Typing stays in the preview until you display.</p><div id="notesCards" class="notes-cards"></div></section>
+    <aside class="dock notes-library"><div class="dock-head"><span class="grip"><i class="dock-ico">📚</i>Quick start</span></div><div class="notes-templates"><button data-note-template="sermon">Message points</button><button data-note-template="announcement">Announcement</button><button data-note-template="minister">Now ministering</button><button data-note-template="alert">Scrolling alert</button><button data-note-template="welcome">Welcome screen</button></div><h2>Saved notes</h2><div id="notesSaved" class="notes-saved"></div><div class="notes-actions"><button id="btnNewNotes">+ New note</button><button id="btnExportNotes">Export text</button></div><label class="notes-import">Import text<input id="notesImportFile" type="file" accept=".txt,text/plain"></label><p class="hint">Text export travels with you. Saved notes stay on this device.</p></aside>
+    <section class="dock notes-editor"><div class="dock-head"><span class="grip"><i class="dock-ico">📝</i>Write & present</span></div><div class="notes-steps"><span>1 · Choose a format</span><span>2 · Write your text</span><span>3 · Tap Display or a preview card</span></div><div class="row"><label>Title<input id="notesTitle" maxlength="140" placeholder="Message or announcement title" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><label>Display as<select id="notesMode"><option value="points">Bulleted points</option><option value="fullscreen">Full-screen text</option><option value="tag">Now ministering / tag</option><option value="alert">Scrolling alert</option></select></label></div><label>Text<textarea id="notesBody" rows="8" maxlength="30000" placeholder="Type your first point. Press Enter for the next bullet. Leave an empty line to start another slide." spellcheck="true" autocorrect="on" autocapitalize="sentences"></textarea></label><div id="notesSplitControls" class="row"><label>Points per slide<select id="notesSplit"><option value="0">Keep together · auto-fit</option><option value="3">3 points</option><option value="4">4 points</option><option value="5">5 points</option><option value="6">6 points</option></select></label><button id="btnNotesBreak" type="button">New slide at cursor</button></div><label id="notesSubtitleLabel">Role / second line<input id="notesSubtitle" maxlength="200" placeholder="Now ministering · message title or role" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><p id="notesModeHint" class="hint"></p><p class="hint writing-help">Spelling suggestions and autocorrect use your browser or keyboard settings. Right-click an underlined word for suggestions.</p><div class="notes-actions"><button id="btnNotesDisplay" class="primary">▶ Display</button><button id="btnSaveNotes">Save note</button><button id="btnHideNotes">Clear notes from output</button></div><label class="notes-follow"><input type="checkbox" id="notesFollow"> Update live as I type (after Display)</label><p id="notesStatus" class="hint" role="status">Typing stays in the preview until you display. Ctrl + Enter displays from the editor.</p><div id="notesCards" class="notes-cards"></div></section>
     <aside class="dock notes-output"><div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>On the projector</span></div><div class="notes-actions"><button id="btnNotesAnnotate" aria-pressed="false">Yellow emphasis</button><button id="btnNotesClearHighlight">Clear emphasis</button></div><p class="hint">Turn emphasis on, then tap or drag over words below. Works on live bullet points and full-screen text.</p><p id="notesLiveLabel" class="hint"></p><div id="notesLiveText" class="notes-live-text"></div><div class="notes-actions"><button id="btnNotesPrev">← Previous slide</button><button id="btnNotesNext">Next slide →</button></div><p class="hint">Tags and scrolling alerts can sit over Scripture or lyrics. Clear notes removes only Notes content.</p></aside>
    </div>
   </section>

@@ -170,7 +170,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 document.addEventListener('click', e => {
   if (!e.target.closest('#dockMenu') && !e.target.closest('#feDocks') && !e.target.closest('#btnDocks')) {
     const dm = $('dockMenu');
-    if (dm && !dm.hidden) dm.hidden = true;   // click-outside closes the docks menu
+    if (dm && !dm.hidden) closeDockMenu();
   }
 });
 
@@ -1159,7 +1159,7 @@ function renderDockMenu() {
   const fn = lsShowFloatNav();
   const items = Object.keys(DOCK_LABELS).filter(k => k !== 'text').map(key =>
     `<button data-dockkey="${key}" class="dockmenu-item${hidden.includes(key) ? '' : ' on'}" title="${hidden.includes(key) ? 'Hidden — tap to show' : 'Visible — tap to hide'}">${hidden.includes(key) ? '◻' : '✓'} ${DOCK_LABELS[key]}</button>`).join('');
-  menu.innerHTML = '<button data-dockkey="__arrange" class="dockmenu-item"><b>↔ Rearrange docks</b></button><div class="more-group">Docks on screen</div>' + items +
+  menu.innerHTML = '<button data-dockkey="__close" class="dockmenu-item">Close dock settings ×</button><button data-dockkey="__arrange" class="dockmenu-item"><b>↔ Rearrange docks</b></button><div class="more-group">Docks on screen</div>' + items +
     '<div class="dockmenu-item static">🔒 On the projector — always visible</div>' +
     `<button data-dockkey="__fnav" class="dockmenu-item${fn ? ' on' : ''}">${fn ? '✓' : '◻'} 🧭 Slide switcher (floating)</button>` +
     `<button data-dockkey="__float" class="dockmenu-item${fp ? ' on' : ''}">${fp ? '✓' : '◻'} 🖥️ Floating display mirror</button>` +
@@ -1175,17 +1175,24 @@ function applyFloatNav() {
 function lsShowFloatPreview() { return LS.get(K.settings, {}).showFloatPreview === true; }
 function toggleDockMenu(e) {
   e.stopPropagation();
+  if(!$('dockMenu').hidden){closeDockMenu();return;}
   renderDockMenu();
   const menu = $('dockMenu');
-  menu.hidden = !menu.hidden;
+  menu.hidden = false;
+  menu.showModal?.();
+  $('btnDocks').setAttribute('aria-expanded','true');
 }
+function closeDockMenu(){const menu=$('dockMenu');menu.close?.();menu.hidden=true;$('btnDocks').setAttribute('aria-expanded','false');}
+$('dockMenu').addEventListener('cancel',e=>{e.preventDefault();closeDockMenu();});
 $('feDocks').addEventListener('click', toggleDockMenu);
 $('btnDocks').addEventListener('click', toggleDockMenu);
 $('dockMenu').addEventListener('click', e => {
+  if(e.target===$('dockMenu')){closeDockMenu();return;}
   const b = e.target.closest('button[data-dockkey]');
   if (!b) return;
   const key = b.dataset.dockkey;
-  $('dockMenu').hidden = true;   // always close immediately, then perform the action
+  closeDockMenu();
+  if(key==='__close')return;
   const s = LS.get(K.settings, {});
   if (key === '__arrange') {
     s.panesLocked=false;LS.set(K.settings,s);refreshLock();
@@ -1362,6 +1369,7 @@ function renderBibleSearch() {
     : `<div class="search-none">No verses match “${esc(q)}” in ${esc(bible.translation)}. ${bible.provider ? 'Connected versions search only the chapters streamed this session — present the passages you need, or type the reference above.' : 'Try fewer or different words.'}</div>`;
   box.hidden = false;
 }
+$('bibleSearchForm').addEventListener('submit',e=>{e.preventDefault();});
 $('bibleSearch').addEventListener('input', () => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(renderBibleSearch, 250);
@@ -1436,11 +1444,14 @@ function restoreLyricsDraft(d){
  updateSongSlidesPreview();lastLyricsDraft=JSON.stringify(editorSong());
 }
 function loadLyricsDraft(){restoreLyricsDraft(baseLyrics()?lyricSession.draft:LS.get('cp_lyrics_draft',null));refreshLyricsMode();}
+function isHymnSong(song){return /^(traditional-|hymn-)/.test(song.id||'')||!!song.hymnPack;}
+$('lyricsLocalFilter').addEventListener('change',renderSongList);
 function renderSongList(){
  refreshLyricsMode();const q=$('songSearch').value.trim().toLowerCase();
- if(!q){$('songList').innerHTML='<li class="search-wait">Search filters every saved song and installed hymn as you type — nothing crowds this space until then.</li>';return;}
- const matches=allLyricsSongs().filter(s=>[s.title,s.author||'',s.lyrics].join(' ').toLowerCase().includes(q));
- $('songList').innerHTML=matches.slice(0,lyricsListLimit).map(s=>{const temporary=lyricSession.songs.some(t=>t.id===s.id);return `<li data-id="${esc(s.id)}"><button class="song-result-main" data-act="live" title="Display the first slide"><b>${esc(s.title)}</b><span class="item-meta">${esc(s.author||'')} ${temporary?' • session':''}</span></button><button data-act="edit" title="Review and edit this song">Edit</button><button data-act="add">+ Service</button>${!baseLyrics()||temporary?'<button data-act="del" class="danger" title="Delete song">×</button>':''}</li>`;}).join('')||'<li>No saved match. Online results appear above when connected, or paste your lyrics.</li>';
+ if(!q){$('songList').innerHTML='<li class="search-wait">Type a title or remembered words to find saved songs and offline hymns.</li>';return;}
+ const scope=$('lyricsLocalFilter').value||'all';
+ const matches=allLyricsSongs().filter(s=>(scope==='all'||(scope==='hymns')===isHymnSong(s))&&[s.title,s.author||'',s.lyrics].join(' ').toLowerCase().includes(q));
+ $('songList').innerHTML=matches.slice(0,lyricsListLimit).map(s=>{const temporary=lyricSession.songs.some(t=>t.id===s.id);return `<li data-id="${esc(s.id)}"><button class="song-result-main" data-act="live" title="Display the first slide"><b>${esc(s.title)}</b><span class="item-meta">${esc(s.author||'')} • ${isHymnSong(s)?'Offline hymn':temporary?'Session song':'Saved song'}</span></button><button data-act="edit" title="Review and edit this song">Edit</button><button data-act="add">+ Service</button>${!baseLyrics()||temporary?'<button data-act="del" class="danger" title="Delete song">×</button>':''}</li>`;}).join('')||'<li>No saved match. Online results appear above when connected, or paste your lyrics.</li>';
  if(matches.length>lyricsListLimit)$('songList').innerHTML+=`<li><button data-more="1">Show more (${matches.length-lyricsListLimit} remaining)</button></li>`;
 }
 function openSongEditor(song){
@@ -1477,7 +1488,7 @@ function updateSongSlidesPreview(){
  const ordered=LY.ordered({...song,order:lyricsOrder});
  const sig=lyricsSignature(),liveSlide=live.lyricsKey===sig?live.index:-1;   // one hash per render, not two per slide
  $('lyricsPasteSummary').textContent=`Paste / edit lyrics • ${sections.length} section${sections.length===1?'':'s'}, ${ordered.length} slide${ordered.length===1?'':'s'}`;
- $('songSlidesPreview').innerHTML=ordered.map((s,i)=>`<article class="lyric-slide${liveSlide===i?' is-live':''}"><button class="lyric-take" data-take="${i}"><b>${i+1}. ${esc(s.section||'Slide '+(s.sourceIndex+1))}</b><span>${esc(s.text)}</span><em>${liveSlide===i?'LIVE':'Display'}</em></button>${s.text.split('\n').length>6||s.text.length>400?'<p class="lyric-warning">Crowded slide — consider splitting.</p>':''}<div class="lyric-actions">${[['split','Split'],['merge','Merge'],['up','↑'],['down','↓'],['duplicate','Copy'],['delete','Del']].map(([action,label])=>`<button data-section="${s.sourceIndex}" data-slide-action="${action}" title="${label==='↑'?'Move up':label==='↓'?'Move down':label==='Copy'?'Duplicate slide':label==='Del'?'Delete slide':label}">${label}</button>`).join('')}</div></article>`).join('')||'<p class="hint">Your slide cards appear here as you paste.</p>';
+ $('songSlidesPreview').innerHTML=ordered.map((s,i)=>`<article class="lyric-slide${liveSlide===i?' is-live':''}"><button class="lyric-take" data-take="${i}"><b>${i+1}. ${esc(s.section||'Slide '+(s.sourceIndex+1))}</b><span>${esc(s.text)}</span><em>${liveSlide===i?'LIVE':'Display'}</em></button>${s.text.split('\n').length>6||s.text.length>400?'<p class="lyric-warning">Crowded slide — consider splitting.</p>':''}<div class="lyric-actions">${[['edit','Edit'],['split','Split'],['merge','Merge'],['up','↑'],['down','↓'],['duplicate','Copy'],['delete','Del']].map(([action,label])=>`<button data-section="${s.sourceIndex}" data-slide-action="${action}" title="${label==='↑'?'Move up':label==='↓'?'Move down':label==='Copy'?'Duplicate slide':label==='Del'?'Delete slide':label}">${label}</button>`).join('')}</div></article>`).join('')||'<p class="hint">Your slide cards appear here as you paste.</p>';
  $('lyricsSectionButtons').innerHTML=sections.map((s,i)=>`<button data-add-order="${i}">+ ${esc(s.section||'Slide '+(i+1))}</button>`).join('');
  $('lyricsOrder').innerHTML=lyricsOrder.map((n,i)=>`<button data-remove-order="${i}" title="Remove this occurrence">${esc(sections[n]?.section||'Slide '+(n+1))} ×</button>`).join('');
  $('lyricsSource').textContent=lyricsSource?`Source: ${lyricsSource.name||'Imported'}${lyricsSource.credits?' • '+lyricsSource.credits:''}`:'';
@@ -1518,6 +1529,23 @@ function applyOutputLook(box){
   box.style.setProperty?.('--kogg-hl', /^#[0-9a-fA-F]{6}$/.test(t.hlColor || '') ? t.hlColor : '#ffd83d');
   return t;
 }
+function fitProjectorPreview(box){
+ const content=box.querySelector('.preview-content');if(!content||!box.clientWidth||!box.clientHeight)return;
+ const maxH=box.clientHeight*.82,maxW=box.clientWidth*.92;let low=3,high=box.clientHeight*.8;
+ for(let i=0;i<11;i++){const mid=(low+high)/2;content.style.fontSize=mid+'px';if(content.scrollHeight<=maxH&&content.scrollWidth<=maxW)low=mid;else high=mid;}
+ content.style.fontSize=(low*Math.max(.2,Math.min(1,Number(outputPreviewTheme().fontScale)||1)))+'px';
+}
+function projectorPreview(box,html,slide){
+ const visible=live.mode!=='blank';
+ if(!visible)box.style.background='#000';
+ if(live.mode==='logo')html='<img class="preview-logo" src="icons/kogg-symbol-white.svg" alt="KOGG logo">';
+ box.innerHTML='<div class="preview-content">'+(visible?html:'')+'</div>'+(visible&&slide?'<small class="preview-caption">'+esc(slide.label||'')+'</small>':'')+
+ (visible&&live.lowerThird?.on?'<div class="preview-tag"><b>'+esc(live.lowerThird.l1)+'</b><small>'+esc(live.lowerThird.l2||'')+'</small></div>':'')+
+ (visible&&live.alert?.on?'<div class="preview-alert">'+esc(live.alert.text)+'</div>':'');
+ box.classList.toggle('preview-bullets',!!slide?.bullets);fitProjectorPreview(box);
+}
+if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(entries=>entries.forEach(entry=>fitProjectorPreview(entry.target)));['lyricsLiveText','notesLiveText'].forEach(id=>observer.observe($(id)));}
+document.fonts?.ready?.then(()=>{fitProjectorPreview($('lyricsLiveText'));fitProjectorPreview($('notesLiveText'));}).catch(()=>{});
 function renderLyricsLive(){
  const box=$('lyricsLiveText');
  const slide=live.mode==='normal'?live.slides[live.index]:null;
@@ -1525,11 +1553,12 @@ function renderLyricsLive(){
  applyOutputLook(box);
  const hl=live.textHighlight,active=slide&&hl&&hl.key===live.lyricsKey&&hl.index===live.index&&hl.text===slide.text;
  let word=0;
- box.innerHTML=slide?stripStrongs(slide.text).split(/(\s+)/).map(token=>{
+ const html=slide?stripStrongs(slide.text).split(/(\s+)/).map(token=>{
   if(!token.trim())return esc(token);
   word++;
   return `<span class="lyw${active&&word>=hl.from&&word<=hl.to?' marked':''}" data-lyric-word="${word}">${esc(token)}</span>`;
  }).join(''):'';
+ projectorPreview(box,html,slide);
  document.querySelectorAll('#songSlidesPreview [data-take]').forEach(b=>{const active=live.mode==='normal' && live.lyricsKey===lyricsSignature()&&+b.dataset.take===live.index;b.closest('.lyric-slide').classList.toggle('is-live',active);b.querySelector('em').textContent=active?'LIVE':'Display';});
  $('btnLyricsPrev').disabled=!slide||live.index<=0;$('btnLyricsNext').disabled=!slide||live.index>=live.slides.length-1;
 }
@@ -1566,10 +1595,21 @@ $('lyricsLiveText').addEventListener('pointerup',()=>{
  if(d.wasMarked&&cur&&cur.key===live.lyricsKey&&cur.index===live.index&&cur.from===cur.to&&cur.from===d.from)pushLive({textHighlight:null});
 });
 $('lyricsLiveText').addEventListener('pointercancel',()=>{lyricWordDrag=null;});
+let quickEditSection=-1,quickEditSnapshot='';
+function openLyricsQuickEdit(index){const sections=LY.parse($('songLyrics').value);if(!sections[index])return;quickEditSection=index;quickEditSnapshot=$('songLyrics').value;$('lyricsQuickText').value=sections[index].text;$('lyricsQuickEdit').showModal?.();$('lyricsQuickText').focus();}
+$('btnLyricsQuickCancel').addEventListener('click',()=>$('lyricsQuickEdit').close?.());
+$('btnLyricsQuickSave').addEventListener('click',()=>{
+ if(quickEditSnapshot!==$('songLyrics').value){$('lyricsQuickEdit').close?.();$('lyricsStatus').textContent='The song changed. Reopen its slide to edit.';return;}
+ const text=$('lyricsQuickText').value.trim();if(!text){$('lyricsQuickText').focus();return;}
+ if(LY.parse(text).length!==1||/^\s*\[[^\]\n]+\]\s*$/m.test(text)){$('lyricsQuickText').setCustomValidity?.('Keep one section here. Use Paste & split to add slides or headings.');$('lyricsQuickText').reportValidity?.();return;}
+ $('lyricsQuickText').setCustomValidity?.('');
+ const sections=LY.parse($('songLyrics').value);if(!sections[quickEditSection])return;
+ lyricsHistory();sections[quickEditSection].text=text;$('songLyrics').value=LY.serialize(sections);updateSongSlidesPreview();rememberLyricsDraft();$('lyricsQuickEdit').close?.();$('lyricsStatus').textContent='Slide edited. Tap its card when ready to put the change live.';
+});
 function applyLyricsSections(sections){lyricsHistory();$('songLyrics').value=LY.serialize(sections);lyricsOrder=sections.map((_,i)=>i);updateSongSlidesPreview();rememberLyricsDraft();$('lyricsStatus').textContent='Slides updated; song order reset to match. Undo restores the previous version.';}
 $('songSlidesPreview').addEventListener('click',e=>{
  const take=e.target.closest('button[data-take]');if(take){displayLyrics(+take.dataset.take);return;}
- const action=e.target.closest('button[data-slide-action]');if(action)applyLyricsSections(LY.operation(LY.parse($('songLyrics').value),+action.dataset.section,action.dataset.slideAction));
+ const action=e.target.closest('button[data-slide-action]');if(action?.dataset.slideAction==='edit'){openLyricsQuickEdit(+action.dataset.section);return;}if(action)applyLyricsSections(LY.operation(LY.parse($('songLyrics').value),+action.dataset.section,action.dataset.slideAction));
 });
 $('lyricsSectionButtons').addEventListener('click',e=>{const b=e.target.closest('button[data-add-order]');if(!b)return;lyricsHistory();lyricsOrder.push(+b.dataset.addOrder);updateSongSlidesPreview();rememberLyricsDraft();});
 $('lyricsOrder').addEventListener('click',e=>{const b=e.target.closest('button[data-remove-order]');if(!b||lyricsOrder.length<2)return;lyricsHistory();lyricsOrder.splice(+b.dataset.removeOrder,1);updateSongSlidesPreview();rememberLyricsDraft();});
@@ -1619,17 +1659,17 @@ async function searchLyricsOnline(){
  try{
   const result=await window.KOGGLyricsSources.search(q,{signal:controller.signal});if(token!==lyricsSearchToken)return;
   lyricsOnline=result.items;
-  $('lyricsOnlineResults').innerHTML=lyricsOnline.map((song,i)=>`<button data-import-lyric="${i}"><b>${esc(song.title)}</b><span>${esc(song.author)} • ${esc(song.source.name)}${song.pending?' • fetch on selection':''}</span><em>Display first slide ↗</em></button>`).join('');
-  $('lyricsSearchStatus').textContent=lyricsOnline.length?'Choose a result to display its first slide; Edit lets you review or save.'+(result.partial?' One source is unavailable.':''):result.available?'No match found. Try title + artist, use Google search below, or paste a supported source link.':'Lyrics sources are unavailable. Use Google search below, paste lyrics, or open a saved song.';
+  $('lyricsOnlineResults').innerHTML=lyricsOnline.map((song,i)=>`<button data-import-lyric="${i}"><b>${esc(song.title)}</b><span>${esc(song.author)} • ${esc(song.source.name)}${song.pending?' • title match, lyrics unconfirmed':' • lyrics ready'}</span><em>${song.pending?'Find lyrics →':'Display first slide →'}</em></button>`).join('');
+  $('lyricsSearchStatus').textContent=lyricsOnline.length?'Lyrics-ready results display immediately. Title matches must fetch text first.'+(result.partial?' One source is unavailable.':''):result.available?'No match found. Try title + artist, use Google search below, or paste a supported source link.':'Lyrics sources are unavailable. Use Google search below, paste lyrics, or open a saved song.';
  }catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'Search timed out. Use Google search below, or paste lyrics.':'Could not reach the lyrics sources. Saved songs and the editor still work.';}
  finally{clearTimeout(timeout);}
 }
 $('btnSearchLyricsOnline').addEventListener('click',searchLyricsOnline);
 $('lyricsOnlineResults').addEventListener('click',async e=>{
  const button=e.target.closest('button[data-import-lyric]');if(!button||!lyricsOnline[+button.dataset.importLyric])return;
- const candidate=lyricsOnline[+button.dataset.importLyric],token=lyricsSearchToken;button.disabled=true;
+ const candidate=lyricsOnline[+button.dataset.importLyric],token=lyricsSearchToken;button.disabled=true;$('lyricsSearchStatus').textContent='Loading lyrics for '+candidate.title+'…';
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
- try{const song=await window.KOGGLyricsSources.lookup(candidate,{signal:controller.signal});if(token!==lyricsSearchToken)return;openSongEditor(song);displayLyrics(0);$('lyricsStatus').textContent='First slide is live. Tap another slide, or Save to keep it in your library.';}
+ try{const song=await window.KOGGLyricsSources.lookup(candidate,{signal:controller.signal});if(token!==lyricsSearchToken)return;if(!song?.lyrics?.trim())throw new Error('This result has no lyric text');openSongEditor(song);displayLyrics(0);$('lyricsSearchStatus').textContent='Lyrics loaded — first slide is live.';$('lyricsStatus').textContent='First slide is live. Tap another slide, or Save to keep it in your library.';}
  catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'This result timed out — try another version, or paste the lyrics.':'Could not fetch this one ('+err.message+'). Try another result, or paste the lyrics.';}
  finally{clearTimeout(timeout);button.disabled=false;}
 });
@@ -1662,9 +1702,9 @@ function renderNotesLive(){if(!notesState||!NT)return;const content=[],labels=[]
 function currentNotesSlide(){return live.mode==='normal'&&live.notesKey?live.slides[live.index]:null;}
 function renderNotesAnnotation(content){const slide=currentNotesSlide(),box=$('notesLiveText'),allowed=!!slide;const hl=live.textHighlight;const matches=slide&&hl&&hl.key===live.notesKey&&hl.index===live.index&&hl.text===slide.text;applyOutputLook(box);
  $('btnNotesAnnotate').disabled=!allowed;$('btnNotesClearHighlight').disabled=!matches;$('btnNotesAnnotate').setAttribute('aria-pressed',String(notesAnnotateOn&&allowed));box.classList.toggle('annotating',notesAnnotateOn&&allowed);
- if(!slide){box.textContent=content.join('\n\n');return;}
+ if(!slide){const current=live.mode==='normal'?live.slides[live.index]:null;projectorPreview(box,current?esc(stripStrongs(current.text)):'',current);return;}
  let word=0;const html=stripStrongs(slide.text).split(/(\s+)/).map(token=>{if(!token.trim()||(slide.bullets&&token==='•'))return esc(token);word++;return `<span class="note-word${matches&&word>=hl.from&&word<=hl.to?' marked':''}" data-note-word="${word}">${esc(token)}</span>`;}).join('');
- box.innerHTML=html+content.slice(1).map(text=>'<p>'+esc(text)+'</p>').join('');
+ projectorPreview(box,html,slide);
 }
 function markNotesWords(from,to){const slide=currentNotesSlide();if(!notesAnnotateOn||!slide)return;pushLive({textHighlight:{key:live.notesKey,index:live.index,text:slide.text,from:Math.min(from,to),to:Math.max(from,to)}});}
 let noteWordDrag=null;
@@ -1676,6 +1716,10 @@ $('notesLiveText').addEventListener('pointermove',event=>{if(!noteWordDrag)retur
 
 function displayNotes(){readNotesFields();try{pushLive(NT.patch(notesState,currentThemeId,live));saveNotesWorkspace();$('notesStatus').textContent=$('notesFollow').checked?'LIVE typing is on for this Notes item.':'Notes displayed. Typing stays in preview unless Live typing is enabled.';renderNotes();}catch(error){$('notesStatus').textContent=error.message;}}
 if(NT){loadNotesWorkspace();window.__notesReady=true;
+ $('notesBody').addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();displayNotes();}});
+ $('btnExportNotes').addEventListener('click',()=>{readNotesFields();const text=notesState.title+'\n\n'+notesState.body+(notesState.subtitle?'\n\n'+notesState.subtitle:'');const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=(notesState.title.replace(/[^a-z0-9 -]/gi,'').slice(0,70)||'KOGG-notes')+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+ $('notesImportFile').addEventListener('change',async()=>{const input=$('notesImportFile'),file=input.files?.[0];if(!file)return;try{if(file.size>120000)throw new Error('Choose a text file under 120 KB.');const body=(await file.text()).replace(/^\uFEFF/,'');if(!body.trim())throw new Error('This file is empty.');if(body.length>30000)throw new Error('Choose a note under 30,000 characters.');if(notesState.body.trim()&&!confirm('Replace the current draft with this text? Saved notes and output stay.'))return;$('notesFollow').checked=false;notesState=NT.normalise({id:uid(),title:file.name.replace(/\.txt$/i,''),body});writeNotesFields();saveNotesWorkspace();renderNotes();$('notesStatus').textContent='Text imported. Review its slides, then Display.';}catch(error){$('notesStatus').textContent=error.message;}finally{input.value='';}});
+
  ['notesTitle','notesBody','notesSubtitle','notesMode','notesSplit'].forEach(id=>$(id).addEventListener(['notesMode','notesSplit'].includes(id)?'change':'input',()=>{if(id==='notesMode'){$('notesFollow').checked=false;notesState.index=0;$('notesStatus').textContent='Format changed. Review the preview, then Display.';}readNotesFields();saveNotesWorkspace();renderNotes();clearTimeout(notesFollowTimer);if($('notesFollow').checked&&NT.owns(notesState,live))notesFollowTimer=setTimeout(()=>{if($('notesFollow').checked&&NT.owns(notesState,live))displayNotes();},180);}));
  $('btnNotesBreak').addEventListener('click',()=>{const input=$('notesBody'),at=input.selectionStart??input.value.length,end=input.selectionEnd??at,before=input.value.slice(0,at).replace(/\n*$/,''),after=input.value.slice(end).replace(/^\n*/,'');input.value=before+'\n\n'+after;input.focus();input.setSelectionRange?.(before.length+2,before.length+2);input.dispatchEvent(new Event('input',{bubbles:true}));});
  $('notesFollow').addEventListener('change',()=>{$('notesStatus').textContent=$('notesFollow').checked?'Live typing armed. Click Display to put this item live first.':'Live typing off. Editing stays in preview.';});

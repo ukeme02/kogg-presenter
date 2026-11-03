@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v101';
+const CACHE = 'kogg-presenter-v102';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',
@@ -12,17 +12,17 @@ const ASSETS = [
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
-  "./": "44adee81271f641e72214a968b373ee6f27253e077fee9bd058fefd573015dd4",
-  "./index.html": "44adee81271f641e72214a968b373ee6f27253e077fee9bd058fefd573015dd4",
+  "./": "cc465408a4357cc7772792bf64dc781f89dca469869182e72bba4860bce9741a",
+  "./index.html": "cc465408a4357cc7772792bf64dc781f89dca469869182e72bba4860bce9741a",
   "./display.html": "61320fc552512d3ef7b32ca71c8505815617c5dbe7a432f4574921416761cd9e",
   "./landing.html": "c13a7bfb39c279bfd3465c6518478132cee7211421e9c385bc0377fdf2b27a42",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
-  "./css/app.css": "652f40f941c10ab6368ead1e1ff08f0c4f200e0d43d6728991425cb99e64c819",
+  "./css/app.css": "2750417a479359950839ebb4d8621f1646d680550788e6dd0ae1eb4899520d6a",
   "./css/display.css": "7889a2dcac9ecd4801a69e3103a44029dbd4f47d2752722f55691f5c2a250a74",
   "./css/landing.css": "a3607bd85ef87ab9aa980493a5c76fc9b04bfca37e93e0fce75eae4fc5147401",
   "./js/landing.js": "1284add4208bf7efa25bd391823476e81832713edc0dbdf2cbb7ea3e3ed03c39",
-  "./js/app.js": "5557c87413b883c92eb27d25272546c5415c2ef8b77e1361202ddb77858672e1",
+  "./js/app.js": "4c09767e2bf1446249845887e0b13747f23580e3c22b24015f99661ba900775a",
   "./js/display.js": "97b69be3df79a27eeed283e30ec611e1cabce2df1e6428950c1f2e80221deb26",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
   "./js/library.js": "0814ecb5e4801cb0883772c996dc9b83eb29155005d02a32adf9c26d13510bd8",
@@ -33,7 +33,7 @@ const ASSET_HASHES = {
   "./js/content.js": "ecca94b0c53ad29bda1f7da84fb43029e136d6070025f851da142405947c137d",
   "./js/notes.js": "6617ef19ce9c5c6a7cd8190ddd191311eef41ccab3d78bda7b6e0b625d366fa2",
   "./js/lyrics.js": "3d81bec572db4ddb26924c42b0896abd80f74b2113f7dfc030ae44e022761de5",
-  "./js/lyrics-sources.js": "cccc9a6e53020d32c5312b06e0cc5347621f989f3e4c1bf72492f15d2a7e2f63",
+  "./js/lyrics-sources.js": "bb725eaf80bbcf1dc81bbafefd04a60cd71d1de98d417eab2026bf6f0317925b",
   "./js/supabase-config.js": "5c3ebf851c7a921f6fc47a847ebb46a2abb507d228f8839cc760f1802c80abe5",
   "./js/idb.js": "9d2b847520d2e7fb9f2046e8be8e9362848c225980f71d62a9806e23dbae4d0f",
   "./data/kjv.json": "ab22e4f47e597771af955496f73a597f912abe31ed470390170e39c9fa9823c0",

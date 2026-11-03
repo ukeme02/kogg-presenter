@@ -9,13 +9,18 @@
  const serverHeaders=typeof window==='undefined'?{'User-Agent':'KOGGPresenter/1.0 (https://kogg-presenter.pages.dev)'}:undefined;
  async function readJSON(url,{fetcher=fetch,signal}={}){
   const once=async()=>{
-   const response=await fetcher(url,{signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual',headers:serverHeaders});
+   const controller=new AbortController(),cancel=()=>controller.abort();
+   if(signal?.aborted)controller.abort();else signal?.addEventListener('abort',cancel,{once:true});
+   const timer=setTimeout(cancel,4500);
+   try{
+   const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual',headers:serverHeaders});
    if((response.status>=300&&response.status<400)||response.type==='opaqueredirect')throw new Error('This source redirected. Use its final supported source link instead.');
    if(response.status>=500)throw new Error('Source unavailable');
    const type=response.headers?.get('content-type')||'';
    if(type && !type.includes('json'))throw new Error('Invalid source response');
    const raw=await response.text();if(raw.length>2000000)throw new Error('Source response too large');const data=JSON.parse(raw);
    if(!response.ok)throw new Error(typeof data.error==='string'?data.error:response.status===429?'Source is busy. Try again shortly.':'Source unavailable');return data;
+   }finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
   };
   try{return await once();}
   catch(err){
@@ -57,19 +62,14 @@
  async function lookup(song,options={}){
   if(!song.pending)return song;
   if(options.server!==false){try{const data=await request('lookup',{title:song.title,artist:song.author},options);if(data.song)return data.song;}catch(e){if(options.signal?.aborted)throw e;}}
-  try{return await lookupDirect(song,options);}
-  catch(e){
-   if(options.signal?.aborted)throw e;
-   // lyrics.ovh often has no text for a version — try LRCLIB's exact title/artist record before giving up.
-   const title=checked(song.title),author=checked(song.author);
-   if(!author)throw e;
-   try{
+  const exact=async()=>{
+   const title=checked(song.title),author=checked(song.author);if(!title||!author)throw new Error('Title and artist required');
     const row=await readJSON('https://lrclib.net/api/get?'+new URLSearchParams({artist_name:author,track_name:title}),options);
     const mapped=fromRecord(row);
-    if(mapped)return mapped;
-   }catch(_){}
-   throw e;
-  }
+    if(mapped)return mapped;throw new Error('No lyric text at this source');
+  };
+  try{return await Promise.any([lookupDirect(song,options),exact()]);}
+  catch(e){if(options.signal?.aborted)throw new DOMException('Cancelled','AbortError');throw new Error('This title was found, but neither connected source returned lyrics. Try another version or paste the words.');}
  }
  function importTarget(raw){let url;try{url=new URL(raw);}catch{throw new Error('Paste a complete https:// source link.');}
   if(url.protocol!=='https:'||url.username||url.password||url.port)throw new Error('Use a supported https:// source link.');

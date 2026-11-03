@@ -1,5 +1,17 @@
 # Repair progress - 3 November 2026
 
+## Responsive Lyrics and Notes repair
+
+Removed fixed viewport heights that collapsed the two projector monitors. Both retain 16:9 frames with fitted text, references and tag/alert placement. Desktop uses three columns; tablets place the monitor above the editor beside the library; phones stack readable controls and a rectangular monitor. Compact Scripture docks discard desktop grid spans. Docks settings now use a native modal dialog with opaque background, focus isolation, Close and Escape.
+
+Bible search is isolated in its own password-free search form with autocomplete/password-manager exclusion hints. Browser verification presented John 10:16 from remembered words without sign-in. Third-party password-manager overlays cannot be universally controlled by site markup; the original reported prompt was not reproduced.
+
+Lyrics search separates local results from online sources, labels offline hymns/session/saved songs, and offers a local filter. Online results distinguish lyrics-ready records from unverified title matches. Fetches have individual deadlines and title lookup races two sources, so one slow source does not block available lyrics. AZLyrics and Musixmatch website links are available for manual copy/paste, not automatic imports; authenticated Musixmatch API integration remains a separate connection requirement.
+
+Every lyric slide has Quick Edit, preserving repeated order and requiring an explicit Display to update output. Notes adds text import/export and Ctrl/Cmd+Enter to display. Notes previews include underlying live Scripture/lyrics when showing a tag or alert. Existing bullets, splitting, live typing and yellow emphasis remain.
+
+Validation: 193 automated checks pass. Browser widths checked: 320, 390, 820 and 1440 pixels. No horizontal page overflow at the measured phone/tablet widths. Verified modal behavior, Bible search, offline hymn display, quick editing, Notes bullets, and 16:9 monitors. Browser console had no warnings/errors in the final local check. Evidence is in docs/deck-evidence-2026-11-03. These are browser viewport tests, not physical iOS/Android tests. Release cache v102.
+
 Audit baseline: dec9301. Separate tested commits; no database schema changes.
 
 | Issue | Status |

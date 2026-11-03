@@ -29,7 +29,7 @@ const K = { songs: 'cp_songs', themes: 'cp_themes', service: 'cp_service',
 
 /* ---------- shared slide helpers (kept in sync with display.js) ---------- */
 function stripStrongs(s) {
-  return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/\s{2,}/g, ' ');
+  return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/ {2,}/g, ' ');
 }
 function withStrongsHtml(s) {
   // escape first, then turn [G12]/[H1234] markers into clickable <sup> numbers (preview only)
@@ -1536,21 +1536,22 @@ function renderLyricsLive(){
    projector marks them live, exactly like Scripture and Notes emphasis. */
 function markLyricsWords(from,to){
  const slide=live.mode==='normal'?live.slides[live.index]:null;
- if(!slide||live.lyricsKey!==lyricsSignature())return;
+ if(!slide||!live.lyricsKey)return;
  pushLive({textHighlight:{key:live.lyricsKey,index:live.index,text:slide.text,from:Math.min(from,to),to:Math.max(from,to)}});
 }
 let lyricWordDrag=null;
 $('lyricsLiveText').addEventListener('pointerdown',event=>{
- if(live.mode!=='normal'||!live.slides?.length||live.lyricsKey!==lyricsSignature())return;
+ if(live.mode!=='normal'||!live.slides?.length||!live.lyricsKey)return;
  event.preventDefault();
  const word=event.target.closest('[data-lyric-word]');
  if(!word){ if(live.textHighlight)pushLive({textHighlight:null}); return; }   // tap the background to clear
- lyricWordDrag={from:+word.dataset.lyricWord,to:+word.dataset.lyricWord,moved:false};
+ const selected=+word.dataset.lyricWord,old=live.textHighlight;lyricWordDrag={from:selected,to:selected,moved:false,key:live.lyricsKey,index:live.index,text:live.slides[live.index].text,wasMarked:!!(old&&old.key===live.lyricsKey&&old.index===live.index&&old.from===selected&&old.to===selected)};
  try{$('lyricsLiveText').setPointerCapture(event.pointerId);}catch{}
  markLyricsWords(lyricWordDrag.from,lyricWordDrag.to);
 });
 $('lyricsLiveText').addEventListener('pointermove',event=>{
  if(!lyricWordDrag)return;
+ if(lyricWordDrag.key!==live.lyricsKey||lyricWordDrag.index!==live.index||lyricWordDrag.text!==live.slides[live.index]?.text){lyricWordDrag=null;return;}
  const word=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-lyric-word]');
  if(!word||!$('lyricsLiveText').contains(word))return;
  const to=+word.dataset.lyricWord;
@@ -1559,9 +1560,9 @@ $('lyricsLiveText').addEventListener('pointermove',event=>{
 $('lyricsLiveText').addEventListener('pointerup',()=>{
  if(!lyricWordDrag)return;
  const d=lyricWordDrag;lyricWordDrag=null;
- if(d.moved)return;
+ if(d.moved||d.key!==live.lyricsKey||d.index!==live.index||d.text!==live.slides[live.index]?.text)return;
  const cur=live.textHighlight;   // single-word tap toggles off when that word alone is marked
- if(cur&&cur.key===live.lyricsKey&&cur.index===live.index&&cur.from===cur.to&&cur.from===d.from)pushLive({textHighlight:null});
+ if(d.wasMarked&&cur&&cur.key===live.lyricsKey&&cur.index===live.index&&cur.from===cur.to&&cur.from===d.from)pushLive({textHighlight:null});
 });
 $('lyricsLiveText').addEventListener('pointercancel',()=>{lyricWordDrag=null;});
 function applyLyricsSections(sections){lyricsHistory();$('songLyrics').value=LY.serialize(sections);lyricsOrder=sections.map((_,i)=>i);updateSongSlidesPreview();rememberLyricsDraft();$('lyricsStatus').textContent='Slides updated; song order reset to match. Undo restores the previous version.';}
@@ -2339,11 +2340,12 @@ function showLocalPanel() {
 }
 $('btnInstallApp').addEventListener('click', async () => {
   if (!installEvent) return;
+  const platform=detectPlatform();
   installEvent.prompt();
   try {
     const choice = await installEvent.userChoice;
     if (choice && choice.outcome === 'accepted') {
-      $('localDetect').innerHTML = '✓ Installed. From now on KOGG opens like any app on <b>' + pl.name + '</b> — full-screen, offline, no tab needed.';
+      $('localDetect').innerHTML = '✓ Installed. From now on KOGG opens like any app on <b>' + platform.name + '</b> — full-screen, offline, no tab needed.';
       $('installNative').hidden = true;
     }
   } catch {}
@@ -2566,22 +2568,22 @@ async function placeOutputOnScreens(showNote) {
   // Coordinates work even when screen objects are recreated by the browser.
   const others = outputOtherScreens(outputScreensDetails);
   if (!others.length) {
+    for(const popup of popups.slice(1)){try{popup.close?.();}catch{}}displayWindows=[];if(outputPlacedScreens.has(popups[0])&&outputPlacedScreens.get(popups[0])!==screenKey(outputScreensDetails.currentScreen)){placePopupOnScreen(popups[0],outputScreensDetails.currentScreen,false);outputPlacedScreens.set(popups[0],screenKey(outputScreensDetails.currentScreen));}
     outputLastPlacement = '';
     if (showNote) setOutputStatus('Output open — waiting for an extended screen; choose Extend in your computer display settings');
     return;
   }
-  const primary = pickPreferredScreen(others);
-  const targets = [primary, ...others.filter(s => s !== primary)];
-  popups.forEach((popup, i) => {
-    const screen = targets[i % targets.length];
-    const key = screenKey(screen);
-    // Unchanged screens must not be moved again — that would drop fullscreen.
-    if (outputPlacedScreens.get(popup) === key) return;
-    placePopupOnScreen(popup, screen);
-    outputPlacedScreens.set(popup, key);
-  });
-  outputLastPlacement = screenKey(primary);
-  if (showNote) setOutputStatus('Output placed on extended screen — if not fullscreen, click it once; Esc exits');
+  const settings=LS.get(K.settings,{}),remembered=settings.outputScreen;
+  const chosen=remembered&&outputScreensDetails.screens.find(s=>s.left===remembered.left&&s.top===remembered.top);
+  const primary=(!settings.outputAllScreens&&chosen)||pickPreferredScreen(others);
+  const targets=settings.outputAllScreens?[primary,...others.filter(s=>s!==primary)]:[primary];
+  // Retire surplus outputs instead of stacking several windows on one screen.
+  for(const popup of popups.slice(targets.length)){try{popup.close?.();}catch{}outputPlacedScreens.delete(popup);}
+  displayWindows=displayWindows.filter(w=>w&&!w.closed&&popups.indexOf(w)<targets.length);
+  popups.slice(0,targets.length).forEach((popup,i)=>{const screen=targets[i],key=screenKey(screen);if(outputPlacedScreens.get(popup)===key)return;const here=screen.left===outputScreensDetails.currentScreen.left&&screen.top===outputScreensDetails.currentScreen.top;placePopupOnScreen(popup,screen,!here);outputPlacedScreens.set(popup,key);});
+  const here=primary.left===outputScreensDetails.currentScreen.left&&primary.top===outputScreensDetails.currentScreen.top;
+  outputLastPlacement=here?'':screenKey(primary);
+  if (showNote) setOutputStatus(here?'Output open on this screen — windowed beside the console':'Output placed on extended screen — if not fullscreen, click it once; Esc exits');
 }
 function onOutputScreensChanged() {
   if (!outputScreensDetails) return;
@@ -2632,7 +2634,7 @@ function renderScreenPicker() {
     btn.append(name, tags);
     btn.addEventListener('click', async () => {
       const here = s.left === cur.left && s.top === cur.top;
-      LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { outputScreen: { left: s.left, top: s.top } }));
+      LS.set(K.settings, Object.assign(LS.get(K.settings, {}), { outputScreen: { left: s.left, top: s.top },outputAllScreens:false }));
       if (!displayWindow || displayWindow.closed) await openDisplayWindow();
       else {
         // Sending the output back to this screen keeps it as a normal window beside the console.
@@ -2643,12 +2645,14 @@ function renderScreenPicker() {
           ? 'Output moved back to this screen — it stays a normal window next to the console'
           : 'Output moved to ' + (s.label || 'Display ' + (i + 1)) + ' — if not fullscreen, click it once');
       }
+      displayWindows.forEach(popup=>{try{popup.close?.();}catch{}});displayWindows=[];
       renderScreenPicker();
     });
     list.appendChild(btn);
   });
 }
 $('btnAllScreens').addEventListener('click', async () => {
+  LS.set(K.settings,{...LS.get(K.settings,{}),outputAllScreens:true});
   $('screenPicker').hidden = true;
   try { if ('getScreenDetails' in window) hookOutputScreens(await window.getScreenDetails()); } catch {}
   if (!outputScreensDetails) { setOutputStatus('Automatic multi-screen output needs Chrome or Edge — open the output and drag it manually'); return; }

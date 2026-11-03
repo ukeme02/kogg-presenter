@@ -11,12 +11,12 @@ Audit baseline: dec9301. Separate tested commits; no database schema changes.
 | F06/F07 service themes | Fixed; shared item-aware presenter |
 | F08/F09 live sizing and screen-fill default | Fixed; active-theme controls, automatic maximum fit |
 | F12 temporary session output cleanup | Fixed; playback preserves session identity |
-| F05 output assignment | Pending |
-| F10 Lyrics tapping | Pending |
-| F11 conditional controls | Pending |
-| F13 install feedback | Pending |
-| F14 paragraph spacing | Pending |
-| F15 landing annotation | Pending |
+| F05 output assignment | Fixed; targeted checks |
+| F10 Lyrics tapping | Fixed; targeted checks |
+| F11 conditional controls | Fixed; targeted checks |
+| F13 install feedback | Fixed; targeted checks |
+| F14 paragraph spacing | Fixed; targeted checks |
+| F15 landing annotation | Fixed; targeted checks |
 
 Step 1: 176 checks. Sync baseline acceptance and stale-mode cancellation.
 Step 2: 179 checks. Repaired 1,863 KJV and 1,953 ASV verses; retained 66 books and 31,102 verses each. Updated files migrate by content hash; no mid-service worker activation.
@@ -24,3 +24,5 @@ Step 3: shared item-aware service playback, prepared themes, session cleanup and
 Step 4: 182 checks. Projection fills the usable area by default, with safe 4vw/4vh edges and reference space. Quick sizing changes fitted scale, with explicit Maximum fit feedback; manual sizing remains available.
 
 Run node scripts/update-asset-manifest.cjs before tests/deployment after cached-file edits. Physical hardware/two-account gates remain in the audit report.
+
+Step 5: surplus windows retire after hot-unplug; Lyrics taps toggle from pre-gesture state; hidden controls stay hidden; paragraph breaks are preserved; accepted installation feedback resolves the platform in scope; manual hero selection preserves knowledge emphasis.

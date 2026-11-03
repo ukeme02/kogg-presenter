@@ -208,7 +208,7 @@ And grace my fears relieved</textarea><button id="resetDemoLyrics" class="text-l
   function showHit(ref, text, where) {
     document.getElementById(where + 'Ref').textContent = ref;
     const output = document.getElementById(where + 'Text');
-    output.textContent = '“' + text + '”';
+    if(where==='proj'&&/^2 Corinthians 4:6(?: |$)/.test(ref))output.innerHTML=esc('“'+text+'”').replace(/\bknowledge\b/,'<mark class="whl">knowledge</mark>');else output.textContent = '“' + text + '”';
     output.classList.toggle('long-passage', text.length > 120);
   }
   const stripS = t => String(t).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/\s{2,}/g, ' ');

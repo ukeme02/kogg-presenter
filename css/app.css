@@ -1694,3 +1694,6 @@ body:not(.light) .brand{color:#fff}body:not(.light) .brand>.brand-symbol{content
   .notes-live-text{flex:1 1 0;min-height:0;max-height:none;}
   .notes-output .notes-actions{flex:0 0 auto;}
 }
+
+/* Conditional controls must remain hidden despite author flex/grid rules. */
+[hidden]{display:none!important}

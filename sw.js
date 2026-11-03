@@ -12,18 +12,18 @@ const ASSETS = [
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
-  "./": "49ccc47ad1f3bc5e969295332fc1367ba4dd0c264233d0890ce7e4de54bfb70a",
-  "./index.html": "49ccc47ad1f3bc5e969295332fc1367ba4dd0c264233d0890ce7e4de54bfb70a",
+  "./": "2dda1c2e4a13752ed12fc37a4e0e813922781b7d7e9fdfeee42877a4b25e3f12",
+  "./index.html": "2dda1c2e4a13752ed12fc37a4e0e813922781b7d7e9fdfeee42877a4b25e3f12",
   "./display.html": "61320fc552512d3ef7b32ca71c8505815617c5dbe7a432f4574921416761cd9e",
   "./landing.html": "69010846d9fe90dfa53133a861e03a107e5cdf4ba4a1056bd731b5158e880ad3",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
   "./css/app.css": "1ca80b042058f84b0623563c4681e5dd577989c197296ebd72846596f20caf73",
-  "./css/display.css": "8f5180229c276742858b38d5c0a2773a7b5aca85e07020deef5b06bcdbb51976",
+  "./css/display.css": "7889a2dcac9ecd4801a69e3103a44029dbd4f47d2752722f55691f5c2a250a74",
   "./css/landing.css": "a3607bd85ef87ab9aa980493a5c76fc9b04bfca37e93e0fce75eae4fc5147401",
   "./js/landing.js": "1284add4208bf7efa25bd391823476e81832713edc0dbdf2cbb7ea3e3ed03c39",
-  "./js/app.js": "f564ad5df75d01821ef1734e23ee12e8f1e3e5419701af404321ed854ce6901d",
-  "./js/display.js": "b8131cc687b8b8645572e6748aed3ff178b1bd9fcee43c1b1050ee639c2ca14e",
+  "./js/app.js": "037b3899d7b0761a70df4e4c0c6cb21a9cf9713d34ea64e2737632466e0c25e5",
+  "./js/display.js": "38a29ae7139d1fcd149ad206cf48115e009e67d276279105ff4b47546eb34e0f",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
   "./js/library.js": "7fc15fa8e4acb383c51ea76d0307ccc8c56622d06266353018bf99dd4f3a4f26",
   "./js/relay.js": "7fc7630eda8e0b65c780e995edfbef1e4d2ed7e9a29bfb367b351f1d87941f63",

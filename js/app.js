@@ -61,16 +61,17 @@ let outputIsConnected = false;
 let editingSongId = null;
 
 const DEFAULT_THEMES = [
-  { id: 't1', name: 'Black',       bg: '#000000',                                          bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
-  { id: 't2', name: 'Sunset',      bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
-  { id: 't3', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
-  { id: 't4', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, align: 'center', weight: '700' },
+  { id: 't1', name: 'Black',       bg: '#000000',                                          bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, fontScale:1, margin:4, lineHeight:1.18, align: 'center', weight: '700' },
+  { id: 't2', name: 'Sunset',      bg: 'linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)', bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, fontScale:1, margin:4, lineHeight:1.18, align: 'center', weight: '700' },
+  { id: 't3', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, fontScale:1, margin:4, lineHeight:1.18, align: 'center', weight: '700' },
+  { id: 't4', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, fontScale:1, margin:4, lineHeight:1.18, align: 'center', weight: '700' },
 ];
 if (!themes || !themes.length) { themes = DEFAULT_THEMES; LS.set(K.themes, themes); }
 // migrate older saved themes to the new default scripture font (only untouched defaults)
 const DEFAULT_FONT = "'Nunito Sans Expanded', Georgia, serif";
 themes = themes.map(t => {
   t = Object.assign({ align: 'center', weight: '400' }, t);
+  if(t.fillScreen===undefined){t.fillScreen=true;t.fontScale=1;if(t.fontSize===7)t.fontSize=15;if(t.margin===undefined||t.margin===8)t.margin=4;if(t.lineHeight===undefined||t.lineHeight===1.35)t.lineHeight=1.18;}
   if (t.font === 'Georgia, serif') t.font = DEFAULT_FONT;
   if (t.weight === undefined) t.weight = '700';
   // the default theme (t1) was Sunset until Oct 2026 — switch untouched copies to Black
@@ -1771,7 +1772,7 @@ function renderThemesTab() {
   $('themeSelect').value = currentThemeId;
   loadThemeForm();
 }
-const themeControlDefaults={themeVertical:['vertical','center'],themeLineHeight:['lineHeight',1.35],themeMargin:['margin',8],themeSpacing:['spacing',0],themeImageFit:['imageFit','cover'],themeDim:['dim',0],themeLabelSize:['labelSize',3],themeShowLabel:['showLabel',true],themeShadow:['shadow',true],themeAutoGrow:['autoGrow',true],themeHlColor:['hlColor','#ffd83d']};
+const themeControlDefaults={themeVertical:['vertical','center'],themeLineHeight:['lineHeight',1.18],themeMargin:['margin',4],themeSpacing:['spacing',0],themeImageFit:['imageFit','cover'],themeDim:['dim',0],themeLabelSize:['labelSize',3],themeShowLabel:['showLabel',true],themeShadow:['shadow',true],themeFillScreen:['fillScreen',true],themeHlColor:['hlColor','#ffd83d']};
 let themePreviewToken=0;
 function themeNumber(value,fallback,min,max){const n=Number(value);return value!==''&&Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;}
 function loadThemeForm() {
@@ -1781,9 +1782,9 @@ function loadThemeForm() {
  Object.entries(themeControlDefaults).forEach(([id,[key,fallback]])=>{if(typeof fallback==='boolean')$(id).checked=t[key]!==false;else $(id).value=t[key]??fallback;});
  updateThemePreview();
 }
-function readThemeForm(){const t={...themeById($('themeSelect').value)};t.name=$('themeName').value.trim()||t.name;t.textColor=$('themeTextColor').value;t.fontSize=themeNumber($('themeFontSize').value,7,3,15);t.font=$('themeFont').value||DEFAULT_FONT;t.align=$('themeAlign').value||'center';t.weight=$('themeWeight').value||'700';
+function readThemeForm(){const t={...themeById($('themeSelect').value)};t.name=$('themeName').value.trim()||t.name;t.textColor=$('themeTextColor').value;t.fontSize=themeNumber($('themeFontSize').value,15,3,60);t.font=$('themeFont').value||DEFAULT_FONT;t.align=$('themeAlign').value||'center';t.weight=$('themeWeight').value||'700';
  Object.entries(themeControlDefaults).forEach(([id,[key,fallback]])=>{t[key]=typeof fallback==='boolean'?$(id).checked:$(id).value;});
- t.lineHeight=themeNumber(t.lineHeight,1.35,1,2);t.margin=themeNumber(t.margin,8,2,18);t.spacing=themeNumber(t.spacing,0,0,.15);t.dim=themeNumber(t.dim,0,0,100);t.labelSize=themeNumber(t.labelSize,3,1.5,5);
+ t.lineHeight=themeNumber(t.lineHeight,1.18,1,2);t.margin=themeNumber(t.margin,4,2,18);t.spacing=themeNumber(t.spacing,0,0,.15);t.dim=themeNumber(t.dim,0,0,100);t.labelSize=themeNumber(t.labelSize,3,1.5,5);
  if($('themeBg').value!=='image'){t.bg=$('themeBg').value;t.bgImage='';delete t.bgImageId;}return t;
 }
 async function updateThemePreview(){const token=++themePreviewToken,t=readThemeForm();$('themeDimValue').textContent=t.dim+'%';let src=t.bgImage||'';if(t.bgImageId&&window.KOGGAssets){try{src=await window.KOGGAssets.get(t.bgImageId)||'';}catch{src='';}}if(token!==themePreviewToken)return;
@@ -1795,6 +1796,7 @@ function saveThemeForm(){const t=readThemeForm();if($('themeBg').value==='image'
 // Decode and resize uploads before storing, preserving transparent logo pixels.
 function readPresentationImage(file,logo=false){return new Promise((resolve,reject)=>{if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)||file.size>12*1024*1024){reject(new Error('Choose a PNG, JPEG, WebP or GIF image under 12 MB.'));return;}const reader=new FileReader();reader.onerror=()=>reject(new Error('Could not read the image.'));reader.onload=()=>{const image=new Image();image.onerror=()=>reject(new Error('This image could not be opened. Try another file.'));image.onload=()=>{try{const scale=Math.min(1,(logo?1600:2560)/Math.max(image.naturalWidth,image.naturalHeight));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL(logo?'image/png':'image/jpeg',.88));}catch{reject(new Error('Could not prepare this image.'));}};image.src=reader.result;};reader.readAsDataURL(file);});}
 $('themeSelect').addEventListener('change',loadThemeForm);
+$('themeFontSize').addEventListener('input',()=>{$('themeFillScreen').checked=false;});
 ['themeName','themeTextColor','themeFontSize','themeFont','themeAlign','themeWeight','themeBg',...Object.keys(themeControlDefaults)].forEach(id=>$(id).addEventListener('input',updateThemePreview));
 let themeUploadToken=0;
 $('themeBg').addEventListener('input',()=>{themeUploadToken++;});
@@ -1805,7 +1807,7 @@ $('themeBgImage').addEventListener('change',async()=>{const file=$('themeBgImage
 $('btnClearThemeImage').addEventListener('click',()=>{themeUploadToken++;const t=themeById($('themeSelect').value);t.bgImage='';delete t.bgImageId;$('themeBg').value='#000000';themeSave();markDirty();updateThemePreview();$('themeStatus').textContent='Image removed. Click Apply to Live to use the selected background.';});
 $('btnNewTheme').addEventListener('click', () => {
   const t = { id: uid(), name: 'New Theme', bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
-              bgImage: '', textColor: '#ffffff', font: DEFAULT_FONT, fontSize: 7, align: 'center', weight: '700' };
+              bgImage: '', textColor: '#ffffff', font: DEFAULT_FONT, fontSize: 15, fillScreen:true, fontScale:1, margin:4, lineHeight:1.18, align: 'center', weight: '700' };
   themes.push(t);
   LS.set(K.themes, themes);
   currentThemeId = t.id;
@@ -2823,11 +2825,9 @@ function patchTheme(patch) {
   LS.set(K.themes, themes);
   applyEmphasisColor();pushLive({ themeId:id });
 }
-function quickFontSize(dir, flashBtn) {
-  const t = themeById(activeThemeId());
-  const size = Math.max(3, Math.min(15, (+t.fontSize || 7) + dir * 0.5));
-  patchTheme({ fontSize: size });
-  if (flashBtn) flash(flashBtn, dir > 0 ? `A+ ${size}` : `A− ${size}`);
+function quickFontSize(dir,flashBtn){const t=themeById(activeThemeId());
+ if(t.fillScreen!==false){const current=themeNumber(t.fontScale,1,.2,1),scale=Math.max(.2,Math.min(1,Math.round((current+dir*.05)*100)/100));if(scale!==current)patchTheme({fontScale:scale,fillScreen:true});if(flashBtn)flash(flashBtn,scale===1?'Maximum fit':Math.round(scale*100)+'% fit');return;}
+ const size=Math.max(3,Math.min(60,(+t.fontSize||15)+dir*.5));patchTheme({fontSize:size});if(flashBtn)flash(flashBtn,(dir>0?'A+ ':'A− ')+size);
 }
 function quickCycleAlign(flashBtn) {
   const t = themeById(activeThemeId());

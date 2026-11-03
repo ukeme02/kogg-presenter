@@ -190,3 +190,6 @@ body.overlay #screen { background: transparent !important; }
 .notes-bullet-list{margin:0;padding-left:1.25em;list-style:disc}.notes-bullet-list li{padding-left:.18em;margin:.14em 0}
 
 #logoScreen.logo-combination{gap:1vw}#logoScreen.logo-combination #logoSvg,#logoScreen.logo-mark #logoSvg{color:#fff}#logoScreen{color:#fff!important}#logoScreen.logo-combination .output-kogg-wordmark{width:32vw;height:9vw}#logoScreen.logo-combination #logoSvg{width:25vh;height:25vh}#logoScreen.logo-combination #logoName{letter-spacing:0}
+
+/* Projection defaults reserve a small safe edge and the reference line. */
+#slideText{height:90vh;max-height:90vh;padding:4vh 4vw;line-height:1.18}

@@ -14,7 +14,7 @@ function plain(s) { return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/
 function themeById(themes, id) { return themes.find(t => t.id === id) || themes[0]; }
 function getThemes() {
   try { const t = JSON.parse(localStorage.getItem('cp_themes')); if (t && t.length) return t; } catch {}
-  return [{ id: 't1', name: 'Black', bg: '#000000', bgImage: '', textColor: '#fff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 7, weight: '700' }];
+  return [{ id: 't1', name: 'Black', bg: '#000000', bgImage: '', textColor: '#fff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, margin:4, lineHeight:1.18, weight: '700' }];
 }
 function getLive() {
   try { return JSON.parse(localStorage.getItem('cp_live')) || { mode: 'blank', slides: [], index: 0 }; }
@@ -65,9 +65,9 @@ function applyTheme(state) {
   textEl.style.fontSize = t.fontSize + 'vh';
   textEl.style.textAlign = t.align || 'center';
   textEl.style.fontWeight = t.weight || '700';
-  textEl.style.lineHeight=displayNumber(t.lineHeight,1.35,1,2);
+  textEl.style.lineHeight=displayNumber(t.lineHeight,1.18,1,2);
   textEl.style.letterSpacing=displayNumber(t.spacing,0,0,.15)+'em';
-  textEl.style.padding=`6vh ${displayNumber(t.margin,8,2,18)}vw`;
+  textEl.style.padding=`4vh ${displayNumber(t.margin,4,2,18)}vw`;
   textEl.style.alignItems=t.vertical==='top'?'flex-start':t.vertical==='bottom'?'flex-end':'center';
   textEl.style.textShadow=t.shadow===false?'none':'0 2px 10px rgba(0,0,0,.55)';
   labelEl.style.fontSize=displayNumber(t.labelSize,3,1.5,5)+'vh';
@@ -75,15 +75,14 @@ function applyTheme(state) {
   return t;
 }
 
-function fitText(enlargeScripture = false) {
+function fitText(enlargeScripture = false, fillScreen = true, scale = 1) {
   if (textEl.style.display === 'none') return;
   const style=getComputedStyle(textEl);
   const base = parseFloat(style.fontSize) || 24;
-  // Short scripture can fill more of the output; lyrics retain their selected size.
-  const maxPossible = window.innerHeight * 0.12;
-  const maximum = enlargeScripture ? Math.max(base,Math.min(base*1.6,maxPossible)) : base;
+  // All content maximizes the usable area by default; manual mode keeps its ceiling.
   const availableHeight=textEl.clientHeight-(parseFloat(style.paddingTop)||0)-(parseFloat(style.paddingBottom)||0);
   const availableWidth=textEl.clientWidth-(parseFloat(style.paddingLeft)||0)-(parseFloat(style.paddingRight)||0);
+  const maximum=fillScreen?Math.max(base,availableHeight):base;
   let low = 8, high = Math.max(8, maximum);
   // Ensure low <= high for binary search to work correctly
   if (low > high) high = low;
@@ -93,7 +92,7 @@ function fitText(enlargeScripture = false) {
     textEl.style.fontSize = size + 'px';
     if (fits()) low = size; else high = size;
   }
-  textEl.style.fontSize = low + 'px';
+  textEl.style.fontSize = (low * (Number.isFinite(Number(scale))?Math.max(.2,Math.min(1,Number(scale))):1)) + 'px';
 }
 
 function render(state) {
@@ -116,7 +115,7 @@ function render(state) {
       if(slide.bullets)textEl.style.textAlign='left';   // always clean text — numbers live only in the operator preview
       labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : '');
       textEl.style.fontSize = t.fontSize + 'vh';
-      requestAnimationFrame(()=>fitText(t.autoGrow!==false && (!!state.scripture || / \d+:\d+/.test(slide.label || ''))));
+      requestAnimationFrame(()=>fitText(false,t.fillScreen!==false,displayNumber(t.fontScale,1,.2,1)));
     }
   } else if (!OVERLAY) {
     applyBackdrops(state);

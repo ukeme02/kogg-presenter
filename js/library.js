@@ -41,7 +41,7 @@
       if (settings.mode !== undefined && !['','base','local','sync'].includes(settings.mode)) fail('Invalid work mode');
       if (settings.verseMode !== undefined && !['verse','range','chapter'].includes(settings.verseMode)) fail('Invalid verse mode');
       for (const key of ['dockOrder','hiddenDocks']) if (settings[key] !== undefined && (!Array.isArray(settings[key]) || !settings[key].every(text))) fail('Invalid setting: ' + key);
-      for (const key of ['fpPos','fePos']) if (settings[key] !== undefined && (!settings[key] || !Number.isFinite(settings[key].x) || !Number.isFinite(settings[key].y))) fail('Invalid setting: ' + key);
+      for (const key of ['fpPos','fePos','explorerPos']) if (settings[key] !== undefined && (!settings[key] || !Number.isFinite(settings[key].x) || !Number.isFinite(settings[key].y))) fail('Invalid setting: ' + key);
       if (settings.dockSizes !== undefined && (!settings.dockSizes || typeof settings.dockSizes !== 'object' || Array.isArray(settings.dockSizes) || !Object.values(settings.dockSizes).every(v => Array.isArray(v) && v.length === 2 && v.every(n => Number.isFinite(n) && n > 0)))) fail('Invalid dock sizes');
       if (settings.paneHeights !== undefined && (!settings.paneHeights || typeof settings.paneHeights !== 'object' || Array.isArray(settings.paneHeights) || !Object.values(settings.paneHeights).every(n => Number.isFinite(n) && n > 0))) fail('Invalid pane heights');
       if (d.settings.customVersions !== undefined && (!Array.isArray(d.settings.customVersions) || !d.settings.customVersions.every(v => v && text(v.name) && text(v.assetId)))) fail('Invalid custom versions');

@@ -26,3 +26,5 @@ Step 4: 182 checks. Projection fills the usable area by default, with safe 4vw/4
 Run node scripts/update-asset-manifest.cjs before tests/deployment after cached-file edits. Physical hardware/two-account gates remain in the audit report.
 
 Step 5: surplus windows retire after hot-unplug; Lyrics taps toggle from pre-gesture state; hidden controls stay hidden; paragraph breaks are preserved; accepted installation feedback resolves the platform in scope; manual hero selection preserves knowledge emphasis.
+
+Step 6: Explorer is now the app quick-settings launcher. It opens circular size, alignment, docks, voice, theme, lock and mode controls; it is draggable, closes outside/Escape, and indicates active microphone listening. It starts closed unless the user explicitly saved it open. Landing features include automatic full-screen fitting and Explorer settings.

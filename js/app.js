@@ -2810,7 +2810,7 @@ function createMicrophoneController(Recognition,handlers){
  return {toggle,stop};
 }
 const micButtons={search:['btnVoiceSearch'],jump:['btnVoiceJump'],control:['feVoice','btnVoice2']};
-function microphoneState(kind,listening){voiceOn=kind==='control';Object.entries(micButtons).forEach(([key,ids])=>ids.forEach(id=>{const btn=$(id),on=key===kind&&listening;btn.classList.add('mic-toggle');btn.classList.toggle('mic-listening',on);btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(key===kind));btn.setAttribute('aria-label',key===kind?'Stop microphone':key==='jump'?'Speak a scripture reference':key==='search'?'Speak Bible search words':'Start voice commands');btn.title=key===kind?(listening?'Listening — click to close microphone':'Opening microphone — click to cancel'):'Click to open microphone';}));}
+function microphoneState(kind,listening){voiceOn=kind==='control';$('quickExplorer').classList.toggle('mic-active',!!kind&&listening);Object.entries(micButtons).forEach(([key,ids])=>ids.forEach(id=>{const btn=$(id),on=key===kind&&listening;btn.classList.add('mic-toggle');btn.classList.toggle('mic-listening',on);btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(key===kind));btn.setAttribute('aria-label',key===kind?'Stop microphone':key==='jump'?'Speak a scripture reference':key==='search'?'Speak Bible search words':'Start voice commands');btn.title=key===kind?(listening?'Listening — click to close microphone':'Opening microphone — click to cancel'):'Click to open microphone';}));}
 const microphones=createMicrophoneController(SR,{language:navigator.language,state:microphoneState,error:(kind,error)=>flash($(micButtons[kind][0]),error==='unsupported'?'Voice unavailable in this browser':microphoneError(error)),result:(kind,raw)=>{
  if(kind==='control'){processVoice(raw);return;}if(kind==='search'){$('bibleSearch').value=raw.trim();renderBibleSearch();return;}
  const text=raw.trim().toLowerCase().replace(/^(read|go(?:\s+to)?|show|open|find|turn to)\s+/,'');const words=text.split(/\s+/).filter(w=>!['and','chapter','verse','verses','please'].includes(w));$('bookSearch').value=numberize(words).join(' ');commitJump($('bookSearch').value);renderBookChips($('bookSearch').value);renderBookGhost();
@@ -2830,7 +2830,7 @@ function patchTheme(patch) {
   applyEmphasisColor();pushLive({ themeId:id });
 }
 function quickFontSize(dir,flashBtn){const t=themeById(activeThemeId());
- if(t.fillScreen!==false){const current=themeNumber(t.fontScale,1,.2,1),scale=Math.max(.2,Math.min(1,Math.round((current+dir*.05)*100)/100));if(scale!==current)patchTheme({fontScale:scale,fillScreen:true});if(flashBtn)flash(flashBtn,scale===1?'Maximum fit':Math.round(scale*100)+'% fit');return;}
+ if(t.fillScreen!==false){const current=themeNumber(t.fontScale,1,.2,1),scale=Math.max(.2,Math.min(1,Math.round((current+dir*.05)*100)/100));if(scale!==current)patchTheme({fontScale:scale,fillScreen:true});if(flashBtn){flashBtn.title=scale===1?'Maximum fit — fills the available screen':'Live text: '+Math.round(scale*100)+'% of maximum fit';flash(flashBtn,scale===1?'Max fit':Math.round(scale*100)+'%');}return;}
  const size=Math.max(3,Math.min(60,(+t.fontSize||15)+dir*.5));patchTheme({fontSize:size});if(flashBtn)flash(flashBtn,(dir>0?'A+ ':'A− ')+size);
 }
 function quickCycleAlign(flashBtn) {
@@ -2844,61 +2844,19 @@ $('feSizeDown').addEventListener('click', () => quickFontSize(-1, $('feSizeDown'
 $('feAlign').addEventListener('click', () => quickCycleAlign($('feAlign')));
 
 /* floating quick edit — draggable, closable, toggle from ⋯ menu */
-function lsShowFloatEdit() { return LS.get(K.settings, {}).showFloatEdit !== false; }
-function applyFloatEdit() {
-  const el = $('floatEdit');
-  el.hidden = !lsShowFloatEdit();
-  const pos = LS.get(K.settings, {}).fePos;
-  if (pos) {
-    el.style.left = Math.max(4, Math.min(window.innerWidth - 60, pos.x)) + 'px';
-    el.style.top = Math.max(4, Math.min(window.innerHeight - 40, pos.y)) + 'px';
-    el.style.right = 'auto';
-    el.style.bottom = 'auto';
-  }
-}
-(function initFloatEdit() {
-  const grip = $('floatEdit').querySelector('.fe-head .grip');
-  grip.addEventListener('pointerdown', e => {
-    e.preventDefault();
-    const r = $('floatEdit').getBoundingClientRect();
-    const dx = e.clientX - r.left, dy = e.clientY - r.top;
-    let moved = false;
-    $('floatEdit').classList.add('dragging');
-    const move = ev => {
-      moved = true;
-      const x = Math.max(4, Math.min(window.innerWidth - 60, ev.clientX - dx));
-      const y = Math.max(4, Math.min(window.innerHeight - 40, ev.clientY - dy));
-      $('floatEdit').style.left = x + 'px';
-      $('floatEdit').style.top = y + 'px';
-      $('floatEdit').style.right = 'auto';
-      $('floatEdit').style.bottom = 'auto';
-    };
-    const up = () => {
-      document.removeEventListener('pointermove', move);
-      document.removeEventListener('pointerup', up);
-      $('floatEdit').classList.remove('dragging');
-      if (moved) {
-        const s = LS.get(K.settings, {});
-        s.fePos = { x: Math.round(parseFloat($('floatEdit').style.left) || 0), y: Math.round(parseFloat($('floatEdit').style.top) || 0) };
-        LS.set(K.settings, s);
-      }
-    };
-    document.addEventListener('pointermove', move);
-    document.addEventListener('pointerup', up);
-  });
-  $('feClose').addEventListener('click', () => {
-    const s = LS.get(K.settings, {});
-    s.showFloatEdit = false;
-    LS.set(K.settings, s);
-    applyFloatEdit();
-  });
-  $('btnFloatEditToggle').addEventListener('click', () => {
-    const s = LS.get(K.settings, {});
-    s.showFloatEdit = !lsShowFloatEdit();
-    LS.set(K.settings, s);
-    applyFloatEdit();
-    flash($('btnFloatEditToggle'), s.showFloatEdit ? 'Quick edit ON ✓' : 'Quick edit off');
-  });
+function lsShowFloatEdit(){return LS.get(K.settings,{}).showFloatEdit===true;}
+function positionExplorerPanel(){const shell=$('quickExplorer'),panel=$('floatEdit'),r=shell.getBoundingClientRect();panel.style.left=r.left<245?'0':'auto';panel.style.right=r.left<245?'auto':'0';panel.style.top=r.top<310?'76px':'auto';panel.style.bottom=r.top<310?'auto':'76px';}
+function applyFloatEdit(){const panel=$('floatEdit'),shell=$('quickExplorer'),on=lsShowFloatEdit();panel.hidden=!on;shell.classList.toggle('is-open',on);$('appExplorer').setAttribute('aria-expanded',String(on));const pos=LS.get(K.settings,{}).explorerPos;if(pos){shell.style.left=Math.max(8,Math.min(window.innerWidth-68,pos.x))+'px';shell.style.top=Math.max(8,Math.min(window.innerHeight-68,pos.y))+'px';shell.style.right='auto';shell.style.bottom='auto';}positionExplorerPanel();}
+function toggleExplorer(force){const settings=LS.get(K.settings,{});settings.showFloatEdit=typeof force==='boolean'?force:!lsShowFloatEdit();LS.set(K.settings,settings);applyFloatEdit();}
+(function initAppExplorer(){const shell=$('quickExplorer'),button=$('appExplorer');let drag=null,dragged=false;
+ button.addEventListener('pointerdown',event=>{if(event.button!==0)return;const r=shell.getBoundingClientRect();drag={x:event.clientX,y:event.clientY,left:r.left,top:r.top};dragged=false;try{button.setPointerCapture(event.pointerId);}catch{}});
+ button.addEventListener('pointermove',event=>{if(!drag)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>6)dragged=true;if(!dragged)return;event.preventDefault();shell.style.left=Math.max(8,Math.min(window.innerWidth-68,drag.left+dx))+'px';shell.style.top=Math.max(8,Math.min(window.innerHeight-68,drag.top+dy))+'px';shell.style.right='auto';shell.style.bottom='auto';positionExplorerPanel();});
+ function finish(){if(drag&&dragged){const r=shell.getBoundingClientRect();LS.set(K.settings,{...LS.get(K.settings,{}),explorerPos:{x:r.left,y:r.top}});}drag=null;}
+ button.addEventListener('pointerup',finish);button.addEventListener('pointercancel',()=>{finish();dragged=false;});
+ button.addEventListener('click',()=>{if(dragged){dragged=false;return;}toggleExplorer();});
+ $('feClose').addEventListener('click',()=>toggleExplorer(false));$('btnFloatEditToggle').addEventListener('click',()=>toggleExplorer());
+ document.addEventListener('pointerdown',event=>{if(lsShowFloatEdit()&&!shell.contains(event.target)&&event.target!==$('btnFloatEditToggle'))toggleExplorer(false);});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&lsShowFloatEdit()){toggleExplorer(false);button.focus();}});window.addEventListener('resize',applyFloatEdit);applyFloatEdit();
 })();
 /* Light / dark operator mode */
 function applyOperatorTheme(light) {

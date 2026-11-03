@@ -33,7 +33,7 @@
       <button id="btnCloseOutput" type="button" class="screen-all screen-close">Close output window</button>
       <p class="hint">Browsers need one click on the output before it can go fullscreen — after that it stays.</p>
     </div>
-    <button id="btnFloatEditToggle" class="ctrl" title="Show/hide the floating console — text size, alignment, voice, theme, lock, work mode, docks">✏️</button>
+    <button id="btnFloatEditToggle" class="ctrl" title="Open quick settings Explorer — text size, alignment, voice, theme, layout and mode">✏️</button>
   </div>
 </header>
 
@@ -485,14 +485,15 @@
 
 <!-- Floating quick edit / console — the ⋯ menu contents as a floating
      window, stays open while you switch tabs; toggle from the ⋯ menu -->
-<div id="floatEdit" hidden>
+<div id="quickExplorer"><button id="appExplorer" aria-label="Open quick settings Explorer; drag to move" aria-expanded="false" aria-controls="floatEdit"><img src="icons/kogg-symbol-white.svg" alt=""></button>
+<div id="floatEdit" hidden role="group" aria-label="Quick settings">
   <div class="fe-head">
-    <span class="grip" title="Drag to move">✏️ Quick edit</span>
+    <span class="grip" title="Drag to move">Quick settings</span>
     <button id="feClose" title="Close — bring it back from the ⋯ menu">✕</button>
   </div>
   <div class="fe-body">
-    <button id="feSizeDown" title="Smaller text (current theme)">A−</button>
-    <button id="feSizeUp" title="Bigger text (current theme)">A+</button>
+    <button id="feSizeDown" title="Reduce live text size">A−</button>
+    <button id="feSizeUp" title="Increase live text size">A+</button>
     <button id="feAlign" title="Toggle text alignment">⬌</button>
     <button id="feDocks" title="Docks on screen — show/hide docks, mirror, switcher, reset">🧩</button>
     <button id="feVoice" title="Voice control — navigate by speaking (Chrome/Edge, online)">🎤</button>
@@ -502,6 +503,8 @@
   </div>
 
   <a id="feAbout" href="landing.html" target="_blank" title="About / download page">About &amp; download ↗</a>
+</div>
+
 </div>
 
 <!-- Work-mode start gate — shows until the operator picks a mode -->

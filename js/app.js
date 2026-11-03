@@ -2089,27 +2089,11 @@ function scheduleSync() {
   syncTimer = setTimeout(autoSync, 15000);
   refreshSyncBadge();
 }
-let syncInFlight = false;
+let syncInFlight = false, cloudGeneration=0, authRequestGeneration=0, activeCloudTask=null;
+function invalidateCloudWork(){cloudGeneration++;authRequestGeneration++;activeCloudTask=null;syncInFlight=false;clearTimeout(syncTimer);stopLibraryRealtime();}
+function cloudTicket(){const generation=cloudGeneration,id=window._koggUser?.id;return ()=>cloudEnabled()&&generation===cloudGeneration&&window._koggUser?.id===id;}
 let syncError = '';
-async function autoSync() {
-  if (!cloudEnabled() || !window.KOGGSync?.configured || !window._koggUser || !navigator.onLine || !syncDirty() || syncInFlight) { refreshSyncBadge(); return; }
-  syncInFlight = true;
-  const revision = LS.get(K.settings, {}).libraryRevision || 0;
-  try {
-    const data = await window.KOGGSync.push();
-    if (await applyCloudLibrary(data, revision)) clearDirty(revision);
-    syncError = '';
-  } catch (err) {
-    syncError = err.message;
-    // a cached profile plus an expired session must not keep pretending we are signed in
-    if (err.message === 'not-signed-in') {
-      window._koggUser = null;
-      LS.set('cp_cloud_enabled',false); LS.set('cp_account_profile',null);
-      syncError = ''; syncUI(); refreshModeChip();
-    }
-  }
-  finally { syncInFlight = false; refreshSyncBadge(); }
-}
+async function autoSync(){if(!cloudEnabled()||!window._koggUser||!navigator.onLine||!syncDirty()||syncInFlight){refreshSyncBadge();return;}return runCloud('push',true);}
 function clearDirty(expectedRevision) {
   const s = LS.get(K.settings, {});
   if (expectedRevision !== undefined && (s.libraryRevision || 0) !== expectedRevision) return;
@@ -2139,37 +2123,32 @@ function cloudEnabled() {
   // no matter whether a signed-in session still exists in the browser.
   return workMode()==='sync' && !!window.KOGGSync?.configured;
 }
-async function refreshUser() {
-  if(workMode()!=='sync'){window._koggUser=null;stopLibraryRealtime();syncUI();refreshModeChip();return;}
-  if(!navigator.onLine){window._koggUser=LS.get('cp_account_profile',null);syncUI();refreshModeChip();return;}
-  if(!cloudEnabled()){syncUI();refreshModeChip();return;}
-  try {
-    window._koggUser=await window.KOGGSync.currentUser();
-    if(window._koggUser){
-      LS.set('cp_cloud_enabled',true);
-      LS.set('cp_account_profile',{id:window._koggUser.id,email:window._koggUser.email});
-      startAuthObserver();syncError='';
-    } else {LS.set('cp_cloud_enabled',false);LS.set('cp_account_profile',null);}
-  } catch(err){window._koggUser=LS.get('cp_account_profile',null);syncError='Using local copy — '+err.message;}
-  syncUI();refreshModeChip();
-  if(window._koggUser && navigator.onLine && !syncError){
-    await pullCloud(true);
-    if(syncDirty())scheduleSync();
-  }
-  if(window._koggUser)startLibraryRealtime();else stopLibraryRealtime();
+async function refreshUser(){
+ const generation=cloudGeneration,request=++authRequestGeneration;
+ const current=()=>cloudEnabled()&&generation===cloudGeneration&&request===authRequestGeneration;
+ if(!cloudEnabled()){window._koggUser=null;stopLibraryRealtime();syncUI();refreshModeChip();return;}
+ if(!navigator.onLine){window._koggUser=LS.get('cp_account_profile',null);syncUI();refreshModeChip();return;}
+ try{const user=await window.KOGGSync.currentUser();if(!current())return;window._koggUser=user;
+  if(user){LS.set('cp_cloud_enabled',true);LS.set('cp_account_profile',{id:user.id,email:user.email});startAuthObserver();syncError='';}
+  else{LS.set('cp_cloud_enabled',false);LS.set('cp_account_profile',null);}
+ }catch(error){if(!current())return;window._koggUser=LS.get('cp_account_profile',null);syncError='Using local copy — '+error.message;}
+ if(!current())return;syncUI();refreshModeChip();
+ if(window._koggUser&&navigator.onLine&&!syncError){await pullCloud(true);if(!current())return;if(syncDirty())scheduleSync();}
+ if(current()&&window._koggUser)startLibraryRealtime();else if(current())stopLibraryRealtime();
 }
 /* While signed in, a change pushed by another device pulls itself in live
    (Supabase Realtime; degrades silently when the table isn't enabled). */
 let libraryRealtimeTimer = null;
 function startLibraryRealtime() {
-  if (!window._koggUser || !window.KOGGSync?.subscribe) return;
+  if (!cloudEnabled()||!window._koggUser || !window.KOGGSync?.subscribe) return;
+  const current=cloudTicket();
   window.KOGGSync.subscribe(payload => {
-    if (!window._koggUser || syncInFlight) return;
+    if (!current() || syncInFlight) return;
     const stamp = payload?.new?.updated_at || payload?.old?.updated_at;
     if (stamp && window.KOGGSync.isOwnWrite?.(window._koggUser.id, stamp)) return;   // our own push echoed back
     clearTimeout(libraryRealtimeTimer);
-    libraryRealtimeTimer = setTimeout(() => { if (window._koggUser && !syncInFlight && navigator.onLine) pullCloud(true); }, 1200);
-  }).catch(() => {});
+    libraryRealtimeTimer = setTimeout(() => { if (current() && !syncInFlight && navigator.onLine) pullCloud(true); }, 1200);
+  },{isCurrent:current}).catch(() => {});
 }
 function stopLibraryRealtime() { clearTimeout(libraryRealtimeTimer); try { window.KOGGSync?.unsubscribe?.(); } catch {} }
 $('btnShowPass').addEventListener('click', () => {
@@ -2213,6 +2192,7 @@ $('btnSignIn').addEventListener('click', async () => {
   } catch (err) { status.textContent = 'Sign in failed: ' + friendlyAuthError(err && err.message); }
 });
 $('btnSignOut').addEventListener('click', async () => {
+  invalidateCloudWork();
   try { await window.KOGGSync.signOut(); } catch (err) { alert('Sign out failed: ' + err.message); return; }
   clearTimeout(syncTimer); syncError = '';
   stopLibraryRealtime();
@@ -2220,13 +2200,16 @@ $('btnSignOut').addEventListener('click', async () => {
   LS.set('cp_cloud_enabled',false); LS.set('cp_account_profile',null);
   syncUI(); refreshModeChip();
 });
-async function applyCloudLibrary(raw, revision) {
-  if (!raw) return false;
+async function applyCloudLibrary(raw, revision, isCurrent=()=>true) {
+  const current=()=>isCurrent()&&(LS.get(K.settings,{}).libraryRevision||0)===revision;
+  if (!raw||!current()) return false;
   const data = window.KOGGLibrary.validate(raw);
   for (const [id, value] of Object.entries(data.assets || {})) {
+    if(!current())return false;
     if (!await window.KOGGAssets?.put(id, value)) throw new Error('Could not store synced image ' + id);
+    if(!current())return false;
   }
-  if ((LS.get(K.settings, {}).libraryRevision || 0) !== revision) return false;
+  if (!current()) return false;
   // Apply the library only after every write succeeds; preserve pending local status.
   const settings = Object.assign({}, LS.get(K.settings, {}), window.KOGGLibrary.portableSettings(data.settings || {}));
   const temporaryQueue=service.filter(item=>item.sessionOnly);
@@ -2244,29 +2227,20 @@ async function applyCloudLibrary(raw, revision) {
   refreshLogoStatus(); renderSongList(); renderPlans(); renderService(); renderThemesTab();
   return true;
 }
-async function pushCloud() {
-  if (syncInFlight) return;
-  const revision = LS.get(K.settings, {}).libraryRevision || 0;
-  syncInFlight = true;
-  try {
-    const data = await window.KOGGSync.push();
-    if (await applyCloudLibrary(data, revision)) clearDirty(revision);
-    syncError = ''; flash($('btnPushCloud'), 'Pushed ✓');
-  } catch (err) { syncError = err.message; alert('Push failed: ' + err.message); }
-  finally { syncInFlight = false; refreshSyncBadge(); }
+async function runCloud(direction,silent=false){
+ if(!cloudEnabled()||!window._koggUser||syncInFlight||!navigator.onLine)return false;
+ const ticket=cloudTicket(),job={};activeCloudTask=job;syncInFlight=true;
+ const current=()=>activeCloudTask===job&&ticket();const revision=LS.get(K.settings,{}).libraryRevision||0;
+ try{const data=await window.KOGGSync[direction]({isCurrent:current});if(!current())return false;
+  if(!await applyCloudLibrary(data,revision,current)){if(current()&&syncDirty())scheduleSync();return false;}
+  if(!current())return false;window.KOGGSync.accept?.(data);
+  if(direction==='push')clearDirty(revision);else if(syncDirty())scheduleSync();syncError='';
+  if(!silent)flash($(direction==='push'?'btnPushCloud':'btnPullCloud'),direction==='push'?'Pushed ✓':'Pulled ✓');return true;
+ }catch(error){if(!current()||error.name==='AbortError')return false;syncError=error.message;if(!silent)alert((direction==='push'?'Push':'Pull')+' failed: '+error.message);return false;}
+ finally{if(activeCloudTask===job){activeCloudTask=null;syncInFlight=false;refreshSyncBadge();}}
 }
-async function pullCloud(silent) {
-  const revision = LS.get(K.settings, {}).libraryRevision || 0;
-  try {
-    const data = await window.KOGGSync.pull();
-    if (!await applyCloudLibrary(data, revision)) return false;
-    syncError = '';
-    if (syncDirty()) scheduleSync();
-    if (!silent) flash($('btnPullCloud'), 'Pulled ✓');
-    return true;
-  } catch (err) { syncError = err.message; if (!silent) alert('Pull failed: ' + err.message); return false; }
-  finally { refreshSyncBadge(); }
-}
+async function pushCloud(){return runCloud('push');}
+async function pullCloud(silent){return runCloud('pull',silent);}
 window.addEventListener('online', () => { syncError = ''; scheduleSync(); refreshUser(); });
 window.addEventListener('offline', () => { refreshSyncBadge(); refreshModeChip(); });
 $('btnPushCloud').addEventListener('click', pushCloud);
@@ -2289,6 +2263,7 @@ function refreshModeChip() {
   if (typeof updateAddVersionsGate === 'function') updateAddVersionsGate();
 }
 function setWorkMode(m) {
+  invalidateCloudWork();
   const s = LS.get(K.settings, {});
   s.mode = m;
   LS.set(K.settings, s);
@@ -3297,7 +3272,7 @@ if (authObserved || !window.KOGGSync?.configured) return;
   window.KOGGSync.getClient().then(client => {
   client.auth.onAuthStateChange(event => {
     if (event === 'PASSWORD_RECOVERY') $('passwordRecovery').hidden = false;
-    if (event === 'SIGNED_OUT') { stopLibraryRealtime(); window._koggUser = null; LS.set('cp_cloud_enabled',false);LS.set('cp_account_profile',null);syncUI();refreshModeChip(); }
+    if (event === 'SIGNED_OUT') { invalidateCloudWork(); window._koggUser = null; LS.set('cp_cloud_enabled',false);LS.set('cp_account_profile',null);syncUI();refreshModeChip(); }
     if(event==='SIGNED_IN' || event==='TOKEN_REFRESHED')setTimeout(()=>refreshUser(),0);
   });
   if (new URLSearchParams(location.hash.slice(1)).get('type') === 'recovery') $('passwordRecovery').hidden = false;

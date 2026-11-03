@@ -49,24 +49,29 @@
   function remember(id,row) {
     const data = {...(row?.data || {})}; delete data.assets;
     localStorage.setItem(baseKey(id),JSON.stringify({data,revision:row?.updated_at || null}));
-    try { localStorage.setItem('cp_sync_stamp_' + id, row?.updated_at || ''); } catch {}
   }
+  // The merge base advances only after the operator accepts this exact result.
+  const pendingResults = new WeakMap();
+  function checkpoint(options={}) { if(options.isCurrent && !options.isCurrent()) { const error=new Error('Sync operation cancelled');error.name='AbortError';throw error; } }
+  function prepared(data,id,row,options) { pendingResults.set(data,{id,row,options});return data; }
+  function accept(data) { const pending=pendingResults.get(data);if(!pending)return false;checkpoint(pending.options);if(localStorage.getItem('cp_libraryOwner')!==pending.id)return false;remember(pending.id,pending.row);pendingResults.delete(data);return true; }
   // True when a realtime update echoes this device's own last write.
   function isOwnWrite(id,stamp) { return !!stamp && stamp === localStorage.getItem('cp_sync_stamp_' + id); }
   /* Live updates: while signed in, a change written by another device pulls
      automatically. Degrades silently when Realtime is not enabled for the table. */
-  let libraryChannel = null;
-  async function subscribe(onRemoteChange) {
-    const client = await getClient(), user = await currentUser();
+  let libraryChannel = null, subscriptionGeneration=0;
+  async function subscribe(onRemoteChange,options={}) {
+    unsubscribe();const generation=subscriptionGeneration;
+    const client = await getClient();checkpoint(options);const user = await currentUser();checkpoint(options);if(generation!==subscriptionGeneration)return;
     if (!user) throw new Error('not-signed-in');
-    unsubscribe();
     libraryChannel = client
       .channel('kogg-libraries-' + user.id)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'libraries', filter: 'user_id=eq.' + user.id },
-        payload => { try { onRemoteChange?.(payload); } catch {} });
+        payload => { if(generation!==subscriptionGeneration)return;try {checkpoint(options);onRemoteChange?.(payload); } catch {} });
     libraryChannel.subscribe();
   }
   function unsubscribe() {
+    subscriptionGeneration++;
     if (!libraryChannel) return;
     try { libraryChannel.unsubscribe(); } catch {}
     libraryChannel = null;
@@ -91,25 +96,24 @@
     if (error) throw error;
     return data;
   }
-  async function pull() {
-    const client = await getClient(), user = await currentUser();
+  async function pull(options={}) {
+    checkpoint(options);const client = await getClient();checkpoint(options);const user = await currentUser();checkpoint(options);
     if (!user) throw new Error('not-signed-in');
     verifyOwner(user.id);
-    const row = await readRow(client,user);
-    const local = await libraryPayload();
+    const row = await readRow(client,user);checkpoint(options);
+    const local = await libraryPayload();checkpoint(options);
     const merged = window.KOGGLibrary.merge(portable(base(user.id)?.data),local,portable(row?.data));
-    remember(user.id,row);
-    return merged;
+    return prepared(merged,user.id,row,options);
   }
-  async function push() {
+  async function push(options={}) {
     if (writing) throw new Error('A sync is already in progress.');
     writing = true;
     try {
-      const client = await getClient(), user = await currentUser();
+      checkpoint(options);const client = await getClient();checkpoint(options);const user = await currentUser();checkpoint(options);
       if (!user) throw new Error('not-signed-in');
     verifyOwner(user.id);
-      const row = await readRow(client,user);
-      const local = await libraryPayload();
+      const row = await readRow(client,user);checkpoint(options);
+      const local = await libraryPayload();checkpoint(options);
       const merged = window.KOGGLibrary.merge(portable(base(user.id)?.data),local,portable(row?.data));
       const stamp = new Date().toISOString();
       let response;
@@ -117,9 +121,10 @@
       else response = await client.from('libraries').insert({user_id:user.id,data:merged,updated_at:stamp}).select('updated_at').single();
       if (response.error) throw response.error;
       if (!response.data) throw new Error('The cloud library changed during sync. Retry to merge the latest version.');
-      remember(user.id,{data:merged,updated_at:response.data.updated_at});
-      return merged;
+      checkpoint(options);
+      try{localStorage.setItem('cp_sync_stamp_'+user.id,response.data.updated_at);}catch{}
+      return prepared(merged,user.id,{data:merged,updated_at:response.data.updated_at},options);
     } finally { writing = false; }
   }
-  window.KOGGSync = {configured,getClient,currentUser,signUp,signIn,signOut,resetPassword,updatePassword,push,pull,libraryPayload,subscribe,unsubscribe,isOwnWrite};
+  window.KOGGSync = {configured,getClient,currentUser,signUp,signIn,signOut,resetPassword,updatePassword,push,pull,libraryPayload,subscribe,unsubscribe,isOwnWrite,accept};
 })();

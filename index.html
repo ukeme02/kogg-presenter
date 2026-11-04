@@ -41,6 +41,7 @@
   <button class="tab active" data-tab="scripture">Scripture</button>
   <button class="tab" data-tab="songs">Lyrics</button>
   <button class="tab" data-tab="notes">Notes</button>
+  <button class="tab" data-tab="slides">Slides</button>
   <button class="tab" data-tab="service">Service</button>
   <button class="tab" data-tab="themes">Themes</button>
   <button class="tab" data-tab="tools">Tools</button>
@@ -218,6 +219,14 @@
   </section>
 
   <!-- SERVICE -->
+  <section id="tab-slides" class="tab-panel">
+    <div class="lyrics-toolbar"><b>Slides</b><span id="slidesStorageStatus"></span><button id="slidesAddService">+ All to Service</button></div>
+    <div class="title-deck">
+      <section class="card title-library"><h2>Order of service</h2><p class="hint">Select to design. Press ▶ to display.</p><div class="row"><select id="slidesPreset" aria-label="Service moment"></select><button id="slidesAdd">+ Add</button></div><div id="titleSlideList" class="title-slide-list"></div><div class="row"><button id="slidesUp" aria-label="Move selected slide up">↑ Move up</button><button id="slidesDown" aria-label="Move selected slide down">↓ Move down</button><button id="slidesDelete" class="danger">Delete</button></div></section>
+      <section class="card title-editor"><h2>Design this moment</h2><label>Slide text<textarea id="slidesTitle" rows="3" maxlength="240" spellcheck="true" autocorrect="on" placeholder="Opening Prayers"></textarea></label><label class="title-uniform"><input id="slidesUniform" type="checkbox" checked> Uniform slides</label><p id="slidesStyleHint" class="hint"></p><div class="title-controls"><label>Background<select id="slidesBackground"><option value="blue">Deep blue</option><option value="black">Black</option><option value="purple">Royal purple</option><option value="green">Emerald</option><option value="gold">Warm gold</option></select></label><label>Upload image<input id="slidesImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><button id="slidesRemoveImage">Remove image</button><label>Background darkening <output id="slidesDimValue">20%</output><input id="slidesDim" type="range" min="0" max="100" value="20"></label><label>Font<select id="slidesFont"></select></label><label>Text colour<input id="slidesColor" type="color" value="#ffffff"></label><label>Text size <output id="slidesSizeValue">16 vh</output><input id="slidesSize" type="range" min="3" max="60" step="0.5" value="16"></label><label><input id="slidesAutoFit" type="checkbox"> Maximise text to fit</label></div><p class="hint">Darkening adds a black overlay. Text always shrinks to fit; maximise lets it grow too.</p><p id="slidesStatus" class="hint" role="status">Changes stay in preview until you press Display.</p></section>
+      <section class="card title-output"><div class="row title-view-tabs"><button id="slidesViewDesign" aria-pressed="true">Design preview</button><button id="slidesViewLive" aria-pressed="false">Live output</button></div><div id="slidesDesignPane"><h2>Design preview</h2><div id="titleSlidePreview" class="title-screen"></div><div class="row"><button id="slidesDisplay" class="primary">▶ Display</button><button id="slidesOneService">+ Service</button></div></div><div id="slidesLivePane" hidden><h2>On the projector</h2><p id="titleLiveLabel" class="hint"></p><div id="titleSlideLive" class="lyrics-live-text"></div><div class="row"><button id="slidesPrev">◀ Previous</button><button id="slidesNext">Next ▶</button></div></div><p class="hint">Design preview is private. Display sends it to the room. Live output shows what is on screen now.</p></section>
+    </div>
+  </section>
   <section id="tab-service" class="tab-panel">
     <div class="service-deck">
       <div class="dock service-queue">
@@ -614,5 +623,7 @@
 <script src="js/lyrics-sources.js"></script>
 <script src="js/notes.js"></script>
 <script src="js/app.js"></script>
+<script src="js/slides.js"></script>
+<script src="js/slides-deck.js"></script>
 </body>
 </html>

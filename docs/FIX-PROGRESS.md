@@ -56,3 +56,17 @@ Browser verification: fresh Base installation, 2 Corinthians 4:6 at maximum fit,
 Projection proof: docs/repair-evidence-2026-11-03/projection-max-fit.jpg. The old functional audit remains the before-fix record. Hardware, browser-permission, provider-backed content and authenticated two-device gates remain unverified; backend advisory settings are separate review items. The user's untracked data/hymns-basic.json was not changed or included in the release.
 
 Release: seven repair commits, through 3b6783d, pushed to main. Cloudflare Pages reported successful production deployment at https://b736754b.kogg-presenter.pages.dev (v101). First deploy attempt failed DNS; retry completed successfully. Independent public URL smoke testing was blocked by local DNS/navigation failures, so public reachability remains unconfirmed from this machine. Local previous-install upgrade to the final release was confirmed after closing every client: A-minus changed output 63.6342px to 60.099px immediately. For existing users, close every KOGG app and Output window/tab, then reopen online after service.
+
+## 4 November 2026 — Slides deck and bounded desktop Lyrics (v105)
+
+- Added Slides between Notes and Service: service-moment presets, custom titles, ordering, deletion, one-tap display and whole-deck navigation.
+- Uniform styling shares background, image, darkening, font, colour and size; free form restores each slide's own saved design. Manual text sizing still shrinks to fit; optional maximise fills available space.
+- Design and live monitor views retain 16:9 proportions. Edits do not mutate already-live output or saved Service copies. Uploaded images use the existing resizing/IndexedDB path.
+- Drafts persist per tab in Base, per device in Local/Sync. Adding slides to Service includes their theme and background in existing named-plan, backup and cloud-library flows. Extended library validation for text service items. Draft workspaces themselves are not cloud-synced.
+- Desktop Lyrics uses main's available height at >=1001px width / >=601px height: search, editor, order and projector panels remain within the screen. Long content scrolls inside panels. Grid rows retain full card height instead of compressing into lines. Smaller screens use responsive flowing layouts.
+- Fixed Local mode entry showing an empty overlay: the Local continuation panel is now explicitly revealed.
+- Landing update cards describe Slides and the desktop Lyrics layout. Offline cache v105 includes both new scripts and regenerated content hashes.
+
+Validation: 205 automated checks passed. Browser checks covered 1440x900, 1280x720, 1024x640, 768x1024 and 390x844; no horizontal overflow at tablet/phone sizes. Thirty lyric slides stayed within the desktop deck with internal scrolling. Verified preset display, free-form style change, image upload/remove and design/live views. Local-mode entry now opens and closes normally. Output reported connected; physical extended-display placement was not re-tested. Local draft testing used a separate origin; the user's untracked data/hymns-basic.json remains untouched.
+
+Evidence: work/slides-desktop.png and work/lyrics-desktop-fixed.png (local ignored screenshots). Existing installations must close all KOGG app and Output clients and reopen online to activate the update safely.

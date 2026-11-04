@@ -28,10 +28,10 @@
     if (d.version !== undefined && ![1, 2].includes(d.version)) fail('Unsupported backup version');
     if (d.songs !== undefined) records(d.songs, s => identified(s) && text(s.title) && text(s.lyrics) && (s.author === undefined || text(s.author)) && (s.order===undefined || (Array.isArray(s.order) && s.order.length<=1000 && s.order.every(i=>Number.isInteger(i) && i>=0 && i<3000))), 'songs');
     if (d.themes !== undefined) records(d.themes, t => identified(t) && text(t.name) && text(t.bg) && text(t.font) && text(t.textColor) && Number.isFinite(t.fontSize) && t.fontSize > 0 && t.fontSize <= 100 && (!t.bgImageId || text(t.bgImageId)) && (!t.bgImage || text(t.bgImage)), 'themes');
-    if (d.service !== undefined) records(d.service, i => identified(i) && text(i.title) && ['song','scripture'].includes(i.type) && slides(i.slides), 'service');
+    if (d.service !== undefined) records(d.service, i => identified(i) && text(i.title) && ['song','scripture','text'].includes(i.type) && slides(i.slides), 'service');
     if (d.plans !== undefined) {
       if (!d.plans || typeof d.plans !== 'object' || Array.isArray(d.plans)) fail('Invalid plans');
-      for (const items of Object.values(d.plans)) records(items, i => identified(i) && text(i.title) && ['song','scripture'].includes(i.type) && slides(i.slides), 'plan items');
+      for (const items of Object.values(d.plans)) records(items, i => identified(i) && text(i.title) && ['song','scripture','text'].includes(i.type) && slides(i.slides), 'plan items');
     }
     if (d.settings !== undefined) {
       if (!d.settings || typeof d.settings !== 'object' || Array.isArray(d.settings)) fail('Invalid settings');

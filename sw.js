@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v105';
+const CACHE = 'kogg-presenter-v106';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',
@@ -12,18 +12,18 @@ const ASSETS = [
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
-  "./": "a4feffd27917342356f32f77a55ecb5ee1a7c05f0c66b8d59133d3b4762c5dd8",
-  "./index.html": "a4feffd27917342356f32f77a55ecb5ee1a7c05f0c66b8d59133d3b4762c5dd8",
+  "./": "f73bd46c9f14ccb49191b132206f0cce184b339ea00eda49a552fcd2390df821",
+  "./index.html": "f73bd46c9f14ccb49191b132206f0cce184b339ea00eda49a552fcd2390df821",
   "./display.html": "61320fc552512d3ef7b32ca71c8505815617c5dbe7a432f4574921416761cd9e",
-  "./landing.html": "a6fcd167856d7abcd900c51b5f543b596cbf6105c7f573a5a03cc1c7f516a7e9",
+  "./landing.html": "6be59c842b6a370362ea52f3a6e9b919d6b489fe18918e899cc153b707eb2398",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
-  "./css/app.css": "ee42562c66d2784b1f6589ef6aad8d7215c8305015841aeb007783147a579de8",
-  "./css/display.css": "7889a2dcac9ecd4801a69e3103a44029dbd4f47d2752722f55691f5c2a250a74",
+  "./css/app.css": "80422922fe9ca3ae9a45d9569c7f9aad5cdb20defe4ba1a09d2fe4071b92631e",
+  "./css/display.css": "d0fa05433b2373e7981942f015e8165fbba3df14de8ee167ac87a5e230ae7e65",
   "./css/landing.css": "a3607bd85ef87ab9aa980493a5c76fc9b04bfca37e93e0fce75eae4fc5147401",
   "./js/landing.js": "1284add4208bf7efa25bd391823476e81832713edc0dbdf2cbb7ea3e3ed03c39",
-  "./js/app.js": "412245d3f0ff517056a2ca1c72ee39134dd156d746e156fc683003adea7f185d",
-  "./js/display.js": "97b69be3df79a27eeed283e30ec611e1cabce2df1e6428950c1f2e80221deb26",
+  "./js/app.js": "2b9c66353203603e0886498442889fae9ef911f936343b10e48f8736f113b31d",
+  "./js/display.js": "c586fcb84138eee9d711ce4127fd55b9c5b9752fb45c383c2b2426023a6d4d99",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
   "./js/library.js": "76e26b3a2f04dd09f82e17acb739bc387e7493d28732306289e6dc49195a8cdd",
   "./js/relay.js": "7fc7630eda8e0b65c780e995edfbef1e4d2ed7e9a29bfb367b351f1d87941f63",
@@ -31,7 +31,7 @@ const ASSET_HASHES = {
   "./js/scripture-tools.js": "31c0dba75d46a86efec7112bac9db32d06ea04f0ab018b88af5782300ead9a28",
   "./js/bible-providers.js": "0483b7b0adba1ac49017722f7d9e52e09fe0c2e2d66a6ddc0b0bea15477fe0f1",
   "./js/content.js": "ecca94b0c53ad29bda1f7da84fb43029e136d6070025f851da142405947c137d",
-  "./js/notes.js": "6617ef19ce9c5c6a7cd8190ddd191311eef41ccab3d78bda7b6e0b625d366fa2",
+  "./js/notes.js": "e51f91dd590bf44b39235cec80cd88d90dbb72f0cb2838d2f361dbc895cadff6",
   "./js/slides.js": "7c4967a44ad392434801b207a361d1def24e1c663a028f6725e2b998ab23ea44",
   "./js/slides-deck.js": "a8d8bc4cef3d188a45726f90c5616adae6572604de3ecf9ae0248ffcdb070b98",
   "./js/lyrics.js": "3d81bec572db4ddb26924c42b0896abd80f74b2113f7dfc030ae44e022761de5",

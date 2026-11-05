@@ -8,3 +8,9 @@ test('Blank stops live-follow for Notes overlays as well as slides',()=>{for(con
 
 test('Enter creates bullets together and optional limits split long lists without losing points',()=>{const body='First\nSecond\nThird\nFourth\nFifth';const together=NT.slides({mode:'points',body});assert.equal(together.length,1);assert.equal(together[0].bullets,true);assert.equal(together[0].text.split('\n').length,5);const split=NT.slides({mode:'points',body,pointsPerSlide:3});assert.equal(split.length,2);assert.equal(split[0].text,'• First\n• Second\n• Third');assert.equal(split[1].text,'• Fourth\n• Fifth');assert.equal(NT.slides({mode:'points',body:'First\nSecond\n\nThird'}).length,2);});
 test('bullet formatting avoids doubled markers and Notes slides clear stale scripture metadata',()=>{const n={id:'n',mode:'points',body:'1. First\n- Second\n• Third'};assert.equal(NT.slides(n)[0].text,'• First\n• Second\n• Third');assert.equal(NT.patch(n,'t',{scripture:{versionName:'KJV'}}).scripture,null);assert.equal(NT.slides({...n,mode:'fullscreen'})[0].text,n.body);});
+
+test('point editing creates bullets, empty bullets make slide breaks, and empty markers never project',()=>{
+ assert.equal(NT.enterPoint('',0).body,'• ');const first=NT.enterPoint('First',5);assert.equal(first.body,'• First\n• ');assert.equal(first.cursor,10);
+ const blank=NT.enterPoint(first.body,first.cursor);assert.equal(blank.body,'• First\n\n');assert.deepEqual(NT.slides({body:'• First\n• ',mode:'points'}).map(s=>s.text),['• First']);assert.throws(()=>NT.patch({body:'• ',mode:'points'},'t'),/Type a point/);
+ assert.equal(NT.slides({body:'One\nTwo',mode:'points',pointsPerSlide:1}).length,2);
+});

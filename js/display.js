@@ -99,6 +99,7 @@ function fitText(enlargeScripture = false, fillScreen = true, scale = 1) {
 }
 
 function render(state) {
+  renderNotesAlert(state.mode === 'blank' ? null : state.alert);
   const blankOn = state.mode === 'blank' && !OVERLAY;   // "blank" means show nothing in OBS overlay mode
   $('countdown').classList.toggle('on', state.mode === 'countdown' && !OVERLAY);
   renderLogo(state);
@@ -124,7 +125,6 @@ function render(state) {
     applyBackdrops(state);
   }
   renderLowerThird(state.mode === 'blank' ? null : state.lowerThird);
-  renderNotesAlert(state.mode === 'blank' ? null : state.alert);
 }
 
 /* word highlight — the operator drags over words in the preview; the matching
@@ -181,7 +181,13 @@ async function renderLogo(state) {
 function renderNotesAlert(alert){
  const el=$('notesAlert'),track=$('notesAlertTrack');if(!el||!track)return;
  const on=!!(alert?.on&&typeof alert.text==='string'&&alert.text.trim());el.hidden=!on;document.body.classList.toggle('has-notes-alert',on);
- if(on){const text=alert.text.slice(0,2000);if(track.textContent!==text){track.textContent=text;track.classList.remove('alert-moving');void track.offsetWidth;track.classList.add('alert-moving');}track.style.animationDuration=Math.max(15,Math.min(90,Number(alert.duration)||25))+'s';}
+ if(!on)return;
+ const text=alert.text.slice(0,2000),moving=alert.motion!=='static';
+ const markup='<span>'+esc(text)+'</span>'+(moving?'<span aria-hidden="true">'+esc(text)+'</span>':'');
+ // Keep the track node and animation alive when scripture/lyrics change below it.
+ if(track.innerHTML!==markup)track.innerHTML=markup;
+ track.classList.toggle('alert-moving',moving);track.style.animationDuration=Math.max(15,Math.min(90,Number(alert.duration)||30))+'s';
+ if(el.offsetHeight)document.documentElement?.style?.setProperty('--notes-alert-height',el.offsetHeight+'px');
 }
 
 function renderLowerThird(lt) {

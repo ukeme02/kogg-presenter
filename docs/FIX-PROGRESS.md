@@ -70,3 +70,15 @@ Release: seven repair commits, through 3b6783d, pushed to main. Cloudflare Pages
 Validation: 205 automated checks passed. Browser checks covered 1440x900, 1280x720, 1024x640, 768x1024 and 390x844; no horizontal overflow at tablet/phone sizes. Thirty lyric slides stayed within the desktop deck with internal scrolling. Verified preset display, free-form style change, image upload/remove and design/live views. Local-mode entry now opens and closes normally. Output reported connected; physical extended-display placement was not re-tested. Local draft testing used a separate origin; the user's untracked data/hymns-basic.json remains untouched.
 
 Evidence: work/slides-desktop.png and work/lyrics-desktop-fixed.png (local ignored screenshots). Existing installations must close all KOGG app and Output clients and reopen online to activate the update safely.
+
+## 5 November 2026 — Notes repairs and clearer deck controls (v106)
+
+- Notes templates select the correct format immediately, with a 10-step draft undo rather than a blocking native confirmation. Undo never changes live output and clears on a mode switch.
+- Visible bullet editing and Enter continuation; empty bullet markers do not create phantom points. One-point-per-slide and grouped splits retain auto-fit and existing emphasis.
+- Preview and Output have a continuous, initially visible scrolling alert with slow/normal/fast and explicit static mode. Explicit ticker motion is independent of reduced decorative motion. Track nodes survive unrelated rerenders; alerts reserve room above the reference label.
+- Separate Stop alert / Hide name tag / Hide note slides actions preserve the other output layers. Contextual Notes controls and bounded desktop layout reduce clutter.
+- Lyrics library and online panes are separate. Search stays visible while results scroll. Display / Save / Service are primary; extra editing and order tools are disclosed on demand.
+- Landing release descriptions updated. All-deck recommendations and implemented scope recorded in docs/DECK-USABILITY-2026-11-04.md.
+- Validation includes actual Output DOM markers and movement, template switching, tags, split navigation, static/stop behavior and responsive layouts. The user's untracked data/hymns-basic.json remains untouched.
+
+Final validation: 209 automated checks passed. Browser evidence: work/notes-repaired.png and work/lyrics-simplified.png. Live Output checks confirmed semantic bullets, name tags, slide navigation, moving/static/stopped alerts and reference-label clearance.

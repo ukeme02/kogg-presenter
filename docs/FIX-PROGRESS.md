@@ -109,3 +109,13 @@ Next priorities: independent broadcast/projector layouts; a packaged local bridg
 - The “first ever browser presentation tool” claim was not published: GoSlide's own app page confirms an existing browser controller. Marketing emphasizes verified KOGG capabilities instead.
 - Preserved the original font, blue palette, existing motion and interactive previews. No new scripts, libraries or external requests; native disclosures work without JavaScript. Tablet navigation collapses earlier to accommodate feature and voice links.
 - Validation: 15 targeted landing/offline checks passed; HTML nesting, unique IDs and section anchors checked. Browser-based visual recheck unavailable because local browser use is disabled in Work settings. No current-layout screenshot claimed.
+
+
+## 6 November 2026 — Interactive eight-deck landing tour (v109)
+
+- Replaced the two-tab demo with a single eight-deck workbench: Scripture, Lyrics, Notes, Slides, Service, Stream, Themes and Tools. Moved it immediately after the hero facts/service flow, with a clear Start presenting action.
+- Removed the duplicated eight-card feature directory. Its navigation anchor now opens the tour. Existing blue palette, Nunito wordmark styling, hero motions, ticker, Explorer and voice roadmap remain.
+- Scripture retains real lazy-loaded KJV book/chapter/verse and reference lookup. Lyrics retains actual blank-line parsing and selectable slides. Added editable bullet notes, service-moment titles/backgrounds, a three-item service queue, explicit Show/Hide name tags, theme/font/size controls and a guided Tools category explorer.
+- Samples are local page state only: no storage, account handling, microphone access or output connection. User-entered text is inserted as text nodes. Keyboard arrows/Home/End move across all eight tabs without resetting edits.
+- Responsive tour tabs use four columns on desktop/tablet and two on narrow phones; panels become a single column below 900px. Preview sizing observes its container and font readiness. No extra library dependencies.
+- Validation: 20 targeted landing and offline checks passed, including five new behavioral tests. HTML nesting, section anchors and unique IDs validated. Browser visual inspection remains unavailable because local browser use is disabled in Work settings; no claim of a fresh screenshot or rendered-layout verification.

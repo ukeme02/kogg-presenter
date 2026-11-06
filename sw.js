@@ -1,8 +1,8 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v108';
+const CACHE = 'kogg-presenter-v109';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
-  './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',
+  './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/landing-tour.js', './js/app.js', './js/display.js',
   './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/bible-providers.js', './js/content.js', './js/notes.js', './js/slides.js', './js/slides-deck.js', './js/stream.js', './js/stream-deck.js', './js/lyrics.js', './js/lyrics-sources.js',
   './js/supabase-config.js', './js/idb.js', './data/kjv.json', './data/bsb.json', './data/kjvs.json', './data/strongs.json', './data/hymns.json', './data/content-catalog.json', './data/hymnary-sources.txt',
   './fonts/NunitoSans-Variable.woff2', './manifest.webmanifest',
@@ -15,13 +15,14 @@ const ASSET_HASHES = {
   "./": "76a867162eacdc2399794282c6d0343225357200810d3627955597556850cd40",
   "./index.html": "76a867162eacdc2399794282c6d0343225357200810d3627955597556850cd40",
   "./display.html": "a63c5f02bc198e097c6c70823e9250bae515b227369184686df6e0f43a65ca28",
-  "./landing.html": "fd6d37fbedbdd937cc005992552a47a805a6fb4c5c200c8928564f76c5a57e74",
+  "./landing.html": "6716a9d19b07919d7a1b7aea08a7422f6c1761b28c53a678ec5078aef7a55761",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
   "./css/app.css": "e2ae7f25f7952baf4de2804f3356c6487cc75e3b87ba2b1a67a2cc0718e14c5e",
   "./css/display.css": "cba5d04db5ab53b43b80f173702aae122fc191017208fc6fee745fead57117e0",
-  "./css/landing.css": "4a80bd8229780de684bfb9efbd74f28267cf1d71157193a80e5d4c1ce550c4f4",
+  "./css/landing.css": "7849fefc3fd5b4a21a8c8f0a2d0339e89677ba6fd9d56d98261a8f7ba0f8bbf4",
   "./js/landing.js": "5d6b4dceb5e18308143420eb0f20cb763ca0a9f37e3453f3963c55e98fd9ad67",
+  "./js/landing-tour.js": "ff0a6fa9b82b35066c3b859782d0fbe98dd4a869b30ef877765576d9e772fd54",
   "./js/app.js": "e6143dda7b2c905d1b1ab4db6bd292936c6d9bd204d5d98af71c77b42a205a99",
   "./js/display.js": "1d07f134d782888bc45213ea36d146af6087e037d971c84b7cb550d2cfcd8e10",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",

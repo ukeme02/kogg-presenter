@@ -119,14 +119,14 @@
  document.addEventListener('pointerdown',event=>{if(watchOpen&&!widget.contains(event.target))openWatch(false);});
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&watchOpen){openWatch(false);launcher.focus();}});
  window.addEventListener('resize',()=>{if(!watchFrame)watchFrame=requestAnimationFrame(()=>{watchFrame=0;positionWatch(watchX,watchY);});});
- const storySections={welcome:'welcome',demo:'explore',display:'screens',obs:'screens',modes:'modes',library:'modes',updates:'updates',roadmap:'updates',get:'start',faq:'start',partner:'mission'};
+ const storySections={welcome:'welcome','why-kogg':'explore',features:'explore',voice:'explore',demo:'explore',display:'screens',obs:'screens',modes:'modes',library:'modes',updates:'updates',roadmap:'updates',get:'start',faq:'start',partner:'mission'};
  function markStory(chapter){document.querySelectorAll('[data-chapter-link]').forEach(link=>{if(link.dataset.chapterLink===chapter)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});}
  if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);if(visible[0])markStory(storySections[visible[0].target.id]);},{rootMargin:'-15% 0px -55% 0px',threshold:0});Object.keys(storySections).forEach(id=>{if($(id))observer.observe($(id));});}
  markStory(storySections[location.hash.slice(1)]||'welcome');
  const share=$('shareKogg'),shareStatus=$('shareStatus');
  share.addEventListener('click',async()=>{
   const url='https://kogg-presenter.pages.dev/landing.html';
-  try{if(navigator.share){await navigator.share({title:'KOGG Presenter',text:'A lightweight Scripture and lyrics presentation tool, built to serve the church. Try it and share it with your media team.',url});shareStatus.textContent='Thank you for helping another church discover KOGG.';}
+  try{if(navigator.share){await navigator.share({title:'KOGG Presenter',text:'Your browser. Your worship desk. Scripture, lyrics, notes, slides and voice input, with offline essentials. Try KOGG and share it with your media team.',url});shareStatus.textContent='Thank you for helping another church discover KOGG.';}
   else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);shareStatus.textContent='Link copied. Share it with your church or media team.';}
   else {shareStatus.textContent='Share this link: '+url;}}
   catch(error){if(error.name!=='AbortError')shareStatus.textContent='Share this link: '+url;}

@@ -98,3 +98,14 @@ Final validation: 209 automated checks passed. Browser evidence: work/notes-repa
 Validation: 218 automated checks passed, including measured live-tag clearance and reset. Browser checks at 1366x768, 820x1180 and 390x844 covered typing-to-jump, templates, show/hide, scrolling notice, Tools categories and light/dark mode. Local bridge with a separate output reader confirmed transparent background, graphics-only filtering and live notices. Screenshot: work/stream-deck-v107.png. Final browser recheck on 6 November was unavailable because browser use was disabled in Work settings; automated regression and deployed-file checks remain available. Hardware OBS capture and an actual broadcast were not performed.
 
 Next priorities: independent broadcast/projector layouts; a packaged local bridge that avoids a Node setup; then a phone remote and service rehearsal/recovery controls. The user's untracked data/hymns-basic.json remains untouched.
+
+
+## 6 November 2026 — Browser-first landing story and voice roadmap (v108)
+
+- Reframed the hero around “Your browser. Your worship desk.” and the practical benefits of opening without an account, preparing offline essentials, and carrying a synced library to another device.
+- Added an eight-deck feature directory using native expandable cards, including Scripture, Lyrics, Notes, Slides, Service, Stream, Themes and Tools. Condensed release notes avoid repeating the full feature list.
+- Prominent current voice-input section explains reference lookup, remembered-word search, commands and microphone on/off feedback. Decorative waveform does not access a microphone.
+- Minister-listening AI is explicitly planned, with a proposed suggest/review/display flow, no release claim, and a feedback email link. Added it to the roadmap.
+- The “first ever browser presentation tool” claim was not published: GoSlide's own app page confirms an existing browser controller. Marketing emphasizes verified KOGG capabilities instead.
+- Preserved the original font, blue palette, existing motion and interactive previews. No new scripts, libraries or external requests; native disclosures work without JavaScript. Tablet navigation collapses earlier to accommodate feature and voice links.
+- Validation: 15 targeted landing/offline checks passed; HTML nesting, unique IDs and section anchors checked. Browser-based visual recheck unavailable because local browser use is disabled in Work settings. No current-layout screenshot claimed.

@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v107';
+const CACHE = 'kogg-presenter-v108';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/app.js', './js/display.js',
@@ -15,13 +15,13 @@ const ASSET_HASHES = {
   "./": "76a867162eacdc2399794282c6d0343225357200810d3627955597556850cd40",
   "./index.html": "76a867162eacdc2399794282c6d0343225357200810d3627955597556850cd40",
   "./display.html": "a63c5f02bc198e097c6c70823e9250bae515b227369184686df6e0f43a65ca28",
-  "./landing.html": "b484221ab73298dc67671e8e047c409e1e8159225adae770ce7ca46906274efd",
+  "./landing.html": "fd6d37fbedbdd937cc005992552a47a805a6fb4c5c200c8928564f76c5a57e74",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
   "./css/app.css": "e2ae7f25f7952baf4de2804f3356c6487cc75e3b87ba2b1a67a2cc0718e14c5e",
   "./css/display.css": "cba5d04db5ab53b43b80f173702aae122fc191017208fc6fee745fead57117e0",
-  "./css/landing.css": "a3607bd85ef87ab9aa980493a5c76fc9b04bfca37e93e0fce75eae4fc5147401",
-  "./js/landing.js": "1284add4208bf7efa25bd391823476e81832713edc0dbdf2cbb7ea3e3ed03c39",
+  "./css/landing.css": "4a80bd8229780de684bfb9efbd74f28267cf1d71157193a80e5d4c1ce550c4f4",
+  "./js/landing.js": "5d6b4dceb5e18308143420eb0f20cb763ca0a9f37e3453f3963c55e98fd9ad67",
   "./js/app.js": "e6143dda7b2c905d1b1ab4db6bd292936c6d9bd204d5d98af71c77b42a205a99",
   "./js/display.js": "1d07f134d782888bc45213ea36d146af6087e037d971c84b7cb550d2cfcd8e10",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",

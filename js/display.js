@@ -8,6 +8,7 @@ const contentEl = $('slideContent');
 const labelEl = $('slideLabel');
 const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS transparent mode
 
+const OVERLAYS_ONLY = OVERLAY && new URLSearchParams(location.search).get('layers')==='overlays';
 let publishedThemes=null;
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -100,12 +101,13 @@ function fitText(enlargeScripture = false, fillScreen = true, scale = 1) {
 
 function render(state) {
   renderNotesAlert(state.mode === 'blank' ? null : state.alert);
+  renderLowerThird(state.mode === 'blank' ? null : state.lowerThird);
   const blankOn = state.mode === 'blank' && !OVERLAY;   // "blank" means show nothing in OBS overlay mode
   $('countdown').classList.toggle('on', state.mode === 'countdown' && !OVERLAY);
   renderLogo(state);
   $('blankScreen').classList.toggle('on', blankOn);
-  const showSlide = state.mode === 'normal' && state.slides.length > 0;
-  const card = state.mode === 'normal' && state.strongsShowing && state.strongsCard ? state.strongsCard : null;
+  const showSlide = !OVERLAYS_ONLY && state.mode === 'normal' && state.slides.length > 0;
+  const card = !OVERLAYS_ONLY && state.mode === 'normal' && state.strongsShowing && state.strongsCard ? state.strongsCard : null;
   $('strongsCard').classList.toggle('on', !!card);
   textEl.style.display = showSlide && !card ? '' : 'none';
   labelEl.style.display = showSlide && !card ? '' : 'none';
@@ -124,8 +126,8 @@ function render(state) {
   } else if (!OVERLAY) {
     applyBackdrops(state);
   }
-  renderLowerThird(state.mode === 'blank' ? null : state.lowerThird);
 }
+
 
 /* word highlight — the operator drags over words in the preview; the matching
    verse (label ends "…:<verse>") gets those words marked, live, on screen. */
@@ -195,10 +197,14 @@ function renderLowerThird(lt) {
   const el = $('lowerThird');
   const entering=el.classList.contains?.('lt-hidden')!==false;
   el.classList.toggle('lt-hidden', !on);
+  document.documentElement.classList.toggle('has-live-tag',on);
   if (on) {
+    const look=window.KOGGStream?.look(lt);
+    if(look){for(const k of ['style','position','size'])el.setAttribute('data-'+k,look[k]);el.style.setProperty('--lt-accent',look.accent);}
     $('ltLine1').textContent = lt.l1 || '';
     $('ltLine2').textContent = lt.l2 || '';
     $('ltLine2').style.display = lt.l2 ? '' : 'none';
+    if(el.offsetHeight){const clearance=el.offsetHeight+(parseFloat(getComputedStyle(el).bottom)||0)+window.innerHeight*.025;document.documentElement.style.setProperty('--live-tag-clearance',clearance+'px');}
     if(entering){el.classList.remove('lt-animate');void el.offsetWidth;el.classList.add('lt-animate');}
   }
 }

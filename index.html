@@ -21,8 +21,8 @@
     <div id="quickGoResults" class="quickgo-results" hidden></div>
   </div>
   <div class="quick-actions">
-    <button id="btnBlank" class="ctrl warn" title="Blank screen (B)">Blank</button>
-    <button id="btnLogo" class="ctrl" title="Logo screen (L)">Logo</button>
+    <button id="btnBlank" class="ctrl warn" title="Blank screen (Alt+B)">Blank</button>
+    <button id="btnLogo" class="ctrl" title="Logo screen (Alt+L)">Logo</button>
     <span id="outputStatus" class="hint" role="status" aria-live="polite"></span>
     <button id="btnOpenDisplay" class="ctrl primary" title="Open output screen">Output</button>
     <button id="btnScreens" class="ctrl" title="Choose which screen shows the output">🖥️</button>
@@ -43,6 +43,7 @@
   <button class="tab" data-tab="notes">Notes</button>
   <button class="tab" data-tab="slides">Slides</button>
   <button class="tab" data-tab="service">Service</button>
+  <button class="tab" data-tab="stream">Stream</button>
   <button class="tab" data-tab="themes">Themes</button>
   <button class="tab" data-tab="tools">Tools</button>
 </nav>
@@ -126,7 +127,7 @@
             <span id="bookGhost"></span>
             <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
           </div>
-          <p id="jumpHint" class="jump-hint" role="status" aria-live="polite">Type 3 book letters, then chapter → verse. Enter displays.</p>
+          <p id="jumpHint" class="jump-hint" role="status" aria-live="polite">Start typing a book anywhere in Scripture. Chapter → verse, then Enter.</p>
           <div class="dock-foot">
             <button id="btnVoiceJump" title="Speak a scripture — Chrome/Edge, online">🎤 Speak it</button>
           </div>
@@ -264,6 +265,34 @@
   </section>
 
   <!-- THEMES -->
+  <section id="tab-stream" class="tab-panel">
+    <div class="stream-deck">
+      <div class="dock stream-connections"><div class="dock-head">Connect your broadcast</div><div class="stream-body">
+        <label>Streaming with<select id="streamPlatform"><option value="obs">OBS Studio</option><option value="youtube">YouTube Live</option><option value="facebook">Facebook Live</option><option value="streamyard">StreamYard</option><option value="other">Another platform</option></select></label>
+        <label>Connection method<select id="streamMethod"><option value="capture">Capture Output window · easiest</option><option value="browser">Browser Source · local bridge</option></select></label>
+        <p id="streamInstructions" class="hint"></p><button id="streamOpenOutput" class="primary">Open / focus Output</button>
+        <div id="streamBrowser" hidden><label>Source content<select id="streamFeed"><option value="transparent">Scripture / slides + graphics · transparent</option><option value="overlays">Graphics only · transparent</option><option value="full">Full presentation · with background</option></select></label>
+          <label>Browser Source URL<input id="obsUrl" readonly></label><button id="btnCopyObs">Copy source URL</button>
+          <p class="hint">Use the operator on the local bridge too. The hosted website alone cannot sync with OBS’s separate browser. Set the source to your canvas size, e.g. 1920 × 1080.</p>
+          <button id="streamCheck">Check bridge connection</button><p id="streamConnection" class="hint" role="status"></p>
+        </div><p class="hint">KOGG supplies visuals. Start and manage the broadcast in OBS or your streaming platform. No stream key is needed here.</p>
+        <a href="landing.html#obs" target="_blank" rel="noopener">Connection guide ↗</a>
+      </div></div>
+      <div class="dock stream-graphics"><div class="dock-head">Broadcast graphics</div><div class="stream-body">
+        <div class="stream-tabs"><button data-stream-pane="tag" aria-pressed="true">Name tag</button><button data-stream-pane="notice" aria-pressed="false">Notice</button><button data-stream-pane="timer" aria-pressed="false">Countdown</button></div>
+        <div id="streamPane-tag"><label>Quick template<select id="streamPreset"><option value="minister">Now ministering</option><option value="speaker">Speaker</option><option value="welcome">Welcome</option><option value="notice">Announcement</option></select></label><button id="streamUsePreset">Use template</button>
+          <label>Name / main line<input id="ltLine1" maxlength="160" placeholder="Minister name" spellcheck="true" autocorrect="on"></label><label>Supporting line<input id="ltLine2" maxlength="180" placeholder="Now ministering" spellcheck="true" autocorrect="on"></label>
+          <div class="stream-options"><label>Design<select id="streamStyle"><option value="banner">Banner</option><option value="minimal">Minimal</option><option value="centered">Spotlight</option></select></label><label>Position<select id="streamPosition"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select></label><label>Size<select id="streamSize"><option value="small">Small</option><option value="medium" selected>Medium</option><option value="large">Large</option></select></label><label>Accent<input id="streamAccent" type="color" value="#4f8cff"></label></div>
+          <div class="row"><button id="btnLtShow" class="primary">Show / update tag</button><button id="btnLtHide">Hide tag</button></div>
+        </div>
+        <div id="streamPane-notice" hidden><label>Notice text<textarea id="streamAlert" rows="5" maxlength="2000" placeholder="Welcome. Please silence your phones." spellcheck="true" autocorrect="on"></textarea></label><div class="stream-options"><label>Motion<select id="streamMotion"><option value="scroll">Scrolling</option><option value="static">Still</option></select></label><label>Scroll speed<select id="streamDuration"><option value="45">Gentle</option><option value="30" selected>Normal</option><option value="18">Fast</option></select></label></div><div class="row"><button id="streamShowNotice" class="primary">Show / update notice</button><button id="streamHideNotice">Stop notice</button></div></div>
+        <div id="streamPane-timer" hidden><p class="hint">Full-screen countdown replaces the presentation. It is not included in transparent feeds.</p><label>Minutes<input id="countdownMinutes" type="number" min="1" max="120" value="5"></label><div class="row"><button id="btnCountdown" class="primary">Start countdown</button><button id="btnEndCountdown">Stop</button></div></div>
+        <p id="streamDraftStatus" class="hint"></p><p id="streamStatus" class="hint" role="status">Edit first, then Show. One active tag and one notice are shared with Notes.</p>
+      </div></div>
+      <div class="dock stream-monitor"><div class="dock-head">On the output</div><div class="stream-body"><div id="streamPreview" class="stream-preview"></div><p id="streamLiveStatus" class="hint" role="status"></p><button id="streamClear">Clear tag &amp; notice</button><p class="hint">This mirrors the main presentation. Graphics also appear on the projector. “Graphics only” filters the Browser Source; it does not create a separate presentation.</p></div></div>
+    </div>
+  </section>
+
   <section id="tab-themes" class="tab-panel">
     <div class="themes-deck">
       <div class="dock themes-studio">
@@ -361,9 +390,9 @@
   </section>
 
   <!-- TOOLS (grouped, collapsible) -->
-  <section id="tab-tools" class="tab-panel">
+  <section id="tab-tools" class="tab-panel"><nav class="tools-nav" aria-label="Tools categories"><button data-tools-page="account" aria-pressed="true">Account & Sync</button><button data-tools-page="bibles" aria-pressed="false">Bible versions</button><button data-tools-page="backup" aria-pressed="false">Backup & voice</button><button data-tools-page="help" aria-pressed="false">Output & help</button></nav><div class="tools-content">
 
-    <div class="card">
+    <div class="card tools-page" id="tools-account">
       <details class="group" open>
         <summary>☁️ Account &amp; Cloud Sync</summary>
         <p class="hint">One account keeps your library on every device you sign in on. Everything still works without an account.</p>
@@ -400,7 +429,7 @@
       </details>
     </div>
 
-    <div class="card">
+    <div class="card tools-page" id="tools-bibles" hidden>
       <div class="group-label">Scripture versions</div>
       <details class="group" id="addVersionsGroup">
         <summary>Add a Bible version</summary>
@@ -431,31 +460,7 @@
       </details>
     </div>
 
-    <div class="card">
-      <div class="group-label">Live tools</div>
-      <details class="group">
-        <summary>Lower Thirds (names &amp; titles)</summary>
-        <div class="row">
-          <label style="flex:1">Main line<br><input id="ltLine1" type="text" placeholder="Pastor John Smith" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label>
-          <label style="flex:1">Sub line<br><input id="ltLine2" type="text" placeholder="Senior Pastor" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label>
-        </div>
-        <div class="row">
-          <button id="btnLtShow" class="primary">Show Lower Third</button>
-          <button id="btnLtHide">Hide</button>
-        </div>
-        <p class="hint">Shows as an animated banner over the bottom of the output — perfect as an OBS overlay.</p>
-      </details>
-      <details class="group">
-        <summary>Countdown</summary>
-        <div class="row">
-          <label>Minutes<br><input id="countdownMinutes" type="number" min="1" max="120" value="5"></label>
-          <button id="btnCountdown" class="primary">Start Countdown</button>
-          <button id="btnEndCountdown">Stop</button>
-        </div>
-      </details>
-    </div>
-
-    <div class="card">
+    <div class="card tools-page" id="tools-backup" hidden>
       <div class="group-label">Extra</div>
       <details class="group">
         <summary>Voice Control</summary>
@@ -473,25 +478,18 @@
       </details>
     </div>
 
-    <div class="card">
+    <div class="card tools-page" id="tools-help" hidden>
       <div class="group-label">Help</div>
       <details class="group">
         <summary>How the output works</summary>
         <p><b>Output</b> opens <code>display.html</code> — the clean full-screen view for your projector.</p>
         <p>• <b>Phone/tablet → projector:</b> mirror or cast the output screen (HDMI adapter or Chromecast), press ▶ Output, then rotate your phone to the display when you connect.</p>
         <p>• <b>Laptop + projector:</b> open <code>display.html</code> in a Chrome window on the projector screen and this operator page on your laptop screen — they stay in sync automatically (same browser). Press F11 for full screen.</p>
-        <p>• Keyboard shortcuts: <b>←/→</b> slides, <b>B</b> blank, <b>L</b> logo, <b>Esc</b> back to normal.</p>
+        <p>• Type a book name anywhere in Scripture to start Quick Jump. Keyboard shortcuts: <b>←/→</b> slides, <b>Alt+B</b> blank, <b>Alt+L</b> logo, <b>Esc</b> back to normal.</p>
       </details>
-      <details class="group">
-        <summary>Pair with OBS Studio</summary>
-        <p>For OBS, start the local bridge described in the README and open the operator at <code>http://127.0.0.1:8766/</code>. Then add its output URL as an OBS <b>Browser Source</b>. The hosted URL alone cannot connect this browser to OBS. Keep the bridge running during use.</p>
-        <div class="row">
-          <input id="obsUrl" readonly>
-          <button id="btnCopyObs">Copy URL</button>
-        </div>
-        <p class="hint">Recommended OBS browser source settings: 1920×1080, FPS 30. Use the same URL in a second scene if you also want a fullscreen slide output (without <code>?overlay=1</code>).</p>
-      </details>
+
     </div>
+</div>
   </section>
 </main>
 
@@ -632,8 +630,10 @@
 <script src="js/lyrics.js"></script>
 <script src="js/lyrics-sources.js"></script>
 <script src="js/notes.js"></script>
+<script src="js/stream.js"></script>
 <script src="js/app.js"></script>
 <script src="js/slides.js"></script>
 <script src="js/slides-deck.js"></script>
+<script src="js/stream-deck.js"></script>
 </body>
 </html>

@@ -82,3 +82,19 @@ Evidence: work/slides-desktop.png and work/lyrics-desktop-fixed.png (local ignor
 - Validation includes actual Output DOM markers and movement, template switching, tags, split navigation, static/stop behavior and responsive layouts. The user's untracked data/hymns-basic.json remains untouched.
 
 Final validation: 209 automated checks passed. Browser evidence: work/notes-repaired.png and work/lyrics-simplified.png. Live Output checks confirmed semantic bullets, name tags, slide navigation, moving/static/stopped alerts and reference-label clearance.
+
+
+## 6 November 2026 — Stream deck, typing-to-jump and organized Tools (v107)
+
+- Scripture: letters and numbered-book prefixes focus Quick Jump and reveal it if hidden. Editing fields, IME composition, modal dialogs and command shortcuts are respected. Alt+B / Alt+L retain Blank / Logo access.
+- Stream follows Service. Capture guidance for OBS, YouTube, Facebook, StreamYard and other platforms; optional local-bridge Browser Source URLs for full, transparent and graphics-only feeds. This supplies visuals, not an encoder or remote broadcast start/stop control.
+- Now-ministering, speaker, welcome and announcement templates; banner/minimal/spotlight designs, position, size and accent controls. Notices have scrolling/static modes and speed. Countdown controls moved here from Tools.
+- Draft edits require Show to affect output. Base drafts are session-scoped; Local/Sync drafts stay on this device. Tags and alerts share the Notes output layers. No independent projector/broadcast layout yet.
+- Bridge health check supports retry and reports reader count without claiming that readers are necessarily OBS. Fresh installs no longer report an empty bootstrap as a failed connection. Logo style is included in bridge output settings.
+- Tools has four selectable categories: Account & Sync, Bible versions, Backup & voice, Output & help. Stream has bounded desktop panels, responsive tablet/phone flow, and a 16:9 preview with resizing observation.
+- Active name tags reserve output space above them; the shared preview also keeps passage text above the tag. Countdown input is bounded to 1–120 minutes.
+- Landing updates describe the delivered features and next independent broadcast layouts. Offline release v107 includes both Stream scripts.
+
+Validation: 218 automated checks passed, including measured live-tag clearance and reset. Browser checks at 1366x768, 820x1180 and 390x844 covered typing-to-jump, templates, show/hide, scrolling notice, Tools categories and light/dark mode. Local bridge with a separate output reader confirmed transparent background, graphics-only filtering and live notices. Screenshot: work/stream-deck-v107.png. Final browser recheck on 6 November was unavailable because browser use was disabled in Work settings; automated regression and deployed-file checks remain available. Hardware OBS capture and an actual broadcast were not performed.
+
+Next priorities: independent broadcast/projector layouts; a packaged local bridge that avoids a Node setup; then a phone remote and service rehearsal/recovery controls. The user's untracked data/hymns-basic.json remains untouched.

@@ -146,6 +146,7 @@ function pushLive(patch = {}) {
 /* ---------- live indicator ---------- */
 function renderPreview() {
   window.KOGGSlideDeck?.renderLive();
+  window.KOGGStreamDeck?.renderLive();
   if(window.__lyricsReady)renderLyricsLive();
   if(window.__notesReady)renderNotesLive();
   if (outputIsConnected) setOutputStatus(live.mode === 'blank' ? 'Output connected • screen blank' : 'Output connected');
@@ -163,6 +164,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
     p.classList.toggle('active', p.id === 'tab-' + t.dataset.tab));
   if (t.dataset.tab === 'songs') renderSongList();
   if (t.dataset.tab === 'notes' && window.__notesReady)renderNotes();
+  if (t.dataset.tab === 'stream') window.KOGGStreamDeck?.renderLive();
   if (t.dataset.tab === 'service') renderService();
   if (t.dataset.tab === 'themes') renderThemesTab();
 }));
@@ -858,7 +860,7 @@ function renderBookGhost() {
   const choosing=!!p && !p.chapter;
   sug.hidden=!(choosing && cands.length>1);
   if(!sug.hidden)sug.innerHTML=cands.map(i=>`<button data-s="${i}">📖 ${esc(bible.books[i].name)}</button>`).join('');
-  let hint='Type 3 book letters, then chapter → verse. Enter displays.';
+  let hint='Start typing a book anywhere in Scripture. Chapter → verse, then Enter.';
   if(cands.length===1){
     const book=bible.books[cands[0]];
     if(choosing)hint=`${book.name} • chapters 1–${book.chapters.length}. Type a chapter; → moves to verse.`;
@@ -1507,7 +1509,8 @@ function previewBackground(t){
   if (t.bgImageId) {
     if (previewBgCache.has(t.bgImageId)) src = previewBgCache.get(t.bgImageId) || '';
     else if (window.KOGGAssets) window.KOGGAssets.get(t.bgImageId)
-      .then(v => { previewBgCache.set(t.bgImageId, v || ''); renderLyricsLive(); renderNotesLive(); window.KOGGSlideDeck?.renderLive(); })
+      .then(v => { previewBgCache.set(t.bgImageId, v || ''); renderLyricsLive(); renderNotesLive(); window.KOGGSlideDeck?.renderLive();
+  window.KOGGStreamDeck?.renderLive(); })
       .catch(() => previewBgCache.set(t.bgImageId, ''));
   } else src = t.bgImage || '';
   const n = Number(t.dim), dim = Number.isFinite(n) ? Math.max(0, Math.min(100, n)) / 100 : 0;
@@ -1534,21 +1537,22 @@ function applyOutputLook(box){
 }
 function fitProjectorPreview(box,theme=outputPreviewTheme()){
  const content=box.querySelector('.preview-content');if(!content||!box.clientWidth||!box.clientHeight)return;
- const maxH=box.clientHeight*(box.classList.contains('preview-has-alert') ? .68 : .82),maxW=box.clientWidth*.92;let low=1,high=theme.fillScreen===false?box.clientHeight*(Number(theme.fontSize)||15)/100:box.clientHeight*.8;
+ const maxH=box.clientHeight*(box.classList.contains('preview-has-tag') ? .50 : box.classList.contains('preview-has-alert') ? .68 : .82),maxW=Math.ceil(box.clientWidth*.92);let low=1,high=theme.fillScreen===false?box.clientHeight*(Number(theme.fontSize)||15)/100:box.clientHeight*.8;
  for(let i=0;i<11;i++){const mid=(low+high)/2;content.style.fontSize=mid+'px';if(content.scrollHeight<=maxH&&content.scrollWidth<=maxW)low=mid;else high=mid;}
  content.style.fontSize=(low*Math.max(.2,Math.min(1,Number(theme.fontScale)||1)))+'px';
 }
 function projectorPreview(box,html,slide){
- const visible=live.mode!=='blank';
+ const visible=live.mode!=='blank',tagLook=window.KOGGStream?.look(live.lowerThird||{});
+ const tagAttrs=tagLook?' data-style="'+tagLook.style+'" data-position="'+tagLook.position+'" data-size="'+tagLook.size+'" style="--lt-accent:'+tagLook.accent+'"':'';
  if(!visible)box.style.background='#000';
  if(live.mode==='logo')html='<img class="preview-logo" src="icons/kogg-symbol-white.svg" alt="KOGG logo">';
  const markup='<div class="preview-content">'+(visible?html:'')+'</div>'+(visible&&slide&&outputPreviewTheme().showLabel!==false?'<small class="preview-caption">'+esc(slide.label||'')+'</small>':'')+
- (visible&&live.lowerThird?.on?'<div class="preview-tag"><b>'+esc(live.lowerThird.l1)+'</b><small>'+esc(live.lowerThird.l2||'')+'</small></div>':'')+
+ (visible&&live.lowerThird?.on?'<div class="preview-tag"'+tagAttrs+'><b>'+esc(live.lowerThird.l1)+'</b><small>'+esc(live.lowerThird.l2||'')+'</small></div>':'')+
  (visible&&live.alert?.on?'<div class="preview-alert"><div class="preview-alert-track'+(live.alert.motion==='static'?'':' moving')+'" style="--alert-duration:'+Math.max(15,Math.min(90,Number(live.alert.duration)||30))+'s"><span>'+esc(live.alert.text)+'</span>'+(live.alert.motion==='static'?'':'<span aria-hidden="true">'+esc(live.alert.text)+'</span>')+'</div></div>':'');
  if(box._koggPreviewMarkup!==markup){box.innerHTML=markup;box._koggPreviewMarkup=markup;}
- box.classList.toggle('preview-bullets',!!slide?.bullets);box.classList.toggle('preview-has-alert',!!(visible&&live.alert?.on));fitProjectorPreview(box);
+ box.classList.toggle('preview-has-tag',!!(visible&&live.lowerThird?.on));box.classList.toggle('preview-bullets',!!slide?.bullets);box.classList.toggle('preview-has-alert',!!(visible&&live.alert?.on));fitProjectorPreview(box);
 }
-if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(entries=>entries.forEach(entry=>fitProjectorPreview(entry.target)));['lyricsLiveText','notesLiveText'].forEach(id=>observer.observe($(id)));}
+if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(entries=>entries.forEach(entry=>fitProjectorPreview(entry.target)));['lyricsLiveText','notesLiveText','streamPreview'].forEach(id=>observer.observe($(id)));}
 document.fonts?.ready?.then(()=>{fitProjectorPreview($('lyricsLiveText'));fitProjectorPreview($('notesLiveText'));}).catch(()=>{});
 function renderLyricsLive(){
  const box=$('lyricsLiveText');
@@ -2346,6 +2350,7 @@ function setWorkMode(m) {
   if(window.__lyricsReady){loadLyricsDraft();renderSongList();}
   if(window.__notesReady)loadNotesWorkspace();
   window.KOGGSlideDeck?.load();
+  window.KOGGStreamDeck?.load();
   if (m === 'sync') { if(cloudEnabled())startAuthObserver();refreshUser(); }
   else { clearTimeout(syncTimer); stopLibraryRealtime(); window._koggUser = null; syncUI(); }
 }
@@ -2773,19 +2778,32 @@ document.addEventListener('visibilitychange', () => {
 document.addEventListener('pointerdown', () => void requestConsoleWakeLock(), { once: true });
 void requestConsoleWakeLock();
 
-document.addEventListener('keydown', e => {
-  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-  if (e.key === '/') { e.preventDefault(); $('quickGo').focus(); return; }
-  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
-  else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
-  else if (e.key.toLowerCase() === 'b') $('btnBlank').click();
-  else if (e.key.toLowerCase() === 'l') $('btnLogo').click();
-  else if (e.key === 'Escape') pushLive({mode:'normal'});
-});
+function handleOperatorKeydown(e) {
+  if(e.defaultPrevented||e.isComposing)return;
+  const target=e.target;
+  if(['INPUT','TEXTAREA','SELECT'].includes(target?.tagName)||target?.isContentEditable||target?.closest?.('[contenteditable="true"],dialog[open],[role="dialog"]'))return;
+  if(!$('startGate').hidden||document.querySelector('dialog[open]')||e.ctrlKey||e.metaKey)return;
+  const key=e.key.toLowerCase();
+  if(e.altKey){if(key==='b'||key==='l'){e.preventDefault();$(key==='b'?'btnBlank':'btnLogo').click();}return;}
+  if($('tab-scripture').classList.contains('active')&&/^[a-z1-3]$/i.test(e.key)){
+    e.preventDefault();const settings=LS.get(K.settings,{});
+    if(hiddenDocks().includes('quickgo')){settings.hiddenDocks=hiddenDocks().filter(k=>k!=='quickgo');LS.set(K.settings,settings);applyDocks();}
+    const input=$('bookSearch');input.value=e.key;input.focus();input.dispatchEvent(new Event('input',{bubbles:true}));return;
+  }
+  if(e.key==='/'){e.preventDefault();$('quickGo').focus();return;}
+  if(e.key===' '&&target?.tagName==='BUTTON')return;
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();prev();}
+  else if(key==='b')$('btnBlank').click();
+  else if(key==='l')$('btnLogo').click();
+  else if(e.key==='Escape')pushLive({mode:'normal'});
+}
+document.addEventListener('keydown',handleOperatorKeydown);
 
 /* Countdown */
 $('btnCountdown').addEventListener('click', () => {
-  const mins = +$('countdownMinutes').value || 5;
+  const mins = Math.max(1,Math.min(120,+$('countdownMinutes').value || 5));
+  $('countdownMinutes').value=mins;
   pushLive({ mode: 'countdown', until: Date.now() + mins * 60000 });
 });
 $('btnEndCountdown').addEventListener('click', () => pushLive({ mode: 'normal' }));
@@ -2945,15 +2963,6 @@ function applyOperatorTheme(light) {
 }
 $('feTheme').addEventListener('click', () =>
   applyOperatorTheme(!document.body.classList.contains('light')));
-
-/* Lower thirds */
-$('btnLtShow').addEventListener('click', () => {
-  pushLive({ lowerThird: { on: true, l1: $('ltLine1').value.trim(), l2: $('ltLine2').value.trim() } });
-  flash($('btnLtShow'), 'Shown ✓');
-});
-$('btnLtHide').addEventListener('click', () => {
-  pushLive({ lowerThird: { on: false, l1: $('ltLine1').value.trim(), l2: $('ltLine2').value.trim() } });
-});
 
 /* Strong's numbers — the toggle controls the tap-to-define word numbers
    in the "On the projector" preview (the projector itself always shows
@@ -3176,16 +3185,6 @@ $('extraBiblePanel').addEventListener('click',async event=>{
   button.disabled=true;
   try{if(await loadBible(button.dataset.bibleFile)){goLiveScripture(reference);$('extraBibleStatus').textContent='Downloaded. This version is now available offline.';}else $('extraBibleStatus').textContent='Not downloaded yet. Reconnect and retry.';}
   finally{button.disabled=false;}
-});
-
-/* OBS overlay URL */
-function obsOverlayUrl() {
-  return new URL('display.html?overlay=1', location.href).href;
-}
-$('obsUrl').value = obsOverlayUrl();
-$('btnCopyObs').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(obsOverlayUrl()); flash($('btnCopyObs'), 'Copied ✓'); }
-  catch { $('obsUrl').select(); document.execCommand('copy'); flash($('btnCopyObs'), 'Copied ✓'); }
 });
 
 /* Backup / restore */

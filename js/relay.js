@@ -17,21 +17,36 @@
         if (token !== sequence) return;
         const response = await fetch('/__kogg/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
         if (!response.ok) throw new Error('Output bridge failed (' + response.status + ')');
+        if(!connection.ready)connection={ready:true,message:'Bridge connected. Latest output sent. Check connection to count readers.'};
       });
       await sendQueue;
-    } catch (err) { console.warn(err.message); }
+    } catch (err) { connection={ready:false,message:'Could not send the latest output. Check the local bridge and retry.'}; console.warn(err.message); }
   }
-  window.KOGGRelay = {publish};
-  if (!local) return;
-  fetch('/__kogg/status').then(r => r.ok ? r.json() : null).then(status => {
-    if (!status?.relay) return;
-    active = true;
+  let events=null, checking=null;
+  let connection={ready:false,message:local?'Bridge not checked yet.':'Window Capture works here. Browser Source needs the local bridge.'};
+  function check(){
+    if(!local)return Promise.resolve(connection);
+    if(checking)return checking;
+    checking=(async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),4000);
+    try{const response=await fetch('/__kogg/status',{signal:controller.signal,cache:'no-store'});const status=response.ok?await response.json():null;
+    if(!status?.relay)throw new Error('Local bridge is not running at this address.');
+    active=true;connection={ready:true,message:'Bridge ready · '+(Number(status.readers)||0)+' connected output reader(s) at last check. Readers may be browsers or OBS.'};
+    await connect();
+    }catch(error){active=false;connection={ready:false,message:'Bridge unavailable. Start it and open its local operator, then check again.'};}
+    finally{clearTimeout(timer);checking=null;}return connection;})();return checking;
+  }
+  window.KOGGRelay = {publish,check,status:()=>({...connection})};
+  function connect(){
     if (!location.pathname.endsWith('display.html')) {
       const read = (k,fallback) => { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch { return fallback; } };
-      publish(read('cp_live',{mode:'blank',slides:[],index:0}),read('cp_themes',[]),read('cp_settings',{}));
+      const themes=read('cp_themes',[]);
+      // On a fresh install the operator has not seeded its themes yet. Its first
+      // publish will send them; an empty bootstrap must not report a false error.
+      if(themes.length)return publish(read('cp_live',{mode:'blank',slides:[],index:0}),themes,read('cp_settings',{}));
       return;
     }
-    const events = new EventSource('/__kogg/events');
+    if(events)return;
+    events = new EventSource('/__kogg/events');
     events.onmessage = async event => {
       const token = ++receiving;
       try {
@@ -44,5 +59,6 @@
         if (typeof render === 'function') render(data.live);
       } catch (err) { console.warn('Output bridge:',err.message); }
     };
-  }).catch(() => {});
+  }
+  if(local)check();
 })();

@@ -13,7 +13,7 @@ function createRelay() {
     if (!/^127\.0\.0\.1(?::\d+)?$/.test(req.headers.host || '')) { res.writeHead(403); res.end('Use 127.0.0.1'); return; }
     res.setHeader('Cache-Control','no-store');
     res.setHeader('X-Content-Type-Options','nosniff');
-    if (url.pathname === '/__kogg/status' && req.method === 'GET') { res.setHeader('Content-Type','application/json'); res.end('{"relay":true}'); return; }
+    if (url.pathname === '/__kogg/status' && req.method === 'GET') { res.setHeader('Content-Type','application/json'); res.end(JSON.stringify({relay:true,readers:viewers.size})); return; }
     if (url.pathname === '/__kogg/events' && req.method === 'GET') {
       res.writeHead(200,{'Content-Type':'text/event-stream','Connection':'keep-alive'});
       res.write(': connected\n\n'); if (snapshot) res.write('data: ' + snapshot + '\n\n');
@@ -29,7 +29,7 @@ function createRelay() {
           const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
           if (!data.live || !Array.isArray(data.live.slides) || !Array.isArray(data.themes) || !data.themes.length || !data.settings || !data.assets) throw Error('Invalid state');
           // Do not retain arbitrary properties or any authentication/session state.
-          snapshot = JSON.stringify({live:data.live,themes:data.themes,settings:{logoId:data.settings.logoId || '',logoImage:data.settings.logoImage || '',logoName:data.settings.logoName || ''},assets:data.assets});
+          snapshot = JSON.stringify({live:data.live,themes:data.themes,settings:{logoStyle:data.settings.logoStyle || 'combination',logoId:data.settings.logoId || '',logoImage:data.settings.logoImage || '',logoName:data.settings.logoName || ''},assets:data.assets});
           for (const viewer of viewers) viewer.write('data: ' + snapshot + '\n\n');
           res.writeHead(204); res.end();
         } catch { res.writeHead(400); res.end('Invalid output state'); }

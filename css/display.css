@@ -203,3 +203,17 @@ body.overlay #screen { background: transparent !important; }
 .has-notes-alert #slideText{height:calc(90vh - var(--notes-alert-height,8vh));max-height:calc(90vh - var(--notes-alert-height,8vh))}
 .has-notes-alert #slideLabel{bottom:calc(var(--notes-alert-height,8vh) + 1vh)}
 .has-notes-alert #lowerThird{bottom:calc(var(--notes-alert-height,8vh) + 3vh)}
+
+/* Shared Stream designs are also understood by Notes name tags. */
+#lowerThird #ltBox{border-color:var(--lt-accent,#4f8cff);overflow-wrap:anywhere;min-width:0}
+#lowerThird[data-position=left]{justify-content:flex-start;padding-left:4vw;box-sizing:border-box}
+#lowerThird[data-position=right]{justify-content:flex-end;padding-right:4vw;box-sizing:border-box}
+#lowerThird[data-size=small] #ltLine1{font-size:4vh}#lowerThird[data-size=small] #ltLine2{font-size:2.6vh}
+#lowerThird[data-size=large] #ltLine1{font-size:7vh}#lowerThird[data-size=large] #ltLine2{font-size:4.2vh}
+#lowerThird[data-style=minimal] #ltBox{background:rgba(0,0,0,.82);border-left:0;border-bottom:3px solid var(--lt-accent,#4f8cff);border-radius:0}
+#lowerThird[data-style=centered] #ltBox{text-align:center;border-left:0;border-top:4px solid var(--lt-accent,#4f8cff);border-radius:18px}
+
+/* Keep live Scripture above an active name tag rather than behind it. */
+.has-live-tag #screen{bottom:var(--live-tag-clearance,27vh)}
+.has-live-tag #slideText{height:100%;max-height:100%}
+.has-live-tag #slideLabel{bottom:calc(var(--live-tag-clearance,27vh) + 1vh)}

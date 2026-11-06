@@ -129,3 +129,11 @@ Next priorities: independent broadcast/projector layouts; a packaged local bridg
 - Responsive breakpoints rearrange Scripture into two columns on tablets and stack the lower docks on phones; three-part decks reflow without fixed page widths. Existing motion pauses offscreen.
 - Validation: 44 targeted automated checks passed, covering all eight tabs, real Scripture lookup/search/history/navigation/retry, hymn switching, note templates, preview controls, JavaScript parsing and offline asset integrity. HTML nesting and section links checked. Browser visual QA was attempted but remains disabled in Work settings; responsive rendering has not been visually verified in this release.
 - No added runtime library. The user's untracked data/hymns-basic.json remains untouched.
+
+
+## 6 November 2026 — Restore visible landing-page sections (v111)
+
+- Corrected v110's overuse of collapsed sections. Screen setup, current improvements, device support and roadmap now have visible cards with concise text.
+- OBS now has two illustrated connection cards; detailed instructions expand within each card. Voice input shows its three-step flow immediately. FAQ and technical details retain disclosures.
+- Restored section depth with spacious cards, two-column update/broadcast layouts and a responsive roadmap grid. Preserved app-shaped demos, existing animations, font and blue theme.
+- Validation: 44 existing targeted checks passed. HTML nesting, anchors, unique IDs and visible main card grids checked. No browser-rendered visual verification: browser access remains disabled. Offline release v111 updates the changed assets.

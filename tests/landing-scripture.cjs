@@ -1,0 +1,19 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const html=fs.readFileSync('landing.html','utf8'),source=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].find(m=>m[1].includes('function liveVerse'))[1],bible=JSON.parse(fs.readFileSync('data/kjv.json','utf8'));
+function boot({failFirst=false}={}){
+ const nodes=new Map();let requests=0;
+ function node(id){if(nodes.has(id))return nodes.get(id);const el={value:'',textContent:'',innerHTML:'',children:[],events:{},classList:{toggle(){},add(){},remove(){}},addEventListener(type,fn){(this.events[type]??=[]).push(fn);},fire(type,event={}){for(const fn of this.events[type]||[])fn(event);},click(){this.fire('click');},replaceChildren(){this.children=[];this.textContent='';},appendChild(child){this.children.push(child);},setSelectionRange(){}};if(id)nodes.set(id,el);return el;}
+ const context=vm.createContext({document:{getElementById:node,querySelectorAll:()=>[],createElement:()=>node()},window:{},setTimeout,clearTimeout,fetch:async()=>{requests++;if(failFirst&&requests===1)throw Error('Offline');return {ok:true,json:async()=>bible};}});vm.runInContext(source,context);return {node,context,requests:()=>requests,ready:()=>new Promise(resolve=>setImmediate(resolve))};
+}
+test('Scripture lookup loads KJV only on demand, retains history and navigates real verses',async()=>{
+ const b=boot();assert.equal(b.requests(),0);assert.equal(b.node('demoNextVerse').disabled,true);b.node('demoQj').value='John 3:16';b.node('demoJumpShow').click();await b.ready();assert.equal(b.requests(),1);assert.match(b.node('demoText').textContent,/God so loved/);assert.equal(b.node('demoMemory').children[0].textContent,'John 3:16');
+ b.node('demoNextVerse').click();assert.equal(b.node('demoRef').textContent,'John 3:17');b.node('demoMemory').children[1].click();assert.equal(b.node('demoRef').textContent,'John 3:16');assert.equal(b.node('demoMemory').children.length,2);b.node('demoPrevChapter').click();assert.match(b.node('demoChTitle').textContent,/John/);b.node('demoNextVerse').click();assert.equal(b.node('demoRef').textContent,'John 2:2');
+ b.node('demoQj').value='John 0:1';b.node('demoJumpShow').click();assert.equal(b.node('demoRef').textContent,'Invalid reference');assert.equal(b.node('demoMemory').children.length,3);
+});
+test('Word search queues while loading, selects a real match, caps results and clears misses',async()=>{
+ const b=boot();b.node('demoWordSearch').value='sheep hear my voice';b.node('demoSearchGo').click();await b.ready();let results=b.node('demoSearchResults');const hit=results.children.find(x=>x.children[0]?.textContent==='John 10:27');assert.ok(hit);hit.click();assert.match(b.node('demoText').textContent,/My sheep hear my voice/);
+ b.node('demoWordSearch').value='the';b.node('demoSearchGo').click();assert.equal(results.children.length,13);b.node('demoWordSearch').value='<script>missing</script>';b.node('demoSearchGo').click();assert.equal(results.children.length,0);assert.match(results.textContent,/No matches/);b.node('demoWordSearch').value='a';b.node('demoSearchGo').click();assert.match(results.textContent,/three letters/);
+});
+test('Failed Bible download can be retried without stale search results replacing the latest query',async()=>{
+ const b=boot({failFirst:true});b.node('demoWordSearch').value='sheep';b.node('demoSearchGo').click();await b.ready();assert.match(b.node('demoLoad').textContent,/failed/);b.node('demoWordSearch').value='Jesus wept';b.node('demoSearchGo').click();await b.ready();assert.equal(b.requests(),2);assert.ok(b.node('demoSearchResults').children.some(x=>x.children[0]?.textContent==='John 11:35'));assert.ok(b.node('demoSearchResults').children.slice(1).every(x=>/wept/i.test(x.children[1].textContent)));
+});

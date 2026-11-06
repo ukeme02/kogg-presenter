@@ -3,7 +3,7 @@ const html=fs.readFileSync('landing.html','utf8');
 class Node{
  constructor(){this.value='';this.textContent='';this.style={};this.children=[];this.attrs={};this.dataset={};this.events={};this.hidden=false;this.clientWidth=0;this.clientHeight=0;}
  addEventListener(type,fn){(this.events[type]??=[]).push(fn);} fire(type,event={}){for(const fn of this.events[type]||[])fn(event);} click(){this.fire('click');} focus(){this.focused=true;}
- setAttribute(key,value){this.attrs[key]=String(value);} getAttribute(key){return this.attrs[key];} appendChild(el){this.children.push(el);} replaceChildren(...els){this.children=els;this.textContent='';}
+ setAttribute(key,value){this.attrs[key]=String(value);} getAttribute(key){return this.attrs[key];} appendChild(el){this.children.push(el);} append(...els){this.children.push(...els);} replaceChildren(...els){this.children=els;this.textContent='';}
 }
 function boot(){
  const nodes=new Map(),all=[];for(const match of html.matchAll(/<([a-z][a-z0-9-]*)\b([^>]*)>/gi)){
@@ -42,3 +42,6 @@ test('Themes change the sample look and Tools selects useful guides',()=>{
  const {nodes,query}=boot();nodes.get('tourThemeLook').value='black';nodes.get('tourThemeFont').value='serif';nodes.get('tourThemeSize').value='70';nodes.get('tourThemeSize').fire('input');assert.equal(nodes.get('tourThemeScreen').style.background,'#080b12');assert.equal(nodes.get('tourThemeScreen').style.fontFamily,'Georgia,serif');assert.equal(nodes.get('tourThemeSizeLabel').textContent,'70%');
  query('[data-tour-tool]')[2].click();assert.match(nodes.get('tourToolTitle').textContent,/copy of your work/);assert.equal(nodes.get('tourToolSteps').children.length,3);assert.equal(nodes.get('tourToolLink').href,'#voice');
 });
+
+test('Note templates replace the sample with real bullet points',()=>{const {nodes,query}=boot();query('[data-tour-note]')[1].click();assert.equal(nodes.get('tourNotesOutput').children[0].children[0].textContent,'Remember His goodness');assert.equal(query('[data-tour-note]')[1].attrs['aria-pressed'],'true');nodes.get('tourNotesReset').click();assert.equal(nodes.get('tourNotesOutput').children[0].children[0].textContent,'Walk in faith');});
+test('Hymn choices update slide text and titles, and resetting restores Amazing Grace',()=>{const b=boot(),source=fs.readFileSync('js/landing.js','utf8');b.context.$=id=>b.nodes.get(id);b.context.window.KOGGLyrics=require('../js/lyrics.js');vm.runInContext(source.slice(source.indexOf(" const original=$('demoLyrics')"),source.indexOf(' const modes={base:')),b.context);b.query('[data-tour-song]')[1].click();assert.match(b.nodes.get('demoLyricRef').textContent,/Holy, Holy, Holy/);assert.match(b.nodes.get('demoLyricText').textContent,/Lord God Almighty/);b.nodes.get('demoLyricCards').children[1].click();assert.match(b.nodes.get('demoLyricText').textContent,/saints adore/);b.nodes.get('resetDemoLyrics').click();assert.match(b.nodes.get('demoLyricRef').textContent,/Amazing Grace/);assert.equal(b.query('[data-tour-song]')[0].attrs['aria-pressed'],'true');});

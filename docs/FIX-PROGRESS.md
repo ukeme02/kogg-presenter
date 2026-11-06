@@ -119,3 +119,13 @@ Next priorities: independent broadcast/projector layouts; a packaged local bridg
 - Samples are local page state only: no storage, account handling, microphone access or output connection. User-entered text is inserted as text nodes. Keyboard arrows/Home/End move across all eight tabs without resetting edits.
 - Responsive tour tabs use four columns on desktop/tablet and two on narrow phones; panels become a single column below 900px. Preview sizing observes its container and font readiness. No extra library dependencies.
 - Validation: 20 targeted landing and offline checks passed, including five new behavioral tests. HTML nesting, section anchors and unique IDs validated. Browser visual inspection remains unavailable because local browser use is disabled in Work settings; no claim of a fresh screenshot or rendered-layout verification.
+
+
+## 6 November 2026 — App-shaped landing previews and shorter copy (v110)
+
+- Scripture tour mirrors the operator's four upper docks (Books, Chapters, Verses, Memory) and three lower docks (Quick jump, Whole-Bible search, On the projector), with bounded dock content and chapter/verse controls. Real KJV searches and recent-passage recall remain isolated from the app's library/output.
+- Reworked tour chrome into eight compact deck tabs. Lyrics, Notes and Stream use their corresponding three-part workspace layouts; Lyrics slide cards sit beside the editor, with a separate rectangular output. Added selectable public-domain hymn samples and point templates. The remaining decks retain working previews with compact dock headings.
+- Shortened the hero, feature benefits, voice, display, broadcast and partnership copy. Screen setup, OBS instructions, release notes, roadmap and platform details are native expandable disclosures. Preserved blue branding, the Nunito font, animated hero/ticker and floating Explorer.
+- Responsive breakpoints rearrange Scripture into two columns on tablets and stack the lower docks on phones; three-part decks reflow without fixed page widths. Existing motion pauses offscreen.
+- Validation: 44 targeted automated checks passed, covering all eight tabs, real Scripture lookup/search/history/navigation/retry, hymn switching, note templates, preview controls, JavaScript parsing and offline asset integrity. HTML nesting and section links checked. Browser visual QA was attempted but remains disabled in Work settings; responsive rendering has not been visually verified in this release.
+- No added runtime library. The user's untracked data/hymns-basic.json remains untouched.

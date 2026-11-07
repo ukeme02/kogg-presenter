@@ -43,7 +43,7 @@
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
  // KOGG's decorative motion is enabled by default; no extra Play step.
  const paused=false;let frame=0;
- function motionBlocked(){return false;}
+ function motionBlocked(){return reduced.matches;}
  document.body.classList.remove('motion-paused');
  document.body.classList.add('motion-enabled');
  const revealTargets=document.querySelectorAll('.section-heading,.tour-panel,.mode-explorer,.library-card,.update-grid article,.install-card,.faq-list,.closing,.facts,.service-flow,.display-grid article,.roadmap-rows article');
@@ -99,13 +99,13 @@
  stage.addEventListener('input',scheduleHero);document.addEventListener('visibilitychange',scheduleHero);
  heroButtons.forEach((button,i)=>button.addEventListener('click',()=>{scene=i?2:0;updateDots();animatePreview($(button.getAttribute('aria-controls')).querySelector('.hero-screen'));scheduleHero();}));
  document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
- updateDots();
+ updateDots();reduced.addEventListener?.('change',scheduleHero);
  $('copyObsGuide').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('obsGuideUrl').textContent);$('obsCopyStatus').textContent='OBS URL copied. Paste it into the Browser Source properties.';}catch{$('obsCopyStatus').textContent='Select and copy the URL above.';}});
  // Floating watch-style navigation: draggable, bounded and keyboard accessible.
  const widget=$('watchWidget'),launcher=$('watchLauncher'),apps=$('watchApps');
  const bounceSeed={x:(Math.random()>.5?1:-1)*(4+Math.random()*4),y:12+Math.random()*8,time:5.5+Math.random()*2.5};
  widget.style.setProperty('--bounce-time',bounceSeed.time.toFixed(2)+'s');
- let watchOpen=false,watchDrag=null,watchMoved=false,watchX=18,watchY=Math.round(innerHeight*.45),watchFrame=0;
+ let watchOpen=false,watchDrag=null,watchMoved=false,watchX=innerWidth-80,watchY=innerHeight-98,watchFrame=0;
  function boundWatch(x,y,open=false){const margin=open?123:8;const maxX=Math.max(margin,innerWidth-(open?175:64)-8),maxY=Math.max(margin,innerHeight-(open?175:64)-8);return {x:Math.max(margin,Math.min(maxX,x)),y:Math.max(margin,Math.min(maxY,y))};}
  function positionWatch(x,y){const p=boundWatch(x,y,watchOpen);watchX=p.x;watchY=p.y;widget.style.left=watchX+'px';widget.style.top=watchY+'px';widget.style.setProperty('--hop-x',((watchX<20?1:watchX>innerWidth-90?-1:Math.sign(bounceSeed.x))*Math.abs(bounceSeed.x)).toFixed(1)+'px');widget.style.setProperty('--hop-y',(-Math.min(bounceSeed.y,Math.max(0,watchY-6))).toFixed(1)+'px');}
  function saveWatch(){try{localStorage.setItem('kogg-navigation-position',JSON.stringify({x:watchX,y:watchY}));}catch{}}
@@ -121,7 +121,7 @@
  document.addEventListener('pointerdown',event=>{if(watchOpen&&!widget.contains(event.target))openWatch(false);});
  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&watchOpen){openWatch(false);launcher.focus();}});
  window.addEventListener('resize',()=>{if(!watchFrame)watchFrame=requestAnimationFrame(()=>{watchFrame=0;positionWatch(watchX,watchY);});});
- const storySections={welcome:'welcome','why-kogg':'explore',features:'explore',voice:'explore',demo:'explore',display:'screens',obs:'screens',modes:'modes',library:'modes',updates:'updates',roadmap:'updates',get:'start',faq:'start',partner:'mission'};
+ const storySections={'service-story':'explore',connections:'screens',setup:'screens',welcome:'welcome','why-kogg':'explore',features:'explore',voice:'explore',demo:'explore',display:'screens',obs:'screens',modes:'modes',library:'modes',updates:'updates',roadmap:'updates',get:'start',faq:'start',partner:'mission'};
  function markStory(chapter){document.querySelectorAll('[data-chapter-link]').forEach(link=>{if(link.dataset.chapterLink===chapter)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});}
  if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top);if(visible[0])markStory(storySections[visible[0].target.id]);},{rootMargin:'-15% 0px -55% 0px',threshold:0});Object.keys(storySections).forEach(id=>{if($(id))observer.observe($(id));});}
  markStory(storySections[location.hash.slice(1)]||'welcome');

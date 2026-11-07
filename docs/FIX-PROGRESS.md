@@ -224,3 +224,20 @@ Final native lifecycle check: the bundled browser is now enumerated as an active
 Release v117 is live at https://kogg-presenter.pages.dev/landing. Final immutable release: https://12892efe.kogg-presenter.pages.dev/. Published code: 53a8089. Windows preview installer: https://kogg-presenter.pages.dev/downloads/kogg-connect-0.1.0-preview-windows-x64.exe (568,832 bytes). The ZIP includes source; downloads are not precached with the browser core.
 
 Completed commits: 966c914 (native plugin), a207db4 (browser pairing/reconnect), cbefdac (landing and distribution), 53a8089 (source child lifecycle). 251 automated checks passed; compiled module registration, feed choices and child visibility were additionally checked against OBS 32. Real CEF rendering, interactive installer, hosted browser permission and actual phone acceptance remain outstanding, explicitly marked as such on the landing page and in the plugin guide.
+
+
+## 7–8 November 2026 — Landing experience, six improvements (v118)
+
+User confirmed KOGG Presenter now appears in OBS Sources. Actual output rendering has not yet been tested by the user.
+
+- [x] Interactive Scripture hero with immediate sample passages and linked control/output feedback.
+- [x] A five-moment service walkthrough; retain the complete eight-deck tour.
+- [x] Varied section arrangements while preserving blue branding, Nunito Sans Expanded, wordmarks and continuous scroll.
+- [x] Interactive phone/laptop and broadcast illustrations, clearly separate from real device connections.
+- [x] Purposeful transitions; visible-only animation work, touch-friendly controls and reduced-motion support.
+- [x] Shorter primary journey; practical setup and detailed roadmap remain accessible.
+- [x] Desktop, phone/tablet layout and interaction checks: 320, 390, 768 and 1280px; no horizontal overflow or browser errors. Both appearances reviewed.
+
+256 automated checks passed. Hero samples match the bundled KJV without downloading the complete Bible; additional references load it on demand. Service bullets, phone Next/Blank/Resume, broadcast layout switching and guide deep links verified in the browser. These are isolated landing illustrations; actual OBS rendering and physical phone acceptance remain pending.
+
+- [ ] Commit, deploy and verify production v118.

@@ -178,3 +178,18 @@ Service → Rehearse & check snapshots the service without mutating live output 
 Publication: Cloudflare API DNS now resolves again. Preparing combined release v116 containing the separately committed stages. Browser/hardware and real signed-in two-device verification remain unavailable in this session.
 
 Final validation before publication: all 242 automated checks passed across the repository. Markup nesting and duplicate IDs were checked on the operator, landing and both remote pages. The untracked data/hymns-basic.json remains untouched.
+
+### Publication verified — 7 November 2026
+
+Combined release v116 is live at https://kogg-presenter.pages.dev/ (immutable release: https://74327be3.kogg-presenter.pages.dev/). Production operator, landing page, Wi-Fi remote page, online remote page and service-worker version returned HTTP 200 with the new release markers. A temporary loopback HTTP bridge also served the phone assets and verified pairing/authenticated state successfully; it was stopped after the check.
+
+Implementation commits: 7e0a52c (independent broadcast), 7aa3079 (Wi-Fi remote), 9fbca45 (online remote), 1348392 (private rehearsal and feature notes). All 242 automated checks passed.
+
+- [x] Stage 1 built, tested, committed and published.
+- [x] Stage 2 built for both Wi-Fi and online Sync, tested, committed and published.
+- [x] Stage 3 built, tested, committed and published.
+- [ ] Manual acceptance: physical projector/OBS and a real phone on church Wi-Fi.
+- [ ] Manual acceptance: two signed-in devices using the production online remote.
+- [ ] Visual browser check: browser use remains disabled in Work settings.
+
+No minister-listening AI was added. Existing offline essentials and the user's untracked hymn file were preserved.

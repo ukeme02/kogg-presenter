@@ -205,11 +205,14 @@ Goal: replace the separate OBS bridge process with an optional installed OBS sou
 - [x] Native server integration tests: authentication, source files, pairing, conflicting tabs, state transfer, disconnect blanking, revocation and restart persistence.
 - [x] Module registration and all four output choices verified against the installed OBS 32 library in an isolated harness, without opening/changing the user's OBS session.
 - [x] Stream Connect/Disconnect controls, remembered pairing, automatic reconnect and latest-state delivery implemented. Manual bridge moved to Advanced.
-- [ ] Final installer/package validation and release.
-- [ ] Landing page: plugin preview/download, phone remote requirements, separate broadcast and rehearsal.
-- [ ] Full regression checks and deployment verification.
+- [x] Windows GUI installer, manual/source ZIP and checksum manifest built; embedded renderer matches repository files. Installer is unsigned; interactive installation acceptance is pending.
+- [x] Landing page: plugin preview/download, visible phone remote connection cards, separate broadcast and rehearsal.
+- [x] All 251 automated checks passed, including compiled native transport, browser connection lifecycle and embedded output isolation. Operator/landing/output markup and package integrity validated.
+- [ ] Deployment verification.
 - [ ] Manual acceptance: installed OBS source rendering, hosted Chrome/Edge local-network permission, offline images, scene reuse and clean-account installer.
 - [ ] Manual acceptance: actual phones for both existing Wi-Fi and online Sync remote.
 - [ ] Later: macOS/Linux native builds after Windows acceptance.
 
 The plugin serves only the bundled renderer on 127.0.0.1:8767; it does not expose the phone remote over LAN or require a Sync account. Same-Wi-Fi phone remote still requires the optional bridge; online remote requires internet and sign-in. Browser visual testing remains unavailable in this session. No user hymn data was changed.
+
+Reconnect checks also cover an OBS restart between heartbeat polls and browser-tab duplication: the latest snapshot is resent when OBS has no state; each presenter page has a fresh writer identity. OBS rendering never claims the room projector lock or opens another output window. The plugin assets are downloaded on demand, not added to the app's offline essentials.

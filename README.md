@@ -107,7 +107,12 @@ Everything else in the app works without any of this — sync is purely optional
 
 ## Pair with OBS Studio
 
-The operator and a normal output window share state within the same browser. OBS has a separate browser process, so it needs the optional local bridge:
+**Simplest existing option:** open KOGG Output and add Window Capture in OBS. No bridge is needed.
+
+**New Windows preview:** install [KOGG Connect](https://kogg-presenter.pages.dev/downloads/kogg-connect-0.1.0-preview-windows-x64.exe), restart OBS, and add **KOGG Presenter** from Sources. In KOGG, choose **Stream → KOGG Connect**, enter the eight-character code from the source properties, and connect. Allow local-network access if prompted. The plugin starts with OBS and bundles its offline renderer; no Node or separate terminal is needed. It supports full presentation, transparent text, separate broadcast/lower thirds and graphics-only output. See [setup, build and acceptance notes](plugins/obs-kogg/README.md). Windows x64 / OBS 32 only, unsigned preview; actual OBS rendering and browser permission acceptance remain pending.
+
+**Advanced fallback:** the original bridge remains available. OBS and the operator use separate browser storage, so a plain hosted display URL does not carry live updates:
+
 
 1. From this repository folder, run `node tools/obs-relay.cjs` (Node.js 18 or newer).
 2. Open `http://127.0.0.1:8766/` in Chrome or Edge as the operator. This origin has its own local storage; export/import a backup to transfer your existing library.
@@ -274,7 +279,7 @@ Lyrics search checks saved songs first, then automatically searches the connecte
 
 ### Independent broadcast layout
 
-In **Stream → Layouts**, select a full-canvas or lower-third broadcast and an optional separate theme. Choose whether name tags/notices appear in the room, stream or both. Apply, then choose **Browser Source → Separate broadcast** and copy its URL into OBS. The local bridge and local operator must be running. Room and broadcast follow the same passage; they can have different presentation layouts.
+In **Stream → Layouts**, select a full-canvas or lower-third broadcast and an optional separate theme. Choose whether name tags/notices appear in the room, stream or both. Apply, then choose **Separate broadcast** in the KOGG OBS source properties. If using the advanced bridge instead, choose **Browser Source → Separate broadcast**, copy its URL into OBS, and keep the bridge and local operator running. Room and broadcast follow the same passage; they can have different presentation layouts.
 
 ### Phone remote on church Wi-Fi
 

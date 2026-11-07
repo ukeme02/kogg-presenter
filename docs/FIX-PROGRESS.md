@@ -137,3 +137,13 @@ Next priorities: independent broadcast/projector layouts; a packaged local bridg
 - OBS now has two illustrated connection cards; detailed instructions expand within each card. Voice input shows its three-step flow immediately. FAQ and technical details retain disclosures.
 - Restored section depth with spacious cards, two-column update/broadcast layouts and a responsive roadmap grid. Preserved app-shaped demos, existing animations, font and blue theme.
 - Validation: 44 existing targeted checks passed. HTML nesting, anchors, unique IDs and visible main card grids checked. No browser-rendered visual verification: browser access remains disabled. Offline release v111 updates the changed assets.
+
+
+## 7 November 2026 — Theme studio cleanup (v112)
+
+- Replaced the mixed long form with keyboard-accessible Text, Background, Layout and Logo categories. Existing values and handlers are preserved; category changes do not save, apply or replace a draft.
+- Theme selection/New stay above the editor. Destructive theme management is separated from styling controls. Logo remains a picker within its own category, with an explicit Send logo to output action.
+- Preview keeps a 16:9 composition and fits sample text to its actual dimensions, including automatic/manual sizing and quick-edit scale. Save/Apply and status remain outside the scrollable editor. Layout reflows for smaller screens.
+- Added a lightweight studio script to the offline shell. Landing release card reflects the delivered theme organization.
+- Validation: 112 targeted operator, output, theme navigation/sizing, regression and offline checks passed. HTML nesting and retained control IDs checked. Browser visual verification was attempted but remains unavailable because browser use is disabled in Work settings.
+- Recommended next: separate congregation/broadcast layouts, then phone remote control and service rehearsal/recovery. Minister-listening AI remains a later exploration.

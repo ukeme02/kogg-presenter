@@ -296,19 +296,11 @@
   <section id="tab-themes" class="tab-panel">
     <div class="themes-deck">
       <div class="dock themes-studio">
-      <div class="dock-head"><span class="grip"><i class="dock-ico">🎨</i>Theme studio</span><span class="dock-head-hint">Style Scripture, lyrics and message points</span></div>
-      <div class="themes-scroll">
-      <div class="row">
-        <label>Theme<br><select id="themeSelect"></select></label>
-        <button id="btnNewTheme">+ New</button>
-        <button id="btnDeleteTheme" class="danger">Delete</button>
-      </div>
-      <div class="row">
-        <label>Name<br><input id="themeName" type="text" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label>
-        <label>Text color<br><input id="themeTextColor" type="color"></label>
-        <label>Emphasis colour (word highlights)<br><input id="themeHlColor" type="color" value="#ffd83d" title="The yellow annotation colour — tap to choose another"></label>
-        <label>Manual font size (vh)<br><input id="themeFontSize" type="number" min="3" max="60" step="0.5"></label>
-        <label>Font<br>
+        <div class="dock-head"><span class="grip"><i class="dock-ico">🎨</i>Theme studio</span><span class="dock-head-hint">Choose a look. Make it yours.</span></div>
+        <div class="theme-picker-row"><label>Theme<select id="themeSelect"></select></label><button id="btnNewTheme">+ New</button></div>
+        <nav class="theme-studio-tabs" role="tablist" aria-label="Theme controls"><button id="theme-tab-text" data-theme-page="text" role="tab" aria-controls="theme-page-text" aria-selected="true" tabindex="0">Text</button><button id="theme-tab-background" data-theme-page="background" role="tab" aria-controls="theme-page-background" aria-selected="false" tabindex="-1">Background</button><button id="theme-tab-layout" data-theme-page="layout" role="tab" aria-controls="theme-page-layout" aria-selected="false" tabindex="-1">Layout</button><button id="theme-tab-logo" data-theme-page="logo" role="tab" aria-controls="theme-page-logo" aria-selected="false" tabindex="-1">Logo</button></nav>
+        <div class="themes-scroll">
+          <div id="theme-page-text" class="theme-studio-page" role="tabpanel" aria-labelledby="theme-tab-text"><h3>Clear, readable words.</h3><p class="hint">Automatic sizing fills the available space. Changing manual size turns it off.</p><div class="theme-field-grid"><label>Name<input id="themeName" type="text" spellcheck="true" autocorrect="on" autocapitalize="sentences"></label><label>Font
           <select id="themeFont">
             <option value="'Nunito Sans Expanded', Georgia, serif">Nunito Sans Expanded</option>
             <option value="Georgia, serif">Serif</option>
@@ -317,26 +309,15 @@
             <option value="Verdana, sans-serif">Verdana</option>
 <option value="system-ui, sans-serif">System UI</option><option value="Tahoma, Geneva, sans-serif">Tahoma</option><option value="Trebuchet MS, sans-serif">Trebuchet</option><option value="Palatino Linotype, Book Antiqua, Palatino, serif">Palatino</option><option value="Cambria, Georgia, serif">Cambria</option><option value="Garamond, Georgia, serif">Garamond</option><option value="Courier New, monospace">Courier</option><option value="Impact, Arial Black, sans-serif">Impact</option>
           </select>
-        </label>
-      </div>
-      <div class="row">
-        <label>Text alignment<br>
-          <select id="themeAlign">
-            <option value="center">Center</option>
-            <option value="left">Left</option><option value="right">Right</option>
-          </select>
-        </label>
-        <label>Font weight<br>
+        </label><label>Font weight
           <select id="themeWeight">
             <option value="400">Regular</option>
             <option value="600">Semi-bold</option>
             <option value="700">Bold</option>
             <option value="300">Light</option>
           </select>
-        </label>
-      </div>
-      <div class="row">
-        <label>Background<br><select id="themeBg">
+        </label><label>Text color<input id="themeTextColor" type="color"></label><label>Highlight colour<input id="themeHlColor" type="color" value="#ffd83d" title="The yellow annotation colour — tap to choose another"></label><label><input id="themeFillScreen" type="checkbox"> Fill screen automatically (recommended)</label><label>Manual size (% of screen)<input id="themeFontSize" type="number" min="3" max="60" step="0.5"></label><label><input id="themeShadow" type="checkbox"> Text shadow</label></div><details class="theme-management"><summary>Manage themes</summary><div><button id="btnDeleteTheme" class="danger">Delete</button><button id="btnResetThemes" title="Restores Black, Sunset, Deep Blue and Emerald and makes Black the output default">Reset to Default Themes</button></div></details></div>
+          <div id="theme-page-background" class="theme-studio-page" role="tabpanel" aria-labelledby="theme-tab-background" hidden><h3>Set the backdrop.</h3><p class="hint">Choose a colour blend or upload an image, then darken it for legibility.</p><div class="theme-field-grid"><label>Background<select id="themeBg">
           <option value="linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d)">Sunset</option>
           <option value="linear-gradient(135deg,#0f2027,#203a43,#2c5364)">Deep Blue</option>
           <option value="linear-gradient(135deg,#134e5e,#71b280)">Emerald</option>
@@ -352,39 +333,21 @@
           <option value="linear-gradient(135deg,#00467f,#a5cc82)">Spring</option>
           <option value="linear-gradient(135deg,#870000,#190a05)">Crimson</option>
           <option value="image">Custom image…</option>
-        </select></label>
-        <label>Upload background<br><input id="themeBgImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><button id="btnClearThemeImage">Remove image</button>
-      </div>
-      <details class="theme-controls" open><summary>Display controls</summary><div class="row">
-<label>Vertical position<select id="themeVertical"><option value="center">Middle</option><option value="top">Top</option><option value="bottom">Bottom</option></select></label>
-<label>Line spacing<input id="themeLineHeight" type="number" min="1" max="2" step="0.05"></label>
-<label>Side margin (%)<input id="themeMargin" type="number" min="2" max="18" step="1"></label>
-<label>Letter spacing (em)<input id="themeSpacing" type="number" min="0" max="0.15" step="0.01"></label>
-<label>Image fit<select id="themeImageFit"><option value="cover">Fill screen (crop edges)</option><option value="contain">Show whole image</option></select></label>
-<label class="theme-dim-control">Darken background · <output id="themeDimValue">0%</output><input id="themeDim" type="range" min="0" max="100" step="1"><small>Original image ← → Darker for clear text</small></label>
-<label>Reference size (vh)<input id="themeLabelSize" type="number" min="1.5" max="5" step="0.25"></label>
-<label><input id="themeShowLabel" type="checkbox"> Show Scripture reference / slide label</label>
-<label><input id="themeShadow" type="checkbox"> Text shadow</label>
-<label><input id="themeFillScreen" type="checkbox"> Fill screen automatically (recommended)</label>
-</div></details>
-      <div class="row">
-        <button id="btnSaveTheme" class="primary">Save Theme</button>
-        <button id="btnApplyTheme">Apply to Live</button>
-        <button id="btnResetThemes" title="Restores Black, Sunset, Deep Blue and Emerald and makes Black the output default">Reset to Default Themes</button>
-      </div>
-      <div class="logo-picker row">
-<label>Logo<select id="logoStyle"><option value="combination">KOGG · Combination</option><option value="wordmark">KOGG · Wordmark</option><option value="mark">KOGG · Mark only</option><option value="custom">My uploaded logo</option></select></label>
-<label>Custom logo<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label>
-<button id="btnPreviewLogo">Show logo</button><button id="btnLogoClear">Remove upload</button>
-<div hidden><button id="btnLogoCombination">Combination</button><button id="btnLogoWordmark">Wordmark</button><button id="btnLogoMark">Mark</button><button id="btnCycleLogo">Next style</button></div>
-<div id="logoPreview" hidden></div><p id="logoStatus" class="hint" role="status"></p>
-      </div>
-      </div>
+        </select></label><label>Upload background<input id="themeBgImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><button id="btnClearThemeImage">Remove image</button><label>Image fit<select id="themeImageFit"><option value="cover">Fill screen (crop edges)</option><option value="contain">Show whole image</option></select></label><label class="theme-dim-control">Darken background · <output id="themeDimValue">0%</output><input id="themeDim" type="range" min="0" max="100" step="1"><small>Original image ← → Darker for clear text</small></label></div></div>
+          <div id="theme-page-layout" class="theme-studio-page" role="tabpanel" aria-labelledby="theme-tab-layout" hidden><h3>Give the message room.</h3><p class="hint">Adjust placement, spacing and the Scripture reference.</p><div class="theme-field-grid"><label>Text alignment
+          <select id="themeAlign">
+            <option value="center">Center</option>
+            <option value="left">Left</option><option value="right">Right</option>
+          </select>
+        </label><label>Vertical position<select id="themeVertical"><option value="center">Middle</option><option value="top">Top</option><option value="bottom">Bottom</option></select></label><label>Line spacing<input id="themeLineHeight" type="number" min="1" max="2" step="0.05"></label><label>Side margin (%)<input id="themeMargin" type="number" min="2" max="18" step="1"></label><label>Letter spacing (em)<input id="themeSpacing" type="number" min="0" max="0.15" step="0.01"></label><label>Reference size (% of screen)<input id="themeLabelSize" type="number" min="1.5" max="5" step="0.25"></label><label><input id="themeShowLabel" type="checkbox"> Show Scripture reference / slide label</label></div></div>
+          <div id="theme-page-logo" class="theme-studio-page" role="tabpanel" aria-labelledby="theme-tab-logo" hidden><h3>Your church on screen.</h3><p class="hint">Choose a KOGG mark or upload yours. Sending the logo replaces the current output.</p><div class="theme-field-grid logo-picker"><label>Logo<select id="logoStyle"><option value="combination">KOGG · Combination</option><option value="wordmark">KOGG · Wordmark</option><option value="mark">KOGG · Mark only</option><option value="custom">My uploaded logo</option></select></label><label>Custom logo<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></label><button id="btnPreviewLogo">Send logo to output</button><button id="btnLogoClear">Remove upload</button></div><div hidden><button id="btnLogoCombination">Combination</button><button id="btnLogoWordmark">Wordmark</button><button id="btnLogoMark">Mark</button><button id="btnCycleLogo">Next style</button></div>
+<div id="logoPreview" hidden></div><p id="logoStatus" class="hint" role="status"></p></div>
+        </div>
       </div>
       <div class="dock themes-preview">
-        <div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>Preview</span><span class="dock-head-hint">what the room will see</span></div>
-        <div id="themePreview" class="theme-preview"><div id="themePreviewText">For God, who commanded the light to shine out of darkness, hath shined in our hearts.</div><small id="themePreviewLabel">2 Corinthians 4:6 · KJV</small></div>
-        <p id="themeStatus" class="hint" role="status">Nunito is bundled offline. Other fonts use fonts installed on the presenting device, with fallbacks.</p>
+        <div class="dock-head"><span class="grip"><i class="dock-ico">🖥️</i>Theme preview</span><span class="dock-head-hint">16:9 sample</span></div>
+        <div class="theme-preview-stage"><div id="themePreview" class="theme-preview"><div id="themePreviewText"><span id="themePreviewContent">For God, who commanded the light to shine out of darkness, hath shined in our hearts.</span></div><small id="themePreviewLabel">2 Corinthians 4:6 · KJV</small></div></div>
+        <div class="theme-actions"><p class="hint">Save keeps this look. Apply sends it to the live output.</p><div><button id="btnSaveTheme" class="primary">Save Theme</button><button id="btnApplyTheme">Apply to Live</button></div><p id="themeStatus" class="hint" role="status">Nunito is available offline. Other fonts depend on this device.</p></div>
       </div>
     </div>
   </section>
@@ -632,6 +595,7 @@
 <script src="js/notes.js"></script>
 <script src="js/stream.js"></script>
 <script src="js/app.js"></script>
+<script src="js/theme-studio.js"></script>
 <script src="js/slides.js"></script>
 <script src="js/slides-deck.js"></script>
 <script src="js/stream-deck.js"></script>

@@ -21,6 +21,7 @@ static void update(void *data,obs_data_t *settings) {
 static void *create(obs_data_t *settings,obs_source_t *source) { if(!ready)return NULL;kogg_source *s=bzalloc(sizeof(*s));s->self=source;update(s,settings);if(!s->browser){bfree(s);return NULL;}kogg_reader_count(1);return s; }
 static void destroy(void *data) { kogg_source *s=data;if(!s)return;obs_source_remove_active_child(s->self,s->browser);obs_source_release(s->browser);kogg_reader_count(-1);bfree(s); }
 static void render(void *data,gs_effect_t *effect) { (void)effect;kogg_source *s=data;if(s->browser)obs_source_video_render(s->browser); }
+static void enumerate(void *data,obs_source_enum_proc_t callback,void *param) { kogg_source *s=data;if(s->browser)callback(s->self,s->browser,param); }
 static uint32_t width(void *unused) { (void)unused;return 1920; }
 static uint32_t height(void *unused) { (void)unused;return 1080; }
 static void defaults(obs_data_t *s) { obs_data_set_default_string(s,"feed","transparent"); }
@@ -32,7 +33,7 @@ static obs_properties_t *properties(void *data) {
  obs_property_t *feed=obs_properties_add_list(p,"feed","Output",OBS_COMBO_TYPE_LIST,OBS_COMBO_FORMAT_STRING);obs_property_list_add_string(feed,"Full presentation","full");obs_property_list_add_string(feed,"Transparent text and graphics","transparent");obs_property_list_add_string(feed,"Separate broadcast / lower thirds","broadcast");obs_property_list_add_string(feed,"Name tags and alerts only","alerts");
  obs_properties_add_text(p,"hint","Reuse this source in other scenes with Add existing. Choose the broadcast layout in KOGG Stream. Output is 1920 × 1080; fit to your OBS canvas.",OBS_TEXT_INFO);return p;
 }
-static struct obs_source_info source={.id="kogg_presenter",.type=OBS_SOURCE_TYPE_INPUT,.output_flags=OBS_SOURCE_VIDEO|OBS_SOURCE_CUSTOM_DRAW|OBS_SOURCE_DO_NOT_DUPLICATE,.get_name=name,.create=create,.destroy=destroy,.get_width=width,.get_height=height,.get_defaults=defaults,.get_properties=properties,.update=update,.video_render=render,.icon_type=OBS_ICON_TYPE_BROWSER};
+static struct obs_source_info source={.id="kogg_presenter",.type=OBS_SOURCE_TYPE_INPUT,.output_flags=OBS_SOURCE_VIDEO|OBS_SOURCE_CUSTOM_DRAW|OBS_SOURCE_DO_NOT_DUPLICATE,.get_name=name,.create=create,.destroy=destroy,.get_width=width,.get_height=height,.get_defaults=defaults,.get_properties=properties,.update=update,.video_render=render,.enum_active_sources=enumerate,.icon_type=OBS_ICON_TYPE_BROWSER};
 bool obs_module_load(void) {
  char *root=obs_module_file("renderer"),*folder=obs_module_config_path(""),*config=obs_module_config_path("connection.json");
  if(folder){wchar_t wide[2048];MultiByteToWideChar(CP_UTF8,0,folder,-1,wide,2048);CreateDirectoryW(wide,NULL);}ready=root&&config&&kogg_server_start(root,config);bfree(root);bfree(folder);bfree(config);

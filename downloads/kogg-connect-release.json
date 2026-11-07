@@ -6,11 +6,11 @@
   "files": {
     "kogg-connect-0.1.0-preview-windows-x64.exe": {
       "bytes": 568832,
-      "sha256": "0b35864bd5f7a3c8602d2d07c705fb9f433107c166bde1695e6a91a6d545dce1"
+      "sha256": "a97793220f441bc630f189fa732ade3f5a921aadafe4bd212cb103c7e89b1f33"
     },
     "kogg-connect-0.1.0-preview-windows-x64.zip": {
-      "bytes": 223708,
-      "sha256": "08e290f761ba00b0777a384b0034d573f3cf831347145a65eb8efe41829fc75b"
+      "bytes": 224232,
+      "sha256": "93dc11062102f7be20499bc5aa4bb99b3f1a60435e093c537be3d8894bd50788"
     }
   }
 }

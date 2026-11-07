@@ -1,9 +1,9 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v114';
+const CACHE = 'kogg-presenter-v115';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/landing-tour.js', './js/app.js', './js/theme-studio.js', './js/display.js',
-  './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/bible-providers.js', './js/content.js', './js/notes.js', './js/slides.js', './js/slides-deck.js', './js/stream.js', './js/stream-deck.js', './js/remote-operator.js', './js/lyrics.js', './js/lyrics-sources.js',
+  './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/bible-providers.js', './js/content.js', './js/notes.js', './js/slides.js', './js/slides-deck.js', './js/stream.js', './js/stream-deck.js', './js/remote-operator.js', './js/cloud-transport.js', './js/cloud-remote-operator.js', './js/lyrics.js', './js/lyrics-sources.js',
   './js/supabase-config.js', './js/idb.js', './data/kjv.json', './data/bsb.json', './data/kjvs.json', './data/strongs.json', './data/hymns.json', './data/content-catalog.json', './data/hymnary-sources.txt',
   './fonts/NunitoSans-Variable.woff2', './manifest.webmanifest',
   './icons/kogg-symbol.svg', './icons/kogg-symbol-light.svg', './icons/kogg-symbol-white.svg', './icons/kogg-symbol-ink.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './icons/icon.svg', './icons/icon-maskable.svg',
@@ -12,8 +12,8 @@ const ASSETS = [
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
-  "./": "4a387a0a785fb9333164656dc1d62986a8558e2ffebf4f362ba55b0f3d8e846f",
-  "./index.html": "4a387a0a785fb9333164656dc1d62986a8558e2ffebf4f362ba55b0f3d8e846f",
+  "./": "452cac8a437c3c227516d66e2ddead08dd04003450fb71ed889aa67f03db2803",
+  "./index.html": "452cac8a437c3c227516d66e2ddead08dd04003450fb71ed889aa67f03db2803",
   "./display.html": "a63c5f02bc198e097c6c70823e9250bae515b227369184686df6e0f43a65ca28",
   "./landing.html": "e93bd212323547425fc8b9b50e022fb23e3524d2727fc61a2f454952718e09b9",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
@@ -23,7 +23,7 @@ const ASSET_HASHES = {
   "./css/landing.css": "95262ef86352d269c6b074739ce8e4c458e79589be300e61c260129b6a2f1097",
   "./js/landing.js": "322558f0ac47eb60147afca5a9d12b024c93c87e5e87e21bcb708496a318ff52",
   "./js/landing-tour.js": "d8eae2a2c71eafa56dc03356a66ed1775c61784a2dacf56dacf69e938cabc1b4",
-  "./js/app.js": "016d0d987d9f1171c4ea71b406fa93bc12255c995ef540879bc9c144292bd7fc",
+  "./js/app.js": "ec45ee48172a66f22637a23daa8d346fd52bf635a88fc84efe9b49becf30b510",
   "./js/theme-studio.js": "f566118922d25f926d5d35b127ce482fad155c1e8a197ae67a7fe157ea456463",
   "./js/display.js": "4843d523fa7948294bfa877184d915d67db3e24175d4397fab1add0a87aeded2",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
@@ -38,7 +38,9 @@ const ASSET_HASHES = {
   "./js/slides-deck.js": "a8d8bc4cef3d188a45726f90c5616adae6572604de3ecf9ae0248ffcdb070b98",
   "./js/stream.js": "9baaa3eb0082ebf043d843fb0296f8342bbac4a0a5e114e5b4f3c79c3fafcffe",
   "./js/stream-deck.js": "c8a1265678435a70197375570ddf9deb6ca7413171b1bb7ee78ca528a6c639f8",
-  "./js/remote-operator.js": "4b64c19ae69cfd7aac6170eff26c842d18159b4ac1583602a0e3f4f6c4ec792c",
+  "./js/remote-operator.js": "d849e0d3d3087ed8d94776d5ecd836facf6c84d97047d24a8f51f23263005ed5",
+  "./js/cloud-transport.js": "80e0f126495392c9b42f12c47a97be755750b31737646856f3e4ada5d690a998",
+  "./js/cloud-remote-operator.js": "a3ee39ccfc01cb997bbfbe2569e42e7e6bdc37b97beeb17e4955fd08b5ea52d1",
   "./js/lyrics.js": "3d81bec572db4ddb26924c42b0896abd80f74b2113f7dfc030ae44e022761de5",
   "./js/lyrics-sources.js": "aa496d232469ed3570d3a6b82085c19545d936649a0a4564b3461cb89c7e920b",
   "./js/supabase-config.js": "5c3ebf851c7a921f6fc47a847ebb46a2abb507d228f8839cc760f1802c80abe5",

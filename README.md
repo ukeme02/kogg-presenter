@@ -286,3 +286,10 @@ This optional remote uses the existing local bridge; the hosted website alone do
 4. **Disconnect phones** revokes all old links. Stopping the bridge also ends access. Opening the bridge without `--remote` keeps its previous loopback-only behavior.
 
 Allow the bridge through the laptop firewall on the intended private network if your OS asks. Guest networks with client isolation cannot connect the phone to the laptop. The remote uses local HTTP, so use a trusted network and keep pairing links private. The server restricts remote clients to the phone page and authenticated current-slide/control APIs; full output snapshots remain laptop-only.
+
+
+### Online phone remote with Sync
+
+Choose **Sync**, sign in, then use **Stream → Phone remote · online Sync → Start online remote**. Open the private pairing link on the phone and sign in there. Both devices need internet; the Node bridge is not used. Stop online remote, sign out, or leave Sync to revoke the operator session. The link itself grants presentation control, so share it only with your operator.
+
+The remote uses the existing Supabase Broadcast service as transport. Each short-lived session has a random channel and AES-GCM key; packets are encrypted on the sending device and authenticated/decrypted by the paired device. No remote commands or current-slide snapshots are written to the saved-library row. It does not require a new database table or RLS migration. A server acknowledgement is not shown as success: the phone waits for the operator's command acknowledgement. Keep device clocks accurate. If Realtime Broadcast is disabled in the Supabase project, connection reports an error and controls stay disabled.

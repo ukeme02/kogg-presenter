@@ -1,0 +1,16 @@
+(()=>{'use strict';let connection=null,generation=0,revision=0,view={},busy=false;const handled=new Map(),status=$('cloudRemoteStatus');
+ function snapshot(){return {mode:live.mode,index:live.index||0,total:live.slides?.length||0,label:String(live.slides?.[live.index]?.label||live.title||'No slide').slice(0,200),text:String(live.slides?.[live.index]?.text||'').slice(0,2500)};}
+ function stop(){generation++;connection?.close();connection=null;handled.clear();$('cloudRemoteLink').value='';status.textContent='Online remote stopped. Previous link no longer controls this desk.';}
+ async function sendState(){if(connection)await connection.send({type:'state',...view,revision});}
+ async function publish(){if(!connection)return;view=snapshot();revision++;try{await sendState();}catch{status.textContent='Online remote connection interrupted.';}}
+ async function receive(packet){if(!connection)return;if(packet.type==='hello'){await sendState();return;}if(packet.type!=='command')return;
+  if(typeof packet.id!=='string'||!/^[a-zA-Z0-9-]{12,80}$/.test(packet.id))return;
+  if(handled.has(packet.id)){await connection.send(handled.get(packet.id));return;}
+  let error='';if(busy)error='A command is already in progress.';else if(packet.revision!==revision)error='Output changed. Review it and try again.';else if(!['next','previous','blank','resume'].includes(packet.action))error='Unsupported command';
+  if(!error){busy=true;try{window.KOGGRemoteOperator.execute(packet.action);}catch(e){error=e.message;}finally{busy=false;}}
+  const ack={type:'ack',id:packet.id,ok:!error,message:error||'Operator confirmed.'};handled.set(packet.id,ack);if(handled.size>200)handled.delete(handled.keys().next().value);await connection.send(ack);await sendState();
+ }
+ $('cloudRemoteStart').addEventListener('click',async()=>{stop();const run=generation;const button=$('cloudRemoteStart');button.disabled=true;status.textContent='Connecting online remote…';try{if(workMode()!=='sync')throw Error('Choose Sync and sign in on this laptop first.');const pair=window.KOGGCloudTransport.createPair(),session=await window.KOGGCloudTransport.connect(pair,receive,state=>{if(run!==generation)return;if(['CHANNEL_ERROR','TIMED_OUT','CLOSED','closed'].includes(state)){status.textContent='Online remote disconnected. Reconnect to create a new link.';}});if(run!==generation){session.close();return;}connection=session;revision=0;view=snapshot();const base=location.protocol==='https:'?location.href:'https://kogg-presenter.pages.dev/';const url=new URL('cloud-remote.html',base);url.hash='pair='+encodeURIComponent(btoa(JSON.stringify(pair)));$('cloudRemoteLink').value=url.href;status.textContent='Open the private link on your phone and sign in. Both devices need internet.';await sendState();}catch(error){if(run===generation)status.textContent=error.message;}finally{button.disabled=false;}});
+ $('cloudRemoteStop').addEventListener('click',stop);$('cloudRemoteCopy').addEventListener('click',async()=>{const input=$('cloudRemoteLink');if(!input.value)return;try{await navigator.clipboard.writeText(input.value);status.textContent='Private online pairing link copied.';}catch{input.focus();input.select();status.textContent='Select and copy the pairing link.';}});
+ window.KOGGCloudRemote={publish,stop};window.addEventListener('pagehide',stop);
+})();

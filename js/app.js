@@ -138,6 +138,7 @@ function pushLive(patch = {}) {
   LS.set(K.live, live);
   if (channel) channel.postMessage(live);
   window.KOGGRelay?.publish(live, themes, LS.get(K.settings, {}));
+  window.KOGGCloudRemote?.publish();
   renderPreview();
   renderLiveText();
   renderFloatPreview();
@@ -2342,6 +2343,7 @@ function refreshModeChip() {
   if (typeof updateAddVersionsGate === 'function') updateAddVersionsGate();
 }
 function setWorkMode(m) {
+  if(m!=='sync')window.KOGGCloudRemote?.stop();
   invalidateCloudWork();
   const s = LS.get(K.settings, {});
   s.mode = m;

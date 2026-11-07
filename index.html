@@ -276,6 +276,7 @@
           <p class="hint">Use the operator on the local bridge too. The hosted website alone cannot sync with OBS’s separate browser. Set the source to your canvas size, e.g. 1920 × 1080.</p>
           <button id="streamCheck">Check bridge connection</button><p id="streamConnection" class="hint" role="status"></p>
         </div><p class="hint">KOGG supplies visuals. Start and manage the broadcast in OBS or your streaming platform. No stream key is needed here.</p>
+        <details class="remote-pair"><summary>Phone remote · online Sync</summary><p class="hint">Choose Sync and sign in, then create a private link. The phone signs in too. Both devices need internet; no local bridge is required. Anyone you give the link can control this presentation.</p><button id="cloudRemoteStart">Start online remote</button><input id="cloudRemoteLink" readonly aria-label="Private online pairing link"><div class="row"><button id="cloudRemoteCopy">Copy link</button><button id="cloudRemoteStop">Stop online remote</button></div><p id="cloudRemoteStatus" class="hint" role="status">Control messages are encrypted before they leave this device.</p></details>
         <details class="remote-pair"><summary>Phone remote · same Wi-Fi</summary><p class="hint">Start the optional bridge with <code>node tools/obs-relay.cjs --remote</code>. Open its laptop operator, then pair your phone. No internet or account is required. Use your trusted church network.</p><button id="remotePair">Create pairing link</button><label id="remoteNetworkLabel" hidden>Network address<select id="remoteNetwork"></select></label><input id="remotePairLink" readonly aria-label="Private phone pairing link"><div class="row"><button id="remoteCopy">Copy link</button><button id="remoteRevoke">Disconnect phones</button></div><p id="remotePairStatus" role="status" class="hint">A pairing link grants presentation control. Keep it private.</p></details>
         <a href="landing.html#obs" target="_blank" rel="noopener">Connection guide ↗</a>
       </div></div>
@@ -602,5 +603,7 @@
 <script src="js/slides-deck.js"></script>
 <script src="js/stream-deck.js"></script>
 <script src="js/remote-operator.js"></script>
+<script src="js/cloud-transport.js"></script>
+<script src="js/cloud-remote-operator.js"></script>
 </body>
 </html>

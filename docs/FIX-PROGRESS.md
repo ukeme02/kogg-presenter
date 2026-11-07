@@ -208,7 +208,7 @@ Goal: replace the separate OBS bridge process with an optional installed OBS sou
 - [x] Windows GUI installer, manual/source ZIP and checksum manifest built; embedded renderer matches repository files. Installer is unsigned; interactive installation acceptance is pending.
 - [x] Landing page: plugin preview/download, visible phone remote connection cards, separate broadcast and rehearsal.
 - [x] All 251 automated checks passed, including compiled native transport, browser connection lifecycle and embedded output isolation. Operator/landing/output markup and package integrity validated.
-- [ ] Deployment verification.
+- [x] Deployment verified: production app, landing, connection script, v117 service worker and release manifest returned HTTP 200. Both published downloads match the final local SHA-256 checksums.
 - [ ] Manual acceptance: installed OBS source rendering, hosted Chrome/Edge local-network permission, offline images, scene reuse and clean-account installer.
 - [ ] Manual acceptance: actual phones for both existing Wi-Fi and online Sync remote.
 - [ ] Later: macOS/Linux native builds after Windows acceptance.
@@ -218,3 +218,9 @@ The plugin serves only the bundled renderer on 127.0.0.1:8767; it does not expos
 Reconnect checks also cover an OBS restart between heartbeat polls and browser-tab duplication: the latest snapshot is resent when OBS has no state; each presenter page has a fresh writer identity. OBS rendering never claims the room projector lock or opens another output window. The plugin assets are downloaded on demand, not added to the app's offline essentials.
 
 Final native lifecycle check: the bundled browser is now enumerated as an active child, so OBS scene visibility propagates to it. An isolated libobs harness registers a stub browser source, creates the actual KOGG source, and verifies child visibility on show/hide. This exercises source lifecycle without claiming CEF/visual rendering acceptance. Installer/package rebuilt with this correction before final publication verification.
+
+### KOGG Connect publication verified
+
+Release v117 is live at https://kogg-presenter.pages.dev/landing. Final immutable release: https://12892efe.kogg-presenter.pages.dev/. Published code: 53a8089. Windows preview installer: https://kogg-presenter.pages.dev/downloads/kogg-connect-0.1.0-preview-windows-x64.exe (568,832 bytes). The ZIP includes source; downloads are not precached with the browser core.
+
+Completed commits: 966c914 (native plugin), a207db4 (browser pairing/reconnect), cbefdac (landing and distribution), 53a8089 (source child lifecycle). 251 automated checks passed; compiled module registration, feed choices and child visibility were additionally checked against OBS 32. Real CEF rendering, interactive installer, hosted browser permission and actual phone acceptance remain outstanding, explicitly marked as such on the landing page and in the plugin guide.

@@ -8,7 +8,7 @@
   const base=location.protocol==='https:'?location.href:'https://kogg-presenter.pages.dev/';const url=new URL('cloud-remote.html',base);url.hash='pair='+encodeURIComponent(btoa(JSON.stringify(pair)));link.value=url.href;const expected=url.href;
   try{await loadQR();if(link.value!==expected)return;const qr=window.qrcode(0,'M');qr.addData(expected);qr.make();code.innerHTML=qr.createSvgTag({cellSize:4,margin:16,scalable:true});code.hidden=false;}catch{if(link.value===expected)status.textContent='Pairing link ready. Use Copy link; the QR code could not load.';}
  }
- const remote=window.KOGGCloudSession.createOperator({transport:window.KOGGCloudTransport,snapshot,execute:action=>window.KOGGRemoteOperator.execute(action),canStart(){if(workMode()!=='sync')throw Error('Choose Sync and sign in on this laptop first.');},onStatus:message=>status.textContent=message,onLink:showLink});
+ const remote=window.KOGGCloudSession.createOperator({transport:window.KOGGCloudTransport,snapshot,execute:action=>window.KOGGRemoteOperator.execute(action),onStatus:message=>{if(status.textContent!==message)status.textContent=message;},onLink:showLink});
  $('cloudRemoteStart').addEventListener('click',async()=>{const button=$('cloudRemoteStart');button.disabled=true;try{await remote.start();}finally{button.disabled=false;}});
  $('cloudRemoteStop').addEventListener('click',()=>remote.stop());
  async function copy(){if(!link.value)return;try{await navigator.clipboard.writeText(link.value);status.textContent='Private pairing link copied. Open it on your phone.';}catch{link.focus();link.select();status.textContent='Select and copy the pairing link.';}}

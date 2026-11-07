@@ -346,3 +346,9 @@ test('search and account forms prevent page navigation without triggering an ext
  for(const id of ['quickGoForm','quickJumpForm'])elements.get(id).handlers.submit[0]({preventDefault(){prevented++;}});
  assert.equal(signins,0);elements.get('authForm').handlers.submit[0]({preventDefault(){prevented++;}});assert.equal(signins,0);assert.equal(prevented,3);
 });
+
+
+test('switching Base and Local does not revoke the explicitly paired guest remote or start Sync',async()=>{
+ const {context}=boot();await new Promise(r=>setImmediate(r));let stops=0,cloud=0;context.window.KOGGCloudRemote={stop(){stops++;}};context.window.KOGGSync={configured:true,currentUser:async()=>{cloud++;return null;},getClient:async()=>{cloud++;throw Error('No Sync expected');}};
+ vm.runInContext('setWorkMode("base");setWorkMode("local");setWorkMode("base");',context);await new Promise(r=>setImmediate(r));assert.equal(stops,0);assert.equal(cloud,0);
+});

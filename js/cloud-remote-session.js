@@ -38,12 +38,11 @@
     };
     session=await o.transport.connect(pair,receive,state=>{
      if(run!==generation)return;ready=state==='SUBSCRIBED';
-     if(state==='SIGNED_OUT'){stop('Sign in to Sync again, then create a new remote link.');return;}
      if(failed.includes(state))status('Connection interrupted. Waiting to reconnect…');
      if(state==='SUBSCRIBED'&&connection){status('Connection restored. Waiting for the phone…');publish();}
     });
     if(run!==generation){session.close();return;}
-    connection=session;ready=true;revision=0;view={};refresh();o.onLink?.(pair);status('Scan the code or share the link. Sign in on your phone to connect.');
+    connection=session;ready=true;revision=0;view={};refresh();o.onLink?.(pair);status('Scan the code or open the private link on your phone. No account needed.');
     function tick(){if(run!==generation)return;if(pair.expiresAt&&now()>=pair.expiresAt){stop('Pairing expired. Start a new online remote.');return;}if(lastPhone&&now()-lastPhone>8000){lastPhone=0;status('Phone is not responding. Its controls will reconnect when it returns.');}timer=set(tick,2000);}
     tick();await publish();
    }catch(error){if(session)session.close();if(run===generation){connection=null;ready=false;o.onLink?.('');status(error.message);}}
@@ -71,13 +70,12 @@
      else if(packet.type==='ack'&&pending?.id===packet.id){if(packet.state)accept(packet.state);clear(pending.timer);pending.resolve(packet.ok);pending=null;status(packet.message||'Operator confirmed.');draw();}
     },state=>{
      if(run!==generation)return;
-     if(state==='SIGNED_OUT'){stop('Sign in again to reconnect.');o.onAuth?.(true);return;}
      ready=state==='SUBSCRIBED';
      if(!ready){seen=0;status('Connection interrupted. Controls paused.');draw();}
      if(ready&&connection)ping();
     });
-    if(run!==generation){session.close();return;}connection=session;ready=true;o.onAuth?.(false);ping();
-   }catch(error){if(run===generation){stop(error.message);o.onAuth?.(/sign in/i.test(error.message));}}
+    if(run!==generation){session.close();return;}connection=session;ready=true;ping();
+   }catch(error){if(run===generation){stop(error.message);}}
   }
   async function ping(){
    clear(timer);if(!connection||stopped)return;const run=generation,session=connection;

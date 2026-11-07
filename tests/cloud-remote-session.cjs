@@ -6,7 +6,7 @@ function fixture(){
  const setTimer=(fn,ms)=>{const t={fn,ms};timers.push(t);return t;},clearTimer=t=>{if(t)t.cancelled=true;};
  const transport={createPair:()=>({topic:'test-session',expiresAt:time+100000}),async connect(pair,receive,status){const c={receive,status,closed:false,async send(packet){if(c.closed)throw Error('closed');packets.push(packet);await Promise.all(clients.filter(x=>x!==c&&!x.closed).map(x=>x.receive(packet)));},close(){c.closed=true;status('closed');}};clients.push(c);status('SUBSCRIBED');return c;}};
  const operator=createOperator({transport,now:()=>time,setTimer,clearTimer,snapshot:()=>({...live}),async execute(action){executions++;if(delay)await delay;if(action==='next')live={...live,index:live.index+1,text:'Two'};if(action==='previous')live={...live,index:live.index-1};if(action==='blank')live={...live,mode:'blank'};if(action==='resume')live={...live,mode:'normal'};},onLink:p=>pair=p,onStatus:s=>operatorStatus.push(s)});
- let phone;async function connect(){await operator.start();phone=createPhone({pair,transport,now:()=>time,setTimer,clearTimer,uuid:()=>crypto.randomUUID(),onStatus:s=>phoneStatus.push(s),onState:(state,flags)=>states.push({state,...flags}),onAuth:r=>auth.push(r),onForget:()=>auth.push('forgot')});await phone.start();await settle();return phone;}
+ let phone;async function connect(){await operator.start();phone=createPhone({pair,transport,now:()=>time,setTimer,clearTimer,uuid:()=>crypto.randomUUID(),onStatus:s=>phoneStatus.push(s),onState:(state,flags)=>states.push({state,...flags}),onForget:()=>auth.push('forgot')});await phone.start();await settle();return phone;}
  return {operator,connect,get phone(){return phone},clients,packets,timers,states,phoneStatus,operatorStatus,auth,get count(){return executions},get live(){return live},setDelay:p=>delay=p,advance:n=>time+=n,setLive:x=>live={...live,...x}};
 }
 test('phone follows live state, confirms next and supports explicit blank/resume',async()=>{
@@ -29,8 +29,8 @@ test('network interruption disables controls; a restored channel requests fresh 
  const x=fixture(),phone=await x.connect();x.clients[1].status('CHANNEL_ERROR');assert.equal(x.states.at(-1).active,false);assert.equal(await phone.command('next'),false);
  x.setLive({text:'Latest after reconnect'});x.clients[1].status('SUBSCRIBED');await settle();assert.equal(x.states.at(-1).active,true);assert.equal(x.states.at(-1).state.text,'Latest after reconnect');phone.disconnect();x.operator.stop();
 });
-test('phone sign-out restores authentication; expired pairing stops the laptop',async()=>{
- const x=fixture(),phone=await x.connect();x.clients[1].status('SIGNED_OUT');assert.equal(x.auth.at(-1),true);assert.equal(x.states.at(-1).active,false);
+test('expired guest pairing stops the laptop and phone',async()=>{
+ const x=fixture(),phone=await x.connect();
  x.advance(100001);x.timers.find(t=>!t.cancelled&&t.ms===2000).fn();assert.match(x.operatorStatus.at(-1),/expired/);assert.equal(await phone.command('next'),false);
 });
 test('missing confirmation never retries a command automatically',async()=>{

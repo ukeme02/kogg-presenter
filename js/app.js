@@ -2346,7 +2346,6 @@ function refreshModeChip() {
   if (typeof updateAddVersionsGate === 'function') updateAddVersionsGate();
 }
 function setWorkMode(m) {
-  if(m!=='sync')window.KOGGCloudRemote?.stop();
   invalidateCloudWork();
   const s = LS.get(K.settings, {});
   s.mode = m;

@@ -2,8 +2,7 @@
  try{const saved=location.hash.startsWith('#pair=')?decodeURIComponent(location.hash.slice(6)):sessionStorage.getItem('kogg-cloud-pair');if(saved){pair=JSON.parse(atob(saved));try{sessionStorage.setItem('kogg-cloud-pair',saved);}catch{}history.replaceState(null,'',location.pathname);}}catch{}
  const remote=window.KOGGCloudSession.createPhone({pair,transport:window.KOGGCloudTransport,
   onForget(){try{sessionStorage.removeItem('kogg-cloud-pair');}catch{}},
-  onStatus(message){$('remoteStatus').textContent=message;},
-  onAuth(required){$('remoteSignIn').hidden=!required;$('remoteReconnect').hidden=required;},
+  onStatus(message){if($('remoteStatus').textContent!==message)$('remoteStatus').textContent=message;},
   onState(state,{active,pending}){
    $('remoteConnection').textContent=active?'CONNECTED':pending?'SENDING':'NOT CONNECTED';$('remoteConnection').dataset.connected=String(active);
    $('remoteLabel').textContent=state?.label||'Your presentation will appear here';
@@ -12,11 +11,11 @@
    buttons.forEach(button=>{const action=button.dataset.command;button.disabled=!active||pending||(['next','previous'].includes(action)&&state?.mode!=='normal')||(action==='blank'&&state?.mode==='blank')||(action==='resume'&&state?.mode!=='blank')||(!state?.scripture&&action==='next'&&state?.index>=state?.total-1)||(!state?.scripture&&action==='previous'&&state?.index<=0);});
   }
  });
- $('remoteSignIn').addEventListener('submit',async event=>{event.preventDefault();const button=$('remoteSignInButton');button.disabled=true;$('remoteStatus').textContent='Signing in…';try{await window.KOGGSync.signIn($('remoteEmail').value.trim(),$('remotePassword').value);$('remotePassword').value='';await remote.start();}catch(error){$('remoteStatus').textContent=error.message;}finally{button.disabled=false;}});
+
  buttons.forEach(button=>button.addEventListener('click',()=>remote.command(button.dataset.command)));
  $('remoteDisconnect').addEventListener('click',()=>remote.disconnect());$('remoteReconnect').addEventListener('click',()=>remote.start());
  window.addEventListener('pagehide',()=>remote.stop('Disconnected.'));
  window.addEventListener('pageshow',event=>{if(event.persisted)remote.wake();});window.addEventListener('online',()=>remote.wake());
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)remote.wake();});
- if(pair)remote.start();else{remote.stop('On the laptop, open Stream → Phone remote → Online Sync. Scan its QR code here.');$('remoteSignIn').hidden=true;$('remoteReconnect').hidden=true;}
+ if(pair){$('remoteReconnect').hidden=false;remote.start();}else{remote.stop('On the laptop, open Stream → Phone remote → Online. Scan its QR code to connect. No account needed.');$('remoteReconnect').hidden=true;}
 })();

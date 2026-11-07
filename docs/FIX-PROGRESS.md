@@ -265,3 +265,19 @@ Production Supabase Broadcast reachability was independently verified using two 
 QR encoder qrcode-generator 2.0.4 is vendored with its original copyright/license notice and loads only when pairing starts. Pair keys stay in URL fragments and phone session storage. Documentation: docs/REMOTE-ONLINE.md. User's untracked hymn file is untouched.
 
 Publication verified: runtime commit 17ad508 (text layout commit 277818a), immutable release https://29b261ab.kogg-presenter.pages.dev/. Canonical operator, landing, online phone page, session controller, QR encoder, remote CSS and v119 worker all returned HTTP 200 and matched the committed archive. Live landing and online-remote empty state opened in-browser; screenshot work/landing-v119-live.jpg. Existing open tabs can retain the previous offline release until all KOGG windows are closed and reopened between services. No user data was cleared.
+
+
+## 8 November 2026 — Account-free online remote in every mode (v120)
+
+- [x] Separate, on-demand guest transport; no Sync identity or library access.
+- [x] Remove laptop mode gate and phone sign-in; allow mode changes during pairing.
+- [x] Keep encrypted private links, expiry, stale-command checks, deduplication and revocation.
+- [x] Update Stream instructions, phone UI, landing page and remote guide.
+- [x] Base and Local real-browser pairing and command round trip verified against production Broadcast. Sync-mode gate removal covered by the same adapter tests.
+- [x] 275 automated checks passed.
+- [ ] Commit, deploy and verify production.
+- [ ] Physical phone camera/network acceptance by user.
+
+Browser acceptance: started guest pairing from Base, opened the private link in a separate browser tab, and received John 3:16 without login. Next changed the actual operator to John 3:17; Blank, Resume and Previous were confirmed. Changed the laptop to Local while keeping the same pairing; Next still worked. Stop remote delivered revocation and disabled the phone controls. No accounts or credentials were used. The phone URL fragment was removed after opening.
+
+User requested simpler Wi-Fi setup during implementation. The normal remote requires only scan-and-connect on Wi-Fi or mobile data with internet. The existing bridge is now explicitly labelled Advanced/offline. A direct offline browser connection via WebRTC is a potential later task; it requires its own pairing design and is not claimed by this release.

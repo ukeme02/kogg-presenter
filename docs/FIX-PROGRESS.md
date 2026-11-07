@@ -255,7 +255,7 @@ Existing open KOGG tabs may retain an older offline release until all KOGG tabs/
 - [x] Confirm commands after completion; prevent duplicate commands and stale session updates.
 - [x] Recover connection after network/sleep; show sign-in again when authentication ends.
 - [x] Automated lifecycle and responsive browser checks: 269 full-suite checks passed. Final changed-asset checks passed.
-- [ ] Production v119 deployment and verification.
+- [x] Production v119 deployment and verification.
 - [ ] Real signed-in laptop/phone acceptance (requires the user's devices/account).
 
 Verified in browser: Quick Jump Enter displays John 3:16; search and every credential field belong to separate forms; Base mode remote start gives clear Sync sign-in guidance. Landing checked at 1280/390/320px. The remote fits 320px without horizontal overflow and disables actions before a connection. No password-manager credentials were accessed; the user confirmed the issue is suggestions, not a password inserted into the field. Exact third-party password-manager behavior remains user acceptance.
@@ -263,3 +263,5 @@ Verified in browser: Quick Jump Enter displays John 3:16; search and every crede
 Production Supabase Broadcast reachability was independently verified using two anonymous SDK clients and one synthetic encrypted test packet. No accounts were created, no passwords used and no library data read/written. This proves transport reachability, not signed-in two-device acceptance. User explicitly chose “Build and test what you can first.”
 
 QR encoder qrcode-generator 2.0.4 is vendored with its original copyright/license notice and loads only when pairing starts. Pair keys stay in URL fragments and phone session storage. Documentation: docs/REMOTE-ONLINE.md. User's untracked hymn file is untouched.
+
+Publication verified: runtime commit 17ad508 (text layout commit 277818a), immutable release https://29b261ab.kogg-presenter.pages.dev/. Canonical operator, landing, online phone page, session controller, QR encoder, remote CSS and v119 worker all returned HTTP 200 and matched the committed archive. Live landing and online-remote empty state opened in-browser; screenshot work/landing-v119-live.jpg. Existing open tabs can retain the previous offline release until all KOGG windows are closed and reopened between services. No user data was cleared.

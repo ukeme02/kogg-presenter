@@ -147,3 +147,16 @@ Next priorities: independent broadcast/projector layouts; a packaged local bridg
 - Added a lightweight studio script to the offline shell. Landing release card reflects the delivered theme organization.
 - Validation: 112 targeted operator, output, theme navigation/sizing, regression and offline checks passed. HTML nesting and retained control IDs checked. Browser visual verification was attempted but remains unavailable because browser use is disabled in Work settings.
 - Recommended next: separate congregation/broadcast layouts, then phone remote control and service rehearsal/recovery. Minister-listening AI remains a later exploration.
+
+
+## 7 November 2026 — Next build sequence
+
+- [x] Stage 1: independent room/broadcast layouts, explicit graphics routing, source URL and preview; verify and publish.
+- [ ] Stage 2: paired phone remote, connection feedback and bounded controls; verify and publish.
+- [ ] Stage 3: private service rehearsal and readiness checks; verify and publish.
+
+Preserve the lightweight browser/offline core. Each stage receives a separate commit and release. Browser visual inspection is unavailable until browser use is enabled in Work settings.
+
+### Stage 1 delivered — independent broadcast layout (v113)
+
+Stream → Layouts configures full-canvas or lower-third broadcast styling, a separate theme, and tag/notice routing. The normal projector retains its theme and full-screen composition. Browser Source → Separate broadcast supplies the dedicated transparent URL; the monitor switches between room and broadcast. Both feeds share passage navigation. Existing feeds retain their previous defaults. 117 targeted checks passed, including route isolation and invalid-input fallbacks; physical OBS and browser rendering remain unverified.

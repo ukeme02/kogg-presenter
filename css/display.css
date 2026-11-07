@@ -217,3 +217,10 @@ body.overlay #screen { background: transparent !important; }
 .has-live-tag #screen{bottom:var(--live-tag-clearance,27vh)}
 .has-live-tag #slideText{height:100%;max-height:100%}
 .has-live-tag #slideLabel{bottom:calc(var(--live-tag-clearance,27vh) + 1vh)}
+
+/* Broadcast feed can compose the same passage independently of the room. */
+body.broadcast-lower #slideText{position:fixed;left:4vw;right:4vw;bottom:13vh;width:92vw;height:32vh;max-height:32vh;background:rgba(5,14,30,.88);border-radius:1vh;padding:2vh 3vw!important;border-left:.5vw solid #4f8cff}
+body.broadcast-lower #slideLabel{left:7vw;bottom:8vh;max-width:86vw;background:rgba(5,14,30,.88);padding:.6vh 1vw;border-radius:.4vh}
+body.broadcast-lower #lowerThird{top:4vh;bottom:auto;height:auto}body.broadcast-lower #ltBox{margin-top:0}
+
+body.broadcast-lower #screen{bottom:0}

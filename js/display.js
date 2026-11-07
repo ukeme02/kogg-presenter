@@ -8,6 +8,7 @@ const contentEl = $('slideContent');
 const labelEl = $('slideLabel');
 const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS transparent mode
 
+const BROADCAST = new URLSearchParams(location.search).get('feed')==='broadcast';
 const OVERLAYS_ONLY = OVERLAY && new URLSearchParams(location.search).get('layers')==='overlays';
 let publishedThemes=null;
 
@@ -100,6 +101,9 @@ function fitText(enlargeScripture = false, fillScreen = true, scale = 1) {
 }
 
 function render(state) {
+  const broadcast=typeof BROADCAST!=='undefined'&&BROADCAST;
+  if(typeof window!=='undefined'&&window.KOGGStream?.route)state=window.KOGGStream.route(state,broadcast);
+  if(typeof document!=='undefined')document.body.classList.toggle('broadcast-lower',broadcast&&state.broadcast?.layout==='lower'&&state.mode==='normal');
   renderNotesAlert(state.mode === 'blank' ? null : state.alert);
   renderLowerThird(state.mode === 'blank' ? null : state.lowerThird);
   const blankOn = state.mode === 'blank' && !OVERLAY;   // "blank" means show nothing in OBS overlay mode

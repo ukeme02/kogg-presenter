@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v112';
+const CACHE = 'kogg-presenter-v113';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/landing-tour.js', './js/app.js', './js/theme-studio.js', './js/display.js',
@@ -12,20 +12,20 @@ const ASSETS = [
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
-  "./": "c80071d8ed78f2bda9472cb70c35347c4c47dda9566753d861d0a64b13a10a6f",
-  "./index.html": "c80071d8ed78f2bda9472cb70c35347c4c47dda9566753d861d0a64b13a10a6f",
+  "./": "5400b744a13d057e8da1f104b2bdf430e852c99b91b0ce1fad6887c4010a90d2",
+  "./index.html": "5400b744a13d057e8da1f104b2bdf430e852c99b91b0ce1fad6887c4010a90d2",
   "./display.html": "a63c5f02bc198e097c6c70823e9250bae515b227369184686df6e0f43a65ca28",
   "./landing.html": "e93bd212323547425fc8b9b50e022fb23e3524d2727fc61a2f454952718e09b9",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
-  "./css/app.css": "1b5d273f5566a341f6b4c7703e1f02ed48c638c02b1476ae46619e8558dc70df",
-  "./css/display.css": "cba5d04db5ab53b43b80f173702aae122fc191017208fc6fee745fead57117e0",
+  "./css/app.css": "ba8373a8aea3ffcacd5e9db3f878e6b22b53e148c28f0f95f28ae7b4bacee0b1",
+  "./css/display.css": "020d348a049a5cbf45f01b2c32669773bb444e0e2b5486d3108a15ded6b5975b",
   "./css/landing.css": "95262ef86352d269c6b074739ce8e4c458e79589be300e61c260129b6a2f1097",
   "./js/landing.js": "322558f0ac47eb60147afca5a9d12b024c93c87e5e87e21bcb708496a318ff52",
   "./js/landing-tour.js": "d8eae2a2c71eafa56dc03356a66ed1775c61784a2dacf56dacf69e938cabc1b4",
-  "./js/app.js": "a80ad80f7e89ea38acd7a23e9e280939956db3d4a2d588ddcdb68ec5201c919f",
+  "./js/app.js": "016d0d987d9f1171c4ea71b406fa93bc12255c995ef540879bc9c144292bd7fc",
   "./js/theme-studio.js": "f566118922d25f926d5d35b127ce482fad155c1e8a197ae67a7fe157ea456463",
-  "./js/display.js": "1d07f134d782888bc45213ea36d146af6087e037d971c84b7cb550d2cfcd8e10",
+  "./js/display.js": "4843d523fa7948294bfa877184d915d67db3e24175d4397fab1add0a87aeded2",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
   "./js/library.js": "76e26b3a2f04dd09f82e17acb739bc387e7493d28732306289e6dc49195a8cdd",
   "./js/relay.js": "dc8f1d89b82cf9457962ee2f57f8f5af191749cff1c285949a766216394194f1",
@@ -36,8 +36,8 @@ const ASSET_HASHES = {
   "./js/notes.js": "e51f91dd590bf44b39235cec80cd88d90dbb72f0cb2838d2f361dbc895cadff6",
   "./js/slides.js": "7c4967a44ad392434801b207a361d1def24e1c663a028f6725e2b998ab23ea44",
   "./js/slides-deck.js": "a8d8bc4cef3d188a45726f90c5616adae6572604de3ecf9ae0248ffcdb070b98",
-  "./js/stream.js": "19f837e16548c10f24e5155b55986ad38efb09d8d250d1a6b72e24aa2a2c969d",
-  "./js/stream-deck.js": "092e14cf176291aee6051c3f5a9a0484ee09a54773ebc9ddf37900692ddca4d4",
+  "./js/stream.js": "9baaa3eb0082ebf043d843fb0296f8342bbac4a0a5e114e5b4f3c79c3fafcffe",
+  "./js/stream-deck.js": "c8a1265678435a70197375570ddf9deb6ca7413171b1bb7ee78ca528a6c639f8",
   "./js/lyrics.js": "3d81bec572db4ddb26924c42b0896abd80f74b2113f7dfc030ae44e022761de5",
   "./js/lyrics-sources.js": "aa496d232469ed3570d3a6b82085c19545d936649a0a4564b3461cb89c7e920b",
   "./js/supabase-config.js": "5c3ebf851c7a921f6fc47a847ebb46a2abb507d228f8839cc760f1802c80abe5",

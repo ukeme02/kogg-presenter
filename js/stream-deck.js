@@ -1,12 +1,13 @@
 /* Stream is a lightweight control surface for the shared presentation output. */
 (()=>{'use strict';
  const M=window.KOGGStream;let state;
- const fields={l1:'ltLine1',l2:'ltLine2',style:'streamStyle',position:'streamPosition',size:'streamSize',accent:'streamAccent',alert:'streamAlert',duration:'streamDuration',motion:'streamMotion',method:'streamMethod',feed:'streamFeed',platform:'streamPlatform'};
+ const fields={layout:'streamLayout',broadcastTheme:'streamTheme',graphicsTarget:'streamGraphicsTarget',l1:'ltLine1',l2:'ltLine2',style:'streamStyle',position:'streamPosition',size:'streamSize',accent:'streamAccent',alert:'streamAlert',duration:'streamDuration',motion:'streamMotion',method:'streamMethod',feed:'streamFeed',platform:'streamPlatform'};
  function store(){return baseLyrics()?sessionStorage:localStorage;}
  function key(){return baseLyrics()?'cp_stream_session':'cp_stream_device';}
  function save(){try{store().setItem(key(),JSON.stringify(state));}catch{$('streamStatus').textContent='Draft could not be saved. Keep this tab open.';}}
  function read(){for(const [k,id] of Object.entries(fields))state[k]=$(id).value;state=M.normalise(state);save();connection();}
- function load(){let raw={};try{raw=JSON.parse(store().getItem(key()))||{};}catch{}state=M.normalise(raw);for(const [k,id] of Object.entries(fields))$(id).value=state[k];$('streamDraftStatus').textContent=baseLyrics()?'Base · drafts kept for this tab session':'Drafts saved on this device';connection();renderLive();}
+ function load(){themeChoices();let raw={};try{raw=JSON.parse(store().getItem(key()))||{};}catch{}state=M.normalise(raw);for(const [k,id] of Object.entries(fields))$(id).value=state[k];$('streamDraftStatus').textContent=baseLyrics()?'Base · drafts kept for this tab session':'Drafts saved on this device';connection();renderLive();}
+ function themeChoices(){const select=$('streamTheme'),value=select.value;select.innerHTML='<option value="">Use room theme</option>'+themes.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join('');select.value=themes.some(t=>t.id===value)?value:'';}
  function connection(){
   const browser=state.method==='browser';$('streamBrowser').hidden=!browser;
   const local=location.hostname==='127.0.0.1'&&location.protocol==='http:';
@@ -15,7 +16,9 @@
   $('streamInstructions').textContent=browser?'For software that accepts a Browser Source: start the optional local bridge, open its KOGG operator, then add the URL below.':instructions[state.platform];
   const status=window.KOGGRelay?.status?.();$('streamConnection').textContent=status?.message||(local?'Bridge not checked yet.':'Open KOGG through the local bridge to check its connection. Window Capture works directly from this website.');
  }
- function renderLive(){if(!state)return;connection();const slide=live.mode==='normal'?live.slides?.[live.index]:null,box=$('streamPreview');applyOutputLook(box);projectorPreview(box,slide?esc(stripStrongs(slide.text)):'',slide);$('streamLiveStatus').textContent='Output: '+live.mode+' · tag '+(live.lowerThird?.on?'on':'off')+' · notice '+(live.alert?.on?'on':'off')+(live.mode==='countdown'?' · countdown runs in Output':'');}
+ function renderLive(){if(!state)return;themeChoices();connection();const broadcast=$('streamMonitorFeed').value==='broadcast',routed=M.route(live,broadcast),slide=routed.mode==='normal'?routed.slides?.[routed.index]:null,box=$('streamPreview'),theme=themeById(routed.themeId);applyOutputLook(box,theme);box.classList.toggle('preview-broadcast-lower',broadcast&&live.broadcast?.layout==='lower');projectorPreview(box,slide?esc(stripStrongs(slide.text)):'',slide,routed,theme);$('streamLiveStatus').textContent=(broadcast?'Broadcast':'Room')+': '+routed.mode+' · tag '+(routed.lowerThird?.on?'on':'off')+' · notice '+(routed.alert?.on?'on':'off');}
+ $('streamApplyLayout').addEventListener('click',()=>{read();pushLive({broadcast:{layout:state.layout,broadcastTheme:state.broadcastTheme,graphicsTarget:state.graphicsTarget}});$('streamStatus').textContent='Output layouts applied. Use the Separate broadcast Browser Source for the stream.';});
+ $('streamMonitorFeed').addEventListener('change',renderLive);
  function act(fn,message){try{read();pushLive(fn(state,live));$('streamStatus').textContent=message;}catch(err){$('streamStatus').textContent=err.message;}}
  Object.values(fields).forEach(id=>$(id).addEventListener('input',read));
  $('streamUsePreset').addEventListener('click',()=>{const preset=M.presets[$('streamPreset').value];if(!preset)return;state=M.normalise({...state,...preset});for(const [k,id] of Object.entries(fields))$(id).value=state[k];save();$('streamStatus').textContent='Template loaded. Edit the name and press Show.';});

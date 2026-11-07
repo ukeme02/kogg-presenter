@@ -270,3 +270,19 @@ Notes sits between Lyrics and Service. Choose a template or type plain text. In 
 Editing is preview-only until Display. Enable Live typing to update an already-live Notes item as you type; presenting another Scripture/song stops that item from taking over. Saved Notes are device-local in Local/Sync mode and tab-session-only in Base. Notes are not yet included in cloud sync or library backups.
 
 Lyrics search checks saved songs first, then automatically searches the connected sources after a short pause when there is no match and the device is online. Selecting an online result fetches its lyrics and displays its first slide. Saved song titles also display immediately; Edit remains a separate review action.
+
+
+### Independent broadcast layout
+
+In **Stream → Layouts**, select a full-canvas or lower-third broadcast and an optional separate theme. Choose whether name tags/notices appear in the room, stream or both. Apply, then choose **Browser Source → Separate broadcast** and copy its URL into OBS. The local bridge and local operator must be running. Room and broadcast follow the same passage; they can have different presentation layouts.
+
+### Phone remote on church Wi-Fi
+
+This optional remote uses the existing local bridge; the hosted website alone does not provide LAN remote control. The laptop needs Node.js for the bridge. Once running, no internet or account is needed.
+
+1. On the laptop, run `node tools/obs-relay.cjs --remote` and open `http://127.0.0.1:8766/`.
+2. In **Stream → Phone remote**, create a pairing link. If multiple network addresses are listed, select the one reachable from the church Wi-Fi.
+3. Open that private link on a phone connected to the same trusted network. Use Previous, Next, Blank and Resume. Keep the laptop operator open; another operator tab cannot take control while it is connected.
+4. **Disconnect phones** revokes all old links. Stopping the bridge also ends access. Opening the bridge without `--remote` keeps its previous loopback-only behavior.
+
+Allow the bridge through the laptop firewall on the intended private network if your OS asks. Guest networks with client isolation cannot connect the phone to the laptop. The remote uses local HTTP, so use a trusted network and keep pairing links private. The server restricts remote clients to the phone page and authenticated current-slide/control APIs; full output snapshots remain laptop-only.

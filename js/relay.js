@@ -22,7 +22,7 @@
       await sendQueue;
     } catch (err) { connection={ready:false,message:'Could not send the latest output. Check the local bridge and retry.'}; console.warn(err.message); }
   }
-  let events=null, checking=null;
+  let events=null, commands=null, commandHandler=null, checking=null;
   let connection={ready:false,message:local?'Bridge not checked yet.':'Window Capture works here. Browser Source needs the local bridge.'};
   function check(){
     if(!local)return Promise.resolve(connection);
@@ -31,11 +31,13 @@
     try{const response=await fetch('/__kogg/status',{signal:controller.signal,cache:'no-store'});const status=response.ok?await response.json():null;
     if(!status?.relay)throw new Error('Local bridge is not running at this address.');
     active=true;connection={ready:true,message:'Bridge ready · '+(Number(status.readers)||0)+' connected output reader(s) at last check. Readers may be browsers or OBS.'};
-    await connect();
+    await connect();if(status.remote)connectCommands();
     }catch(error){active=false;connection={ready:false,message:'Bridge unavailable. Start it and open its local operator, then check again.'};}
     finally{clearTimeout(timer);checking=null;}return connection;})();return checking;
   }
-  window.KOGGRelay = {publish,check,status:()=>({...connection})};
+  window.KOGGRelay = {publish,check,status:()=>({...connection}),setCommandHandler:fn=>{commandHandler=fn;if(active)check();}};
+  function connectCommands(){if(commands||!commandHandler||typeof EventSource==='undefined')return;commands=new EventSource('/__kogg/remote/operator');commands.onmessage=async event=>{let command;try{command=JSON.parse(event.data);await commandHandler(command.action);const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))||f;}catch{return f;}};await publish(read('cp_live',{}),read('cp_themes',[]),read('cp_settings',{}));await fetch('/__kogg/remote/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:command.id,ok:true})});}catch(error){if(command)await fetch('/__kogg/remote/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:command.id,ok:false,message:error.message})}).catch(()=>{});}};}
+
   function connect(){
     if (!location.pathname.endsWith('display.html')) {
       const read = (k,fallback) => { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch { return fallback; } };

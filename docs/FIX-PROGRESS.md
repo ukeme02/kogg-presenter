@@ -152,7 +152,7 @@ Next priorities: independent broadcast/projector layouts; a packaged local bridg
 ## 7 November 2026 — Next build sequence
 
 - [x] Stage 1: independent room/broadcast layouts, explicit graphics routing, source URL and preview; verify and publish.
-- [ ] Stage 2: paired phone remote, connection feedback and bounded controls; verify and publish.
+- [x] Stage 2: paired phone remote, connection feedback and bounded controls; verify and publish.
 - [ ] Stage 3: private service rehearsal and readiness checks; verify and publish.
 
 Preserve the lightweight browser/offline core. Each stage receives a separate commit and release. Browser visual inspection is unavailable until browser use is enabled in Work settings.
@@ -160,3 +160,9 @@ Preserve the lightweight browser/offline core. Each stage receives a separate co
 ### Stage 1 delivered — independent broadcast layout (v113)
 
 Stream → Layouts configures full-canvas or lower-third broadcast styling, a separate theme, and tag/notice routing. The normal projector retains its theme and full-screen composition. Browser Source → Separate broadcast supplies the dedicated transparent URL; the monitor switches between room and broadcast. Both feeds share passage navigation. Existing feeds retain their previous defaults. 117 targeted checks passed, including route isolation and invalid-input fallbacks; physical OBS and browser rendering remain unverified.
+
+### Stage 2 implemented — paired Wi-Fi remote (v114)
+
+Optional `--remote` bridge mode serves a phone controller with acknowledged Previous/Next/Blank/Resume. Pairing is laptop-only; random session links can be revoked. Explicit private-IP Host checks, same-origin checks, authenticated phone APIs, restricted phone assets, revision checks, deduplicated command IDs and a single operator connection bound the control path. Default bridge remains loopback-only. The operator shows network choices when multiple adapters exist. No account/internet is needed, but the laptop must run the optional Node bridge. Automated authorization, command acknowledgement, stale/duplicate rejection and revocation checks passed. Physical phone/firewall testing remains outstanding.
+
+Publication note: v113 upload has twice failed resolving Cloudflare's API. Source commits are saved; publishing is pending retry while the remaining stage is completed.

@@ -193,3 +193,23 @@ Implementation commits: 7e0a52c (independent broadcast), 7aa3079 (Wi-Fi remote),
 - [ ] Visual browser check: browser use remains disabled in Work settings.
 
 No minister-listening AI was added. Existing offline essentials and the user's untracked hymn file were preserved.
+
+
+## 7 November 2026 — KOGG Connect for OBS (Windows preview)
+
+Goal: replace the separate OBS bridge process with an optional installed OBS source, while keeping the browser core lightweight. Phone remote paths remain separate.
+
+- [x] Native Windows x64 OBS 32 plugin compiled. Adds KOGG Presenter with full presentation, transparent text, separate broadcast/lower-third, and name-tag/alert feeds. Uses OBS Browser Source internally; no added browser engine.
+- [x] Bundled offline renderer, font and logos. Only presentation state, relevant images and portable display settings cross the loopback connection.
+- [x] Eight-character expiring, single-use pairing code; persisted pairing; loopback-only server, origin/host checks, rate limits, revocation and competing-tab lease.
+- [x] Native server integration tests: authentication, source files, pairing, conflicting tabs, state transfer, disconnect blanking, revocation and restart persistence.
+- [x] Module registration and all four output choices verified against the installed OBS 32 library in an isolated harness, without opening/changing the user's OBS session.
+- [x] Stream Connect/Disconnect controls, remembered pairing, automatic reconnect and latest-state delivery implemented. Manual bridge moved to Advanced.
+- [ ] Final installer/package validation and release.
+- [ ] Landing page: plugin preview/download, phone remote requirements, separate broadcast and rehearsal.
+- [ ] Full regression checks and deployment verification.
+- [ ] Manual acceptance: installed OBS source rendering, hosted Chrome/Edge local-network permission, offline images, scene reuse and clean-account installer.
+- [ ] Manual acceptance: actual phones for both existing Wi-Fi and online Sync remote.
+- [ ] Later: macOS/Linux native builds after Windows acceptance.
+
+The plugin serves only the bundled renderer on 127.0.0.1:8767; it does not expose the phone remote over LAN or require a Sync account. Same-Wi-Fi phone remote still requires the optional bridge; online remote requires internet and sign-in. Browser visual testing remains unavailable in this session. No user hymn data was changed.

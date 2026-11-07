@@ -6,6 +6,7 @@ const screenEl = $('screen');
 const textEl = $('slideText');
 const contentEl = $('slideContent');
 const labelEl = $('slideLabel');
+const EMBEDDED = new URLSearchParams(location.search).has('obsconnect');
 const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS transparent mode
 
 const BROADCAST = new URLSearchParams(location.search).get('feed')==='broadcast';
@@ -22,10 +23,12 @@ function getThemes() {
   return [{ id: 't1', name: 'Black', bg: '#000000', bgImage: '', textColor: '#fff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, margin:4, lineHeight:1.18, weight: '700' }];
 }
 function getLive() {
+  if(EMBEDDED)return window.KOGGOBSState?.live||{mode:"blank",slides:[],index:0};
   try { return JSON.parse(localStorage.getItem('cp_live')) || { mode: 'blank', slides: [], index: 0 }; }
   catch { return { mode: 'logo', slides: [], index: 0 }; }
 }
 function getSettings() {
+  if(EMBEDDED)return window.KOGGOBSState?.settings||{};
   try { return JSON.parse(localStorage.getItem('cp_settings')) || {}; }
   catch { return {}; }
 }
@@ -235,7 +238,7 @@ setInterval(() => {
 }, 500);
 
 /* sync */
-const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
+const channel = (!EMBEDDED && 'BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
 if (channel) {
   channel.onmessage = e => {
     if(e.data?.type==='themes-update'){if(Array.isArray(e.data.themes)&&e.data.themes.length){publishedThemes=e.data.themes;render(getLive());}return;}
@@ -243,7 +246,7 @@ if (channel) {
     render(e.data);
   };
 }
-window.addEventListener('storage', e => {if(e.key==='cp_themes'){try{const value=JSON.parse(e.newValue);if(Array.isArray(value)&&value.length)publishedThemes=value;}catch{}}if(e.key==='cp_live'||e.key==='cp_themes')render(getLive());});
+window.addEventListener('storage', e => {if(EMBEDDED)return;if(e.key==='cp_themes'){try{const value=JSON.parse(e.newValue);if(Array.isArray(value)&&value.length)publishedThemes=value;}catch{}}if(e.key==='cp_live'||e.key==='cp_themes')render(getLive());});
 
 // The operator owns popup placement. A standalone output can manage itself.
 let duplicateOutput = false;
@@ -288,10 +291,10 @@ async function hookOutputScreens() {
   } catch {}
 }
 async function enterOutputFullscreen() {
-  if (OVERLAY || document.fullscreenElement || duplicateOutput) return;
+  if (EMBEDDED || OVERLAY || document.fullscreenElement || duplicateOutput) return;
   try { await document.documentElement.requestFullscreen(); } catch {}
 }
-if (!OVERLAY) document.addEventListener('click', async () => {
+if (!OVERLAY && !EMBEDDED) document.addEventListener('click', async () => {
   if (document.fullscreenElement || duplicateOutput) return;
   // Calling during a click allows the browser to ask for screen permission.
   if (!managedOutput) await hookOutputScreens();
@@ -300,7 +303,7 @@ if (!OVERLAY) document.addEventListener('click', async () => {
   void requestOutputWakeLock();
 });
 // Reuse an existing grant on a directly opened display, without an unsolicited prompt.
-if (!OVERLAY && !managedOutput && navigator.permissions?.query) {
+if (!OVERLAY && !EMBEDDED && !managedOutput && navigator.permissions?.query) {
   navigator.permissions.query({name:'window-management'}).then(permission => {
     if (permission.state === 'granted') void hookOutputScreens();
   }).catch(() => {});
@@ -333,7 +336,7 @@ document.addEventListener('fullscreenchange', () => {
    Chrome/Edge/Android; silently skipped where unsupported). */
 let outputWakeLock = null;
 async function requestOutputWakeLock() {
-  if (OVERLAY || outputWakeLock || duplicateOutput || !navigator.wakeLock) return;
+  if (EMBEDDED || OVERLAY || outputWakeLock || duplicateOutput || !navigator.wakeLock) return;
   try {
     outputWakeLock = await navigator.wakeLock.request('screen');
     outputWakeLock.addEventListener?.('release', () => { outputWakeLock = null; });
@@ -344,7 +347,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // Web Locks arbitrate across presenter tabs without timer-based leader races.
-if (!OVERLAY && navigator.locks?.request) {
+if (!OVERLAY && !EMBEDDED && navigator.locks?.request) {
   // Extra output windows opened by the operator carry ?out=<n> and claim their own
   // lock, so several screens can mirror the operator without counting as duplicates.
   const outputId = String(new URLSearchParams(location.search).get('out') || '').match(/^[1-9][0-9]{0,3}$/)?.[0] || '';

@@ -1,9 +1,9 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v116';
+const CACHE = 'kogg-presenter-v117';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/landing-tour.js', './js/app.js', './js/theme-studio.js', './js/display.js',
-  './js/sync.js', './js/library.js', './js/relay.js', './js/offline.js', './js/scripture-tools.js', './js/bible-providers.js', './js/content.js', './js/notes.js', './js/slides.js', './js/slides-deck.js', './js/stream.js', './js/stream-deck.js', './js/remote-operator.js', './js/cloud-transport.js', './js/cloud-remote-operator.js', './js/rehearsal.js', './js/rehearsal-deck.js', './js/lyrics.js', './js/lyrics-sources.js',
+  './js/sync.js', './js/library.js', './js/relay.js', './js/obs-connect.js', './js/obs-receiver.js', './js/offline.js', './js/scripture-tools.js', './js/bible-providers.js', './js/content.js', './js/notes.js', './js/slides.js', './js/slides-deck.js', './js/stream.js', './js/stream-deck.js', './js/remote-operator.js', './js/cloud-transport.js', './js/cloud-remote-operator.js', './js/rehearsal.js', './js/rehearsal-deck.js', './js/lyrics.js', './js/lyrics-sources.js',
   './js/supabase-config.js', './js/idb.js', './data/kjv.json', './data/bsb.json', './data/kjvs.json', './data/strongs.json', './data/hymns.json', './data/content-catalog.json', './data/hymnary-sources.txt',
   './fonts/NunitoSans-Variable.woff2', './manifest.webmanifest',
   './icons/kogg-symbol.svg', './icons/kogg-symbol-light.svg', './icons/kogg-symbol-white.svg', './icons/kogg-symbol-ink.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './icons/icon.svg', './icons/icon-maskable.svg',
@@ -12,10 +12,10 @@ const ASSETS = [
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
-  "./": "226a1c0a895ba2cfe5e2ab00f9009d81a241113af62a5b7917801b1d2b277ebf",
-  "./index.html": "226a1c0a895ba2cfe5e2ab00f9009d81a241113af62a5b7917801b1d2b277ebf",
-  "./display.html": "a63c5f02bc198e097c6c70823e9250bae515b227369184686df6e0f43a65ca28",
-  "./landing.html": "3a228ea29fc6193ce0624b2c4e3b84d0622327c9f6bba5b6a910462bfe975107",
+  "./": "ba3dff724d4750e84422b8d7e85562879f5eaabdded65b776d6457dd28e1b404",
+  "./index.html": "ba3dff724d4750e84422b8d7e85562879f5eaabdded65b776d6457dd28e1b404",
+  "./display.html": "f0bbf1c1d810c4e6e58b785e9b3b8ac936487144e43eedffacdc028d2d01536b",
+  "./landing.html": "d2092f7e7516f29c4dd9990072ed52dea479fee60b877e542dee07b8c61a69b8",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
   "./css/app.css": "e441fdfd9b1df7f3768b06e0e1b2432a32064e8ce1fa2ecb39100e708b6822da",
@@ -23,12 +23,14 @@ const ASSET_HASHES = {
   "./css/landing.css": "79c876e579c2a032accbbb24e4a9651260cad4383b2e27d963af8a8f40c7eaff",
   "./js/landing.js": "322558f0ac47eb60147afca5a9d12b024c93c87e5e87e21bcb708496a318ff52",
   "./js/landing-tour.js": "d8eae2a2c71eafa56dc03356a66ed1775c61784a2dacf56dacf69e938cabc1b4",
-  "./js/app.js": "ec45ee48172a66f22637a23daa8d346fd52bf635a88fc84efe9b49becf30b510",
+  "./js/app.js": "79712618073f8173503710e503f4b41b7cb6f1cf4f657d2a9ed4b52d750de921",
   "./js/theme-studio.js": "f566118922d25f926d5d35b127ce482fad155c1e8a197ae67a7fe157ea456463",
-  "./js/display.js": "4843d523fa7948294bfa877184d915d67db3e24175d4397fab1add0a87aeded2",
+  "./js/display.js": "ca6c97175a89973a670e2c1ed796b13250b33ec7eed8ac1a48d18863e873cf55",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
   "./js/library.js": "76e26b3a2f04dd09f82e17acb739bc387e7493d28732306289e6dc49195a8cdd",
   "./js/relay.js": "815f63d30b713de1896ed859f5158e82641cc4345d671626329e62a153ef11a7",
+  "./js/obs-connect.js": "b49be45073c8eed17170762ae2502ded249d62223fa46f50a972503e368dba4a",
+  "./js/obs-receiver.js": "41a9a876b45b6b077572b8db11aecaa15f52f82383afbd506070b5fd9a6aee43",
   "./js/offline.js": "9ce23f047a824bc84ee1814aa6c7c657f18551b3de5b6fe855420a4b99b19acb",
   "./js/scripture-tools.js": "31c0dba75d46a86efec7112bac9db32d06ea04f0ab018b88af5782300ead9a28",
   "./js/bible-providers.js": "0483b7b0adba1ac49017722f7d9e52e09fe0c2e2d66a6ddc0b0bea15477fe0f1",
@@ -36,8 +38,8 @@ const ASSET_HASHES = {
   "./js/notes.js": "e51f91dd590bf44b39235cec80cd88d90dbb72f0cb2838d2f361dbc895cadff6",
   "./js/slides.js": "7c4967a44ad392434801b207a361d1def24e1c663a028f6725e2b998ab23ea44",
   "./js/slides-deck.js": "a8d8bc4cef3d188a45726f90c5616adae6572604de3ecf9ae0248ffcdb070b98",
-  "./js/stream.js": "9baaa3eb0082ebf043d843fb0296f8342bbac4a0a5e114e5b4f3c79c3fafcffe",
-  "./js/stream-deck.js": "c8a1265678435a70197375570ddf9deb6ca7413171b1bb7ee78ca528a6c639f8",
+  "./js/stream.js": "56b355c17acf7e230ce0ae3d7574f77fe44d644bf72283dd81771b7d9e34e250",
+  "./js/stream-deck.js": "fa81812c28efa72f4455b56976f1ac303d208feeb1e13051e3a9855b03432c96",
   "./js/remote-operator.js": "d849e0d3d3087ed8d94776d5ecd836facf6c84d97047d24a8f51f23263005ed5",
   "./js/cloud-transport.js": "80e0f126495392c9b42f12c47a97be755750b31737646856f3e4ada5d690a998",
   "./js/cloud-remote-operator.js": "a3ee39ccfc01cb997bbfbe2569e42e7e6bdc37b97beeb17e4955fd08b5ea52d1",

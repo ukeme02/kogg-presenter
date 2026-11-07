@@ -77,7 +77,7 @@ static void handle(SOCKET s) {
  bool get=!strcmp(method,"GET"),post=!strcmp(method,"POST");char *query=strchr(path,'?');if(query)*query=0;
  AcquireSRWLockExclusive(&lock);
  bool writer=writer_key[0]&&!strncmp(auth,"Bearer ",7)&&equal(auth+7,writer_key),reader=!strncmp(auth,"Bearer ",7)&&equal(auth+7,reader_key);
- if(get&&!strcmp(path,"/v1/status")){char b[200];snprintf(b,sizeof(b),"{\"plugin\":\"kogg-connect\",\"version\":1,\"sources\":%ld,\"connected\":%s}",readers,owner[0]&&GetTickCount64()-owner_at<10000?"true":"false");json(s,200,b,origin);}
+ if(get&&!strcmp(path,"/v1/status")){char b[200];snprintf(b,sizeof(b),"{\"plugin\":\"kogg-connect\",\"version\":1,\"sources\":%ld,\"hasState\":%s,\"connected\":%s}",readers,snapshot?"true":"false",owner[0]&&GetTickCount64()-owner_at<10000?"true":"false");json(s,200,b,origin);}
  else if(post&&!strcmp(path,"/v1/pair")){
   obs_data_t *d=obs_data_create_from_json(body);const char *code=obs_data_get_string(d,"code");ULONGLONG now=GetTickCount64();
   if(now-attempt_at>60000){attempt_at=now;attempts=0;}

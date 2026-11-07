@@ -20,6 +20,7 @@ const LS = {
       throw err;
     }
     if(window.__koggBoot&&key===K.themes&&channel)channel.postMessage({type:'themes-update',themes:value});
+    if(window.__koggBoot&&(key===K.themes||key===K.settings))window.KOGGOBS?.publish();
     // library changes mark the cloud copy out of date (auto-sync — see CLOUD section)
     if (window.__koggBoot &&
         (key === K.songs || key === K.themes || key === K.service || key === K.plans)) markDirty();
@@ -139,6 +140,7 @@ function pushLive(patch = {}) {
   if (channel) channel.postMessage(live);
   window.KOGGRelay?.publish(live, themes, LS.get(K.settings, {}));
   window.KOGGCloudRemote?.publish();
+  window.KOGGOBS?.publish();
   renderPreview();
   renderLiveText();
   renderFloatPreview();

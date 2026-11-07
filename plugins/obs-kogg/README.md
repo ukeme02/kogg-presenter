@@ -31,3 +31,9 @@ Windows x64 and OBS 32 are the first build target. macOS, Linux, Windows ARM and
 - [ ] Installer and uninstall tested on a clean standard-user Windows account.
 
 Build/package instructions and validation evidence are maintained with the project progress log. Native source is GPL-2.0-or-later; OBS is separately licensed by its authors. No OBS binaries are redistributed.
+
+## Build and remove
+
+In a checkout of https://github.com/ukeme02/kogg-presenter, run `python plugins/obs-kogg/build.py` on Windows. It downloads SHA-256-pinned OBS headers and the portable Zig compiler into ignored `work/obs-build`, compiles the plugin and native harnesses, and creates the installer, manual/source ZIP and checksum manifest in `downloads/`. These are build tools only; church operators do not need them.
+
+This preview installer is unsigned and installs the OBS 32 layout at `C:\ProgramData\obs-studio\plugins\kogg-connect`. Windows asks for administrator permission. Portable OBS is not supported by this installer; use the manual ZIP and your OBS version's plugin directory. To remove the preview, close OBS and delete only that `kogg-connect` plugin folder. Saved browser libraries are unaffected.

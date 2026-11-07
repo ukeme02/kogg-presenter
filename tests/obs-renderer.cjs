@@ -1,0 +1,11 @@
+const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+test('bundled OBS receiver applies live theme and images, then blanks when disconnected',async()=>{
+ let queued;const rendered=[],cache=new Map(),events={};let count=0;const live={mode:'normal',slides:[{text:'Light'}],index:0};
+ const ctx=vm.createContext({URLSearchParams,AbortController,location:{search:'?obsconnect=1',hash:'#'+'a'.repeat(64)},window:{addEventListener:(name,fn)=>events[name]=fn},publishedThemes:null,bgCache:cache,render:s=>rendered.push(s),setTimeout:(fn,ms)=>{if(ms===150)queued=fn;return 1;},clearTimeout(){},fetch:async(url,options)=>{assert.equal(options.headers.Authorization,'Bearer '+'a'.repeat(64));return {ok:true,json:async()=>++count===1?{revision:1,snapshot:{live,themes:[{id:'blue'}],settings:{logoId:'image'},assets:{image:'data:image/png;base64,AA==',bad:'javascript:bad'}}}:{revision:2,snapshot:{}}};}});
+ vm.runInContext(fs.readFileSync('js/obs-receiver.js','utf8'),ctx);await new Promise(r=>setImmediate(r));assert.equal(rendered[0],live);assert.equal(ctx.publishedThemes[0].id,'blue');assert.equal(cache.size,1);assert.equal(await ctx.window.KOGGAssets.get('image'),'data:image/png;base64,AA==');await queued();assert.equal(rendered.at(-1).mode,'blank');assert.equal(cache.size,0);events.pagehide();
+});
+test('OBS embedded full output does not claim projector locks or request fullscreen',()=>{
+ const nodes=new Map(),node=id=>{if(!nodes.has(id))nodes.set(id,{style:{},classList:{add(){},toggle(){},remove(){}}});return nodes.get(id);};let locks=0;
+ const ctx=vm.createContext({window:{KOGGOBSState:{live:{mode:'blank',slides:[],index:0}},addEventListener(){}},document:{getElementById:node,body:node('body'),documentElement:node('html'),addEventListener(){}},location:{search:'?obsconnect=1'},navigator:{locks:{request(){locks++;throw Error('must not lock');}},permissions:{query(){throw Error('must not ask for screen permission');}}},URLSearchParams,localStorage:{getItem(){throw Error('must not read operator storage');}},setInterval(){},requestAnimationFrame(){}});
+ vm.runInContext(fs.readFileSync('js/display.js','utf8'),ctx);assert.equal(locks,0);assert.equal(node('slideText').style.display,'none');
+});

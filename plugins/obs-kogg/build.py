@@ -86,7 +86,7 @@ generated.append('};\n')
 (WORK/'payload.h').write_text(''.join(generated))
 run('rc','/:no-preprocess','/:auto-includes','none','/fo',WORK/'installer.res',ROOT/'plugins/obs-kogg/installer.rc')
 installer = WORK/('kogg-connect-'+VERSION+'-windows-x64.exe')
-run('cc','-O2','-I',WORK,SOURCES/'installer.c',WORK/'installer.res','-municode','-mwindows','-lcomctl32','-lshell32','-lole32','-o',installer)
+run('cc','-O2','-I',WORK,SOURCES/'installer.c',WORK/'installer.res','-municode','-Wl,/subsystem:windows','-lcomctl32','-lshell32','-lole32','-o',installer)
 dist=ROOT/'downloads'
 dist.mkdir(exist_ok=True)
 shutil.copy2(installer,dist/installer.name)

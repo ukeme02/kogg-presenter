@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 test('theme edits reach an existing output without waiting for another verse',()=>{
  const src=fs.readFileSync('js/display.js','utf8'),a=src.indexOf('const channel ='),b=src.indexOf('// The operator owns',a),renders=[],listeners={};let receiver;
- const c=vm.createContext({window:{BroadcastChannel:true,addEventListener:(name,fn)=>listeners[name]=fn},BroadcastChannel:class{constructor(){receiver=this;}},publishedThemes:null,render:s=>renders.push(s),getLive:()=>({mode:'normal',index:0})});
+ const c=vm.createContext({window:{BroadcastChannel:true,addEventListener:(name,fn)=>listeners[name]=fn},BroadcastChannel:class{constructor(){receiver=this;}},EMBEDDED:false,publishedThemes:null,render:s=>renders.push(s),getLive:()=>({mode:'normal',index:0})});
  vm.runInContext(src.slice(a,b),c);receiver.onmessage({data:{type:'themes-update',themes:[{id:'t1',fontScale:.95}]}});
  assert.equal(vm.runInContext('publishedThemes[0].fontScale',c),.95);assert.equal(renders.length,1);
  listeners.storage({key:'cp_themes',newValue:JSON.stringify([{id:'t1',fontScale:1}])});assert.equal(vm.runInContext('publishedThemes[0].fontScale',c),1);assert.equal(renders.length,2);

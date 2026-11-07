@@ -293,3 +293,8 @@ Allow the bridge through the laptop firewall on the intended private network if 
 Choose **Sync**, sign in, then use **Stream → Phone remote · online Sync → Start online remote**. Open the private pairing link on the phone and sign in there. Both devices need internet; the Node bridge is not used. Stop online remote, sign out, or leave Sync to revoke the operator session. The link itself grants presentation control, so share it only with your operator.
 
 The remote uses the existing Supabase Broadcast service as transport. Each short-lived session has a random channel and AES-GCM key; packets are encrypted on the sending device and authenticated/decrypted by the paired device. No remote commands or current-slide snapshots are written to the saved-library row. It does not require a new database table or RLS migration. A server acknowledgement is not shown as success: the phone waits for the operator's command acknowledgement. Keep device clocks accurate. If Realtime Broadcast is disabled in the Supabase project, connection reports an error and controls stay disabled.
+
+
+### Private service rehearsal
+
+Use **Service → Rehearse & check**. It takes a private snapshot of the current service and its theme choices. Previous/Next and the slide list affect only the rehearsal preview. Refresh after editing your service. Checks report empty/crowded slides, unavailable theme images, offline-core readiness and whether this operator has an Output window open. They do not certify a physical projector, audio, phone connection or OBS broadcast; inspect those directly before the service.

@@ -243,7 +243,7 @@
       <div class="dock service-queue">
         <div class="dock-head"><span class="grip"><i class="dock-ico">🧩</i>Service plan</span><span class="dock-head-hint">tap ▶ to put an item live</span></div>
         <ul id="serviceList" class="item-list scroll"></ul>
-        <div class="dock-foot"><button id="btnLiveService" class="primary">▶ Start Service Live</button><button id="btnClearService" class="danger">Clear All</button></div>
+        <div class="dock-foot"><button id="btnRehearseService">Rehearse &amp; check</button><button id="btnLiveService" class="primary">▶ Start Service Live</button><button id="btnClearService" class="danger">Clear All</button></div>
       </div>
       <div class="dock service-plans">
         <div class="dock-head"><span class="grip"><i class="dock-ico">🗂️</i>Named plans</span></div>
@@ -263,6 +263,8 @@
       </div>
     </div>
   </section>
+
+  <dialog id="rehearsalDialog" class="editor-dialog rehearsal-dialog" aria-labelledby="rehearsalTitle"><header><div><h2 id="rehearsalTitle">Service rehearsal</h2><p class="hint">Private preview · your live output stays as it is</p></div><button id="rehearsalClose">Close</button></header><div class="rehearsal-grid"><div><div id="rehearsalPreview" class="stream-preview"></div><p id="rehearsalPosition" role="status"></p><div class="row"><button id="rehearsalPrev">← Previous</button><button id="rehearsalNext">Next →</button></div><details open><summary id="rehearsalCheckSummary">Readiness checks</summary><ul id="rehearsalChecks"></ul></details><button id="rehearsalRefresh">Refresh plan &amp; checks</button></div><nav id="rehearsalItems" aria-label="Rehearsal slides"></nav></div></dialog>
 
   <!-- THEMES -->
   <section id="tab-stream" class="tab-panel">
@@ -605,5 +607,7 @@
 <script src="js/remote-operator.js"></script>
 <script src="js/cloud-transport.js"></script>
 <script src="js/cloud-remote-operator.js"></script>
+<script src="js/rehearsal.js"></script>
+<script src="js/rehearsal-deck.js"></script>
 </body>
 </html>

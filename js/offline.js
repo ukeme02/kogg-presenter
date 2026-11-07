@@ -1,7 +1,7 @@
 /* Browser-first offline preparation. No account or install prompt is required. */
 (function () {
   'use strict';
-  let registration = null, started = false;
+  let registration = null, started = false, readyState = false;const listeners=new Set();
   const status = () => document.getElementById('offlineStatus');
   const retry = () => document.getElementById('btnRetryOffline');
   function show(message, failed = false) { status().textContent = message; retry().hidden = !failed; }
@@ -26,6 +26,7 @@
     navigator.serviceWorker.addEventListener('message', event => {
       const data = event.data;
       if (data?.type !== 'offline-status') return;
+      readyState=data.ready===true;listeners.forEach(fn=>fn());
       if (data.ready) show(registration?.waiting?'Update ready — close app and Output, then reopen after service':'Ready offline • 3 Bibles + basic hymnary');
       else if (data.error) show('Offline setup incomplete — retry while online', true);
       else show(`Preparing offline… ${data.done}/${data.total}`);
@@ -44,5 +45,5 @@
       requestStatus();
     } catch { show('Offline setup failed — retry while online', true); }
   }
-  window.KOGGOffline = {start};
+  window.KOGGOffline = {start,requestStatus,status:()=>({ready:readyState}),subscribe:fn=>{listeners.add(fn);return ()=>listeners.delete(fn);}};
 })();

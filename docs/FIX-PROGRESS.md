@@ -151,13 +151,13 @@ Next priorities: independent broadcast/projector layouts; a packaged local bridg
 
 ## 7 November 2026 — Next build sequence
 
-- [x] Stage 1: independent room/broadcast layouts, explicit graphics routing, source URL and preview; verify and publish.
-- [x] Stage 2: paired phone remote, connection feedback and bounded controls; verify and publish.
-- [ ] Stage 3: private service rehearsal and readiness checks; verify and publish.
+- [x] Stage 1: independent room/broadcast layouts, explicit graphics routing, source URL and preview; implemented and tested; publication tracked below.
+- [x] Stage 2: paired phone remote, connection feedback and bounded controls; implemented and tested; publication tracked below.
+- [x] Stage 3: private service rehearsal and readiness checks; implemented and tested; publication tracked below.
 
 Preserve the lightweight browser/offline core. Each stage receives a separate commit and release. Browser visual inspection is unavailable until browser use is enabled in Work settings.
 
-### Stage 1 delivered — independent broadcast layout (v113)
+### Stage 1 implemented — independent broadcast layout (v113)
 
 Stream → Layouts configures full-canvas or lower-third broadcast styling, a separate theme, and tag/notice routing. The normal projector retains its theme and full-screen composition. Browser Source → Separate broadcast supplies the dedicated transparent URL; the monitor switches between room and broadcast. Both feeds share passage navigation. Existing feeds retain their previous defaults. 117 targeted checks passed, including route isolation and invalid-input fallbacks; physical OBS and browser rendering remain unverified.
 
@@ -170,3 +170,11 @@ Publication note: v113 upload has twice failed resolving Cloudflare's API. Sourc
 ### Stage 2 extension — online Sync remote (v115)
 
 User requested both connectivity options. Added an explicit online session using existing signed-in Sync and private pairing links. Supabase Broadcast transports AES-GCM packets; the key remains in the pairing link/session and command state never enters the library. Phones sign in and wait for live operator acknowledgements. Session close, sign-out/account change and leaving Sync stop control. No new database schema is required; actual service availability still depends on project Realtime settings. Wi-Fi remote remains available separately. Automated encryption/tamper/session-isolation and authenticated transport lifecycle checks added; a real two-device account test remains outstanding.
+
+### Stage 3 implemented — private rehearsal and readiness (v116)
+
+Service → Rehearse & check snapshots the service without mutating live output or the queue. Its navigable 16:9 preview retains per-item themes and bullets. Checks cover empty/crowded slides, missing theme/background assets, actual offline-worker readiness and Output-window presence. Physical screen/OBS/phone connectivity is not inferred from these checks. The operator smoke test confirms rehearsal navigation leaves cp_live unchanged. Landing updates now explain independent output layouts, both phone-remote paths and rehearsal; delivered items were removed from the future roadmap.
+
+Publication: Cloudflare API DNS now resolves again. Preparing combined release v116 containing the separately committed stages. Browser/hardware and real signed-in two-device verification remain unavailable in this session.
+
+Final validation before publication: all 242 automated checks passed across the repository. Markup nesting and duplicate IDs were checked on the operator, landing and both remote pages. The untracked data/hymns-basic.json remains untouched.

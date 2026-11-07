@@ -240,4 +240,8 @@ User confirmed KOGG Presenter now appears in OBS Sources. Actual output renderin
 
 256 automated checks passed. Hero samples match the bundled KJV without downloading the complete Bible; additional references load it on demand. Service bullets, phone Next/Blank/Resume, broadcast layout switching and guide deep links verified in the browser. These are isolated landing illustrations; actual OBS rendering and physical phone acceptance remain pending.
 
-- [ ] Commit, deploy and verify production v118.
+- [x] Commit, deploy and verify production v118.
+
+Published code: 88dd281. Production: https://kogg-presenter.pages.dev/landing. Immutable deployment: https://c8dcf38f.kogg-presenter.pages.dev/landing. Canonical landing, v118 service worker and both new experience assets returned HTTP 200 and matched the committed release bytes. The immutable live page was also opened and visually verified. Screenshot: work/landing-v118-live.jpg (local verification artifact).
+
+Existing open KOGG tabs may retain an older offline release until all KOGG tabs/windows are closed and reopened; do this between services. No saved presentation data was cleared.

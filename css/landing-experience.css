@@ -69,3 +69,10 @@
 @media(max-width:400px){.nav-row .brand>.brand-symbol{width:26px;height:26px}.nav-row .brand-wordmark,.nav-row .brand .brand-kogg{width:74px}.nav-row .menu-toggle{font-size:0;width:28px;height:40px;padding:0;flex-shrink:0}.nav-row .menu-toggle::after{content:'☰';font-size:18px}.nav-actions{gap:6px}.nav-actions .button-small{white-space:nowrap;font-size:8px;padding:10px 9px;gap:6px}}
 
 @media(max-width:760px){.nav-actions:before{inset:-12px -8px -14px}}
+
+/* A deliberate text rhythm: complete phrases, consistent measures and clear groups. */
+.hero h1{font-size:clamp(30px,3vw,43px);line-height:1.12;letter-spacing:-.045em;margin:22px 0}.hero h1>span,.hero h1>em{display:block;text-wrap:balance}.hero .hero-tagline{margin:0 0 24px}.hero .lead{max-width:43ch;line-height:1.8}.hero .lead strong{display:inline-block;margin-top:5px;font-weight:650}.hero .actions{margin-top:25px;gap:20px}.hero .quiet{max-width:48ch;line-height:1.7;margin-top:18px}.hero-caption{margin-top:24px;text-align:left;justify-content:flex-start}.hero-caption>span:last-child{max-width:38ch;line-height:1.7}.hero-caption>span:last-child>span{display:block}.hero .sample-refs{align-items:stretch}.hero .sample-refs button{width:100%;text-align:left}.section-heading h2,.connection-copy h2,.closing h2{text-wrap:balance}.section-heading>p,.connection-copy>p{line-height:1.8;text-wrap:pretty}.library-card p,.update-grid p,.partnership-grid p{max-width:52ch;line-height:1.8;text-wrap:pretty}
+@media(max-width:950px){.hero h1{font-size:clamp(34px,5.3vw,52px)}}
+@media(max-width:560px){.hero h1{font-size:clamp(24px,7.5vw,42px)}.hero .lead{font-size:13px;max-width:40ch}.hero .actions{align-items:flex-start;justify-content:flex-start;gap:16px}.hero .hero-tagline{font-size:17px;margin-bottom:20px}.hero .quiet{font-size:11px}.section-heading h2{line-height:1.12}.section-heading>p{margin-top:16px}.hero .preview-controls{text-align:left}.hero-caption{display:none}}
+
+.hero .hero-caption .caption-line{margin:0;flex:0 0 48px}.hero .preview-controls .sample-refs{width:100%;align-self:stretch;max-width:none}.hero .preview-controls .sample-refs button{flex:initial;max-width:none}

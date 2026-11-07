@@ -245,3 +245,21 @@ User confirmed KOGG Presenter now appears in OBS Sources. Actual output renderin
 Published code: 88dd281. Production: https://kogg-presenter.pages.dev/landing. Immutable deployment: https://c8dcf38f.kogg-presenter.pages.dev/landing. Canonical landing, v118 service worker and both new experience assets returned HTTP 200 and matched the committed release bytes. The immutable live page was also opened and visually verified. Screenshot: work/landing-v118-live.jpg (local verification artifact).
 
 Existing open KOGG tabs may retain an older offline release until all KOGG tabs/windows are closed and reopened; do this between services. No saved presentation data was cleared.
+
+
+## 8 November 2026 — Text rhythm, Quick Jump autofill and online remote (v119)
+
+- [x] Landing text grouping, readable line lengths and balanced mobile headings.
+- [x] Isolate Scripture search from sign-in forms; verify Quick Jump keyboard flow.
+- [x] Online pairing QR, clear laptop/phone status and expiring/revocable sessions.
+- [x] Confirm commands after completion; prevent duplicate commands and stale session updates.
+- [x] Recover connection after network/sleep; show sign-in again when authentication ends.
+- [x] Automated lifecycle and responsive browser checks: 269 full-suite checks passed. Final changed-asset checks passed.
+- [ ] Production v119 deployment and verification.
+- [ ] Real signed-in laptop/phone acceptance (requires the user's devices/account).
+
+Verified in browser: Quick Jump Enter displays John 3:16; search and every credential field belong to separate forms; Base mode remote start gives clear Sync sign-in guidance. Landing checked at 1280/390/320px. The remote fits 320px without horizontal overflow and disables actions before a connection. No password-manager credentials were accessed; the user confirmed the issue is suggestions, not a password inserted into the field. Exact third-party password-manager behavior remains user acceptance.
+
+Production Supabase Broadcast reachability was independently verified using two anonymous SDK clients and one synthetic encrypted test packet. No accounts were created, no passwords used and no library data read/written. This proves transport reachability, not signed-in two-device acceptance. User explicitly chose “Build and test what you can first.”
+
+QR encoder qrcode-generator 2.0.4 is vendored with its original copyright/license notice and loads only when pairing starts. Pair keys stay in URL fragments and phone session storage. Documentation: docs/REMOTE-ONLINE.md. User's untracked hymn file is untouched.

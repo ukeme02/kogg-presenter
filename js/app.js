@@ -636,9 +636,9 @@ function renderChapterChips() {
     .map((_, i) => `<button data-c="${i + 1}" class="dot-dot${i + 1 === cur ? ' selected' : ''}">${i + 1}</button>`)
     .join('');
 }
-function chapterLive(bi, ch) {
+function chapterLive(bi, ch, expectedLive=null) {
   const book = bible.books[bi];
-  goLiveScripture({ bookIdx: bi, ch, vFrom: 1, vTo: book.chapters[ch - 1].length });
+  return goLiveScripture({ bookIdx: bi, ch, vFrom: 1, vTo: book.chapters[ch - 1].length },expectedLive);
 }
 $('bookChips').addEventListener('click', e => {
   const chip = e.target.closest('button[data-i]');
@@ -688,7 +688,7 @@ $('btnNextChapter').addEventListener('click', () => {
 /* ---------- Verses dock nav — step verse by verse, live, reading across
    chapters and books (verse/range shift the window; chapter mode steps
    whole chapters, just like the Chapters dock) ---------- */
-function stepVerse(dir) {
+function stepVerse(dir, expectedLive=null) {
   if (!bible) return;
   const bi = +$('bookSelect').value;
   const book = bible.books[bi];
@@ -697,40 +697,40 @@ function stepVerse(dir) {
   const sameRef = liveRef && liveRef.bookIdx === bi && liveRef.ch === ch;
   if (verseMode === 'chapter') {
     const target = ch + dir;
-    if (target >= 1 && target <= book.chapters.length) { chapterLive(bi, target); return; }
+    if (target >= 1 && target <= book.chapters.length) { return chapterLive(bi, target,expectedLive); return; }
     const nb = bi + dir;
     if (nb < 0 || nb >= bible.books.length) return;
-    chapterLive(nb, dir > 0 ? 1 : bible.books[nb].chapters.length);
+    return chapterLive(nb, dir > 0 ? 1 : bible.books[nb].chapters.length,expectedLive);
     return;
   }
   let v = (sameRef ? (dir > 0 ? liveRef.vTo : liveRef.vFrom) : 1) + dir;
   if (v < 1) {   // back into the previous chapter / book
     if (ch > 1) {
       const pc = book.chapters[ch - 2].length;
-      goLiveScripture({ bookIdx: bi, ch: ch - 1, vFrom: pc, vTo: pc });
+      return goLiveScripture({ bookIdx: bi, ch: ch - 1, vFrom: pc, vTo: pc },expectedLive);
     } else if (bi > 0) {
       const pb = bible.books[bi - 1], pc2 = pb.chapters.length, pl = pb.chapters[pc2 - 1].length;
-      goLiveScripture({ bookIdx: bi - 1, ch: pc2, vFrom: pl, vTo: pl });
+      return goLiveScripture({ bookIdx: bi - 1, ch: pc2, vFrom: pl, vTo: pl },expectedLive);
     }
     return;
   }
   if (v > count) {   // forward into the next chapter / book
-    if (ch < book.chapters.length) goLiveScripture({ bookIdx: bi, ch: ch + 1, vFrom: 1, vTo: 1 });
-    else if (bi < bible.books.length - 1) goLiveScripture({ bookIdx: bi + 1, ch: 1, vFrom: 1, vTo: 1 });
+    if (ch < book.chapters.length) return goLiveScripture({ bookIdx: bi, ch: ch + 1, vFrom: 1, vTo: 1 },expectedLive);
+    else if (bi < bible.books.length - 1) return goLiveScripture({ bookIdx: bi + 1, ch: 1, vFrom: 1, vTo: 1 },expectedLive);
     return;
   }
   if (verseMode === 'range' && sameRef) {
     const size = liveRef.vTo - liveRef.vFrom;
     if (dir > 0) {
       const s = Math.max(1, Math.min(v, count - size));
-      goLiveScripture({ bookIdx: bi, ch, vFrom: s, vTo: s + size });
+      return goLiveScripture({ bookIdx: bi, ch, vFrom: s, vTo: s + size },expectedLive);
     } else {
       const e = v, s = Math.max(1, e - size);
-      goLiveScripture({ bookIdx: bi, ch, vFrom: s, vTo: Math.max(e, s) });
+      return goLiveScripture({ bookIdx: bi, ch, vFrom: s, vTo: Math.max(e, s) },expectedLive);
     }
     return;
   }
-  goLiveScripture({ bookIdx: bi, ch, vFrom: v, vTo: v });
+  return goLiveScripture({ bookIdx: bi, ch, vFrom: v, vTo: v },expectedLive);
 }
 $('btnPrevVerse').addEventListener('click', () => navigateScripture(-1));
 $('btnNextVerse').addEventListener('click', () => navigateScripture(1));
@@ -1980,16 +1980,16 @@ function currentLiveReference() {
 async function navigateScripture(dir) {
   if(!bible || live.mode!=='normal') {
     const target=window.KOGGScripture.adjacent(bible?.books || [],currentScriptureRange(),dir);
-    if(target)goLiveScripture(target);
+    if(target)return goLiveScripture(target);
     return;
   }
   if(!live.scripture) {
     const target=window.KOGGScripture.adjacent(bible.books,currentScriptureRange(),dir);
-    if(target)goLiveScripture(target);return;
+    if(target)return goLiveScripture(target);return;
   }
   const state=live;
   if(live.scripture.translation!==loadedBibleFile) {
-    if(!await loadBible(live.scripture.translation) || live!==state)return;
+    if(!await loadBible(live.scripture.translation) || live!==state)return false;
   }
   const index=live.index+dir;
   if(index>=0 && index<live.slides.length) {
@@ -1998,7 +1998,7 @@ async function navigateScripture(dir) {
   }
   // past the edge of the passage: the old mode-aware walker keeps verse/range/chapter
   // semantics intact (window size and whole-chapter steps) and goes live as it walks
-  stepVerse(dir);
+  return stepVerse(dir,state);
 }
 /* ☆ Save / ★ Saved — a full toggle: the same button removes the bookmark. */
 function bookmarkedNow() {
@@ -2021,12 +2021,13 @@ $('btnBookmarkScripture').addEventListener('click',()=>{
   LS.set('cp_scripture_bookmarks',bookmarks);renderMemory();refreshBookmarkButton();
   flash($('btnBookmarkScripture'),exists?'Removed ☆':'Saved ★');
 });
-function goLiveScripture(r) {
+function goLiveScripture(r, expectedLive=null) {
+  if(expectedLive && live!==expectedLive)return false;
   if (!bible) return false;
   if (bible.provider && window.KOGGBibles && !(bible.books[r.bookIdx]?.chapters[r.ch - 1] || []).length) {
     // connected version — stream the chapter in, then stage as usual
     return window.KOGGBibles.ensureChapter(bible, r.bookIdx, r.ch)
-      .then(() => { indexConnectedChapter(r.bookIdx, r.ch - 1); return goLiveScripture(r); })
+      .then(() => { indexConnectedChapter(r.bookIdx, r.ch - 1); return goLiveScripture(r,expectedLive); })
       .catch(err => { flash($('quickGo'), err.message); return false; });
   }
   if (!validScriptureRef(r)) { flash($('quickGo'), 'Invalid scripture reference'); return false; }
@@ -2533,8 +2534,8 @@ if (!workMode()) showGate();
 /* =========================================================
    GLOBAL CONTROLS
 ========================================================= */
-function next(){if(live.scripture)navigateScripture(1);else advanceLiveSlide(1);}
-function prev(){if(live.scripture)navigateScripture(-1);else advanceLiveSlide(-1);}
+function next(){return live.scripture?navigateScripture(1):advanceLiveSlide(1);}
+function prev(){return live.scripture?navigateScripture(-1):advanceLiveSlide(-1);}
 $('btnBlank').addEventListener('click', () => pushLive({ mode: live.mode === 'blank' ? 'normal' : 'blank' }));
 $('btnLogo').addEventListener('click', () => pushLive({ mode: live.mode === 'logo' ? 'normal' : 'logo' }));
 $('btnOpenDisplay').addEventListener('click', openDisplayWindow);
@@ -3337,3 +3338,11 @@ $('btnSavePassword').addEventListener('click', async () => {
 });
 
 refreshUser();
+
+// Keep Scripture searches separate from credential forms and prevent accidental navigation.
+for(const id of ["quickGoForm","quickJumpForm"])$(id).addEventListener("submit",event=>event.preventDefault());
+$("authForm").addEventListener("submit",event=>event.preventDefault());
+$("gateSignin").addEventListener("submit",event=>event.preventDefault());
+
+$("providerKeyForm").addEventListener("submit",event=>{event.preventDefault();$("btnSaveApiBible").click();});
+$("recoveryForm").addEventListener("submit",event=>{event.preventDefault();$("btnSavePassword").click();});

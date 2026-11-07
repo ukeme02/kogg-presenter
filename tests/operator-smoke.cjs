@@ -327,6 +327,22 @@ test('Stream drafts do not go live until Show, preserve passage and survive mode
  vm.runInContext('setWorkMode("base")',context);assert.equal(elements.get('ltLine1').value,'');vm.runInContext('setWorkMode("local")',context);assert.equal(elements.get('ltLine1').value,'Pastor Example');
 });
 
-test('paired phone actions use existing navigation and explicit blank/resume without toggling twice',async()=>{const {context,storage}=boot();await new Promise(r=>setImmediate(r));let command;context.window.KOGGRelay={setCommandHandler:fn=>command=fn,publish(){}};vm.runInContext(fs.readFileSync('js/remote-operator.js','utf8'),context);vm.runInContext("pushLive({mode:'normal',slides:[{text:'One'},{text:'Two'}],index:0})",context);command('next');assert.equal(JSON.parse(storage.get('cp_live')).index,1);command('blank');command('blank');assert.equal(JSON.parse(storage.get('cp_live')).mode,'blank');assert.throws(()=>command('next'),/Resume/);command('resume');command('previous');assert.equal(JSON.parse(storage.get('cp_live')).index,0);assert.throws(()=>command('delete'),/Unsupported/);});
+test('paired phone actions use existing navigation and explicit blank/resume without toggling twice',async()=>{const {context,storage}=boot();await new Promise(r=>setImmediate(r));let command;context.window.KOGGRelay={setCommandHandler:fn=>command=fn,publish(){}};vm.runInContext(fs.readFileSync('js/remote-operator.js','utf8'),context);vm.runInContext("pushLive({mode:'normal',slides:[{text:'One'},{text:'Two'}],index:0})",context);await command('next');assert.equal(JSON.parse(storage.get('cp_live')).index,1);await command('blank');await command('blank');assert.equal(JSON.parse(storage.get('cp_live')).mode,'blank');await assert.rejects(command('next'),/Resume/);await command('resume');await command('previous');assert.equal(JSON.parse(storage.get('cp_live')).index,0);await assert.rejects(command('delete'),/Unsupported/);});
 
 test('service rehearsal advances a private snapshot without writing live state',async()=>{const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));context.window.KOGGRehearsal=require('../js/rehearsal.js');context.window.KOGGOffline={status:()=>({ready:true}),subscribe(){},requestStatus(){}};const dialog=elements.get('rehearsalDialog');dialog.showModal=()=>dialog.open=true;dialog.close=()=>dialog.open=false;vm.runInContext("service=[{id:'private',title:'Test service',themeId:themes[0].id,slides:[{text:'Private first',label:'One'},{text:'Private second',label:'Two'}]}]",context);vm.runInContext(fs.readFileSync('js/rehearsal-deck.js','utf8'),context);const before=storage.get('cp_live');elements.get('btnRehearseService').click();await new Promise(r=>setImmediate(r));assert.equal(dialog.open,true);assert.match(elements.get('rehearsalPreview').innerHTML,/Private first/);elements.get('rehearsalNext').click();assert.match(elements.get('rehearsalPreview').innerHTML,/Private second/);assert.equal(elements.get('rehearsalNext').disabled,true);assert.equal(storage.get('cp_live'),before);assert.equal(vm.runInContext('service[0].slides[0].text',context),'Private first');});
+
+
+test('remote navigation waits for a connected chapter and cannot overwrite a newer live selection',async()=>{
+ const {context,storage}=boot();await new Promise(r=>setImmediate(r));
+ let resolve;context.window.KOGGBibles={ensureChapter:()=>new Promise(r=>resolve=r)};
+ vm.runInContext("bible.provider='test';bible.books[42].chapters[3]=[];goLiveScripture({bookIdx:42,ch:3,vFrom:36,vTo:36});",context);
+ const before=storage.get('cp_live');const pending=vm.runInContext('next()',context);assert.equal(typeof pending.then,'function');assert.equal(storage.get('cp_live'),before);
+ vm.runInContext("pushLive({mode:'normal',title:'Newer message',slides:[{text:'Keep this message',label:'New'}],index:0,scripture:null});bible.books[42].chapters[3]=['Next chapter'];",context);
+ resolve();await pending;assert.equal(JSON.parse(storage.get('cp_live')).title,'Newer message');
+});
+
+test('search and account forms prevent page navigation without triggering an extra sign-in',()=>{
+ const {elements}=boot();let prevented=0,signins=0;elements.get('btnSignIn').click=()=>signins++;
+ for(const id of ['quickGoForm','quickJumpForm'])elements.get(id).handlers.submit[0]({preventDefault(){prevented++;}});
+ assert.equal(signins,0);elements.get('authForm').handlers.submit[0]({preventDefault(){prevented++;}});assert.equal(signins,0);assert.equal(prevented,3);
+});

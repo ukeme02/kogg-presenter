@@ -16,10 +16,10 @@
     <span class="brand-wordmark"><span class="brand-name"><span class="brand-kogg" role="img" aria-label="KOGG"></span></span><span class="brand-sub">Presenter</span></span>
     <button id="modeChip" class="mode-chip" title="Change work mode">…</button>
   </div>
-  <div class="quickgo">
-    <input id="quickGo" type="search" autocomplete="off" name="kogg-quickgo" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder="Find scripture, remembered words or songs…  (/ to focus, Enter to present)">
+  <form class="quickgo" id="quickGoForm" role="search" autocomplete="off">
+    <input id="quickGo" type="search" autocomplete="off" name="presentation-search" aria-label="Find presentation content" data-bwignore="true" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder="Find scripture, remembered words or songs…  (/ to focus, Enter to present)">
     <div id="quickGoResults" class="quickgo-results" hidden></div>
-  </div>
+  </form>
   <div class="quick-actions">
     <button id="btnBlank" class="ctrl warn" title="Blank screen (Alt+B)">Blank</button>
     <button id="btnLogo" class="ctrl" title="Logo screen (Alt+L)">Logo</button>
@@ -121,12 +121,12 @@
         <div class="dock legacy-lookup" data-dock="quickgo">
           <div class="dock-head"><span class="grip"><i class="dock-ico">⚡</i>Quick jump</span></div>
           <p class="hint dock-hint">Type <b>jn 3:16</b> / <b>ps 23:1-4</b> / <b>rom 8</b> — type three book letters, then chapter and verse. <b>→</b> accepts each step; <b>Enter</b> displays.</p>
-          <div class="quickjump">
-            <input id="bookSearch" type="search" autocomplete="off" name="kogg-jump" data-1pignore="true" data-lpignore="true" data-form-type="other"
+          <form class="quickjump" id="quickJumpForm" role="search" autocomplete="off">
+            <input id="bookSearch" type="search" autocomplete="off" name="scripture-reference" aria-label="Scripture reference" data-bwignore="true" data-1pignore="true" data-lpignore="true" data-form-type="other"
                    placeholder="Joh → 3 → 16 → Enter" aria-describedby="jumpHint" enterkeyhint="go">
             <span id="bookGhost"></span>
             <div id="quickBookSug" class="quickgo-results jump-sug" hidden></div>
-          </div>
+          </form>
           <p id="jumpHint" class="jump-hint" role="status" aria-live="polite">Start typing a book anywhere in Scripture. Chapter → verse, then Enter.</p>
           <div class="dock-foot">
             <button id="btnVoiceJump" title="Speak a scripture — Chrome/Edge, online">🎤 Speak it</button>
@@ -278,7 +278,7 @@
           <p class="hint">Use the operator on the local bridge too. The hosted website alone cannot sync with OBS’s separate browser. Set the source to your canvas size, e.g. 1920 × 1080.</p>
           <button id="streamCheck">Check bridge connection</button><p id="streamConnection" class="hint" role="status"></p>
         </div><p class="hint">KOGG supplies visuals. Start and manage the broadcast in OBS or your streaming platform. No stream key is needed here.</p>
-        <details class="remote-pair"><summary>Phone remote · online Sync</summary><p class="hint">Choose Sync and sign in, then create a private link. The phone signs in too. Both devices need internet; no local bridge is required. Anyone you give the link can control this presentation.</p><button id="cloudRemoteStart">Start online remote</button><input id="cloudRemoteLink" readonly aria-label="Private online pairing link"><div class="row"><button id="cloudRemoteCopy">Copy link</button><button id="cloudRemoteStop">Stop online remote</button></div><p id="cloudRemoteStatus" class="hint" role="status">Control messages are encrypted before they leave this device.</p></details>
+        <details class="remote-pair cloud-pair"><summary>Phone remote · online Sync</summary><p class="hint">Control this presentation from your phone over the internet. No bridge or installation.</p><ol class="remote-steps" id="cloudRemoteSteps"><li>Choose <strong>Sync</strong> and sign in on this laptop.</li><li>Start a session, then scan the code with your phone camera.</li><li>Sign in on the phone. Keep this operator open.</li></ol><button id="cloudRemoteStart" class="primary">Start / renew online remote</button><div class="cloud-pair-content"><div id="cloudRemoteCode" class="remote-code" role="img" aria-label="Private phone pairing QR code" hidden></div><div class="cloud-pair-link"><label for="cloudRemoteLink">Private pairing link</label><input id="cloudRemoteLink" type="url" readonly autocomplete="off" data-1pignore="true" data-lpignore="true" aria-label="Private online pairing link"><div class="row"><button id="cloudRemoteCopy" disabled>Copy link</button><button id="cloudRemoteShare" disabled>Share link</button><button id="cloudRemoteStop" disabled>Stop remote</button></div></div></div><p id="cloudRemoteStatus" class="hint" role="status">Ready when you are. Both devices need internet.</p><details class="remote-privacy"><summary>Privacy &amp; session</summary><p class="hint">Share only with your operator. This link grants control for up to 12 hours. Starting again replaces it. Stop remote revokes it without changing the projected slide. QR codes are generated on this device.</p></details></details>
         <details class="remote-pair"><summary>Phone remote · same Wi-Fi</summary><p class="hint">Start the optional bridge with <code>node tools/obs-relay.cjs --remote</code>. Open its laptop operator, then pair your phone. No internet or account is required. Use your trusted church network.</p><button id="remotePair">Create pairing link</button><label id="remoteNetworkLabel" hidden>Network address<select id="remoteNetwork"></select></label><input id="remotePairLink" readonly aria-label="Private phone pairing link"><div class="row"><button id="remoteCopy">Copy link</button><button id="remoteRevoke">Disconnect phones</button></div><p id="remotePairStatus" role="status" class="hint">A pairing link grants presentation control. Keep it private.</p></details>
         <a href="landing.html#obs" target="_blank" rel="noopener">Connection guide ↗</a>
       </div></div>
@@ -367,23 +367,23 @@
         <div id="authNotConfigured" class="hint" style="color:var(--warn)">
           Cloud sync isn't configured on this deployment yet. See README → “Enable cloud sync” (5-minute free setup with Supabase).
         </div>
-        <div id="authForm">
+        <form id="authForm" aria-label="Sync account sign-in" autocomplete="on">
           <div class="safe-strip">🔒 Your sign-in is protected: sign-in uses Supabase; use HTTPS and verify the deployment’s library ownership policy.</div>
           <div class="row">
-            <label style="flex:2">Email (for sign-in and password reset only — never shared)<br><input id="authEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
+            <label style="flex:2">Email (for sign-in and password reset only — never shared)<br><input id="authEmail" name="username" type="email" autocomplete="username" placeholder="you@church.org"></label>
           </div>
           <div class="row">
-            <label style="flex:2">Password<br><input id="authPassword" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
+            <label style="flex:2">Password<br><input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="min. 6 characters"></label>
             <button id="btnShowPass" type="button" title="Show or hide password">Show</button>
             <label id="authPass2Label" style="flex:2">Re-type password (when creating the account)<br><input id="authPass2" type="password" autocomplete="new-password" placeholder="same password again"></label>
           </div>
           <div class="row" style="align-items:center">
-            <button id="btnSignIn" class="primary">Sign In</button>
-            <button id="btnSignUp">Create Account</button>
+            <button type="submit" id="btnSignIn" class="primary">Sign In</button>
+            <button type="button" id="btnSignUp">Create Account</button>
             <button id="btnForgot" type="button" class="linklike">Forgot password?</button>
           </div>
           <div id="authStatus" class="hint"></div>
-        </div>
+        </form>
         <div id="authSignedIn" hidden>
           <p id="authWho" class="hint"></p>
           <div class="row">
@@ -411,10 +411,10 @@
       <details class="group" id="licensedVersionsGroup">
         <summary>Licensed versions (live online)</summary>
         <p class="hint">Copyrighted translations can't be bundled or downloaded here. Instead they stream straight from the official services while online: <b>NLT</b> is a free live connection via Tyndale's NLT API. <b>NIV, NKJV, NASB, CSB, Amplified and The Message</b> stream through your own free <a href="https://scripture.api.bible" target="_blank" rel="noopener">API.Bible</a> key — the Starter plan licenses up to three copyrighted versions for non-commercial church use. The key stays on this device only and is never published with this app.</p>
-        <div class="row">
+        <form class="row" id="providerKeyForm" autocomplete="off">
           <label style="flex:1">API.Bible key<br><input id="apiBibleKey" type="password" autocomplete="off" placeholder="paste your api-key"></label>
-          <button id="btnSaveApiBible" class="primary">Save key</button>
-        </div>
+          <button id="btnSaveApiBible" type="button" class="primary">Save key</button>
+        </form>
         <div class="row" id="apiBibleChoices"></div>
         <p id="licensedStatus" class="hint"></p>
       </details>
@@ -536,28 +536,28 @@
     <button id="btnGateLater" class="linklike">Decide later — open the console</button>
   </div>
 
-  <div class="gate-panel" id="gateSignin" hidden>
-    <button class="gate-back linklike" id="btnGateBack">← Back to modes</button>
+  <form class="gate-panel" id="gateSignin" aria-label="Sync sign-in" autocomplete="on" hidden>
+    <button type="button" class="gate-back linklike" id="btnGateBack">← Back to modes</button>
     <div class="gate-head">
       <img src="icons/icon.svg" alt="">
       <div><h1>Sync Mode — <span>sign in</span></h1></div>
     </div>
     <p class="hint">One free account keeps your whole library with you on every device. Everything still works without one.</p>
     <div class="safe-strip">🔒 Your sign-in is protected: password stored hashed, connection over HTTPS.</div>
-    <label class="gate-field">Email<br><input id="gateEmail" type="email" autocomplete="email" placeholder="you@church.org"></label>
+    <label class="gate-field">Email<br><input id="gateEmail" name="username" type="email" autocomplete="username" placeholder="you@church.org"></label>
     <label class="gate-field">Password<br>
-      <span class="pass-wrap"><input id="gatePass" type="password" autocomplete="new-password" placeholder="min. 6 characters"><button type="button" id="btnGateShow" aria-pressed="false" title="Show or hide password">Show</button></span>
+      <span class="pass-wrap"><input id="gatePass" name="password" type="password" autocomplete="current-password" placeholder="min. 6 characters"><button type="button" id="btnGateShow" aria-pressed="false" title="Show or hide password">Show</button></span>
     </label>
     <label class="gate-field">Re-type password (double-check before it matters)<br><input id="gatePass2" type="password" autocomplete="new-password" placeholder="same password again"></label>
     <div class="gate-row">
-      <button id="btnGateIn" class="primary">Sign In</button>
-      <button id="btnGateUp">Create Account</button>
+      <button type="submit" id="btnGateIn" class="primary">Sign In</button>
+      <button type="button" id="btnGateUp">Create Account</button>
     </div>
     <div id="gateStatus" class="gate-status" role="status" aria-live="polite"></div>
     <div class="gate-row">
-      <button id="btnGateSkip" class="linklike">Skip — work offline instead</button>
+      <button type="button" id="btnGateSkip" class="linklike">Skip — work offline instead</button>
     </div>
-  </div>
+  </form>
 
   <div class="gate-panel" id="gateLocal" hidden>
     <button class="gate-back linklike" id="btnGateLocalBack">← Back to modes</button>
@@ -581,10 +581,12 @@
 
 <section id="passwordRecovery" class="card" hidden role="dialog" aria-modal="true" aria-labelledby="recoveryTitle" style="position:fixed;inset:10vh 15vw auto;z-index:100000;background:var(--bg,#111);padding:24px">
   <h2 id="recoveryTitle">Choose a new password</h2>
+  <form id="recoveryForm" autocomplete="on">
   <label>New password <input id="recoveryPassword" type="password" autocomplete="new-password" minlength="6"></label>
   <label>Confirm password <input id="recoveryConfirm" type="password" autocomplete="new-password" minlength="6"></label>
-  <button id="btnSavePassword">Save new password</button>
+  <button id="btnSavePassword" type="button">Save new password</button>
   <p id="recoveryStatus" role="status"></p>
+  </form>
 </section>
 <script src="js/supabase-config.js"></script>
 <script src="js/idb.js"></script>
@@ -607,6 +609,7 @@
 <script src="js/obs-connect.js"></script>
 <script src="js/remote-operator.js"></script>
 <script src="js/cloud-transport.js"></script>
+<script src="js/cloud-remote-session.js"></script>
 <script src="js/cloud-remote-operator.js"></script>
 <script src="js/rehearsal.js"></script>
 <script src="js/rehearsal-deck.js"></script>

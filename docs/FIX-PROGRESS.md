@@ -308,7 +308,7 @@ Blue branding, typography, animation and the existing isolated demonstrations ar
 - [x] Guided two-scan pairing; local camera decoding and paste fallback; stop/revoke controls.
 - [x] Save a lightweight phone remote offline and expose readiness clearly.
 - [x] Test commands, expiry, stale/duplicate commands, cancellation, invalid pairing and offline assets.
-- [ ] Browser verification, commit and publish; record physical-device limitations.
+- [x] Browser verification, commit and publish; record physical-device limitations.
 
 Both devices must prepare the pages online before offline use. Guest Wi-Fi isolation can prevent direct connections. Two-scan pairing is the supported offline design; a one-scan/no-internet promise is not made.
 
@@ -317,3 +317,7 @@ Implementation evidence: real browser operator and phone-view tabs paired over a
 Phone storage is a small separate cache with no Bible data or cloud SDK. QR scanner jsQR 1.4.0 is bundled under its Apache-2.0 license (js/vendor/jsqr-LICENSE.txt) and loaded only when scanning. Code generation is local. Camera tracks stop after decoding, cancel, tab hiding or page exit. Scanned offers and answers are compressed, size-limited, session-matched and expire after five minutes. Connected sessions expire after twelve hours. The existing command protocol confirms actions, rejects stale revisions and suppresses duplicates.
 
 Physical acceptance remaining: Android/iPhone scanning laptop code, laptop camera reading reply, same-router operation with WAN removed, and restrictive guest-network behavior. Two-way code exchange using the paste fallback was exercised in the browser; live camera capture was not used.
+
+Published v122: runtime commit a4af904; https://6fcd41ee.kogg-presenter.pages.dev/. Canonical phone page, phone worker, transport, landing and main worker returned HTTP 200 and matched the committed archive. Full suite: 282 passed; two additional cancellation tests passed afterward (9/9 Wi-Fi tests). Git excludes the pre-existing untracked data/hymns-basic.json.
+
+Live release acceptance: Base operator and fresh phone page paired by exchanging their actual codes. Next changed John 3:16 to John 3:17. Phone ready-offline badge confirmed; 440px phone viewport had no horizontal overflow. Stopping on the operator disabled the remote. All test pairings were ended and temporary tabs closed. Proof: work/wifi-remote-v122-live.jpg and work/wifi-remote-v122-offline.jpg.

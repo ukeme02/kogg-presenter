@@ -285,3 +285,15 @@ User requested simpler Wi-Fi setup during implementation. The normal remote requ
 Published runtime: 62cf2a8, release v120. Canonical operator, phone page, guest transport, phone adapter, landing and service worker returned HTTP 200 and matched the committed archive. Immutable release: https://15028c6f.kogg-presenter.pages.dev/.
 
 Live acceptance: a fresh Base-mode operator on the deployed release generated a QR/link; a separate browser tab opened that exact link without login and connected. Next changed the actual laptop passage from Psalms 23:1 to 23:2. Stop revoked that pairing and disabled the phone. Screenshot: work/remote-v120-live.jpg. All test links were revoked afterward. Actual phone camera and a separate physical network remain user acceptance, not an implementation blocker. No user accounts were created or modified, and no saved library was uploaded.
+
+
+## 8 November 2026 — Landing page: scan-and-connect remote (v121)
+
+- [x] Announce account-free phone remote beside the hero and interactive phone demonstration.
+- [x] Show Base, Local and Sync availability, internet requirements and three clear pairing steps.
+- [x] Keep offline Wi-Fi bridge instructions under Advanced; update current features, FAQ and sharing metadata.
+- [x] Responsive/interaction checks: desktop, tablet and phone layouts; valid anchors and unique IDs; demo Next updates both previews; no console errors. Dark-mode step badges retain accessible blue contrast.
+- [x] Landing/offline automated checks: 30 passed.
+- [ ] Commit, publish and verify live page.
+
+Blue branding, typography, animation and the existing isolated demonstrations are preserved. The page does not generate real pairing links or connect to an operator; pairing starts inside KOGG.

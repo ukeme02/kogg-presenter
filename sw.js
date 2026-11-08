@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v120';
+const CACHE = 'kogg-presenter-v121';
 const ASSETS = [
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/landing-tour.js', './js/landing-experience.js', './css/landing-experience.css', './js/app.js', './js/theme-studio.js', './js/display.js',
@@ -15,7 +15,7 @@ const ASSET_HASHES = {
   "./": "dcbab28c6154538ab7b7086f8337322ba41491fdacdb33f3c61055f72d38c63d",
   "./index.html": "dcbab28c6154538ab7b7086f8337322ba41491fdacdb33f3c61055f72d38c63d",
   "./display.html": "f0bbf1c1d810c4e6e58b785e9b3b8ac936487144e43eedffacdc028d2d01536b",
-  "./landing.html": "9eaaf2eca7ea0f14a54d4919cac852786ffcde14a2eaef3983357c993731c25e",
+  "./landing.html": "a8b30f14b2fc413dfdb609152e0966b74954bcac24114dfc1c1e5ad6f0e83008",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
   "./css/app.css": "cced905bcf67658195f156e44cd94d386d0ff2e8f36b0d846a84c5dca32af8c1",
@@ -24,7 +24,7 @@ const ASSET_HASHES = {
   "./js/landing.js": "12dfe3b01b89fa48124e9a9f4a4581c8b2bd5c73debfcb799ae78d90e3ec3173",
   "./js/landing-tour.js": "d8eae2a2c71eafa56dc03356a66ed1775c61784a2dacf56dacf69e938cabc1b4",
   "./js/landing-experience.js": "a3bfebd9a84c486554069be7fbd884bbb33419fd46d6f198eeba2c7e07fb9520",
-  "./css/landing-experience.css": "7614d96132ae1fc0418e499c3659848a4aa4ff4f6d4e6da00c90940fd6510384",
+  "./css/landing-experience.css": "b52666180eb258152fdc73d453ff82850ca42be7988389cdf59ce8be1cb12ba0",
   "./js/app.js": "45b8cc97c432d21fe32332c7d33a5ea239d22ada228394a9750cb8a4509066f8",
   "./js/theme-studio.js": "f566118922d25f926d5d35b127ce482fad155c1e8a197ae67a7fe157ea456463",
   "./js/display.js": "ca6c97175a89973a670e2c1ed796b13250b33ec7eed8ac1a48d18863e873cf55",

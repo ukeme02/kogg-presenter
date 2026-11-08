@@ -275,9 +275,13 @@ Publication verified: runtime commit 17ad508 (text layout commit 277818a), immut
 - [x] Update Stream instructions, phone UI, landing page and remote guide.
 - [x] Base and Local real-browser pairing and command round trip verified against production Broadcast. Sync-mode gate removal covered by the same adapter tests.
 - [x] 275 automated checks passed.
-- [ ] Commit, deploy and verify production.
+- [x] Commit, deploy and verify production.
 - [ ] Physical phone camera/network acceptance by user.
 
 Browser acceptance: started guest pairing from Base, opened the private link in a separate browser tab, and received John 3:16 without login. Next changed the actual operator to John 3:17; Blank, Resume and Previous were confirmed. Changed the laptop to Local while keeping the same pairing; Next still worked. Stop remote delivered revocation and disabled the phone controls. No accounts or credentials were used. The phone URL fragment was removed after opening.
 
 User requested simpler Wi-Fi setup during implementation. The normal remote requires only scan-and-connect on Wi-Fi or mobile data with internet. The existing bridge is now explicitly labelled Advanced/offline. A direct offline browser connection via WebRTC is a potential later task; it requires its own pairing design and is not claimed by this release.
+
+Published runtime: 62cf2a8, release v120. Canonical operator, phone page, guest transport, phone adapter, landing and service worker returned HTTP 200 and matched the committed archive. Immutable release: https://15028c6f.kogg-presenter.pages.dev/.
+
+Live acceptance: a fresh Base-mode operator on the deployed release generated a QR/link; a separate browser tab opened that exact link without login and connected. Next changed the actual laptop passage from Psalms 23:1 to 23:2. Stop revoked that pairing and disabled the phone. Screenshot: work/remote-v120-live.jpg. All test links were revoked afterward. Actual phone camera and a separate physical network remain user acceptance, not an implementation blocker. No user accounts were created or modified, and no saved library was uploaded.

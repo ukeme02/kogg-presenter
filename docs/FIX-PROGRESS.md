@@ -294,6 +294,8 @@ Live acceptance: a fresh Base-mode operator on the deployed release generated a 
 - [x] Keep offline Wi-Fi bridge instructions under Advanced; update current features, FAQ and sharing metadata.
 - [x] Responsive/interaction checks: desktop, tablet and phone layouts; valid anchors and unique IDs; demo Next updates both previews; no console errors. Dark-mode step badges retain accessible blue contrast.
 - [x] Landing/offline automated checks: 30 passed.
-- [ ] Commit, publish and verify live page.
+- [x] Committed and published v121 (64db1dc). Canonical landing, stylesheet and service worker returned HTTP 200 and matched the committed release. Fresh deployed browser preview confirmed the new guide.
+
+Release: https://e9680266.kogg-presenter.pages.dev/landing. Screenshot: work/landing-v121-live.jpg. Existing browser session retained an older cached landing; fresh release verified. No user library data changed.
 
 Blue branding, typography, animation and the existing isolated demonstrations are preserved. The page does not generate real pairing links or connect to an operator; pairing starts inside KOGG.

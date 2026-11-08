@@ -1,6 +1,7 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v121';
+const CACHE = 'kogg-presenter-v122';
 const ASSETS = [
+  './wifi-remote/index.html', './wifi-remote/sw.js', './css/remote.css', './css/wifi-remote.css', './js/wifi-transport.js', './js/wifi-pairing.js', './js/wifi-remote.js', './js/wifi-remote-operator.js', './js/vendor/qrcode.js', './js/vendor/jsqr.js',
   './', './index.html', './display.html', './landing.html',
   './icons/kogg-wordmark.svg', './icons/kogg-media.webp', './css/app.css', './css/display.css', './css/landing.css', './js/landing.js', './js/landing-tour.js', './js/landing-experience.js', './css/landing-experience.css', './js/app.js', './js/theme-studio.js', './js/display.js',
   './js/sync.js', './js/library.js', './js/relay.js', './js/obs-connect.js', './js/obs-receiver.js', './js/offline.js', './js/scripture-tools.js', './js/bible-providers.js', './js/content.js', './js/notes.js', './js/slides.js', './js/slides-deck.js', './js/stream.js', './js/stream-deck.js', './js/remote-operator.js', './js/cloud-transport.js', './js/cloud-remote-session.js', './js/cloud-remote-operator.js', './js/rehearsal.js', './js/rehearsal-deck.js', './js/lyrics.js', './js/lyrics-sources.js',
@@ -12,20 +13,30 @@ const ASSETS = [
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
-  "./": "dcbab28c6154538ab7b7086f8337322ba41491fdacdb33f3c61055f72d38c63d",
-  "./index.html": "dcbab28c6154538ab7b7086f8337322ba41491fdacdb33f3c61055f72d38c63d",
+  "./wifi-remote/index.html": "40c42b1e5696c264854f6075897578a1c2c20bd97672e616751c28718b150764",
+  "./wifi-remote/sw.js": "edadf9e2bcc6d204dcccacd63ad9a4fbfe89852b169be84ff6d24e2423f1ca09",
+  "./css/remote.css": "64f193b34ffb9861844dae395b7b996893a28b9a68c83844c820a0bc18a4b702",
+  "./css/wifi-remote.css": "23cd80b84907376af0f559adb10c97a689eaff5058fb4753dc7729811b4c7480",
+  "./js/wifi-transport.js": "50e7b0159df25a15576998eddff4826d8ee74265d299605538a94b692f6f1710",
+  "./js/wifi-pairing.js": "0bd1e0db71458d11304edb6f2aa9ee86e6856ec692b5821768884b9eb61e9f34",
+  "./js/wifi-remote.js": "949b2db70f3dc07a03ec11ba8aab3e116fa36790cc92129927dbab0204689b19",
+  "./js/wifi-remote-operator.js": "dc1ea4685a61cea98e1c9d301d6c62ce943194d04ab9c757510f1341512662db",
+  "./js/vendor/qrcode.js": "79ec86f82856005b1c887905cfccfcfbec3821ca61c7fd5a952faa5f778f791c",
+  "./js/vendor/jsqr.js": "bc40c8a15196236b2314db0856f72ca0b49980cd5413b8c852a7349f5fee0859",
+  "./": "0f63eab0cf708c99da4e562b0ad9944dd2d9843328ab36a0e14cae52c3209d61",
+  "./index.html": "0f63eab0cf708c99da4e562b0ad9944dd2d9843328ab36a0e14cae52c3209d61",
   "./display.html": "f0bbf1c1d810c4e6e58b785e9b3b8ac936487144e43eedffacdc028d2d01536b",
-  "./landing.html": "a8b30f14b2fc413dfdb609152e0966b74954bcac24114dfc1c1e5ad6f0e83008",
+  "./landing.html": "4e387be63e6b399cee1e90e28f277a6b8a31c7361c200db95f43b20a8b795405",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
-  "./css/app.css": "cced905bcf67658195f156e44cd94d386d0ff2e8f36b0d846a84c5dca32af8c1",
+  "./css/app.css": "e806a70cd1136fadba653c43a390435494051b9ebe0485a47871fd7779a55dc9",
   "./css/display.css": "020d348a049a5cbf45f01b2c32669773bb444e0e2b5486d3108a15ded6b5975b",
   "./css/landing.css": "79c876e579c2a032accbbb24e4a9651260cad4383b2e27d963af8a8f40c7eaff",
   "./js/landing.js": "12dfe3b01b89fa48124e9a9f4a4581c8b2bd5c73debfcb799ae78d90e3ec3173",
   "./js/landing-tour.js": "d8eae2a2c71eafa56dc03356a66ed1775c61784a2dacf56dacf69e938cabc1b4",
   "./js/landing-experience.js": "a3bfebd9a84c486554069be7fbd884bbb33419fd46d6f198eeba2c7e07fb9520",
   "./css/landing-experience.css": "b52666180eb258152fdc73d453ff82850ca42be7988389cdf59ce8be1cb12ba0",
-  "./js/app.js": "45b8cc97c432d21fe32332c7d33a5ea239d22ada228394a9750cb8a4509066f8",
+  "./js/app.js": "e31db61574c84515a77e1f3585e3f42e2001844e387141cc13a4d409c7839329",
   "./js/theme-studio.js": "f566118922d25f926d5d35b127ce482fad155c1e8a197ae67a7fe157ea456463",
   "./js/display.js": "ca6c97175a89973a670e2c1ed796b13250b33ec7eed8ac1a48d18863e873cf55",
   "./js/sync.js": "4935240f949dee4d23dbe5a9f90526bab53b653940cfd548e095157700044979",
@@ -90,6 +101,7 @@ let preparing = null;
 function cacheKey(input) {
   const url = new URL(typeof input === 'string' ? input : input.url, location.href);
   if (/\/(display|landing|index)$/.test(url.pathname)) url.pathname += '.html';
+  if (/\/wifi-remote\/?$/.test(url.pathname)) url.pathname = url.pathname.replace(/\/?$/, '/index.html');
   url.search = '';
   return url.href;
 }

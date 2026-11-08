@@ -299,3 +299,21 @@ Live acceptance: a fresh Base-mode operator on the deployed release generated a 
 Release: https://e9680266.kogg-presenter.pages.dev/landing. Screenshot: work/landing-v121-live.jpg. Existing browser session retained an older cached landing; fresh release verified. No user library data changed.
 
 Blue branding, typography, animation and the existing isolated demonstrations are preserved. The page does not generate real pairing links or connect to an operator; pairing starts inside KOGG.
+
+
+## 8 November 2026 — Direct offline Wi-Fi remote (v122)
+
+- [x] Confirm browser constraint: WebRTC needs a two-way offer/answer exchange. Without internet or a local server, one QR scan alone is insufficient.
+- [x] Build direct encrypted data connection with no STUN, TURN, cloud signaling or bridge.
+- [x] Guided two-scan pairing; local camera decoding and paste fallback; stop/revoke controls.
+- [x] Save a lightweight phone remote offline and expose readiness clearly.
+- [x] Test commands, expiry, stale/duplicate commands, cancellation, invalid pairing and offline assets.
+- [ ] Browser verification, commit and publish; record physical-device limitations.
+
+Both devices must prepare the pages online before offline use. Guest Wi-Fi isolation can prevent direct connections. Two-scan pairing is the supported offline design; a one-scan/no-internet promise is not made.
+
+Implementation evidence: real browser operator and phone-view tabs paired over a WebRTC data channel with empty ICE-server configuration. Next changed John 3:16 to 3:17; Blank, Resume, Previous and stop/revocation worked. Then the local web server was terminated. Both pages reloaded from their caches, generated a new offer/reply, connected, and Next changed the operator passage. No signaling endpoint or bridge was running. This is a same-computer browser test, not a claim of physical phone/router acceptance or a disconnected OS internet connection.
+
+Phone storage is a small separate cache with no Bible data or cloud SDK. QR scanner jsQR 1.4.0 is bundled under its Apache-2.0 license (js/vendor/jsqr-LICENSE.txt) and loaded only when scanning. Code generation is local. Camera tracks stop after decoding, cancel, tab hiding or page exit. Scanned offers and answers are compressed, size-limited, session-matched and expire after five minutes. Connected sessions expire after twelve hours. The existing command protocol confirms actions, rejects stale revisions and suppresses duplicates.
+
+Physical acceptance remaining: Android/iPhone scanning laptop code, laptop camera reading reply, same-router operation with WAN removed, and restrictive guest-network behavior. Two-way code exchange using the paste fallback was exercised in the browser; live camera capture was not used.

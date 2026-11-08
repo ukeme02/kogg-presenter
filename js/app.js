@@ -140,6 +140,7 @@ function pushLive(patch = {}) {
   if (channel) channel.postMessage(live);
   window.KOGGRelay?.publish(live, themes, LS.get(K.settings, {}));
   window.KOGGCloudRemote?.publish();
+  window.KOGGWiFiRemote?.publish();
   window.KOGGOBS?.publish();
   renderPreview();
   renderLiveText();

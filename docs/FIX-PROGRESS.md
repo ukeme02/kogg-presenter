@@ -327,7 +327,7 @@ Live release acceptance: Base operator and fresh phone page paired by exchanging
 - [x] Fix lyric parsing, visible configurable split controls, and out-of-order online selection.
 - [x] Expand verified Christian source discovery and text extraction; identify unavailable lyrics honestly.
 - [x] Add local image/flyer/video presentation with safe deck transitions and playback controls.
-- [ ] Run focused regressions, full checks and browser/output verification; publish and record remaining limits.
+- [x] Run focused regressions, full checks and browser/output verification; publish and record remaining limits.
 
 No exact failed song was available from the team. Reproductions cover title-only results, provider failures, delayed selection and overlong sections.
 
@@ -335,4 +335,8 @@ Implementation: every imported non-hymn section is capped at four lines by defau
 
 Media lives in Slides → Images & video. Images default to uncropped fit; video supports mute, loop, play, pause and restart. Files use device IndexedDB and object URLs, with no added media framework. Limits: 20 MB images, 250 MB video, 40 files. Media is device-local, excluded from Sync/backups and OBS plugin transfer; use Output Window Capture. Browser codec and sound-autoplay support varies.
 
-Validation before release: full suite 293/293 passed; 43 focused tests passed again after final race guards. Browser: 11-line verse split 4/4/3 plus a separate two-line chorus; lyric first slide reached Output. Portrait PNG retained its full border. MP4 played muted, paused, restarted, looped; Blank removed playback; displaying lyrics removed video and restored text. Responsive media styles added; viewport override was ineffective in this browser session, so phone layout acceptance is not claimed. Final deployment verification pending.
+Validation before release: full suite 293/293 passed; 43 focused tests passed again after final race guards. Browser: 11-line verse split 4/4/3 plus a separate two-line chorus; lyric first slide reached Output. Portrait PNG retained its full border. MP4 played muted, paused, restarted, looped; Blank removed playback; displaying lyrics removed video and restored text. Responsive media styles added; viewport override was ineffective in this browser session, so phone layout acceptance is not claimed. Final deployment verification completed below.
+
+Published v123: runtime commit a763a7a; https://f3223da0.kogg-presenter.pages.dev/. Canonical operator, landing, media output module and service worker returned HTTP 200 and matched the committed release archive. Production Christian search returned 30 results from both Hymnary and hymnal.net (no partial failure); a hymnal.net result imported successfully. In the fresh release browser, selecting Amazing Grace from hymnal.net loaded four four-line slides and its first slide appeared on the separate Output page. Final desktop media Display button was fully visible (bottom 602px in a 720px viewport). Screenshot: work/media-v123-live.png.
+
+Remaining acceptance: exact Sunday song failures cannot be reproduced without titles; provider availability is outside KOGG control. Physical projector/audio and phone layout acceptance are not claimed by these browser checks. Existing untracked data/hymns-basic.json remains untouched and unpublished.

@@ -605,3 +605,5 @@ body.dark .brand{color:#fff}body.dark .brand>.brand-symbol{content:url(../icons/
 @media(max-width:480px){.room-steps,.roadmap-section .roadmap-rows{grid-template-columns:minmax(0,1fr)}.room-steps .display-card{min-height:200px}.roadmap-section .roadmap-row{min-height:0;gap:14px}.capture-art{min-height:170px}.capture-art>div{min-height:120px}.voice-steps>span{min-width:80px}.updates-section .update-grid h3{font-size:21px}}
 
 @media(min-width:1051px){.roadmap-section .roadmap-rows{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+.roadmap-section .roadmap-featured{grid-template-columns:repeat(2,minmax(0,1fr))}.roadmap-featured .roadmap-row p{font-size:14px}.roadmap-featured .roadmap-row{min-height:0}@media(max-width:700px){.roadmap-section .roadmap-featured{grid-template-columns:minmax(0,1fr)}}

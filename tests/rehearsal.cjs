@@ -1,3 +1,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),M=require('../js/rehearsal.js');
 test('rehearsal is an independent ordered snapshot with the per-item themes',()=>{const items=[{title:'Opening',themeId:'blue',slides:[{text:'Opening prayers',label:'Start'}]},{title:'Song',themeId:'black',sessionOnly:true,slides:[{text:'Verse 1'},{text:'Chorus',bullets:true}]}],themes=[{id:'blue',bg:'#123'},{id:'black',bg:'#000'}],plan=M.prepare(items,themes,'black');assert.deepEqual(plan.frames.map(x=>x.slide.text),['Opening prayers','Verse 1','Chorus']);assert.deepEqual(plan.frames.map(x=>x.themeId),['blue','black','black']);items[0].slides[0].text='Changed live queue';themes[0].bg='#fff';assert.equal(plan.frames[0].slide.text,'Opening prayers');assert.equal(plan.themes[0].bg,'#123');assert.equal(plan.sessionOnly,true);});
 test('rehearsal flags empty items, missing themes and crowded content without altering service',()=>{const plan=M.prepare([{title:'Empty',slides:[]},{title:'Missing look',themeId:'gone',slides:[{text:''},{text:'A'.repeat(900)}]}],[{id:'black'}],'black');assert.equal(plan.frames.length,1);assert.equal(plan.frames[0].themeId,'black');assert.equal(plan.issues.length,4);assert.match(M.prepare([],[],'').issues[0],/empty/);});
+
+test('rehearsal retains media in schedule order without treating it as empty text',()=>{
+ const MMedia=require('../js/media.js'),media=MMedia.serviceItem({id:'media-a',kind:'video',name:'Welcome'},{id:'a'}),plan=M.prepare([media,{title:'Lyrics',slides:[{text:'Words',label:'Chorus'}]}],[],'');
+ assert.equal(plan.frames.length,2);assert.equal(plan.frames[0].slide.media.kind,'video');assert.equal(plan.issues.length,0);media.slides[0].media.muted=false;assert.equal(plan.frames[0].slide.media.muted,true);
+});

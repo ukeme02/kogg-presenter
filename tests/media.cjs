@@ -10,3 +10,18 @@ function output(){const pending=[],created=[],revoked=[];let paused=0;const box=
 const state={mode:'normal',index:0,slides:[{text:'',label:'Fixture',media:{id:'media-123',kind:'video'}}],mediaControl:{position:0,at:Date.now(),playing:true}};
 test('late media load cannot cover a newer Scripture slide',async()=>{const x=output();x.render(state);x.render({mode:'normal',slides:[{text:'Scripture'}],index:0});x.pending[0](new Blob(['fixture']));await Promise.resolve();assert.equal(x.created.length,0);assert.equal(x.box.hidden,true);});
 test('blanking or replacing live media stops video and releases its local URL',async()=>{const x=output();x.render(state);x.pending[0](new Blob(['fixture']));await Promise.resolve();assert.equal(x.created[0].muted,true);x.render({...state,mode:'blank'});assert.ok(x.paused>0);assert.deepEqual(x.revoked,['blob:fixture']);assert.equal(x.box.hidden,true);});
+
+test('media plan references survive backup validation without bundling video files',()=>{
+ const L=require('../js/library.js'),item=M.serviceItem({id:'media-fixture',kind:'video',name:'Welcome',fit:'cover',dim:15,muted:false,loop:true},{id:'service-video'});
+ const copy=L.validate(JSON.parse(JSON.stringify({version:2,service:[item],plans:{Sunday:[item]}})));
+ assert.equal(copy.plans.Sunday[0].slides[0].media.muted,false);assert.equal(copy.service[0].slides[0].media.fit,'cover');assert.deepEqual(L.assetIds(copy),[]);
+ assert.equal(M.referenced('media-fixture',[],copy.plans),true);assert.equal(M.referenced('media-missing',copy.service,copy.plans),false);
+ copy.service[0].slides[0].media.id='https://unsafe.test/video';assert.throws(()=>L.validate(copy),/Invalid service/);
+});
+test('media transitions reset repeated video entries and pause for blank or logo without losing position',()=>{
+ const slides=[{text:'',media:{id:'media-a',kind:'video'}},{text:'',media:{id:'media-a',kind:'video'}},{text:'Words'}];
+ const initial={mode:'normal',slides,index:0,mediaControl:{position:3,at:1000,playing:true,session:'old'}};
+ const next=M.transition(initial,{index:1},5000,'new');assert.equal(next.mediaControl.position,0);assert.equal(next.mediaControl.session,'new');assert.equal(next.mediaControl.playing,true);
+ const logo=M.transition(initial,{mode:'logo'},5000,'unused');assert.equal(logo.mediaControl.position,7);assert.equal(logo.mediaControl.playing,false);
+ assert.equal(M.transition(initial,{index:2},5000,'new').mediaControl,null);assert.deepEqual(M.transition(initial,{themeId:'blue'},5000,'same'),{});
+});

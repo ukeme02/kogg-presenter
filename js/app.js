@@ -130,8 +130,7 @@ function themeSave() { LS.set(K.themes, themes); }
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
 function pushLive(patch = {}) {
   if(patch.slides!==undefined && window.__lyricsReady)lyricsLoadToken++;
-  if(patch.mode==='blank'&&live.slides?.[live.index]?.media)patch.mediaControl={...live.mediaControl,position:window.KOGGMedia.position(live.mediaControl),at:Date.now(),playing:false};
-  if(patch.slides!==undefined && patch.mediaControl===undefined)patch.mediaControl=null;
+  Object.assign(patch,window.KOGGMedia.transition(live,patch,Date.now(),uid()));
   if(patch.slides){const item=service.find(s=>s.sessionOnly && s.slides===patch.slides);patch.lyricsSession=patch.lyricsSession||item?.lyricsSession||null;patch.lyricsKey=patch.lyricsKey||null;}
   live = Object.assign({}, live, patch);
   live.strongsOn = LS.get(K.settings, {}).strongsOn !== false;
@@ -153,6 +152,7 @@ function pushLive(patch = {}) {
 /* ---------- live indicator ---------- */
 function renderPreview() {
   window.KOGGMediaDeck?.refresh();
+  window.KOGGServiceMedia?.renderLive();
   window.KOGGSlideDeck?.renderLive();
   window.KOGGStreamDeck?.renderLive();
   if(window.__lyricsReady)renderLyricsLive();
@@ -1558,9 +1558,9 @@ function projectorPreview(box,html,slide,state=window.KOGGStream?.route(live,fal
  if(slide?.media && window.KOGGMediaDeck)html=window.KOGGMediaDeck.markup(slide);
  const visible=state.mode!=='blank',tagLook=window.KOGGStream?.look(state.lowerThird||{});
  const tagAttrs=tagLook?' data-style="'+tagLook.style+'" data-position="'+tagLook.position+'" data-size="'+tagLook.size+'" style="--lt-accent:'+tagLook.accent+'"':'';
- if(!visible)box.style.background='#000';
+ if(!visible||slide?.media)box.style.background='#000';
  if(state.mode==='logo')html='<img class="preview-logo" src="icons/kogg-symbol-white.svg" alt="KOGG logo">';
- const markup='<div class="preview-content">'+(visible?html:'')+'</div>'+(visible&&slide&&theme.showLabel!==false?'<small class="preview-caption">'+esc(slide.label||'')+'</small>':'')+
+ const markup='<div class="preview-content">'+(visible?html:'')+'</div>'+(visible&&slide&&!slide.media&&theme.showLabel!==false?'<small class="preview-caption">'+esc(slide.label||'')+'</small>':'')+
  (visible&&state.lowerThird?.on?'<div class="preview-tag"'+tagAttrs+'><b>'+esc(state.lowerThird.l1)+'</b><small>'+esc(state.lowerThird.l2||'')+'</small></div>':'')+
  (visible&&state.alert?.on?'<div class="preview-alert"><div class="preview-alert-track'+(state.alert.motion==='static'?'':' moving')+'" style="--alert-duration:'+Math.max(15,Math.min(90,Number(state.alert.duration)||30))+'s"><span>'+esc(state.alert.text)+'</span>'+(state.alert.motion==='static'?'':'<span aria-hidden="true">'+esc(state.alert.text)+'</span>')+'</div></div>':'');
  if(box._koggPreviewMarkup!==markup){box.innerHTML=markup;box._koggPreviewMarkup=markup;}
@@ -1791,12 +1791,15 @@ function renderService() {
   $('serviceList').innerHTML = service.map((item, i) => `
     <li data-id="${esc(item.id)}">
       <span class="item-meta">${i + 1}</span>
-      <span class="item-title">${esc(item.title)} <span class="item-meta">(${item.slides.length} slide${item.slides.length === 1 ? '' : 's'})</span></span>
-      <button data-act="live">▶</button>
+      <span class="item-title">${esc(item.title)} <span class="item-meta">${item.type==='media'?(item.slides[0]?.media?.kind==='video'?'Video · ':'Image · '):''}(${item.slides.length} slide${item.slides.length === 1 ? '' : 's'})</span></span>
+      <span class="service-media-check" data-media-status></span>${item.type==='media'?'<button data-act="relink" hidden>Relink file</button>':''}
+      <button data-act="live" aria-label="Start from ${esc(item.title)}">▶</button>
       <button data-act="up">▲</button>
       <button data-act="down">▼</button>
       <button data-act="del" class="danger">✕</button>
-    </li>`).join('') || '<li><span class="item-meta">Service is empty — add scriptures and songs.</span></li>';
+    </li>`).join('') || '<li><span class="item-meta">Service is empty — add Scripture, lyrics, slides or media.</span></li>';
+  window.KOGGServiceMedia?.checkFiles();
+  window.KOGGServiceMedia?.renderLive();
 }
 $('serviceList').addEventListener('click', e => {
   const btn = e.target.closest('button[data-act]');
@@ -1804,8 +1807,10 @@ $('serviceList').addEventListener('click', e => {
   const id = btn.closest('li').dataset.id;
   const i = service.findIndex(s => s.id === id);
   const act = btn.dataset.act;
+  if(i<0)return;
+  if(act==='relink'){window.KOGGServiceMedia?.relink(service[i]);return;}
   if (act === 'live') {
-    presentServiceItems([service[i]]);
+    presentServiceItems(service,i);
   } else if (act === 'up' && i > 0) {
     [service[i - 1], service[i]] = [service[i], service[i - 1]];
   } else if (act === 'down' && i < service.length - 1) {
@@ -1817,7 +1822,7 @@ $('serviceList').addEventListener('click', e => {
   renderService();
 });
 function serviceFrame(item){return {themeId:themes.some(t=>t.id===item.themeId)?item.themeId:currentThemeId,lyricsSession:item.lyricsSession||null,lyricsKey:item.type==='song'?(item.lyricsKey||'service:'+item.id):null,itemId:item.id};}
-function presentServiceItems(items){const slides=[],frames=[];for(const item of items){for(const slide of item.slides){slides.push(slide);frames.push(serviceFrame(item));}}if(!slides.length)return;pushLive({mode:'normal',slides,index:0,title:items.length===1?items[0].title:'Service',...frames[0],serviceFrames:frames});}
+function presentServiceItems(items,startItem=0){const slides=[],frames=[];let startIndex=0;for(const [i,item] of items.entries()){if(i===startItem)startIndex=slides.length;for(const slide of item.slides){slides.push(slide);frames.push(serviceFrame(item));}}if(!slides.length||startIndex>=slides.length)return;pushLive({mode:'normal',slides,index:startIndex,title:items.length===1?items[0].title:'Service',...frames[startIndex],serviceFrames:frames});}
 function advanceLiveSlide(dir){if(live.mode!=='normal')return;const index=live.index+dir;if(index<0||index>=live.slides.length)return;const frame=live.serviceFrames?.[index];pushLive({index,...(frame?{...frame,themeId:themes.some(t=>t.id===frame.themeId)?frame.themeId:currentThemeId}:{}),strongsShowing:false,strongsCard:null,highlight:null});}
 $('btnLiveService').addEventListener('click',()=>{if(!service.length){alert('Service is empty.');return;}presentServiceItems(service);});
 $('btnClearService').addEventListener('click', () => {
@@ -1830,11 +1835,11 @@ function renderPlans() {
   $('planSelect').innerHTML = Object.keys(plans).map(n => `<option>${esc(n)}</option>`).join('');
 }
 $('btnSavePlan').addEventListener('click', () => {
-  if(service.some(item=>item.sessionOnly)){alert('This queue contains session-only songs. Save those songs in Local or Sync mode and add the saved copies before saving a permanent plan.');return;}
+  if(service.some(item=>item.sessionOnly)){alert('This queue contains session-only content. Add saved copies in Local or Sync mode before saving a permanent plan.');return;}
   const name = $('planName').value.trim();
   if (!name) { alert('Enter a plan name first.'); return; }
   const plans = LS.get(K.plans, {});
-  plans[name] = service;
+  plans[name] = JSON.parse(JSON.stringify(service));
   LS.set(K.plans, plans);
   renderPlans();
   $('planSelect').value = name;
@@ -1844,7 +1849,7 @@ $('btnLoadPlan').addEventListener('click', () => {
   const name = $('planSelect').value;
   if (!name) return;
   const plans = LS.get(K.plans, {});
-  service = plans[name] || [];
+  service = JSON.parse(JSON.stringify(plans[name] || []));
   LS.set(K.service, service);
   renderService();
 });
@@ -2072,7 +2077,7 @@ function quickGoLive(item) {
   }
   else if (item.type === 'service') {
     const i = service.findIndex(s => s.id === item.id);
-    if (i >= 0) presentServiceItems([service[i]]);
+    if (i >= 0) presentServiceItems(service,i);
   }
   else if (item.type === 'plan') {
     const plans = LS.get(K.plans, {});

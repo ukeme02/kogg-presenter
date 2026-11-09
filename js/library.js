@@ -21,17 +21,19 @@
     if (!Array.isArray(value) || !value.every(validate) || new Set(value.map(v => v.id)).size !== value.length) fail('Invalid ' + label);
     return value;
   }
-  function slides(value) { return Array.isArray(value) && value.every(v => v && text(v.text) && text(v.label)); }
+  function media(value){return value&&text(value.id)&&/^media-[a-z0-9-]+$/i.test(value.id)&&['image','video'].includes(value.kind)&&['contain','cover'].includes(value.fit)&&Number.isFinite(value.dim)&&value.dim>=0&&value.dim<=100&&typeof value.muted==='boolean'&&typeof value.loop==='boolean';}
+  function serviceItem(i){return identified(i)&&text(i.title)&&['song','scripture','text','media'].includes(i.type)&&slides(i.slides)&&(i.type!=='media'||(i.slides.length>0&&i.slides.every(s=>media(s.media))));}
+  function slides(value) { return Array.isArray(value) && value.every(v => v && text(v.text) && text(v.label) && (v.media===undefined||media(v.media))); }
   function validate(raw) {
     const d = clean(raw);
     if (!d || typeof d !== 'object' || Array.isArray(d)) fail('Invalid library');
     if (d.version !== undefined && ![1, 2].includes(d.version)) fail('Unsupported backup version');
     if (d.songs !== undefined) records(d.songs, s => identified(s) && text(s.title) && text(s.lyrics) && (s.author === undefined || text(s.author)) && (s.order===undefined || (Array.isArray(s.order) && s.order.length<=1000 && s.order.every(i=>Number.isInteger(i) && i>=0 && i<3000))), 'songs');
     if (d.themes !== undefined) records(d.themes, t => identified(t) && text(t.name) && text(t.bg) && text(t.font) && text(t.textColor) && Number.isFinite(t.fontSize) && t.fontSize > 0 && t.fontSize <= 100 && (!t.bgImageId || text(t.bgImageId)) && (!t.bgImage || text(t.bgImage)), 'themes');
-    if (d.service !== undefined) records(d.service, i => identified(i) && text(i.title) && ['song','scripture','text'].includes(i.type) && slides(i.slides), 'service');
+    if (d.service !== undefined) records(d.service, serviceItem, 'service');
     if (d.plans !== undefined) {
       if (!d.plans || typeof d.plans !== 'object' || Array.isArray(d.plans)) fail('Invalid plans');
-      for (const items of Object.values(d.plans)) records(items, i => identified(i) && text(i.title) && ['song','scripture','text'].includes(i.type) && slides(i.slides), 'plan items');
+      for (const items of Object.values(d.plans)) records(items, serviceItem, 'plan items');
     }
     if (d.settings !== undefined) {
       if (!d.settings || typeof d.settings !== 'object' || Array.isArray(d.settings)) fail('Invalid settings');

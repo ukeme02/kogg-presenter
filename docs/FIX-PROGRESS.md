@@ -340,3 +340,19 @@ Validation before release: full suite 293/293 passed; 43 focused tests passed ag
 Published v123: runtime commit a763a7a; https://f3223da0.kogg-presenter.pages.dev/. Canonical operator, landing, media output module and service worker returned HTTP 200 and matched the committed release archive. Production Christian search returned 30 results from both Hymnary and hymnal.net (no partial failure); a hymnal.net result imported successfully. In the fresh release browser, selecting Amazing Grace from hymnal.net loaded four four-line slides and its first slide appeared on the separate Output page. Final desktop media Display button was fully visible (bottom 602px in a 720px viewport). Screenshot: work/media-v123-live.png.
 
 Remaining acceptance: exact Sunday song failures cannot be reproduced without titles; provider availability is outside KOGG control. Physical projector/audio and phone layout acceptance are not claimed by these browser checks. Existing untracked data/hymns-basic.json remains untouched and unpublished.
+
+
+## 9 November 2026 — Mixed media service schedules and roadmap (v124)
+- [x] Add selected images/videos to the Service queue with their chosen fit, darkening, mute and loop settings.
+- [x] Keep media references in named plans and portable library data; offer missing-file checks and relinking without transferring binary files.
+- [x] Add schedule preview, Previous/Next and video controls; restart videos on entry and stop them when leaving.
+- [x] Extend private rehearsal and protect files still referenced by schedules/plans.
+- [x] Refine and publish clearly planned Service Copilot and Pocket Presenter concepts on the landing page.
+- [ ] Test mixed schedules, remote command routing, missing-file recovery, saved plans and responsive layout; commit and publish.
+
+Roadmap direction: Service Copilot takes a spoken/typed brief, drafts the run of service, resolves actual library/source content, flags gaps, and presents the plan for operator review. Optional listening suggests the current cue or passage. Manual control remains default; armed automatic cues must have clear scope, confidence checks and instant pause/override. Consent and visible microphone state are required. Base keeps its small offline core; online AI and optional native/on-device modules can be separate, capability-checked features.
+
+Pocket Presenter: the presentation phone is the content authority and output host; the second phone is a paired controller with private UI. The host could show clean output locally or on a compatible receiver. Native Android/iOS apps should explore Cast, AirPlay and wired displays, with same-network discovery/authentication, disconnect recovery, screen-lock/battery handling and physical receiver tests. Offline pairing and prepared content are goals; universal offline casting is not promised. Google Cast requires sender/receiver integration (https://developers.google.com/cast/docs/overview); Apple display routing needs separate platform validation (https://developer.apple.com/airplay/). No native app, AI listener or casting capability ships in v124.
+
+
+Validation: 298/298 full-suite tests passed. Browser verification built and saved a five-slide queue containing John 3:16, an MP4, a portrait flyer and two lyric slides. Next crossed all item types, Pause stopped the video, and Previous restarted it from zero. Importing a plan with a missing video produced a visible missing-file warning; relinking restored playback. Loading the saved mixed plan restored its entries; private rehearsal included all five slides and checked media availability. Shared paired-remote command handling is covered by an integration test across video entry/exit. No physical casting, native apps, AI or new phone-to-phone feature is claimed. Final publishing pending.

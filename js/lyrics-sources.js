@@ -16,6 +16,7 @@
    const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual',headers:serverHeaders});
    if((response.status>=300&&response.status<400)||response.type==='opaqueredirect')throw new Error('This source redirected. Use its final supported source link instead.');
    if(response.status>=500)throw new Error('Source unavailable');
+   if(response.status===429)throw new Error('Source is busy. Try again shortly.');
    const type=response.headers?.get('content-type')||'';
    if(type && !type.includes('json'))throw new Error('Invalid source response');
    const raw=await response.text();if(raw.length>2000000)throw new Error('Source response too large');const data=JSON.parse(raw);
@@ -122,7 +123,10 @@
    }
   }throw new Error('No readable lyric text was found on this hymn page.');
  }
+ function hymnalSearch(html){const result=[],seen=new Set();for(const match of html.matchAll(/<a\b[^>]*href=["'](\/en\/hymn\/[a-z]{1,8}\/\d{1,7})["'][^>]*>([\s\S]*?)<\/a>/gi)){const body=match[2],heading=body.match(/<span\b[^>]*class=["'][^"']*\bhn-sr__t\b[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1];if(!heading||seen.has(match[1]))continue;seen.add(match[1]);result.push({title:plain(heading),author:'',pending:true,provider:'hymnal',source:{name:'hymnal.net',url:'https://www.hymnal.net'+match[1]}});if(result.length>=18)break;}return result;}
+ async function readHTML(url,options={}){const response=await (options.fetcher||fetch)(url,{signal:options.signal,redirect:'manual',headers:{'User-Agent':'KOGGPresenter/1.0 (individual hymn search)','Accept':'text/html,text/csv'}});if(!response.ok)throw Error('Source unavailable');if(Number(response.headers.get('content-length')||0)>2000000)throw Error('Source response too large');const text=await response.text();if(text.length>2000000)throw Error('Source response too large');return text;}
+ async function christianSearch(q,options={}){if(!checked(q)||q.length<3)throw Error('Enter 3–200 characters.');const results=await Promise.allSettled([readHTML('https://hymnary.org/search?'+new URLSearchParams({qu:q.replace(/[":]/g,' ')+' in:texts',export:'csv'}),options).then(hymnarySearch),readHTML('https://www.hymnal.net/en/search/all/all/'+encodeURIComponent(q),options).then(hymnalSearch)]);if(options.signal?.aborted)throw new DOMException('Search cancelled','AbortError');const items=results.flatMap(r=>r.status==='fulfilled'?r.value:[]);return {items:items.slice(0,30),available:results.some(r=>r.status==='fulfilled'),partial:results.some(r=>r.status==='rejected'),scope:'christian'};}
  function google(q,scope='all'){return 'https://www.google.com/search?'+new URLSearchParams({q:q.trim()+' lyrics'+(scope==='christian'?' (site:hymnary.org OR site:hymnal.net OR site:hymnlyrics.org)':'')});}
- const api={readJSON,candidate,searchDirect,search,lookupDirect,lookup,importTarget,hymnary,hymnarySearch,hymnal,importLink,google,setCore,fromRecord};
+ const api={readJSON,candidate,searchDirect,search,lookupDirect,lookup,importTarget,hymnary,hymnarySearch,hymnal,importLink,google,setCore,fromRecord,hymnalSearch,christianSearch};
  if(typeof module!=='undefined')module.exports=api;else scope.KOGGLyricsSources=api;
 })(typeof window!=='undefined'?window:globalThis);

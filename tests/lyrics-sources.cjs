@@ -73,3 +73,9 @@ test('Cloudflare extracts a supported public-domain page without following redir
 test('source redirects are rejected without fetching a new location',async()=>{
  let calls=0;await assert.rejects(()=>S.readJSON('https://lrclib.net/api/search?q=test',{fetcher:async()=>{calls++;return new Response('',{status:302,headers:{Location:'https://127.0.0.1/private'}});}}),/redirected/);assert.equal(calls,1);
 });
+test('Christian search keeps hymnal matches when Hymnary fails and never imports snippets as lyrics',async()=>{
+ const html='<a class="hn-sr__item" href="/en/hymn/h/123"><span class="hn-sr__t">A <mark>fixture</mark> hymn</span><span class="hn-sr__snip">Incomplete snippet</span></a>';
+ const result=await S.christianSearch('fixture',{fetcher:async url=>{if(url.includes('hymnary.org'))throw Error('unavailable');return new Response(html);}});
+ assert.equal(result.partial,true);assert.equal(result.items.length,1);assert.equal(result.items[0].title,'A fixture hymn');assert.equal(result.items[0].lyrics,undefined);assert.equal(result.items[0].provider,'hymnal');assert.equal(result.items[0].pending,true);
+ assert.equal(S.hymnalSearch(html.replace('/en/hymn/h/123','https://evil.test/file')).length,0);
+});

@@ -36,3 +36,19 @@ test('isolated section headings label the next block, and order metadata survive
  assert.deepEqual(lib.merge({}, {songs:[song]}, {}).songs[0].order,[0,1,0]);
  assert.throws(()=>lib.validate({songs:[{...song,order:['bad']}]}),/Invalid songs/);
 });
+test('preparation caps every long stanza, preserves headings, and expands repeated song order',()=>{
+ const verse=Array.from({length:11},(_,i)=>'Verse line '+i).join('\n'),chorus='One\nTwo\nThree';
+ const song=L.prepare({title:'Test',lyrics:'[Verse 1]\n'+verse+'\n\n[Chorus]\n'+chorus,order:[0,1,0]},4),sections=L.parse(song.lyrics);
+ assert.equal(sections.length,4);assert.ok(sections.every(s=>s.text.split('\n').length<=4));assert.deepEqual(song.order,[0,1,2,3,0,1,2]);assert.equal(sections[2].section,'Verse 1');assert.equal(sections.slice(0,3).map(s=>s.text).join('\n'),verse);
+});
+test('splitting rejects invalid counts and wraps long paragraphs without losing words',()=>{
+ for(const n of [0,-1,NaN,Infinity,1.5,13])assert.throws(()=>L.splitLines([{text:'Text'}],n));
+ const original=Array.from({length:130},(_,i)=>'word'+i).join(' '),parts=L.splitLines([{section:'Verse',text:original}],3);
+ assert.ok(parts.length>3);assert.ok(parts.every(s=>s.text.split('\n').length<=3));assert.equal(parts.map(s=>s.text).join(' ').replace(/\s+/g,' '),original);
+});
+test('parsing no longer invents chorus labels or hidden slide breaks',()=>{
+ const raw=Array(11).fill('Repeated line').join('\n');assert.equal(L.parse(raw).length,1);assert.equal(L.parse(raw)[0].section,'');assert.equal(L.parse('Verse 1\nA\nChorus\nB')[1].section,'Chorus');
+});
+test('timestamp-only records become plain lyric lines and instrumental results stay excluded',()=>{
+ const song=L.fromRecord({id:7,trackName:'Fixture',syncedLyrics:'[ar:Writer]\n[00:01.00]First\n[00:02.00]Second'});assert.equal(song.lyrics,'First\nSecond');assert.equal(L.fromRecord({id:8,trackName:'Instrumental',instrumental:true,plainLyrics:'Metadata'}),null);
+});

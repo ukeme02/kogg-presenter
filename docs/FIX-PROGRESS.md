@@ -321,3 +321,18 @@ Physical acceptance remaining: Android/iPhone scanning laptop code, laptop camer
 Published v122: runtime commit a4af904; https://6fcd41ee.kogg-presenter.pages.dev/. Canonical phone page, phone worker, transport, landing and main worker returned HTTP 200 and matched the committed archive. Full suite: 282 passed; two additional cancellation tests passed afterward (9/9 Wi-Fi tests). Git excludes the pre-existing untracked data/hymns-basic.json.
 
 Live release acceptance: Base operator and fresh phone page paired by exchanging their actual codes. Next changed John 3:16 to John 3:17. Phone ready-offline badge confirmed; 440px phone viewport had no horizontal overflow. Stopping on the operator disabled the remote. All test pairings were ended and temporary tabs closed. Proof: work/wifi-remote-v122-live.jpg and work/wifi-remote-v122-offline.jpg.
+
+
+## 9 November 2026 — Sunday feedback: lyrics and media (v123)
+- [x] Fix lyric parsing, visible configurable split controls, and out-of-order online selection.
+- [x] Expand verified Christian source discovery and text extraction; identify unavailable lyrics honestly.
+- [x] Add local image/flyer/video presentation with safe deck transitions and playback controls.
+- [ ] Run focused regressions, full checks and browser/output verification; publish and record remaining limits.
+
+No exact failed song was available from the team. Reproductions cover title-only results, provider failures, delayed selection and overlong sections.
+
+Implementation: every imported non-hymn section is capped at four lines by default; visible choices are 2/3/4/5/6/8 lines. Explicit whole-song splitting preserves repeated song order; per-card Split is beside Edit. Synced-only LRCLIB text is accepted; title-only results are labelled unconfirmed; late search, link and file imports cannot replace newer selections. Christian discovery now searches both Hymnary and hymnal.net, with partial-source tolerance. Google remains a discovery link, not an AI lyric generator.
+
+Media lives in Slides → Images & video. Images default to uncropped fit; video supports mute, loop, play, pause and restart. Files use device IndexedDB and object URLs, with no added media framework. Limits: 20 MB images, 250 MB video, 40 files. Media is device-local, excluded from Sync/backups and OBS plugin transfer; use Output Window Capture. Browser codec and sound-autoplay support varies.
+
+Validation before release: full suite 293/293 passed; 43 focused tests passed again after final race guards. Browser: 11-line verse split 4/4/3 plus a separate two-line chorus; lyric first slide reached Output. Portrait PNG retained its full border. MP4 played muted, paused, restarted, looped; Blank removed playback; displaying lyrics removed video and restored text. Responsive media styles added; viewport override was ineffective in this browser session, so phone layout acceptance is not claimed. Final deployment verification pending.

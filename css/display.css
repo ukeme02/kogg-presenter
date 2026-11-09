@@ -224,3 +224,7 @@ body.broadcast-lower #slideLabel{left:7vw;bottom:8vh;max-width:86vw;background:r
 body.broadcast-lower #lowerThird{top:4vh;bottom:auto;height:auto}body.broadcast-lower #ltBox{margin-top:0}
 
 body.broadcast-lower #screen{bottom:0}
+
+#mediaScreen{position:absolute;inset:0;background:#000;z-index:1}#mediaScreen img,#mediaScreen video{display:block;width:100%;height:100%;object-fit:contain}#mediaScreen[hidden],#mediaNotice[hidden]{display:none}#mediaNotice{position:fixed;z-index:30;bottom:25px;left:10%;width:80%;border:1px solid #fff;background:#182438;color:#fff;padding:16px;border-radius:10px;font:18px sans-serif;cursor:pointer}
+
+#lowerThird{z-index:10}

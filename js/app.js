@@ -38,7 +38,7 @@ function withStrongsHtml(s) {
   return esc(String(s)).replace(/\[(G|H)(\d{1,5})]/g, '<sup class="sn" data-sn="$1$2" title="Tap — meaning on screen">$2</sup>').replace(/ {2,}/g, ' ');
 }
 function songToSlides(song) {
-  return window.KOGGLyrics.slides(song);
+  return window.KOGGLyrics.slides(!isHymnSong(song)&&!song.linesPerSlide?window.KOGGLyrics.prepare(song,4):song);
 }
 function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
   const book = books[bookIdx];
@@ -129,6 +129,9 @@ function themeSave() { LS.set(K.themes, themes); }
 /* ---------- sync to display ---------- */
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
 function pushLive(patch = {}) {
+  if(patch.slides!==undefined && window.__lyricsReady)lyricsLoadToken++;
+  if(patch.mode==='blank'&&live.slides?.[live.index]?.media)patch.mediaControl={...live.mediaControl,position:window.KOGGMedia.position(live.mediaControl),at:Date.now(),playing:false};
+  if(patch.slides!==undefined && patch.mediaControl===undefined)patch.mediaControl=null;
   if(patch.slides){const item=service.find(s=>s.sessionOnly && s.slides===patch.slides);patch.lyricsSession=patch.lyricsSession||item?.lyricsSession||null;patch.lyricsKey=patch.lyricsKey||null;}
   live = Object.assign({}, live, patch);
   live.strongsOn = LS.get(K.settings, {}).strongsOn !== false;
@@ -149,6 +152,7 @@ function pushLive(patch = {}) {
 
 /* ---------- live indicator ---------- */
 function renderPreview() {
+  window.KOGGMediaDeck?.refresh();
   window.KOGGSlideDeck?.renderLive();
   window.KOGGStreamDeck?.renderLive();
   if(window.__lyricsReady)renderLyricsLive();
@@ -166,6 +170,7 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
   document.querySelectorAll('.tab-panel').forEach(p =>
     p.classList.toggle('active', p.id === 'tab-' + t.dataset.tab));
+  if(t.dataset.tab !== 'slides')$('mediaPrivatePreview')?.querySelector('video')?.pause();
   if (t.dataset.tab === 'songs') renderSongList();
   if (t.dataset.tab === 'notes' && window.__notesReady)renderNotes();
   if (t.dataset.tab === 'stream') window.KOGGStreamDeck?.renderLive();
@@ -1430,6 +1435,7 @@ let lyricSession=lyricSessionRead();
 lyricSession={id:typeof lyricSession.id==='string'?lyricSession.id:uid(),songs:Array.isArray(lyricSession.songs)?lyricSession.songs.filter(s=>s&&typeof s.id==='string'&&typeof s.title==='string'&&typeof s.lyrics==='string'):[],draft:lyricSession.draft||null,service:Array.isArray(lyricSession.service)?lyricSession.service:[]};
 try{window.KOGGLibrary.validate({service:lyricSession.service});}catch{lyricSession.service=[];}
 service.push(...lyricSession.service.filter(item=>item.sessionOnly && item.lyricsSession===lyricSession.id));
+let lyricsLoadToken=0;
 let lyricsOrder=[],lyricsSource=null,lyricsUndo=[],lastLyricsDraft=null,lyricsOnline=[],lyricsSearchToken=0,lyricsSearchAbort=null,lyricsListLimit=60,lyricsAutoTimer=null;
 const baseLyrics=()=>!['local','sync'].includes(workMode());
 function saveLyricSession(){try{sessionStorage.setItem('cp_lyrics_session',JSON.stringify(lyricSession));}catch{$('lyricsStatus').textContent='Session storage unavailable: keep this tab open until your service ends.';}}
@@ -1437,7 +1443,7 @@ saveLyricSession();
 // Expired Base lyrics must never reappear when a new browser session starts.
 if(live.lyricsSession && live.lyricsSession!==lyricSession.id)pushLive({mode:'blank',slides:[],index:0,lyricsSession:null});
 function allLyricsSongs(){return [...songs,...lyricSession.songs];}
-function editorSong(){return {id:editingSongId,title:$('songTitle').value.trim()||'Untitled',author:$('songAuthor').value.trim(),lyrics:$('songLyrics').value,order:[...lyricsOrder],source:lyricsSource};}
+function editorSong(){return {id:editingSongId,title:$('songTitle').value.trim()||'Untitled',author:$('songAuthor').value.trim(),lyrics:$('songLyrics').value,order:[...lyricsOrder],source:lyricsSource,linesPerSlide:Number($('lyricsLineCount').value)||4};}
 function lyricsSignature(song=editorSong()){const value=JSON.stringify([song.title,song.lyrics,song.order]);let n=2166136261;for(let i=0;i<value.length;i++)n=Math.imul(n^value.charCodeAt(i),16777619);return String(n>>>0);}
 function refreshLyricsMode(){
  $('lyricsModeStatus').textContent=baseLyrics()?'Base • session songs clear when you end this session':workMode()==='sync'?'Sync • saved on this device, syncs when connected':'Local • saved on this device';
@@ -1447,6 +1453,8 @@ function refreshLyricsMode(){
 function rememberLyricsDraft(){const d=editorSong();if(baseLyrics()){lyricSession.draft=d;saveLyricSession();}else LS.set('cp_lyrics_draft',d);lastLyricsDraft=JSON.stringify(d);}
 function lyricsHistory(){const d=JSON.stringify(editorSong());if(lyricsUndo.at(-1)!==d)lyricsUndo.push(d);if(lyricsUndo.length>30)lyricsUndo.shift();}
 function restoreLyricsDraft(d){
+ if(d && !isHymnSong(d) && !d.linesPerSlide)d=LY.prepare(d,d.linesPerSlide||4);
+ $('lyricsLineCount').value=String(d?.linesPerSlide||4);
  editingSongId=d?.id||null;$('songTitle').value=d?.title&&d.title!=='Untitled'?d.title:'';$('songAuthor').value=d?.author||'';$('songLyrics').value=d?.lyrics||'';
  const sections=LY.parse($('songLyrics').value);lyricsOrder=Array.isArray(d?.order)&&d.order.length?d.order.filter(i=>Number.isInteger(i)&&sections[i]):sections.map((_,i)=>i);
  lyricsSource=d?.source||null;$('lyricsPastePanel').open=!d?.lyrics?.trim();$('songEditor').hidden=false;$('songEditorTitle').textContent='Song slides';
@@ -1464,6 +1472,7 @@ function renderSongList(){
  if(matches.length>lyricsListLimit)$('songList').innerHTML+=`<li><button data-more="1">Show more (${matches.length-lyricsListLimit} remaining)</button></li>`;
 }
 function openSongEditor(song){
+ lyricsLoadToken++;
  lyricsHistory();restoreLyricsDraft(song);rememberLyricsDraft();$('lyricsStatus').textContent=song?'Song opened. Tap a slide to display.':'Paste lyrics; one empty line makes a new slide.';return true;
 }
 function displayLyrics(index=0){
@@ -1497,7 +1506,7 @@ function updateSongSlidesPreview(){
  const ordered=LY.ordered({...song,order:lyricsOrder});
  const sig=lyricsSignature(),liveSlide=live.lyricsKey===sig?live.index:-1;   // one hash per render, not two per slide
  $('lyricsPasteSummary').textContent=`Paste / edit lyrics • ${sections.length} section${sections.length===1?'':'s'}, ${ordered.length} slide${ordered.length===1?'':'s'}`;
- $('songSlidesPreview').innerHTML=ordered.map((s,i)=>`<article class="lyric-slide${liveSlide===i?' is-live':''}"><button class="lyric-take" data-take="${i}"><b>${i+1}. ${esc(s.section||'Slide '+(s.sourceIndex+1))}</b><span>${esc(s.text)}</span><em>${liveSlide===i?'LIVE':'Display'}</em></button>${s.text.split('\n').length>6||s.text.length>400?'<p class="lyric-warning">Crowded slide — consider splitting.</p>':''}<div class="lyric-actions"><button data-section="${s.sourceIndex}" data-slide-action="edit" title="Quick edit this slide">Edit</button><details><summary>More</summary><div>${[['split','Split'],['merge','Merge'],['up','↑'],['down','↓'],['duplicate','Copy'],['delete','Del']].map(([action,label])=>`<button data-section="${s.sourceIndex}" data-slide-action="${action}" title="${label==='↑'?'Move up':label==='↓'?'Move down':label==='Copy'?'Duplicate slide':label==='Del'?'Delete slide':label}">${label}</button>`).join('')}</div></details></div></article>`).join('')||'<p class="hint">Your slide cards appear here as you paste.</p>';
+ $('songSlidesPreview').innerHTML=ordered.map((s,i)=>`<article class="lyric-slide${liveSlide===i?' is-live':''}"><button class="lyric-take" data-take="${i}"><b>${i+1}. ${esc(s.section||'Slide '+(s.sourceIndex+1))}</b><span>${esc(s.text)}</span><em>${liveSlide===i?'LIVE':'Display'}</em></button>${s.text.split('\n').length>6||s.text.length>400?'<p class="lyric-warning">Crowded slide — consider splitting.</p>':''}<div class="lyric-actions"><button data-section="${s.sourceIndex}" data-slide-action="edit" title="Quick edit this slide">Edit</button><button data-section="${s.sourceIndex}" data-slide-action="split" title="Split this slide">Split</button><details><summary>More</summary><div>${[['merge','Merge'],['up','↑'],['down','↓'],['duplicate','Copy'],['delete','Del']].map(([action,label])=>`<button data-section="${s.sourceIndex}" data-slide-action="${action}" title="${label==='↑'?'Move up':label==='↓'?'Move down':label==='Copy'?'Duplicate slide':label==='Del'?'Delete slide':label}">${label}</button>`).join('')}</div></details></div></article>`).join('')||'<p class="hint">Your slide cards appear here as you paste.</p>';
  $('lyricsSectionButtons').innerHTML=sections.map((s,i)=>`<button data-add-order="${i}">+ ${esc(s.section||'Slide '+(i+1))}</button>`).join('');
  $('lyricsOrder').innerHTML=lyricsOrder.map((n,i)=>`<button data-remove-order="${i}" title="Remove this occurrence">${esc(sections[n]?.section||'Slide '+(n+1))} ×</button>`).join('');
  $('lyricsSource').textContent=lyricsSource?`Source: ${lyricsSource.name||'Imported'}${lyricsSource.credits?' • '+lyricsSource.credits:''}`:'';
@@ -1546,6 +1555,7 @@ function fitProjectorPreview(box,theme=box._previewTheme||outputPreviewTheme()){
 }
 function projectorPreview(box,html,slide,state=window.KOGGStream?.route(live,false)||live,theme=outputPreviewTheme()){
  box._previewTheme=theme;
+ if(slide?.media && window.KOGGMediaDeck)html=window.KOGGMediaDeck.markup(slide);
  const visible=state.mode!=='blank',tagLook=window.KOGGStream?.look(state.lowerThird||{});
  const tagAttrs=tagLook?' data-style="'+tagLook.style+'" data-position="'+tagLook.position+'" data-size="'+tagLook.size+'" style="--lt-accent:'+tagLook.accent+'"':'';
  if(!visible)box.style.background='#000';
@@ -1626,6 +1636,7 @@ $('songSlidesPreview').addEventListener('click',e=>{
 $('lyricsSectionButtons').addEventListener('click',e=>{const b=e.target.closest('button[data-add-order]');if(!b)return;lyricsHistory();lyricsOrder.push(+b.dataset.addOrder);updateSongSlidesPreview();rememberLyricsDraft();});
 $('lyricsOrder').addEventListener('click',e=>{const b=e.target.closest('button[data-remove-order]');if(!b||lyricsOrder.length<2)return;lyricsHistory();lyricsOrder.splice(+b.dataset.removeOrder,1);updateSongSlidesPreview();rememberLyricsDraft();});
 for(const id of ['songTitle','songAuthor','songLyrics'])$(id).addEventListener('input',()=>{
+ lyricsLoadToken++;
  if(lastLyricsDraft && lyricsUndo.at(-1)!==lastLyricsDraft)lyricsUndo.push(lastLyricsDraft);if(lyricsUndo.length>30)lyricsUndo.shift();
  if(id==='songLyrics'){const count=LY.parse($('songLyrics').value).length;const prior=lastLyricsDraft?LY.parse((JSON.parse(lastLyricsDraft).lyrics)||'').length:0;if(count!==prior)lyricsOrder=Array.from({length:count},(_,i)=>i);}
  updateSongSlidesPreview();rememberLyricsDraft();
@@ -1634,7 +1645,8 @@ $('btnNewSong').addEventListener('click',()=>openSongEditor(null));
 $('btnCancelSong').addEventListener('click',()=>openSongEditor(null));
 $('btnLiveSong').addEventListener('click',()=>displayLyrics(0));
 $('btnAddLyricsService').addEventListener('click',()=>addLyricsService());
-$('btnLyricsSplitLines').addEventListener('click',()=>applyLyricsSections(LY.splitLines(LY.parse($('songLyrics').value))));
+$('btnLyricsSplitLines').addEventListener('click',()=>{const prepared=LY.prepare(editorSong(),Number($('lyricsLineCount').value));lyricsHistory();lyricsLoadToken++;restoreLyricsDraft(prepared);rememberLyricsDraft();$('lyricsStatus').textContent='Slides split. Your song order is preserved. Undo restores the previous version.';});
+$('songLyrics').addEventListener('paste',()=>setTimeout(()=>{const prepared=LY.prepare(editorSong(),Number($('lyricsLineCount').value));applyLyricsSections(LY.parse(prepared.lyrics));},0));
 $('btnLyricsDefaultOrder').addEventListener('click',()=>{lyricsHistory();lyricsOrder=LY.parse($('songLyrics').value).map((_,i)=>i);updateSongSlidesPreview();rememberLyricsDraft();});
 $('btnLyricsUndo').addEventListener('click',()=>{const previous=lyricsUndo.pop();if(previous){restoreLyricsDraft(JSON.parse(previous));rememberLyricsDraft();}});
 $('btnLyricsPrev').addEventListener('click',prev);$('btnLyricsNext').addEventListener('click',next);
@@ -1675,7 +1687,7 @@ async function searchLyricsOnline(){
  try{
   const result=await window.KOGGLyricsSources.search(q,{signal:controller.signal,scope:$('lyricsSearchScope').value||'christian'});if(token!==lyricsSearchToken)return;
   lyricsOnline=result.items;
-  $('lyricsOnlineResults').innerHTML=lyricsOnline.map((song,i)=>`<button data-import-lyric="${i}"><b>${esc(song.title)}</b><span>${esc(song.author)} • ${esc(song.source.name)}${song.pending?' • title match, lyrics unconfirmed':' • lyrics ready'}</span><em>${song.pending?'Fetch lyrics & display →':'Display first slide →'}</em></button>`).join('');
+  $('lyricsOnlineResults').innerHTML=lyricsOnline.map((song,i)=>`<button data-import-lyric="${i}"><b>${esc(song.title)}</b><span>${esc(song.author)} • ${esc(song.source.name)}${song.pending?' • availability unconfirmed':' • lyrics ready'}</span><em>${song.pending?'Check lyrics →':'Display first slide →'}</em></button>`).join('');
   $('lyricsSearchStatus').textContent=lyricsOnline.length?'Lyrics-ready results display immediately. Other results fetch the words, then display.'+(result.partial?' One source is unavailable.':''):result.available?'No match found. Try title + artist, use Google search below, or paste a supported source link.':'Lyrics sources are unavailable. Use Google search below, paste lyrics, or open a saved song.';
  }catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'Search timed out. Use Google search below, or paste lyrics.':($('lyricsSearchScope').value==='all'?'Could not reach the lyrics sources. Saved songs and the editor still work.':'Christian sources are unavailable. Try Christian Google search or import a hymn page. General music results remain excluded.');}
  finally{clearTimeout(timeout);}
@@ -1683,22 +1695,22 @@ async function searchLyricsOnline(){
 $('btnSearchLyricsOnline').addEventListener('click',searchLyricsOnline);
 $('lyricsOnlineResults').addEventListener('click',async e=>{
  const button=e.target.closest('button[data-import-lyric]');if(!button||!lyricsOnline[+button.dataset.importLyric])return;
- const candidate=lyricsOnline[+button.dataset.importLyric],token=lyricsSearchToken;button.disabled=true;$('lyricsSearchStatus').textContent='Loading lyrics for '+candidate.title+'…';
+ const candidate=lyricsOnline[+button.dataset.importLyric],token=lyricsSearchToken,loadToken=++lyricsLoadToken;button.disabled=true;$('lyricsSearchStatus').textContent='Loading lyrics for '+candidate.title+'…';
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
- try{const song=await window.KOGGLyricsSources.lookup(candidate,{signal:controller.signal});if(token!==lyricsSearchToken)return;if(!song?.lyrics?.trim())throw new Error('This result has no lyric text');openSongEditor(song);displayLyrics(0);$('lyricsSearchStatus').textContent='Lyrics loaded — first slide is live.';$('lyricsStatus').textContent='First slide is live. Tap another slide, or Save to keep it in your library.';}
- catch(err){if(token===lyricsSearchToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'This result timed out — try another version, or paste the lyrics.':'Could not fetch this one ('+err.message+'). Try another result, or paste the lyrics.';}
+ try{const song=await window.KOGGLyricsSources.lookup(candidate,{signal:controller.signal});if(token!==lyricsSearchToken||loadToken!==lyricsLoadToken)return;if(!song?.lyrics?.trim())throw new Error('This result has no lyric text');Object.assign(candidate,song,{pending:false});openSongEditor(song);displayLyrics(0);$('lyricsSearchStatus').textContent='Lyrics loaded — first slide is live.';$('lyricsStatus').textContent='First slide is live. Tap another slide, or Save to keep it in your library.';}
+ catch(err){if(token===lyricsSearchToken&&loadToken===lyricsLoadToken)$('lyricsSearchStatus').textContent=err.name==='AbortError'?'This result timed out — try another version, or paste the lyrics.':'Could not fetch this one ('+err.message+'). Try another result, or paste the lyrics.';}
  finally{clearTimeout(timeout);button.disabled=false;}
 });
 $('btnImportLyricsLink').addEventListener('click',async()=>{
- const button=$('btnImportLyricsLink'),raw=$('lyricsSourceUrl').value.trim();button.disabled=true;const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
- try{window.KOGGLyricsSources.importTarget(raw);$('lyricsLinkStatus').textContent='Importing source text…';const song=await window.KOGGLyricsSources.importLink(raw,{signal:controller.signal});openSongEditor(song);$('lyricsLinkStatus').textContent='Imported. Review the words and slides before displaying.';}
- catch(err){$('lyricsLinkStatus').textContent=err.name==='AbortError'?'Import timed out. Copy and paste the lyrics instead.':err.message;}
+ const button=$('btnImportLyricsLink'),raw=$('lyricsSourceUrl').value.trim(),loadToken=++lyricsLoadToken;button.disabled=true;const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+ try{window.KOGGLyricsSources.importTarget(raw);$('lyricsLinkStatus').textContent='Importing source text…';const song=await window.KOGGLyricsSources.importLink(raw,{signal:controller.signal});if(loadToken!==lyricsLoadToken)return;openSongEditor(song);$('lyricsLinkStatus').textContent='Imported. Review the words and slides before displaying.';}
+ catch(err){if(loadToken===lyricsLoadToken)$('lyricsLinkStatus').textContent=err.name==='AbortError'?'Import timed out. Copy and paste the lyrics instead.':err.message;}
  finally{clearTimeout(timeout);button.disabled=false;}
 });
 $('lyricsTextFile').addEventListener('change',async()=>{
- const file=$('lyricsTextFile').files?.[0];if(!file)return;
- try{if(file.size>200000)throw new Error('Choose a song text file under 200 KB.');const song=LY.importText(await file.text());if(!song.lyrics)throw new Error('No lyrics found. Paste the song text instead.');openSongEditor(song);}
- catch(err){$('lyricsStatus').textContent=err.message;}finally{$('lyricsTextFile').value='';}
+ const file=$('lyricsTextFile').files?.[0];if(!file)return;const loadToken=++lyricsLoadToken;
+ try{if(file.size>200000)throw new Error('Choose a song text file under 200 KB.');const song=LY.importText(await file.text());if(loadToken!==lyricsLoadToken)return;if(!song.lyrics)throw new Error('No lyrics found. Paste the song text instead.');openSongEditor(song);}
+ catch(err){if(loadToken===lyricsLoadToken)$('lyricsStatus').textContent=err.message;}finally{$('lyricsTextFile').value='';}
 });
 window.__lyricsReady=true;
 loadLyricsDraft();renderSongList();
@@ -2355,6 +2367,7 @@ function setWorkMode(m) {
   if(window.__lyricsReady){loadLyricsDraft();renderSongList();}
   if(window.__notesReady)loadNotesWorkspace();
   window.KOGGSlideDeck?.load();
+  window.KOGGMediaDeck?.load();
   window.KOGGStreamDeck?.load();
   if (m === 'sync') { if(cloudEnabled())startAuthObserver();refreshUser(); }
   else { clearTimeout(syncTimer); stopLibraryRealtime(); window._koggUser = null; syncUI(); }

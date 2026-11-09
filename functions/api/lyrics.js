@@ -11,12 +11,7 @@ export async function onRequestGet({request}){
  try{
   const action=incoming.searchParams.get('action')||'search';
   if(action==='christian-search'){
-   const q=(incoming.searchParams.get('q')||'').trim();if(q.length<3||q.length>200)return json({error:'Enter 3–200 characters to search Christian hymns.'},400);
-   const url='https://hymnary.org/search?'+new URLSearchParams({qu:q.replace(/[":]/g,' ')+' in:texts',export:'csv'});
-   const response=await fetch(url,{signal:controller.signal,redirect:'manual',headers:{'User-Agent':'KOGGPresenter/1.0 (individual hymn search)','Accept':'text/csv'}});
-   if(!response.ok||Number(response.headers.get('content-length')||0)>2000000)throw new Error('Christian hymn search is unavailable. Try the Christian Google search or import a source link.');
-   const csv=await response.text();if(csv.length>2000000)throw new Error('Search response too large');
-   return json({items:sources.hymnarySearch(csv),partial:false,available:true,scope:'christian'});
+   return json(await sources.christianSearch(incoming.searchParams.get('q')||'',{...options,fetcher:fetch}));
   }
   if(action==='search')return json(await sources.searchDirect(incoming.searchParams.get('q')||'',options));
   if(action==='lookup')return json({song:await sources.lookup({pending:true,provider:'lyrics.ovh',title:incoming.searchParams.get('title'),author:incoming.searchParams.get('artist')},{...options,server:false})});
@@ -25,8 +20,7 @@ export async function onRequestGet({request}){
   if(target.type==='lyrics.ovh')return json({song:await sources.lookupDirect({pending:true,provider:'lyrics.ovh',title:target.title,author:target.artist},options)});
   if(target.type==='lrclib'){
    const row=await sources.readJSON(target.url,options);
-   if(typeof row.trackName!=='string'||typeof row.plainLyrics!=='string'||!row.plainLyrics.trim()||row.plainLyrics.length>100000)throw new Error('No plain lyrics available at this source link.');
-   return json({song:{title:row.trackName,author:row.artistName||'',lyrics:row.plainLyrics,source:{name:'LRCLIB',url:target.url}}});
+   const song=sources.fromRecord(row);if(!song)throw Error('No lyric text available at this source link.');return json({song});
   }
   const response=await fetch(target.url,{signal:controller.signal,redirect:'manual',headers:{'User-Agent':'KOGGPresenter/1.0 (individual hymn text import)','Accept':'text/html'}});
   if(!response.ok)throw new Error('This source page could not be reached. Paste the lyrics instead.');

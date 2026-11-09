@@ -113,12 +113,13 @@ function render(state) {
   $('countdown').classList.toggle('on', state.mode === 'countdown' && !OVERLAY);
   renderLogo(state);
   $('blankScreen').classList.toggle('on', blankOn);
-  const showSlide = !OVERLAYS_ONLY && state.mode === 'normal' && state.slides.length > 0;
+  const mediaOn=typeof window!=='undefined'&&window.KOGGMediaDisplay?.render(state,{overlaysOnly:OVERLAYS_ONLY})||false;
+  const showSlide = !mediaOn && !OVERLAYS_ONLY && state.mode === 'normal' && state.slides.length > 0;
   const card = !OVERLAYS_ONLY && state.mode === 'normal' && state.strongsShowing && state.strongsCard ? state.strongsCard : null;
   $('strongsCard').classList.toggle('on', !!card);
   textEl.style.display = showSlide && !card ? '' : 'none';
   labelEl.style.display = showSlide && !card ? '' : 'none';
-  if (state.mode === 'normal') {
+  if (state.mode === 'normal' && !mediaOn) {
     const t = applyTheme(state);
     if (card) {
       renderStrongsCard(card, t);   // the projector shows the word meaning — the verse stays queued

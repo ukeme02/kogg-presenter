@@ -477,10 +477,12 @@ This pass changes research/progress documentation only. The browser remains on v
 - [x] Browser access recovered. Real search showed 8 ready lyrics and 3 unchecked titles, with visible loading progress and a default Worship-first scope. Desktop/phone/tablet document widths matched 1280/390/820 px. Visual review found clipped source controls at desktop height; moved them under Import & more sources. The online panel then reported equal content/client heights (206 px), with no clipped controls. Screenshot: `work/lyrics-v131-desktop.png`. Tablet results also needed the desktop-only flexible-height rule narrowed to desktop dimensions, keeping the normal bounded result list at smaller widths.
 - [x] Published initial v130 implementation 4c57eb2 to https://a629667a.kogg-presenter.pages.dev/. Live source API returned 14 lyric-bearing LRCLIB records.
 - [x] Published v131 compact-layout correction 88b346c to https://e4889621.kogg-presenter.pages.dev/.
-- [ ] Publish/verify final v132 remembered-result visibility correction. Windows preview remains v127; this pass does not replace its installer.
+- [x] Published and verified final v132 implementation f1f9a2d at https://aa114101.kogg-presenter.pages.dev/. All seven changed canonical production assets matched the committed archive byte-for-byte; all 85 offline asset hashes verified. Evidence: `work/v132-live-verification.json`. Windows preview remains v127; this pass does not replace its installer.
 
 Outstanding external work: provider permission responses; optional LRCLIB registration; Brave account/key and spending setup if chosen; new reviewed content packs; public community implementation. These are not completed by adding private pack import/export.
 
 Final layout correction passed 132/132 targeted operator/source/pack/offline checks before the tablet CSS scope adjustment. The latter changes only the media condition; offline checks and release integrity are rerun for the final package.
 
 Final v132 review fixed a remembered source becoming ready inside the closed extra-matches group. Its existing button now moves into the visible results only while that group is closed; open results remain stable. Added a regression. Final source/operator/pack/offline suite passed 133/133 (`work/v132-release-checks.txt`).
+
+Release complete: free-source improvements and private pack tools are live. Temporary local preview server and test tabs were closed. KOGG Gmail sign-in was opened at the owner's request and left for their two-step verification; no email was sent. Provider authorisation, new reviewed provider packs and the optional public community remain pending. The pre-existing untracked `data/hymns-basic.json` was not changed or published.

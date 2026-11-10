@@ -1,0 +1,70 @@
+# Free lyrics and community resource access
+
+Research checked 10 November 2026. This is an access plan, not an announcement of new integrations. No provider account, paid plan or partnership has been created. KOGG currently has adapters for LRCLIB, lyrics.ovh, Hymnary and hymnal.net.
+
+## Recommended order
+
+1. Strengthen the existing free APIs and show actual words before treating a song as presentation-ready.
+2. Expand reviewed offline hymn packs using public-domain or explicitly permitted texts.
+3. Request direct, no-fee permission from Christian songwriters and resource owners for optional song packs.
+4. Add optional web discovery after choosing a search allowance. A search result is a link, not a full lyric import.
+5. Pursue licensed catalogue integrations only after confirming developer access and church entitlements.
+
+## Sources and what access requires
+
+| Source | Free access verified | Next action for KOGG | Limit to account for |
+| --- | --- | --- | --- |
+| [LRCLIB](https://lrclib.net/docs) | Anonymous lyric API; no key required. | Identify KOGG in requests, respect rate limits and Retry-After. Optionally register KOGG at the [developer portal](https://lrclib.net/developers) for higher limits. | Mixed music catalogue; missing or incorrect versions are possible. API availability does not establish redistribution rights for every lyric. |
+| [lyrics.ovh](https://github.com/NTag/lyrics.ovh) | Public artist/title lookup with no account or key in its documented request. | Retain as a fallback and check that the response actually contains words. | Its suggestions come from Deezer, separately from lyric retrieval. Its backend also uses LRCLIB, so the two are not fully independent catalogues. No service guarantee verified. |
+| [Open Hymnal](https://openhymnal.org/OpenHymnalEaster2011.pdf) | Published collection includes freely distributable material with per-hymn terms. | Obtain the official source files, review the words and translation for each entry, retain required notices, then prepare an optional text-only pack. | Uses US copyright assumptions; it is not a blanket worldwide public-domain catalogue. The homepage timed out during this check, so bulk download availability is not confirmed. |
+| [Hymnary](https://hymnary.org/copyright) | Publicly readable hymn resources; individual items identify their status. | Keep the existing public-domain-text check. Ask through [Hymnary feedback](https://www.hymnary.org/info/email.html?to=feedback) for a supported data feed/export, request limits and caching terms before scaling automated access. | Mixed rights. Hymnary cannot grant someone else's copyright permission. No open production API agreement was verified. |
+| [hymnal.net](https://www.hymnal.net/en/faq) | Reading/search needs no account. Some downloads need a free verified account. | Ask through its contact route for permission and a supported way to retrieve text, cache it and offer optional packs. | Its permission to publish songs is not automatically KOGG's permission to redistribute them. Its [privacy page](https://www.hymnal.net/en/privacy) describes blocking scraping; do not increase automated traffic or bypass those blocks. |
+| [Brave Search](https://api-dashboard.search.brave.com/documentation/resources/help-feedback) | Search plan has $5 monthly credit, equivalent to 1,000 search requests at the published rate; no standalone free plan. | Create a Search API account, supply a card, set prepay to $0 and avoid auto-reload for a zero-purchase setup. Verify the dashboard's spending controls, keep the key on the server, and add attribution. | The allowance is shared by the whole KOGG integration, not per church. It discovers links; it does not provide song reuse permission or guarantee importable words. |
+
+Brave's [official announcement](https://brave.com/blog/most-powerful-search-api-for-ai/) specifies attribution for the free credits. Confirm current account terms during signup; no signup or card entry has been performed.
+
+## Free partnership candidates, not approved catalogues
+
+- **[Sovereign Grace Music](https://sovereigngracemusic.com/about/permissions/):** publishes a permissions contact, music@sovereigngrace.com. Request a no-fee text catalogue or limited pilot for KOGG. Their existing permissions cover particular uses, not a general app redistribution agreement; co-published songs may need another owner's approval.
+- **[Worship Start](https://www.worshipstart.com/royaltyfreemusic):** free membership and donated music for church media make this a relevant outreach candidate. Contact hello@worshipstart.com about a lyric-only pack and attribution. Their page includes both commercial-use wording and a noncommercial Creative Commons notice; clarify the applicable licence and text redistribution rights in writing before importing a pack. No lyric API was verified.
+- **Independent Christian artists and church songwriters:** invite original works whose owners can grant permission. Start with Nigerian/African worship and local languages. A contributor who merely knows or sings a song cannot grant its publishing rights. Record co-writers/publishers, approved text, territory, attribution, allowed uses and permission evidence.
+
+## SongSelect, Musixmatch and LyricFind
+
+[SongSelect](https://songselect.ccli.com/about/get) advertises free lyric access for Church Copyright License holders. Its [official public-domain account fact sheet](https://global.ccli.com/wp-content/uploads/songselect-fact-sheet-1.pdf) also describes a free public-domain account. Neither is a confirmed free developer connection for KOGG. Ask CCLI whether it currently accepts new integration partners, what approval costs, and which church licences are required before buying anything. New partner availability remains unconfirmed.
+
+[LyricFind](https://www.lyricfind.com/products/lyric-display) offers a lyric-display enquiry route, but no free production entitlement was verified. A current official free production offering from Musixmatch could not be verified either. Treat both as enquiries, not free access we already possess. Do not obtain unofficial tokens or promise those catalogues in the UI.
+
+## What to request from each partner
+
+Describe KOGG Presenter as a lightweight browser and Windows church presentation tool developed by KOGG MEDIA (Africa), with online discovery, optional offline libraries and private schedule sync. Explain the proposed community area separately.
+
+Request a written answer covering:
+
+1. A no-fee partnership or a limited pilot, and which titles/versions it covers.
+2. Full lyric text through a documented API or a maintained JSON/CSV/XML/text export.
+3. Permission to search, display in churches, split into slides, retain attribution, save offline and sync privately across a user's devices.
+4. Whether **public community redistribution** is allowed. Keep it separate from private church use.
+5. Territories, duration, request/download limits, updates, correction/removal procedures and any church-level licence or reporting requirement.
+6. How to credit the writer, publisher and source, and whether permission covers every co-owner.
+
+A plain text export can be enough. Partners do not need to build an API for KOGG, and the app does not need audio files to display lyrics. No outreach has been sent.
+
+## Community Bibles
+
+For the proposed shared resource library, [BSB](https://berean.bible/terms.htm) is explicitly public domain and has [official downloads](https://berean.bible/downloads.htm). No paid access or mandatory licensing form is needed. [World English Bible](https://ebible.org/eng-web/copr.htm) is also public domain; preserve its name only for the unchanged text. Other [eBible translations](https://ebible.org/about.php) have their own permissions and download restrictions. Do not infer that NIV, NLT, NKJV or an Efik edition has the same terms. This research does not change KOGG's three default Base Bibles.
+
+## Implementation follow-through
+
+An anonymous-access spot check on 10 November returned lyric-bearing LRCLIB records for Way Maker / Sinach, You Are Great / Steve Crown, and Great Are You Lord / All Sons & Daughters. Exact lyrics.ovh lookups returned words for You Are Great and HTTP 404 for the other two. This is three examples, not a catalogue benchmark or a review of lyric accuracy. Only availability/count/timing metadata was retained in `work/free-lyrics-access-2026-11-10.json`. LRCLIB response times in this run ranged from 0.78 to 6.76 seconds, so timeout handling also needs attention; free access does not imply instant response.
+
+- [x] Identify currently accessible free sources and the information needed for access requests.
+- [ ] Show provider results progressively without moving clicked rows or allowing stale searches to replace output.
+- [ ] Add worship-first discovery while preserving a strict Christian-source option.
+- [ ] Maintain a small, bounded record of successful song IDs and source links; separate it from permission to store lyric text.
+- [ ] Add reviewed optional packs with attribution and explicit sharing permissions.
+- [ ] Connect broader web discovery only after credentials and spending limits are configured.
+- [ ] Confirm partner access in writing before activating additional catalogues.
+- [ ] Design the community separately: reusable service styles, original/permitted song packs and church event listings, with review/report/removal controls. Public profiles or uploads must be deliberate; saved church libraries stay private.
+
+These pending items are not deployed features. The free-source research does not resolve every song's availability or replace the existing offline library.

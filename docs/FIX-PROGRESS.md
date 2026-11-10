@@ -447,3 +447,17 @@ Published f026ae4 to https://df34c79f.kogg-presenter.pages.dev/. All five change
 Limit: discovery metadata does not guarantee lyrics availability, and no source offers every song/version. Failed/cancelled imports preserve the current projected slide; saved songs and the included hymnary remain the dependable offline path. No Google AI/generated lyrics or unsupported automatic scraping is introduced.
 
 Published implementation 7c421f5 and label clarification 5a3e1fa. Final deployment: https://768880a1.kogg-presenter.pages.dev/. All six changed public assets matched the committed archive exactly; packaged integrity verified all 85 hashes. Final source/landing/cache checks passed 42/42, followed by 10/10 cache checks after the final wording clarification. The deployed API returned nine lyrics-ready results for Way Maker Sinach; lookup of Way Maker (Live) by Sinach recovered Way Maker from LRCLIB with readable lyric text. Only metadata/availability proof was saved in work/v129-provider-checks.json. Temporary servers and browser test tab closed. Pre-existing untracked data/hymns-basic.json remains untouched and unpublished.
+
+## 10 November 2026 — Free source access and community planning
+
+- [x] Research official access documentation and record an actionable source/permission matrix in `docs/LYRICS-SOURCE-ACCESS.md`.
+- [x] Confirm no-key LRCLIB access, optional application registration, and the distinction between lyrics.ovh title suggestions and available lyric text.
+- [x] Identify Open Hymnal, Hymnary and hymnal.net as hymn resource routes with item-specific terms; do not describe free reading as permission for bulk app redistribution.
+- [x] Verify Brave's current $5 monthly Search credit (approximately 1,000 requests), card requirement and $0-prepay route. No account, key, card or paid plan was created.
+- [x] Identify Sovereign Grace Music and Worship Start as permission-request candidates, not active or approved KOGG catalogues. Record what a no-fee partnership request must cover, including offline use, private sync and separate public sharing rights.
+- [x] Spot-check three title/artist pairs anonymously: LRCLIB returned lyric-bearing records for all three; lyrics.ovh returned words for one and 404 for two. No lyric text retained. Evidence: `work/free-lyrics-access-2026-11-10.json`. This is not a broad coverage benchmark.
+- [ ] Implement the pending progressive search, worship-first ranking, bounded source index and reviewed optional packs. These remain explicitly unchecked in the source access guide.
+- [ ] Obtain provider responses before activating restricted catalogues; no outreach has been sent. New SongSelect partner availability and a free Musixmatch production offering remain unconfirmed.
+- [ ] Develop the community as an optional online area with deliberate sharing, resource attribution and review/removal controls; keep presentation usable offline and private libraries private.
+
+This pass changes research/progress documentation only. The browser remains on verified v129 and the Windows preview remains v127. No new catalogue or community feature has been deployed. Pre-existing `data/hymns-basic.json` remains untouched.

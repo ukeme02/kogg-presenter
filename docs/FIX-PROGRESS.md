@@ -382,3 +382,16 @@ During app sign-in, found a first-sync conflict between untouched factory themes
 Published v125: implementation e7159b3; https://fda3d512.kogg-presenter.pages.dev/. Canonical operator, landing, media-sync module, Sync client and service worker matched the committed deployment archive byte-for-byte (normal HTTPS, following Cloudflare extensionless HTML redirects). Fresh release browser confirmed the updated cross-device media FAQ. The signed-in local app successfully loaded the cloud library after the initial-theme fix and showed Cloud copy is up to date. Final cache/manifest tests: 9/9 passed after changing the release cache name; full suite: 307/307. Proof: work/media-sync-v125-verified.png and work/media-sync-v125-live-guidance.png. Progress and travel guidance updated. The pre-existing data/hymns-basic.json remains untouched and unpublished.
 
 Remaining practical limits: Sync needs internet to upload/prepare each device, files are capped at 50 MiB in cloud storage, browser storage can be cleared/evicted, and codec support varies. Check Ready offline here before disconnecting. Physical travel-device rehearsal and account storage cleanup/retention controls remain future acceptance/work; cloud files are not automatically deleted to avoid breaking saved plans. Base and Local remain device-local.
+
+
+## 10 November 2026 — GitHub releases and Downloads (v126 landing update)
+- [x] Publish KOGG Presenter v125 with a verified self-hosting web ZIP, setup notes and SHA-256 checksum.
+- [x] Publish KOGG Connect 0.1.0 Windows OBS preview separately with installer, manual/source ZIP and checksums.
+- [x] Add landing Downloads navigation and three clearly labelled cards: browser app, OBS plugin, self-hosting web package.
+- [x] Update repository README and keep release notes in docs/releases.
+- [x] Verify release asset hashes/sizes, six public download links, desktop/light/dark and 390px/820px responsive layouts.
+- [ ] Publish the landing update and verify production.
+
+Release tags point to their actual implementations: v125 = e7159b375035701491495a0a96cca21e0eafbb90; kogg-connect-v0.1.0-preview = 53a8089177c620a788b7a15e61c93de4f9610ca6. OBS remains a prerelease; v125 is latest. GitHub returned matching SHA-256 digests and byte counts for every uploaded asset. The 19,000,140-byte web ZIP has setup notes, excludes the untracked hymns-basic file, and is explicitly not a native installer. Existing OBS binary hashes match their manifest.
+
+Validation: 30 landing/offline checks passed; phone cards use one column with 52px primary controls and no internal horizontal overflow; tablet uses two columns without document overflow. Blue theme, official fonts and existing motion remain. Native mobile apps are still marked planned; the unsigned OBS preview is clearly labelled.

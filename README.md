@@ -1,9 +1,20 @@
 # KOGG Presenter
 
-A lightweight, fully offline church presentation app for scriptures, lyrics and lower thirds.
-Built on a **free stack only**: plain HTML/CSS/JS (no framework, no build step), IndexedDB/localStorage
-for storage, and a service worker for offline use. The same code runs as an Android app, in any
-browser, and can be packaged for Windows, iOS, and desktop.
+A lightweight browser presentation app for Scripture, lyrics, notes, service slides and media.
+Built with plain HTML/CSS/JS, IndexedDB/localStorage and a service worker. Prepare the core online
+once for offline presenting. Connected searches, cloud Sync and online remote control need internet.
+Native Android/iOS apps remain planned; compatible desktop and mobile browsers work today.
+
+## Official releases and downloads
+
+- **[Open KOGG Presenter](https://kogg-presenter.pages.dev/index.html)** — start without an account; optionally install through your browser.
+- **[Downloads and device setup](https://kogg-presenter.pages.dev/landing#downloads)** — choose the browser app, Windows OBS plugin or self-hosting package.
+- **[KOGG Presenter v125](https://github.com/ukeme02/kogg-presenter/releases/tag/v125)** — private service media Sync, web ZIP, source and checksums. Scheduled images/videos sync up to 50 MiB per file; prepare the destination online before going offline.
+- **[KOGG Connect 0.1.0 Windows preview](https://github.com/ukeme02/kogg-presenter/releases/tag/kogg-connect-v0.1.0-preview)** — optional OBS 32.x plugin, installer and manual/source ZIP. Unsigned preview; real-device acceptance is still in progress.
+- **[All releases](https://github.com/ukeme02/kogg-presenter/releases)** — version history and release notes.
+
+The web ZIP needs HTTPS or localhost hosting; it is not a desktop installer. The OBS installer
+installs only the OBS plugin. Follow each release's setup instructions and compatibility notes.
 
 ## What's inside
 

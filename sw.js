@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v125-media';
+const CACHE = 'kogg-presenter-v126';
 const ASSETS = [
   './wifi-remote/index.html', './wifi-remote/sw.js', './css/remote.css', './css/wifi-remote.css', './js/wifi-transport.js', './js/wifi-pairing.js', './js/wifi-remote.js', './js/wifi-remote-operator.js', './js/vendor/qrcode.js', './js/vendor/jsqr.js',
   './js/media-sync.js', './js/service-media.js', './js/media.js', './js/media-deck.js', './js/media-display.js',
@@ -32,13 +32,13 @@ const ASSET_HASHES = {
   "./": "d0cb71b118c72620d08b056768dfc86ff7b81f60c921bcd93b9db90e809b3f9f",
   "./index.html": "d0cb71b118c72620d08b056768dfc86ff7b81f60c921bcd93b9db90e809b3f9f",
   "./display.html": "8bdb4d9bae6d7446cf94f2f25ce0e358c71c1721fe3cef4a4c733f82ad695215",
-  "./landing.html": "8f9f75b6040b01375421d4b39fbdd9d75a468fa2d9b1f70ce7104ff26adcd994",
+  "./landing.html": "adaeeac996eb05894a3431a00ffbe8db2d5dbd308aaee7c82a5b8cc93af9c618",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
   "./css/app.css": "86ffc24c6809315b492ab8543d1dc2aee230fc1dd3a2ba2ef46b391febe1b4ce",
   "./css/display.css": "d747918071bc5a4cb9ba64842590ac36d16cc81e0cd157d6810a10893ce85d9a",
-  "./css/landing.css": "a1ce707306ce2febf0c7c2a7d6a81142f3ecadc2458c0f9718266712a6e8ffaa",
-  "./js/landing.js": "57c9b67056b4297801963cd8b3773e615af028c41044f665965c27e8076b847b",
+  "./css/landing.css": "4aec9594d05961de01ed36d5f3943eb8a77fc89e5e31dee2f75ed312f90762d0",
+  "./js/landing.js": "81f654ffc1319a73af34e2ec198b8839fc115edb893903f189ca3b5444202074",
   "./js/landing-tour.js": "0d3c41bc5bad882867b1736874dc21a00bf48bbeb2d6aa654be74e21889d6aeb",
   "./js/landing-experience.js": "a3bfebd9a84c486554069be7fbd884bbb33419fd46d6f198eeba2c7e07fb9520",
   "./css/landing-experience.css": "b52666180eb258152fdc73d453ff82850ca42be7988389cdf59ce8be1cb12ba0",

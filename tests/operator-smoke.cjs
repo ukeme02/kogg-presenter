@@ -380,3 +380,26 @@ test('Windows presenter never advertises its private host as an OBS bridge',asyn
  Object.assign(context.location,{port:'8766',href:'http://127.0.0.1:8766/index.html'});
  context.window.KOGGStreamDeck.load();assert.match(elements.get('obsUrl').value,/^http:\/\/127\.0\.0\.1:8766\//);
 });
+
+
+test('Base restart clears temporary decks and live output while preserving saved work',async()=>{
+ const {context,elements,storage,session}=boot();await new Promise(r=>setImmediate(r));let reloads=0,stops=0;context.location.reload=()=>reloads++;context.window.KOGGCloudRemote={stop:()=>stops++,publish(){}};
+ vm.runInContext("setWorkMode('base');service=[{id:'keep',title:'Saved queue',slides:[]},{id:'temp',sessionOnly:true,slides:[]}];LS.set(K.service,service)",context);
+ storage.set('cp_songs','[{"id":"saved","title":"Saved song","lyrics":"Keep"}]');storage.set('cp_notes_device','saved notes');storage.set('cp_plans','saved plans');
+ for(const key of ['cp_notes_session','cp_media_session','cp_stream_session','cp_title_slides_session'])session.set(key,'temporary');
+ const before=storage.get('cp_songs');elements.get('btnRestartBase').click();assert.equal(reloads,1);assert.equal(stops,1);assert.equal(storage.get('cp_songs'),before);assert.equal(storage.get('cp_notes_device'),'saved notes');assert.equal(storage.get('cp_plans'),'saved plans');assert.equal(session.has('cp_lyrics_session'),false);assert.equal(session.has('cp_notes_session'),false);assert.equal(session.has('cp_media_session'),false);assert.equal(JSON.parse(storage.get('cp_service')).length,1);assert.equal(JSON.parse(storage.get('cp_live')).mode,'blank');assert.deepEqual(JSON.parse(storage.get('cp_live')).slides,[]);
+});
+test('Base restart cancellation and Local mode leave the workspace untouched',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));let reloads=0;context.location.reload=()=>reloads++;elements.get('btnRestartBase').click();assert.equal(reloads,0);vm.runInContext("setWorkMode('base')",context);context.confirm=()=>false;const before=JSON.stringify([...storage]);elements.get('btnRestartBase').click();assert.equal(reloads,0);assert.equal(JSON.stringify([...storage]),before);
+});
+test('cancelled lyric load cannot replace the live slide when a late response arrives',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));let finish;context.window.KOGGLyricsSources.lookup=()=>new Promise(r=>finish=r);vm.runInContext("lyricsOnline=[{title:'Pending'}]",context);const before=storage.get('cp_live');const button={dataset:{importLyric:'0'},disabled:false};const loading=elements.get('lyricsOnlineResults').handlers.click[0]({target:{closest:()=>button}});assert.equal(elements.get('lyricsProgress').hidden,false);elements.get('lyricsCancelLoad').click();assert.equal(elements.get('lyricsProgress').hidden,true);finish({title:'Late',lyrics:'Do not show'});await loading;assert.equal(storage.get('cp_live'),before);assert.equal(button.disabled,false);
+});
+test('Base scripture additions are temporary and excluded from saved service storage',async()=>{
+ const {context,elements,storage,session}=boot();await new Promise(r=>setImmediate(r));vm.runInContext("setWorkMode('base')",context);elements.get('btnAddScripture').click();assert.equal(JSON.parse(storage.get('cp_service')).length,0);assert.equal(JSON.parse(session.get('cp_lyrics_session')).service[0].sessionOnly,true);
+});
+
+
+test('Base reading history is temporary and switching back restores Local history',async()=>{
+ const {context,storage,session}=boot();await new Promise(r=>setImmediate(r));vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:16})',context);const saved=storage.get('cp_scripture_history');vm.runInContext("setWorkMode('base');goLiveScripture({bookIdx:18,ch:23,vFrom:1,vTo:1})",context);assert.equal(storage.get('cp_scripture_history'),saved);assert.ok(session.has('cp_scripture_history_session'));vm.runInContext("setWorkMode('local')",context);assert.equal(vm.runInContext('memory[0].r.bookIdx',context),42);
+});

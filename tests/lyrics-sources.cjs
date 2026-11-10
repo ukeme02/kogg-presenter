@@ -79,3 +79,25 @@ test('Christian search keeps hymnal matches when Hymnary fails and never imports
  assert.equal(result.partial,true);assert.equal(result.items.length,1);assert.equal(result.items[0].title,'A fixture hymn');assert.equal(result.items[0].lyrics,undefined);assert.equal(result.items[0].provider,'hymnal');assert.equal(result.items[0].pending,true);
  assert.equal(S.hymnalSearch(html.replace('/en/hymn/h/123','https://evil.test/file')).length,0);
 });
+
+
+test('catalogue Live suffix recovers matching artist lyrics through structured search',async()=>{
+ const calls=[];const song=await S.lookup({title:'Example (Live)',author:'Singer',provider:'lyrics.ovh',pending:true},{server:false,fetcher:async url=>{calls.push(url);if(url.includes('/search?'))return response([{id:44,trackName:'Example',artistName:'Singer',plainLyrics:'Recovered words'},{id:45,trackName:'Example',artistName:'Other',plainLyrics:'Wrong cover'}]);return new Response(JSON.stringify({error:'Not found'}),{status:404,headers:{'Content-Type':'application/json'}});}});
+ assert.equal(song.lyrics,'Recovered words');assert.equal(song.author,'Singer');assert.equal(calls.length,3);assert.match(calls[2],/track_name=Example&artist_name=Singer/);
+});
+test('fallback never substitutes a different artist or a different song',async()=>{
+ await assert.rejects(()=>S.lookup({title:'Example',author:'Singer',provider:'lyrics.ovh',pending:true},{server:false,fetcher:async url=>response(url.includes('/search?')?[{id:1,trackName:'Example',artistName:'Other',plainLyrics:'Wrong cover'},{id:2,trackName:'Example Two',artistName:'Singer',plainLyrics:'Wrong song'}]:{})}),e=>e.code==='LYRICS_UNAVAILABLE');
+});
+test('completed server lookup miss is not repeated from the browser',async()=>{
+ let calls=0;await assert.rejects(()=>S.lookup({title:'Example',author:'Singer',pending:true,provider:'lyrics.ovh'},{fetcher:async()=>{calls++;return new Response(JSON.stringify({error:'No words',code:'LYRICS_UNAVAILABLE'}),{status:400,headers:{'Content-Type':'application/json'}});}}),e=>e.code==='LYRICS_UNAVAILABLE');assert.equal(calls,1);
+});
+test('404 and rate limits are not retried as temporary source failures',async()=>{
+ for(const status of [404,429]){let calls=0;await assert.rejects(()=>S.readJSON('https://source.test',{fetcher:async()=>{calls++;return new Response('{}',{status,headers:{'Content-Type':'application/json'}});}}));assert.equal(calls,1);}
+});
+
+
+test('browser reuses successful session lyrics without another source request',async()=>{
+ const browser={KOGGLyrics:require('../js/lyrics.js')};const c=vm.createContext({window:browser,URL,URLSearchParams,AbortController,DOMException,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync('js/lyrics-sources.js','utf8'),c);
+ const pending={title:'Cache fixture',author:'Singer',provider:'lyrics.ovh',pending:true};let calls=0;const options={server:false,fetcher:async url=>{calls++;return response(url.includes('lyrics.ovh')?{lyrics:'Fixture words'}:{id:55,trackName:'Cache fixture',artistName:'Singer',plainLyrics:'Fixture words'});}};
+ await browser.KOGGLyricsSources.lookup(pending,options);const before=calls;const again=await browser.KOGGLyricsSources.lookup(pending,options);assert.equal(again.lyrics,'Fixture words');assert.equal(calls,before);
+});

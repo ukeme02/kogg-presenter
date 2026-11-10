@@ -20,7 +20,7 @@
    const type=response.headers?.get('content-type')||'';
    if(type && !type.includes('json'))throw new Error('Invalid source response');
    const raw=await response.text();if(raw.length>2000000)throw new Error('Source response too large');const data=JSON.parse(raw);
-   if(!response.ok)throw new Error(typeof data.error==='string'?data.error:response.status===429?'Source is busy. Try again shortly.':'Source unavailable');return data;
+   if(!response.ok){const error=new Error(typeof data.error==='string'?data.error:response.status===404?'No lyrics found':'Source unavailable');error.code=data.code;throw error;}return data;
    }finally{clearTimeout(timer);signal?.removeEventListener('abort',cancel);}
   };
   try{return await once();}
@@ -61,19 +61,37 @@
   if(typeof data.lyrics!=='string'||!data.lyrics.trim()||data.lyrics.length>100000)throw new Error('No lyrics found for this version. Try another result or paste the lyrics.');
   return {title,author,lyrics:data.lyrics.trim(),source:{name:'lyrics.ovh',url}};
  }
+ const recentLyrics=new Map();
  async function lookup(song,options={}){
+  if(options.signal?.aborted)throw new DOMException('Cancelled','AbortError');
+  // Browser-session reuse only: no persistent cache or server-wide storage.
+  const key=core.key(song)+'|'+(song.source?.url||song.provider||'');
+  if(typeof window!=='undefined'&&recentLyrics.has(key))return recentLyrics.get(key);
+  const result=await lookupUncached(song,options);
+  if(options.signal?.aborted)throw new DOMException('Cancelled','AbortError');
+  if(typeof window!=='undefined'&&result?.lyrics){recentLyrics.set(key,result);while(recentLyrics.size>12||[...recentLyrics.values()].reduce((n,s)=>n+s.lyrics.length,0)>200000)recentLyrics.delete(recentLyrics.keys().next().value);}
+  return result;
+ }
+ async function lookupUncached(song,options={}){
   if(!song.pending)return song;
   if(['hymnary','hymnal'].includes(song.provider))return importLink(song.source?.url,options);
-  if(options.server!==false){try{const data=await request('lookup',{title:song.title,artist:song.author},options);if(data.song)return data.song;}catch(e){if(options.signal?.aborted)throw e;}}
+  if(options.server!==false){try{const data=await request('lookup',{title:song.title,artist:song.author},options);if(data.song)return data.song;}catch(e){if(options.signal?.aborted||e.code==='LYRICS_UNAVAILABLE')throw e;}}
   const exact=async()=>{
    const title=checked(song.title),author=checked(song.author);if(!title||!author)throw new Error('Title and artist required');
-    const row=await readJSON('https://lrclib.net/api/get?'+new URLSearchParams({artist_name:author,track_name:title}),options);
-    const mapped=fromRecord(row);
-    if(mapped)return mapped;throw new Error('No lyric text at this source');
+   try{const row=await readJSON('https://lrclib.net/api/get?'+new URLSearchParams({artist_name:author,track_name:title}),options);const mapped=fromRecord(row);if(mapped&&sameSong(song,mapped))return mapped;}catch(e){if(options.signal?.aborted)throw e;if(/busy/i.test(e.message))throw e;}
+   // A catalogue's Live/Remastered suffix often prevents an exact signature match.
+   // Search the same title + artist, then reject unrelated songs and covers.
+   await new Promise((resolve,reject)=>{const cancel=()=>{clearTimeout(timer);reject(new DOMException('Cancelled','AbortError'));};const timer=setTimeout(()=>{options.signal?.removeEventListener('abort',cancel);resolve();},250);if(options.signal?.aborted)cancel();else options.signal?.addEventListener('abort',cancel,{once:true});});
+   const rows=await readJSON('https://lrclib.net/api/search?'+new URLSearchParams({track_name:cleanTitle(title),artist_name:author}),options);
+   const matches=(Array.isArray(rows)?rows:[]).map(fromRecord).filter(s=>s&&sameSong(song,s));
+   const found=matches.find(s=>core.key(s)===core.key(song))||matches[0];
+   if(found)return found;throw new Error('No matching lyric text');
   };
   try{return await Promise.any([lookupDirect(song,options),exact()]);}
-  catch(e){if(options.signal?.aborted)throw new DOMException('Cancelled','AbortError');throw new Error('This title was found, but neither connected source returned lyrics. Try another version or paste the words.');}
+  catch(e){if(options.signal?.aborted)throw new DOMException('Cancelled','AbortError');const error=new Error('No words available for this version. Try a lyrics-ready result or another artist/version.');error.code='LYRICS_UNAVAILABLE';throw error;}
  }
+ function cleanTitle(title){return String(title).replace(/\s*[([](?:live|remaster(?:ed)?|radio edit|official (?:audio|video))\b[^)\]]*[)\]]/gi,'').replace(/\s+[-–—]\s+(?:live|remaster(?:ed)?|radio edit)\b.*$/i,'').trim();}
+ function sameSong(a,b){return core.key({title:cleanTitle(a.title),author:a.author})===core.key({title:cleanTitle(b.title),author:b.author});}
  function importTarget(raw){let url;try{url=new URL(raw);}catch{throw new Error('Paste a complete https:// source link.');}
   if(url.protocol!=='https:'||url.username||url.password||url.port)throw new Error('Use a supported https:// source link.');
   const host=url.hostname.toLowerCase().replace(/^www\./,'');

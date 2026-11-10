@@ -14,7 +14,7 @@
   <div class="brand">
     <img class="brand-symbol" src="icons/kogg-symbol.svg" alt="">
     <span class="brand-wordmark"><span class="brand-name"><span class="brand-kogg" role="img" aria-label="KOGG"></span></span><span class="brand-sub">Presenter</span></span>
-    <button id="modeChip" class="mode-chip" title="Change work mode">…</button>
+    <button id="modeChip" class="mode-chip" title="Change work mode">…</button><button id="btnRestartBase" class="mode-chip" hidden title="Clear temporary Base work and restart. Saved libraries and offline downloads stay.">Restart Base</button>
   </div>
   <form class="quickgo" id="quickGoForm" role="search" autocomplete="off">
     <input id="quickGo" type="search" autocomplete="off" name="presentation-search" aria-label="Find presentation content" data-bwignore="true" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder="Find scripture, remembered words or songs…  (/ to focus, Enter to present)">
@@ -157,16 +157,16 @@
 
   <!-- SONGS -->
   <section id="tab-songs" class="tab-panel">
-    <div class="lyrics-toolbar"><b>Lyrics</b><span id="lyricsModeStatus" role="status"></span><button id="btnEndLyricsSession">End session</button></div>
+    <div class="lyrics-toolbar"><b>Lyrics</b><span id="lyricsModeStatus" role="status"></span><button id="btnEndLyricsSession" title="Clear only temporary songs and their Service entries">Clear session songs</button></div>
     <div class="lyrics-deck">
       <div class="lyrics-side">
         <section class="card lyrics-find"><h2>Find a song</h2>
           <input id="songSearch" type="search" autocomplete="off" name="kogg-song-search" data-1pignore="true" data-lpignore="true" data-form-type="other" placeholder="Title, artist or words you remember…" aria-label="Search saved songs and hymns">
           <div class="row"><button id="btnNewSong" class="primary">+ New song</button><button id="btnSearchLyricsOnline">Search online</button></div>
-          <div class="lyrics-source-tabs"><button id="lyricsLocalTab" aria-pressed="true">My library</button><button id="lyricsOnlineTab" aria-pressed="false">Online</button></div><div id="lyricsLocalPane">
+          <div id="lyricsProgress" class="lyrics-progress" hidden><div class="row"><span id="lyricsProgressLabel" role="status">Loading…</span><button id="lyricsCancelLoad" type="button">Cancel</button></div><progress aria-label="Lyrics loading"></progress></div><div class="lyrics-source-tabs"><button id="lyricsLocalTab" aria-pressed="true">My library</button><button id="lyricsOnlineTab" aria-pressed="false">Online</button></div><div id="lyricsLocalPane">
           <label class="lyrics-filter">On this device<select id="lyricsLocalFilter"><option value="all">All local lyrics</option><option value="saved">My songs / session</option><option value="hymns">Hymnary</option></select></label>
           <ul id="songList" class="item-list"></ul>
-          </div><div id="lyricsOnlinePane" hidden><h3 class="result-section-title">Online sources</h3><label class="lyrics-filter">Search scope<select id="lyricsSearchScope"><option value="christian">Christian songs &amp; hymns</option><option value="all">All music sources</option></select></label><p class="hint">Christian scope searches dedicated hymn sources. Broader music databases are optional.</p><p id="lyricsSearchStatus" class="hint" role="status">Search online when connected. Title matches may not include lyrics.</p><div id="lyricsOnlineResults" class="lyrics-results"></div>
+          </div><div id="lyricsOnlinePane" hidden><label class="lyrics-filter">Search scope<select id="lyricsSearchScope"><option value="christian">Christian songs &amp; hymns</option><option value="all">All music sources</option></select></label><p id="lyricsSearchStatus" class="hint" role="status">Results with words are shown first. Other titles need an availability check.</p><div id="lyricsOnlineResults" class="lyrics-results"></div>
           <details class="lyrics-external"><summary>Find on a lyrics website</summary><p class="hint">Find a page with Google, then paste a supported link into Import a source link.</p><div class="source-links"><a id="lyricsWebSearch" target="_blank" rel="noopener noreferrer" hidden>Google ↗</a><a href="https://www.azlyrics.com/" target="_blank" rel="noopener noreferrer">AZLyrics ↗</a><a href="https://www.musixmatch.com/" target="_blank" rel="noopener noreferrer">Musixmatch ↗</a></div></details>
           <details id="lyricsLinkImport"><summary>Import a source link</summary><input id="lyricsSourceUrl" type="url" placeholder="https://hymnary.org/text/…" aria-label="Lyrics source link"><button id="btnImportLyricsLink">Import lyrics</button><p class="hint">Supports Hymnary public-domain text pages, hymnal.net hymn pages and LRCLIB / lyrics.ovh API links. For other pages, copy the lyrics and paste them into the editor.</p><p id="lyricsLinkStatus" class="hint" role="status"></p></details>
           </div><details><summary>Import text &amp; hymn packs</summary><div class="row"><button id="btnStarterHymns">+ Basic Hymnary</button><button id="btnMoreHymns">More hymns</button></div>

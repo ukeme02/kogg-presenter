@@ -431,3 +431,17 @@ Production v127: https://88d0698e.kogg-presenter.pages.dev/. Canonical index, la
 - [x] Publish and verify the browser update. Windows preview 0.1.0 remains the previously verified v127 package; this UI pass does not replace its binary.
 
 Published f026ae4 to https://df34c79f.kogg-presenter.pages.dev/. All five changed production assets matched the committed archive byte-for-byte; archive integrity verified 85 hashes. Screenshot: work/stream-v128-simple.png. Progress and current phone instructions committed. No new dependency or binary download added.
+
+
+## 10 November 2026 — Base restart and lyrics reliability (v129)
+- [x] Add Restart Base beside the mode indicator with an explicit confirmation. Clear temporary lyrics/notes/title slides/media lists/stream drafts/reading history, session Service entries, online/direct Wi-Fi pairings and live output; reload in Base. Saved Local/Sync libraries, plans, settings, themes and cached downloads remain. The advanced bridge's pairing is separate; this action does not clear that server's pairing.
+- [x] Correct Scripture Service entries and reading history to use Base session ownership. Local history is restored when switching back.
+- [x] Add real indeterminate loading progress and Cancel for online search, selected-result loading and source-link import. Cancelled or stale responses cannot replace the live slide.
+- [x] Separate lyrics-ready results from title-only discovery. Reduce explanatory copy and give results their own visible scrolling region.
+- [x] After an exact lookup misses, search LRCLIB by normalized title and artist, handling Live/Remastered suffixes while rejecting unrelated songs/artists. Avoid retrying 404/429 and avoid repeating a completed server miss in the browser. Reuse up to 12 successful lyrics in bounded browser-session memory only (200,000 characters maximum).
+- [x] No new runtime dependency or source subscription. Christian-only discovery remains restricted to its existing dedicated sources; no silent switch to all-music search. Reference: https://lrclib.net/docs (structured search and exact lookup).
+- [x] Real browser all-music search found Way Maker/Sinach lyrics-ready results; selection displayed the first slide. Progress was visibly present during search. Restart returned to Scripture, blank Output, empty editor and empty Base reading memory; Ready offline remained. Widths fit 390, 820 and 1280 pixels.
+- [x] Full regression suite: 320 passed. Final targeted suite: 119 passed, including two further regressions for successful session reuse and Base/Local history isolation. Evidence: work/audit-v129-tests.txt, work/lyrics-v129-final.txt, work/lyrics-v129-loading.png.
+- [ ] Publish and verify v129 browser release. Windows preview remains v127; this pass does not change its installer.
+
+Limit: discovery metadata does not guarantee lyrics availability, and no source offers every song/version. Failed/cancelled imports preserve the current projected slide; saved songs and the included hymnary remain the dependable offline path. No Google AI/generated lyrics or unsupported automatic scraping is introduced.

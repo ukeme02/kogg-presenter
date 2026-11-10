@@ -28,6 +28,6 @@ export async function onRequestGet({request}){
   const length=Number(response.headers.get('content-length')||0);if(length>2000000)throw new Error('Source page too large');
   const html=await response.text();if(html.length>2000000)throw new Error('Source page too large');
   return json({song:target.type==='hymnal'?sources.hymnal(html,target.url):sources.hymnary(html,target.url)});
- }catch(error){return json({error:error.name==='AbortError'?'The lyrics source timed out. Try again or paste the lyrics.':error.message},400);}
+ }catch(error){return json({error:error.name==='AbortError'?'The lyrics source timed out. Try again or paste the lyrics.':error.message,code:error.code==='LYRICS_UNAVAILABLE'?'LYRICS_UNAVAILABLE':undefined},400);}
  finally{clearTimeout(timeout);}
 }

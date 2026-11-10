@@ -1,5 +1,15 @@
 # Repair progress - 3 November 2026
 
+## Provider outreach — 10 November 2026
+
+- [x] Sent the three owner-approved requests to Sovereign Grace Music, Worship Start and hymnal.net from koggpresenter@gmail.com; verified all three in Gmail Sent (approximately 20:18 WAT). Evidence: work/kogg-partnership-sent.png.
+- [x] Expanded LYRICS-SOURCE-ACCESS.md with Bible and hymn organisations, official contacts, free-access conditions and next steps. Identified an openly licensed Efik New Testament separately from the full BSN Efik Bible, and the current API.Bible free Starter offering.
+- [ ] Receive and review partner replies; no permission has yet been granted by these enquiries.
+- [ ] Select and contact additional candidates; no new candidate emails sent in this research step.
+- [ ] Review exact text editions/licences and integration requirements before importing or activating new content.
+
+Documentation/outreach only; browser release remains v132. Existing untracked data/hymns-basic.json remains untouched.
+
 ## Christian online sources and automatic imports
 
 Release v104 adds Christian songs & hymns as the default online scope. Hymnary's documented CSV search returns source-labeled hymn candidates; selecting one imports its public-domain text into slides. Supported hymnal.net page links import MusicComposition structured lyric text, preserving stanza breaks and source credits. Existing LRCLIB/lyrics.ovh retrieval stays available under the explicit All music sources scope. A failed Christian search never silently queries general databases.

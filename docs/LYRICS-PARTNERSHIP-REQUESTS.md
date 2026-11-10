@@ -1,6 +1,14 @@
-# KOGG lyric access requests — ready for review, not sent
+# KOGG lyric access requests — sent 10 November 2026
 
-Prepared 10 November 2026. The project owner chose to send these from KOGG directly. Reply contact: koggpresenter@gmail.com. No messages have been sent by the assistant. No agreement, fee or legal status is asserted by these drafts.
+Prepared 10 November 2026. After reviewing the three saved drafts, the project owner authorised the assistant to send all three. Sent from koggpresenter@gmail.com on 10 November 2026 at approximately 20:18 WAT. Gmail's Sent folder showed all three requests; this confirms sending, not delivery or acceptance. No agreement, fee or legal status is asserted by these enquiries. Replies and access approvals remain pending.
+
+| Organisation | Recipient | Status |
+| --- | --- | --- |
+| Sovereign Grace Music | music@sovereigngrace.com | Sent; awaiting reply |
+| Worship Start | hello@worshipstart.com | Sent; awaiting reply |
+| hymnal.net | contact@hymnal.net | Sent; awaiting reply |
+
+Sent-folder evidence: `work/kogg-partnership-sent.png`. The additional Bible and hymn candidates in LYRICS-SOURCE-ACCESS.md have been researched, not contacted.
 
 ## Sovereign Grace Music
 

@@ -48,11 +48,39 @@ Request a written answer covering:
 5. Territories, duration, request/download limits, updates, correction/removal procedures and any church-level licence or reporting requirement.
 6. How to credit the writer, publisher and source, and whether permission covers every co-owner.
 
-A plain text export can be enough. Partners do not need to build an API for KOGG, and the app does not need audio files to display lyrics. No outreach has been sent.
+A plain text export can be enough. Partners do not need to build an API for KOGG, and the app does not need audio files to display lyrics. On 10 November 2026, the owner authorised sending the prepared Sovereign Grace Music, Worship Start and hymnal.net requests from koggpresenter@gmail.com. All three were verified in Gmail Sent; responses and approvals remain pending. See LYRICS-PARTNERSHIP-REQUESTS.md.
 
 ## Community Bibles
 
 For the proposed shared resource library, [BSB](https://berean.bible/terms.htm) is explicitly public domain and has [official downloads](https://berean.bible/downloads.htm). No paid access or mandatory licensing form is needed. [World English Bible](https://ebible.org/eng-web/copr.htm) is also public domain; preserve its name only for the unchanged text. Other [eBible translations](https://ebible.org/about.php) have their own permissions and download restrictions. Do not infer that NIV, NLT, NKJV or an Efik edition has the same terms. This research does not change KOGG's three default Base Bibles.
+
+## Additional Bible and hymn access research — 10 November 2026
+
+These are verified access routes and outreach candidates, not new active KOGG integrations. Only the three requests listed above have been sent. No new accounts, subscriptions or agreements were created during this research.
+
+### Bible priorities
+
+| Body / source | What it offers | Access route and next step |
+| --- | --- | --- |
+| [American Bible Society / API.Bible](https://www.api.bible/) | Current Starter plan: free, non-commercial, up to three licensed Bibles and 5,000 calls per month. Its catalogue includes NIV, NLT, NKJV, NASB, Amplified and The Message. | support@api.bible. Confirm KOGG's eligibility, specific editions, church projection and OBS use. Account/translation activation is still required. [Current policies](https://care.api.bible/article/396-licensing-policies-quick-reference) require copyright display, web usage reporting and refreshing cached content at least every 30 days. This is not indefinite offline bundling permission. Older documentation quoting 5,000 daily queries should not guide planning. |
+| [Biblica / Open.Bible — Efik](https://preview.open.bible/bibles/biblica-open-efik-living-new-testament-1995) | Official product page lists the Open Efik Living New Testament 1995 under CC BY-SA, with USX, USFM and Word downloads. | Strong candidate for an optional Efik pack. Review the downloaded edition's exact notices, attribution and share-alike conditions before conversion. This is New Testament only, distinct from the full Bible Society of Nigeria edition. Use Open.Bible feedback for data questions. |
+| [Bible Society of Nigeria](https://www.biblesociety-nigeria.org/download-install-and-read-the-bible-in-your-local-language/) | Confirms digital availability of Efik and other Nigerian-language Bibles through YouVersion. | info@biblesociety-nigeria.org, published in its [official Sower magazine](https://www.biblesociety-nigeria.org/wp-content/uploads/2024/11/Sower-Oct-Dec-2024.pdf). Request the full Efik edition, a maintained text export, no-fee ministry access, projection, offline use and private sync permissions. Free reading in another app does not establish KOGG access. |
+| [eBible.org](https://www.ebible.org/about.php) | Freely distributable translations and structured/downloadable formats, with individual translation permissions. | [Official contact form](https://ebible.org/cgi-bin/contact.cgi). Request current machine-readable files and a permitted African-language shortlist. Check each edition's notice; not every hosted translation has unrestricted distribution. |
+| [AO Lab — Free Use Bible API](https://bible.helloao.org/docs/) | Static JSON Bible API; advertises no key, no usage limit and storage/download without expiry. Individual texts retain their own licences. | Best low-friction technical candidate for optional open-licence Bible packs. Use its documentation and linked GitHub issue route. Review each translation, store only requested packs, preserve attribution and avoid importing audio. |
+| [Faith Comes By Hearing / Bible Brain](https://www.faithcomesbyhearing.com/bible-brain/developer-documentation) | Bible text across many languages; its [developer licence](https://www.faithcomesbyhearing.com/bible-brain/license) states the API is provided without charge. | support@digitalbibleplatform.com. Apply for a key and request text-only church presentation access. Offline use is limited to content eligible through its download endpoint or a separate agreement; verify projection and private sync scope. |
+| [YouVersion Platform](https://platform.youversion.com/) | Official free Bible tools for apps and websites. | [Developer documentation](https://developers.youversion.com/overview) and [support](https://platform.youversion.com/support). Confirm available translations, publisher approvals, projection, caching and offline rights before choosing it. Consumer app downloads are not developer permission. |
+
+[Biblica's current permissions page](https://www.biblica.com/permissions/) also describes Express Licensing through API.Bible or YouVersion for qualifying non-commercial products without AI/ML features. Ask about KOGG's voice input and planned AI separately; do not assume a future AI assistant is covered. Standard full-text licensing requires a registered legal entity. This research neither establishes KOGG's legal status nor accepts any terms.
+
+### Additional hymn partners
+
+| Body / source | Opportunity | Contact and next step |
+| --- | --- | --- |
+| [Open Hymnal Project](https://openhymnal.org/OpenHymnalEaster2011.pdf) | Collection of public-domain and explicitly permitted hymns, with individual notices and ABC source formats. | brian.j.dumont@gmail.com, published in the official collection. Request the current source archive and a text-only pack route. The homepage timed out during this check; the published contact is from an older edition and has not been tested. Review jurisdiction and the words/translation separately from musical arrangements. |
+| [Methodist Church — Singing the Faith Plus](https://www.methodist.org.uk/for-churches/resources/copyright-matters/) | Publishes hymns for free use by site users with appropriate copyright information. | stfplus@methodistchurch.org.uk, confirmed on its [copyright/contact page](https://www.methodist.org.uk/copyright-and-disclaimer/). Request permission for a defined KOGG text pack, offline saving and private sync; website-user permission does not automatically cover app redistribution or every song in the printed hymnbook. |
+| [Praise Trust](https://www.praise.org.uk/answers-to-frequently-asked-questions) | Traditional and modern hymns, revised texts and a copyright administration service. | copyright@praise.org.uk. Request a no-fee pilot for texts it controls and a public-domain subset. Its current church-use conditions include relevant CCLI licences for protected words; a free KOGG catalogue agreement is not established. |
+
+Recommended sequence: review the open Efik NT and AO Lab/eBible packs for lightweight offline expansion; pursue API.Bible for popular English editions; contact Bible Society of Nigeria for full Efik; then request text-only packs from Open Hymnal and Singing the Faith Plus. Keep optional additions out of the three default Base Bible downloads. No new provider code or content was deployed as part of this outreach research.
 
 ## Implementation follow-through
 

@@ -1,5 +1,35 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const S=require('../js/lyrics-sources.js');const response=data=>new Response(JSON.stringify(data),{headers:{'Content-Type':'application/json'}});
+test('progressive search exposes fast lyrics before a slow provider finishes',async()=>{
+ let finish;const updates=[];const running=S.search('Example',{scope:'worship',onUpdate:r=>updates.push(r),fetcher:async url=>new URL(url,'https://kogg.test').searchParams.get('provider')==='lrclib'?response({items:[{title:'Example',author:'Sinach',lyrics:'Test words',source:{name:'LRCLIB'}}]}):new Promise(resolve=>finish=()=>resolve(response({items:[]})))});
+ await new Promise(r=>setImmediate(r));assert.equal(updates.length,1);assert.equal(updates[0].items[0].lyrics,'Test words');assert.equal(updates[0].completed,1);finish();assert.equal((await running).completed,2);
+});
+test('progressive Christian scope never queries a general music provider',async()=>{
+ const calls=[];const result=await S.search('Grace',{scope:'christian',onUpdate(){},fetcher:async url=>{calls.push(url);return new Response(JSON.stringify({error:'unavailable',code:'SOURCE_UNAVAILABLE'}),{status:400,headers:{'Content-Type':'application/json'}});}});assert.equal(result.available,false);assert.equal(calls.length,2);assert.ok(calls.every(u=>/provider=hymnary|provider=hymnal/.test(u)));
+});
+test('late results cannot emit an update after cancellation',async()=>{
+ const abort=new AbortController();let release;const updates=[];const pending=S.search('Example',{onUpdate:r=>updates.push(r),signal:abort.signal,fetcher:()=>new Promise(resolve=>{release=resolve;abort.signal.addEventListener('abort',()=>resolve(response({items:[]})),{once:true});})});abort.abort();await assert.rejects(pending,/cancelled/i);assert.equal(updates.length,0);
+});
+test('worship ranking keeps other matches and upgrades duplicate metadata without changing position',async()=>{
+ const result=await S.search('Grace',{scope:'worship',onUpdate(){},fetcher:async url=>response({items:url.includes('provider=lrclib')?[{title:'Grace',author:'Other',lyrics:'Other words'},{title:'Grace',author:'Sinach',lyrics:'Words'}]:[{title:'Grace',author:'Sinach',pending:true,source:{name:'lyrics.ovh'}}]})});assert.equal(result.items.length,2);assert.equal(result.items[0].author,'Sinach');assert.ok(result.items[0].lyrics);assert.equal(result.items[1].author,'Other');
+});
+test('source memory is bounded metadata, rejects unsafe links and keeps strict scope',()=>{
+ const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
+ for(let i=0;i<70;i++)S.rememberSong({title:'Song '+i,author:'Writer',lyrics:'Private lyric text',secret:'not stored',source:{url:'https://lrclib.net/api/get/'+i}},storage);
+ assert.equal(JSON.parse(data.get('cp_lyrics_sources')).length,60);assert.doesNotMatch(data.get('cp_lyrics_sources'),/Private|secret/);assert.equal(S.knownSongs('Song',storage,'christian').length,0);assert.equal(S.knownSongs('Song 69',storage)[0].provider,'lrclib');
+ S.rememberSong({title:'Unsafe',lyrics:'x',source:{url:'https://127.0.0.1/private'}},storage);assert.equal(S.knownSongs('Unsafe',storage).length,0);data.set('cp_lyrics_sources','{bad');assert.deepEqual(S.knownSongs('Song',storage),[]);
+});
+test('remembered LRCLIB lookup uses its stable ID and rejects a changed song identity',async()=>{
+ const song={title:'Example',author:'Writer',pending:true,provider:'lrclib',source:{url:'https://lrclib.net/api/get/45'}};
+ const result=await S.lookup(song,{server:false,fetcher:async url=>{assert.equal(url,song.source.url);return response({id:45,trackName:'Example',artistName:'Writer',plainLyrics:'Correct'});}});assert.equal(result.lyrics,'Correct');
+ await assert.rejects(()=>S.lookup(song,{server:false,fetcher:async()=>response({id:45,trackName:'Other',artistName:'Writer',plainLyrics:'Wrong'})}),/no longer matches/);
+});
+test('long Retry-After is not bypassed with an early automatic retry',async()=>{let calls=0;await assert.rejects(()=>S.readJSON('https://source.test',{fetcher:async()=>{calls++;return new Response('busy',{status:503,headers:{'Retry-After':'60'}});}}));assert.equal(calls,1);});
+test('browser LRCLIB requests identify KOGG without leaking the header to other hosts',async()=>{
+ const browser={KOGGLyrics:require('../js/lyrics.js')};const c=vm.createContext({window:browser,URL,URLSearchParams,AbortController,DOMException,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync('js/lyrics-sources.js','utf8'),c);
+ await browser.KOGGLyricsSources.readJSON('https://lrclib.net/api/get/1',{fetcher:async(u,init)=>{assert.match(init.headers['Lrclib-Client'],/KOGGPresenter/);return response({});}});
+ await browser.KOGGLyricsSources.readJSON('/api/lyrics',{fetcher:async(u,init)=>{assert.equal(init.headers,undefined);return response({});}});
+});
 test('Christian search parses quoted CSV and allows only canonical hymn identifiers',()=>{
  const rows=S.hymnarySearch('displayTitle,authors,textAuthNumber\n"Grace, hope","Writer ""One""",grace_hope\nBad,x,../../private\nDuplicate,x,grace_hope\n');assert.equal(rows.length,1);assert.equal(rows[0].title,'Grace, hope');assert.equal(rows[0].author,'Writer "One"');assert.equal(rows[0].source.url,'https://hymnary.org/text/grace_hope');assert.equal(rows[0].provider,'hymnary');assert.equal(rows[0].pending,true);
 });

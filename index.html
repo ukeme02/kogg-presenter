@@ -166,13 +166,22 @@
           <div id="lyricsProgress" class="lyrics-progress" hidden><div class="row"><span id="lyricsProgressLabel" role="status">Loading…</span><button id="lyricsCancelLoad" type="button">Cancel</button></div><progress aria-label="Lyrics loading"></progress></div><div class="lyrics-source-tabs"><button id="lyricsLocalTab" aria-pressed="true">My library</button><button id="lyricsOnlineTab" aria-pressed="false">Online</button></div><div id="lyricsLocalPane">
           <label class="lyrics-filter">On this device<select id="lyricsLocalFilter"><option value="all">All local lyrics</option><option value="saved">My songs / session</option><option value="hymns">Hymnary</option></select></label>
           <ul id="songList" class="item-list"></ul>
-          </div><div id="lyricsOnlinePane" hidden><label class="lyrics-filter">Search scope<select id="lyricsSearchScope"><option value="christian">Christian songs &amp; hymns</option><option value="all">All music sources</option></select></label><p id="lyricsSearchStatus" class="hint" role="status">Results with words are shown first. Other titles need an availability check.</p><div id="lyricsOnlineResults" class="lyrics-results"></div>
+          </div><div id="lyricsOnlinePane" hidden><label class="lyrics-filter">Search scope<select id="lyricsSearchScope"><option value="worship">Worship-first</option><option value="christian">Christian sources only</option><option value="all">All music sources</option></select></label><p id="lyricsSearchStatus" class="hint" role="status">Results with words are shown first. Other titles need an availability check.</p><div id="lyricsOnlineResults" class="lyrics-results"></div>
           <details class="lyrics-external"><summary>Find on a lyrics website</summary><p class="hint">Find a page with Google, then paste a supported link into Import a source link.</p><div class="source-links"><a id="lyricsWebSearch" target="_blank" rel="noopener noreferrer" hidden>Google ↗</a><a href="https://www.azlyrics.com/" target="_blank" rel="noopener noreferrer">AZLyrics ↗</a><a href="https://www.musixmatch.com/" target="_blank" rel="noopener noreferrer">Musixmatch ↗</a></div></details>
           <details id="lyricsLinkImport"><summary>Import a source link</summary><input id="lyricsSourceUrl" type="url" placeholder="https://hymnary.org/text/…" aria-label="Lyrics source link"><button id="btnImportLyricsLink">Import lyrics</button><p class="hint">Supports Hymnary public-domain text pages, hymnal.net hymn pages and LRCLIB / lyrics.ovh API links. For other pages, copy the lyrics and paste them into the editor.</p><p id="lyricsLinkStatus" class="hint" role="status"></p></details>
           </div><details><summary>Import text &amp; hymn packs</summary><div class="row"><button id="btnStarterHymns">+ Basic Hymnary</button><button id="btnMoreHymns">More hymns</button></div>
             <div id="extraHymnPacks" hidden></div><p id="hymnPackStatus" role="status"></p>
             <p class="hint"><a href="data/hymnary-sources.txt" target="_blank" rel="noopener">Hymn source credits</a></p>
             <label>Import song text (.txt)<input id="lyricsTextFile" type="file" accept="text/plain,.txt"></label>
+            <details class="lyrics-packs"><summary>Share or import a song pack</summary>
+              <label>Import a KOGG song pack<input id="lyricsPackFile" type="file" accept="application/json,.json"></label>
+              <p class="hint">Base keeps imported songs for this session. Local and Sync save them to your library. Contributor permissions are shown before import.</p>
+              <label>Your name or church<input id="lyricsPackContributor" maxlength="200" autocomplete="organization"></label>
+              <label>Permission to share<textarea id="lyricsPackPermission" rows="2" maxlength="2000" placeholder="Who owns these words, and what may others do with them?"></textarea></label>
+              <label class="lyrics-pack-confirm"><input id="lyricsPackConfirmed" type="checkbox">I have permission to distribute these words.</label>
+              <button id="btnExportLyricsPack" type="button">Export current song as a pack</button>
+              <p id="lyricsPackStatus" class="hint" role="status">Exports only the current song and its credits. Nothing is posted publicly.</p>
+            </details>
             <p class="hint">Import your downloaded SongSelect text, or paste lyrics. <a href="https://songselect.ccli.com/" target="_blank" rel="noopener">Open SongSelect</a></p>
           </details>
         </section>

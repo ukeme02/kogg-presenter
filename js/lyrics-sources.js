@@ -7,15 +7,18 @@
  function checked(value,max=200){return typeof value==='string'&&value.trim()&&value.length<=max?value.trim():null;}
  // Cloudflare's outgoing fetches send no User-Agent; LRCLIB (and friends) are friendlier to one.
  const serverHeaders=typeof window==='undefined'?{'User-Agent':'KOGGPresenter/1.0 (https://kogg-presenter.pages.dev)'}:undefined;
- async function readJSON(url,{fetcher=fetch,signal,timeoutMs=4500}={}){
+ const clientName='KOGGPresenter/1.0 (https://kogg-presenter.pages.dev)';
+ function delay(ms,signal){return new Promise((resolve,reject)=>{const cancel=()=>{clearTimeout(timer);signal?.removeEventListener('abort',cancel);reject(new DOMException('Cancelled','AbortError'));};const timer=setTimeout(()=>{signal?.removeEventListener('abort',cancel);resolve();},ms);if(signal?.aborted)cancel();else signal?.addEventListener('abort',cancel,{once:true});});}
+ async function readJSON(url,{fetcher=fetch,signal,timeoutMs=8000}={}){
   const once=async()=>{
    const controller=new AbortController(),cancel=()=>controller.abort();
    if(signal?.aborted)controller.abort();else signal?.addEventListener('abort',cancel,{once:true});
    const timer=setTimeout(cancel,timeoutMs);
    try{
-   const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual',headers:serverHeaders});
+   const headers=serverHeaders||(String(url).startsWith('https://lrclib.net/')?{'Lrclib-Client':clientName}:undefined);
+   const response=await fetcher(url,{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store',redirect:'manual',headers});
    if((response.status>=300&&response.status<400)||response.type==='opaqueredirect')throw new Error('This source redirected. Use its final supported source link instead.');
-   if(response.status>=500)throw new Error('Source unavailable');
+   if(response.status>=500){const error=new Error('Source unavailable'),retry=response.headers?.get('retry-after');if(retry)error.retryMs=/^\d+$/.test(retry)?Number(retry)*1000:Math.max(0,Date.parse(retry)-Date.now());throw error;}
    if(response.status===429)throw new Error('Source is busy. Try again shortly.');
    const type=response.headers?.get('content-type')||'';
    if(type && !type.includes('json'))throw new Error('Invalid source response');
@@ -26,8 +29,8 @@
   try{return await once();}
   catch(err){
    // These sources briefly return 503 under load — one quiet retry recovers most failures.
-   if(signal?.aborted||err.message!=='Source unavailable')throw err;
-   await new Promise((resolve,reject)=>{const timer=setTimeout(resolve,800);if(signal)signal.addEventListener('abort',()=>{clearTimeout(timer);reject(new DOMException('Cancelled','AbortError'));},{once:true});});
+   if(signal?.aborted||err.message!=='Source unavailable'||err.retryMs>2000)throw err;
+   await delay(Math.max(800,err.retryMs||0),signal);
    return once();
   }
  }
@@ -50,10 +53,57 @@
   return readJSON(url,{...options,timeoutMs:12000});
  }
  async function search(q,options={}){
+  if(options.onUpdate)return searchProgressive(q,options);
   if(options.scope==='christian')return request('christian-search',{q},options);
   if(options.server!==false){try{const data=await request('search',{q},options);if(Array.isArray(data.items))return data;}catch(e){if(options.signal?.aborted)throw e;}}
   return searchDirect(q,options);
  }
+ async function searchProvider(q,provider,options={}){
+  if(!checked(q)||q.length<3)throw Error('Enter 3–200 characters.');
+  switch(provider){
+   case 'lrclib':{const rows=await readJSON('https://lrclib.net/api/search?q='+encodeURIComponent(q),options);return Array.isArray(rows)?rows.slice(0,100).map(fromRecord).filter(Boolean):[];}
+   case 'ovh':{const data=await readJSON('https://api.lyrics.ovh/suggest/'+encodeURIComponent(q),options);return Array.isArray(data.data)?data.data.slice(0,15).map(candidate).filter(Boolean):[];}
+   case 'hymnary':return hymnarySearch(await readHTML('https://hymnary.org/search?'+new URLSearchParams({qu:q.replace(/[":]/g,' ')+' in:texts',export:'csv'}),options));
+   case 'hymnal':return hymnalSearch(await readHTML('https://www.hymnal.net/en/search/all/all/'+encodeURIComponent(q),options));
+   default:throw Error('Unsupported lyrics provider');
+  }
+ }
+ // Ranking hints only: never claim that an artist match verifies a song's faith or rights.
+ const worshipArtists=['sinach','steve crown','nathaniel bassey','mercy chinwo','moses bliss','dunsin oyekan','frank edwards','judikay','ada ehi','tope alabi','joe praize','tim godfrey','victoria orenze','sammie okposo','chris tomlin','don moen','cece winans','donnie mcclurkin','hillsong worship','hillsong united','hillsong young & free','elevation worship','bethel music','maverick city music','phil wickham','matt redman','all sons & daughters','cityalight','sovereign grace music','keith & kristyn getty'];
+ function worshipScore(song){const author=String(song.author||'').toLowerCase();return worshipArtists.some(a=>author===a||author.startsWith(a+' feat.')||author.startsWith(a+' featuring '))?2:/\b(worship|gospel|hymn)\b/i.test(song.title+' '+author)?1:0;}
+ const recentSearches=new Map();
+ async function searchProgressive(q,options={}){
+  if(!checked(q)||q.length<3)throw Error('Enter 3–200 characters.');
+  if(options.signal?.aborted)throw new DOMException('Cancelled','AbortError');
+  const scope=options.scope||'worship',key=scope+'|'+q.trim().toLowerCase(),cached=recentSearches.get(key);
+  if(typeof window!=='undefined'&&cached&&Date.now()-cached.at<120000){options.onUpdate({...cached.result,cached:true});return cached.result;}
+  const providers=scope==='christian'?['hymnary','hymnal']:['lrclib','ovh'];
+  const items=[],positions=new Map();let completed=0,failed=0,available=0;
+  const snapshot=()=>({items:items.slice(),available:available>0,partial:failed>0,completed,total:providers.length,scope});
+  await Promise.all(providers.map(async provider=>{
+   try{
+    let batch;
+    if(options.server===false)batch=await searchProvider(q,provider,options);
+    else try{const data=await request('source-search',{q,provider},options);if(!Array.isArray(data.items))throw Error('Invalid source response');batch=data.items;}
+    catch(error){if(options.signal?.aborted||scope==='christian'||error.code==='SOURCE_UNAVAILABLE')throw error;batch=await searchProvider(q,provider,options);}
+    if(options.signal?.aborted)return;
+    available++;
+    if(scope==='worship')batch=batch.slice().sort((a,b)=>worshipScore(b)-worshipScore(a));
+    for(const song of batch){if(!checked(song?.title)||(!song.pending&&!checked(song.lyrics,100000)))continue;const id=core.key(song),position=positions.get(id);if(position!==undefined){if(items[position].pending&&!song.pending)items[position]=song;}else if(items.length<48){positions.set(id,items.length);items.push(song);}}
+   }catch(error){if(!options.signal?.aborted)failed++;}
+   finally{completed++;if(!options.signal?.aborted)options.onUpdate(snapshot());}
+  }));
+  if(options.signal?.aborted)throw new DOMException('Search cancelled','AbortError');
+  const result=snapshot();
+  if(typeof window!=='undefined'&&available&&!failed&&items.length){recentSearches.set(key,{at:Date.now(),result});while(recentSearches.size>5||JSON.stringify([...recentSearches.values()]).length>300000)recentSearches.delete(recentSearches.keys().next().value);}
+  return result;
+ }
+ const knownKey='cp_lyrics_sources';
+ function metadata(song){try{if(!checked(song?.title)||!checked(song?.source?.url,500))return null;const target=importTarget(song.source.url);return {title:song.title,author:checked(song.author)||'',pending:true,provider:target.type,source:{name:target.type==='lrclib'?'LRCLIB':target.type==='hymnary'?'Hymnary.org':target.type==='hymnal'?'hymnal.net':'lyrics.ovh',url:target.url},at:Number(song.at)||Date.now()};}catch{return null;}}
+ function readKnown(storage){try{const raw=storage?.getItem(knownKey);if(!raw||raw.length>60000)return [];const rows=JSON.parse(raw);if(!Array.isArray(rows))return [];return rows.slice(-60).map(metadata).filter(s=>s&&Date.now()-s.at<90*86400000);}catch{return [];}}
+ function knownSongs(q,storage,scope='all'){const words=q.toLowerCase().trim().split(/\s+/);return readKnown(storage).filter(s=>(scope!=='christian'||['hymnary','hymnal'].includes(s.provider))&&words.every(w=>(s.title+' '+s.author).toLowerCase().includes(w))).reverse().slice(0,8);}
+ function rememberSong(song,storage){if(!song?.lyrics)return;const entry=metadata({...song,at:Date.now()});if(!entry)return;try{const rows=readKnown(storage).filter(s=>core.key(s)!==core.key(entry));storage.setItem(knownKey,JSON.stringify([...rows,entry].slice(-60)));}catch{}}
+ function clearSessionCache(){recentSearches.clear();recentLyrics.clear();}
  async function lookupDirect(song,options={}){
   if(!song.pending)return song;
   const title=checked(song.title),author=checked(song.author);if(song.provider!=='lyrics.ovh'||!title||!author)throw new Error('Unsupported lyrics source');
@@ -74,6 +124,7 @@
  }
  async function lookupUncached(song,options={}){
   if(!song.pending)return song;
+  if(song.provider==='lrclib'){const target=importTarget(song.source?.url);if(target.type!=='lrclib')throw Error('Unsupported lyrics source');let result;if(options.server===false)result=fromRecord(await readJSON(target.url,options));else try{result=await importLink(target.url,options);}catch(error){if(options.signal?.aborted)throw error;result=fromRecord(await readJSON(target.url,options));}if(!result||!sameSong(song,result))throw Error('The saved source no longer matches this song. Search again.');return result;}
   if(['hymnary','hymnal'].includes(song.provider))return importLink(song.source?.url,options);
   if(options.server!==false){try{const data=await request('lookup',{title:song.title,artist:song.author},options);if(data.song)return data.song;}catch(e){if(options.signal?.aborted||e.code==='LYRICS_UNAVAILABLE')throw e;}}
   const exact=async()=>{
@@ -145,6 +196,6 @@
  async function readHTML(url,options={}){const response=await (options.fetcher||fetch)(url,{signal:options.signal,redirect:'manual',headers:{'User-Agent':'KOGGPresenter/1.0 (individual hymn search)','Accept':'text/html,text/csv'}});if(!response.ok)throw Error('Source unavailable');if(Number(response.headers.get('content-length')||0)>2000000)throw Error('Source response too large');const text=await response.text();if(text.length>2000000)throw Error('Source response too large');return text;}
  async function christianSearch(q,options={}){if(!checked(q)||q.length<3)throw Error('Enter 3–200 characters.');const results=await Promise.allSettled([readHTML('https://hymnary.org/search?'+new URLSearchParams({qu:q.replace(/[":]/g,' ')+' in:texts',export:'csv'}),options).then(hymnarySearch),readHTML('https://www.hymnal.net/en/search/all/all/'+encodeURIComponent(q),options).then(hymnalSearch)]);if(options.signal?.aborted)throw new DOMException('Search cancelled','AbortError');const items=results.flatMap(r=>r.status==='fulfilled'?r.value:[]);return {items:items.slice(0,30),available:results.some(r=>r.status==='fulfilled'),partial:results.some(r=>r.status==='rejected'),scope:'christian'};}
  function google(q,scope='all'){return 'https://www.google.com/search?'+new URLSearchParams({q:q.trim()+' lyrics'+(scope==='christian'?' (site:hymnary.org OR site:hymnal.net OR site:hymnlyrics.org)':'')});}
- const api={readJSON,candidate,searchDirect,search,lookupDirect,lookup,importTarget,hymnary,hymnarySearch,hymnal,importLink,google,setCore,fromRecord,hymnalSearch,christianSearch};
+ const api={readJSON,candidate,searchDirect,search,searchProvider,searchProgressive,worshipScore,knownSongs,rememberSong,clearSessionCache,lookupDirect,lookup,importTarget,hymnary,hymnarySearch,hymnal,importLink,google,setCore,fromRecord,hymnalSearch,christianSearch};
  if(typeof module!=='undefined')module.exports=api;else scope.KOGGLyricsSources=api;
 })(typeof window!=='undefined'?window:globalThis);

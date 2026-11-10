@@ -59,12 +59,13 @@ For the proposed shared resource library, [BSB](https://berean.bible/terms.htm) 
 An anonymous-access spot check on 10 November returned lyric-bearing LRCLIB records for Way Maker / Sinach, You Are Great / Steve Crown, and Great Are You Lord / All Sons & Daughters. Exact lyrics.ovh lookups returned words for You Are Great and HTTP 404 for the other two. This is three examples, not a catalogue benchmark or a review of lyric accuracy. Only availability/count/timing metadata was retained in `work/free-lyrics-access-2026-11-10.json`. LRCLIB response times in this run ranged from 0.78 to 6.76 seconds, so timeout handling also needs attention; free access does not imply instant response.
 
 - [x] Identify currently accessible free sources and the information needed for access requests.
-- [ ] Show provider results progressively without moving clicked rows or allowing stale searches to replace output.
-- [ ] Add worship-first discovery while preserving a strict Christian-source option.
-- [ ] Maintain a small, bounded record of successful song IDs and source links; separate it from permission to store lyric text.
-- [ ] Add reviewed optional packs with attribution and explicit sharing permissions.
+- [x] Show provider results progressively using stable button nodes and indices; stale searches cannot replace output.
+- [x] Add worship-first ranking while preserving a strict Christian-source option. Ranking is a hint, not a faith or rights verification.
+- [x] Keep up to 60 successful source links as metadata (Base session storage; Local/Sync device storage). Recent full results are bounded, short-lived browser memory only.
+- [x] Add private text-only song-pack import/export with credits and contributor-declared permissions. Import requires review; the declaration is not independent rights verification.
+- [ ] Obtain and review additional authorised provider packs. Existing 300/262/562 hymn offerings are unchanged.
 - [ ] Connect broader web discovery only after credentials and spending limits are configured.
 - [ ] Confirm partner access in writing before activating additional catalogues.
 - [ ] Design the community separately: reusable service styles, original/permitted song packs and church event listings, with review/report/removal controls. Public profiles or uploads must be deliberate; saved church libraries stay private.
 
-These pending items are not deployed features. The free-source research does not resolve every song's availability or replace the existing offline library.
+Checked implementation items are part of the v130 browser release. Unchecked catalogue/community items remain pending. See FIX-PROGRESS.md for deployment verification. No provider agreement or account has been created.

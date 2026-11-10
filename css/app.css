@@ -1925,3 +1925,14 @@ dialog::backdrop{background:#030913a8;backdrop-filter:blur(3px)}
 
 .lyrics-results details button{display:flex;flex-direction:column;gap:4px;width:100%;margin:5px 0;border:1px solid var(--hairline);background:var(--panel2)}.lyrics-results details button em{font-style:normal;color:var(--accent);font-size:10px}.lyrics-results details button b{font-size:13px}
 @media(min-width:761px){#lyricsOnlinePane:not([hidden]){display:flex;flex-direction:column;overflow:hidden}#lyricsOnlinePane>.lyrics-filter,#lyricsSearchStatus,#lyricsOnlinePane>details{flex:none}#lyricsSearchStatus{margin:4px 0;font-size:11px;line-height:1.4}#tab-songs #lyricsOnlineResults{flex:1;min-height:90px;max-height:none;margin:4px 0;overflow:auto}#lyricsOnlinePane>details{padding:5px 0;font-size:11px}#lyricsOnlinePane>details[open]{max-height:45%;overflow:auto}.lyrics-progress .row{display:flex}.lyrics-progress button{min-height:30px;padding:4px 8px}}
+
+/* Progressive results retain their own button nodes and readable card geometry. */
+.lyrics-results>.lyrics-ready{display:grid;gap:5px;flex:none;min-width:0}
+.lyrics-results>.lyrics-ready>button{display:flex;flex-direction:column;gap:5px;width:100%;min-height:78px;padding:13px;border:1px solid var(--hairline);background:var(--panel2);overflow-wrap:anywhere}
+.lyrics-results>.lyrics-ready>button b{font-size:13px}
+.lyrics-results>.lyrics-ready>button em{font-style:normal;color:var(--accent);font-size:10px;font-weight:700}
+.lyrics-results>details{flex:none;min-width:0}
+.lyrics-packs>label{display:grid;gap:5px;margin:10px 0}
+.lyrics-packs input:not([type=checkbox]),.lyrics-packs textarea{width:100%;max-width:100%;box-sizing:border-box}
+.lyrics-packs>.lyrics-pack-confirm{display:flex;align-items:flex-start;gap:8px}
+.lyrics-pack-confirm input[type=checkbox]{width:auto;flex:none;margin-top:3px}

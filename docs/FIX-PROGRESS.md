@@ -461,3 +461,20 @@ Published implementation 7c421f5 and label clarification 5a3e1fa. Final deployme
 - [ ] Develop the community as an optional online area with deliberate sharing, resource attribution and review/removal controls; keep presentation usable offline and private libraries private.
 
 This pass changes research/progress documentation only. The browser remains on verified v129 and the Windows preview remains v127. No new catalogue or community feature has been deployed. Pre-existing `data/hymns-basic.json` remains untouched.
+
+
+## 10 November 2026 — Free-source improvements and private song packs (v130)
+
+- [x] Search sources independently through a fixed provider allowlist. Render successful results immediately instead of waiting for the slowest source. Preserve button identity and selected-song indices as results arrive; cancellation and mode changes invalidate stale work.
+- [x] Add Worship-first as the default online scope. Known worship artist/title hints rank each batch, without promising classification or hiding wider matches. Christian sources only remains restricted to Hymnary/hymnal.net; no silent general-source fallback.
+- [x] Increase individual JSON response time allowance from 4.5 to 8 seconds, identify browser LRCLIB requests, and honour longer server Retry-After values by avoiding an early retry. Proxy requests remain bounded by the 10-second worker deadline.
+- [x] Reuse recent successful searches in bounded browser memory (five searches, 300 KB character budget, two-minute lifetime). Remember up to 60 successful source links with a 90-day window; no lyric text in that metadata index. Base uses session storage and clears it on restart/end; Local/Sync use device storage. Stable-ID retrieval checks title and artist before use.
+- [x] Add optional song-pack import/export inside the existing import section. Require contributor name and permission statement, show a review confirmation, retain credits, skip exact duplicate content, reject oversized/invalid packs, and discard unrelated fields. Base imports are temporary; Local/Sync imports join the saved library. Imports do not touch the current projection; exports contain only the current song and no account/media data. Nothing is published publicly.
+- [x] Update landing library copy to describe these features without promising additional catalogue access. No dependency, audio feature or startup network request added.
+- [x] Prepare three specific catalogue enquiry emails in `docs/LYRICS-PARTNERSHIP-REQUESTS.md`. Sender confirmation is pending because the connected Gmail differs from KOGG's public address. No external messages sent and no provider approval assumed.
+- [x] 335/335 full regression tests passed. After final card/checkbox styling, source/pack/offline checks passed 46/46 and all 85 asset hashes verified. Evidence: `work/audit-v130-tests.txt`, `work/v130-release-checks.txt`.
+- [x] Real local API route check: LRCLIB returned 14 lyric-bearing records and lyrics.ovh returned 9 unchecked titles for You Are Great / Steve Crown; an unapproved provider was rejected with HTTP 400. Only metadata retained in `work/v130-api-checks.json`.
+- [ ] Fresh visual verification: in-app browser creation and existing-tab attachment both timed out. Do not claim phone/tablet visual QA for this pass. Existing responsive layout rules remain; result cards now have explicit container styles and pack fields are width-bounded.
+- [ ] Publish and verify committed browser assets. Windows preview remains v127; this pass does not replace its installer.
+
+Outstanding external work: provider permission responses; optional LRCLIB registration; Brave account/key and spending setup if chosen; new reviewed content packs; public community implementation. These are not completed by adding private pack import/export.

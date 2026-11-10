@@ -10,6 +10,12 @@ export async function onRequestGet({request}){
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),10000),options={signal:controller.signal};
  try{
   const action=incoming.searchParams.get('action')||'search';
+  if(action==='source-search'){
+   const provider=incoming.searchParams.get('provider');
+   if(!['lrclib','ovh','hymnary','hymnal'].includes(provider))return json({error:'Unsupported lyrics provider'},400);
+   try{return json({items:await sources.searchProvider(incoming.searchParams.get('q')||'',provider,{...options,fetcher:fetch}),available:true});}
+   catch(error){return json({error:error.name==='AbortError'?'Source timed out':error.message,code:'SOURCE_UNAVAILABLE'},400);}
+  }
   if(action==='christian-search'){
    return json(await sources.christianSearch(incoming.searchParams.get('q')||'',{...options,fetcher:fetch}));
   }

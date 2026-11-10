@@ -1,10 +1,21 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('js/app.js','utf8');
+test('progressive results keep their buttons and selection stable while slower results arrive',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));context.navigator.onLine=true;elements.get('songSearch').value='Example';let update,finish;
+ context.window.KOGGLyricsSources.search=async(q,options)=>{update=options.onUpdate;return new Promise(r=>finish=r);};
+ const first={title:'First',author:'Writer',lyrics:'First chosen words',source:{name:'Fixture'}};
+ const running=elements.get('btnSearchLyricsOnline').handlers.click[0]();update({items:[first],completed:1,total:2,available:true});const button=elements.get('lyricsOnlineResults').children[0].children[0];
+ update({items:[first,{title:'Second',author:'Writer',lyrics:'Second words',source:{name:'Fixture'}}],completed:2,total:2,available:true});assert.equal(elements.get('lyricsOnlineResults').children[0].children[0],button);
+ await elements.get('lyricsOnlineResults').handlers.click[0]({target:{closest:()=>button}});assert.equal(JSON.parse(storage.get('cp_live')).slides[0].text,'First chosen words');finish({items:[],completed:2,total:2,available:true});await running;assert.equal(JSON.parse(storage.get('cp_live')).slides[0].text,'First chosen words');
+});
+test('song packs import into Base session or saved Local library without changing projection',async()=>{
+ for(const mode of ['base','local']){const {context,elements,storage,session}=boot();await new Promise(r=>setImmediate(r));vm.runInContext(`setWorkMode('${mode}')`,context);const before=storage.get('cp_live');const pack={format:'kogg-song-pack',version:1,name:'Church pack',contributor:'Writer',permission:'Original words may be shared.',permissionConfirmed:true,songs:[{title:'Pack song',lyrics:'Fixture pack words'}]};elements.get('lyricsPackFile').files=[{size:300,text:async()=>JSON.stringify(pack)}];await elements.get('lyricsPackFile').handlers.change[0]();const saved=JSON.parse(mode==='base'?session.get('cp_lyrics_session'):storage.get('cp_songs'));assert.ok((mode==='base'?saved.songs:saved).some(s=>s.title==='Pack song'));assert.equal(storage.get('cp_live'),before);if(mode==='base')assert.ok(!JSON.parse(storage.get('cp_songs')||'[]').some(s=>s.title==='Pack song'));}
+});
 class Element {
  constructor(id=''){this.id=id;this.handlers={};this.style={};this.dataset={};this.options=[];this.children=[];this.hidden=false;this.textContent='';this._value='';this.parentNode={insertBefore(){}};this.classList={toggle(){},add(){},remove(){},contains(){return false;}};}
  addEventListener(t,fn){(this.handlers[t] ||= []).push(fn);} removeEventListener(){} dispatchEvent(e){for(const fn of this.handlers[e.type]||[])fn(e);} click(){this.dispatchEvent({type:'click',target:this,stopPropagation(){}});} focus(){} scrollIntoView(){} setAttribute(){} getBoundingClientRect(){return {left:0,top:0,width:500,height:300,bottom:300};} querySelector(){return new Element();} querySelectorAll(){return [];} appendChild(v){this.children.push(v);return v;} replaceChildren(...values){this.children=values;this._html="";this.textContent="";}
  set innerHTML(value){this._html=value;const opts=[...value.matchAll(/<option(?:\s+value="([^"]*)")?[^>]*>(.*?)<\/option>/g)];if(opts.length){this.options=opts.map(m=>({value:m[1]??m[2],text:m[2]}));this._value=this.options[0].value;}}
- get innerHTML(){return this._html||'';} set value(v){this._value=String(v);} get value(){return this._value;}
+ get innerHTML(){return (this._html||'')+this.children.map(child=>child.innerHTML||child.textContent||'').join('');} set value(v){this._value=String(v);} get value(){return this._value;}
 }
 function boot({recognition,session=new Map(),saved=new Map()}={}){
  const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],new Element(m[1])]));

@@ -25,4 +25,11 @@ test('the app shell answers from cache online and offline — never network-firs
 });
 test('upgrade replaces changed shell and corrected data while carrying unchanged legacy Bible',async()=>{const w=worker(),old=await w.caches.open('kogg-presenter-v97');await old.put('https://example.test/app/js/app.js',new Response('OLD APP'));await old.put('https://example.test/app/data/kjv.json',new Response('OLD CORRUPTION'));await old.put('https://example.test/app/data/bsb.json',new Response(fs.readFileSync('data/bsb.json','utf8')));await old.put('https://example.test/app/data/asv.json',new Response('OLD OPTIONAL'));await w.install();assert.ok(w.calls.some(u=>u.endsWith('/js/app.js')));assert.ok(w.calls.some(u=>u.endsWith('/data/kjv.json')));assert.ok(w.calls.some(u=>u.endsWith('/data/asv.json')));assert.ok(!w.calls.some(u=>u.endsWith('/data/bsb.json')));assert.notEqual(await(await w.fetch('js/app.js')).text(),'OLD APP');w.setOffline();assert.notEqual(await(await w.fetch('data/kjv.json')).text(),'OLD CORRUPTION');});
 test('asset manifest describes current deployed file content',()=>{const w=worker(),crypto=require('node:crypto');for(const [asset,hash] of Object.entries(w.hashes)){const path=asset==='./'?'index.html':asset;assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path)).digest('hex'),hash,asset);}assert.ok(Object.keys(w.hashes).length>40);});
-test('cached text has canonical line endings so Git release archives preserve its integrity',()=>{const w=worker();for(const asset of Object.keys(w.hashes)){const file=asset==='./'?'index.html':asset;if(/\.(?:html|js|css|json|txt|svg|webmanifest)$/.test(file))assert.ok(!fs.readFileSync(file).includes(Buffer.from('\r\n'))),'Noncanonical cache asset: '+file);}});
+test('cached text has canonical line endings so Git release archives preserve its integrity',()=>{
+ const w=worker();
+ for(const asset of Object.keys(w.hashes)){
+  const file=asset==='./'?'index.html':asset;
+  if(/\.(?:html|js|css|json|txt|svg|webmanifest)$/.test(file))
+   assert.ok(!fs.readFileSync(file).includes(Buffer.from('\r\n')), 'Noncanonical cache asset: '+file);
+ }
+});

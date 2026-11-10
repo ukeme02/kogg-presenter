@@ -68,4 +68,4 @@ An anonymous-access spot check on 10 November returned lyric-bearing LRCLIB reco
 - [ ] Confirm partner access in writing before activating additional catalogues.
 - [ ] Design the community separately: reusable service styles, original/permitted song packs and church event listings, with review/report/removal controls. Public profiles or uploads must be deliberate; saved church libraries stay private.
 
-Checked implementation items are part of the v130 browser release. Unchecked catalogue/community items remain pending. See FIX-PROGRESS.md for deployment verification. No provider agreement or account has been created.
+Checked implementation items are part of the v130–v132 browser updates. Unchecked catalogue/community items remain pending. See FIX-PROGRESS.md for deployment verification. No provider agreement or account has been created.

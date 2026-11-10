@@ -1697,11 +1697,12 @@ async function searchLyricsOnline(){
  const update=result=>{
   if(token!==lyricsSearchToken||busyRun!==lyricsBusyRun||controller.signal.aborted)return;
   for(const song of result.items||[]){const key=LY.key(song);let row=rows.get(key);
-   if(row){if(!lyricsOnline[row.index].pending||song.pending)continue;lyricsOnline[row.index]=song;}
+   if(row){if(!lyricsOnline[row.index].pending||song.pending)continue;lyricsOnline[row.index]=song;if(!more.open)readyBox.appendChild(row.button);}
    else {const button=document.createElement('button'),index=lyricsOnline.length;button.type='button';button.dataset.importLyric=String(index);lyricsOnline.push(song);row={button,index};rows.set(key,row);(song.pending?moreBox:readyBox).appendChild(button);}
    row.button.innerHTML=`<b>${esc(song.title)}</b><span>${esc(song.author||'')} • ${esc(song.source?.name||'Source')}${song.pending?' • words not checked':' • lyrics ready'}</span><em>${song.pending?'Check for words →':'Display first slide →'}</em>`;
   }
   const ready=lyricsOnline.filter(s=>!s.pending).length,pending=lyricsOnline.length-ready;
+  summary.textContent=pending?'More matches · check for words':'More matches · lyrics ready';
   more.hidden=moreBox.children.length===0;
   if(result.completed===result.total&&!ready&&pending)more.open=true;
   const searching=result.completed<result.total;

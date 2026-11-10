@@ -33,6 +33,7 @@ for n in names:
 optional = re.search(r'const OPTIONAL_ASSETS = \[([\s\S]*?)\];', (ROOT/'sw.js').read_text()).group(1)
 extra = [s.removeprefix('./') for s in re.findall(r"'([^']+)'", optional)]
 (stage/'files.txt').write_text('\n'.join(sorted(set(names+extra)))+'\n', encoding='utf-8')
+subprocess.run(['node',str(ROOT/'scripts/verify-release.cjs'),str(stage),'--core'],cwd=ROOT,check=True)
 # Native ICO wraps our existing PNG unchanged; no redrawing of the official logo.
 png = (ROOT/'icons/icon-192.png').read_bytes()
 ico = struct.pack('<HHH',0,1,1)+struct.pack('<BBBBHHII',192,192,0,0,1,32,len(png),22)+png

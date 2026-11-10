@@ -390,8 +390,10 @@ Remaining practical limits: Sync needs internet to upload/prepare each device, f
 - [x] Add landing Downloads navigation and three clearly labelled cards: browser app, OBS plugin, self-hosting web package.
 - [x] Update repository README and keep release notes in docs/releases.
 - [x] Verify release asset hashes/sizes, six public download links, desktop/light/dark and 390px/820px responsive layouts.
-- [ ] Publish the landing update and verify production.
+- [x] Publish the landing update and verify production.
 
 Release tags point to their actual implementations: v125 = e7159b375035701491495a0a96cca21e0eafbb90; kogg-connect-v0.1.0-preview = 53a8089177c620a788b7a15e61c93de4f9610ca6. OBS remains a prerelease; v125 is latest. GitHub returned matching SHA-256 digests and byte counts for every uploaded asset. The 19,000,140-byte web ZIP has setup notes, excludes the untracked hymns-basic file, and is explicitly not a native installer. Existing OBS binary hashes match their manifest.
 
 Validation: 30 landing/offline checks passed; phone cards use one column with 52px primary controls and no internal horizontal overflow; tablet uses two columns without document overflow. Blue theme, official fonts and existing motion remain. Native mobile apps are still marked planned; the unsigned OBS preview is clearly labelled.
+
+Published landing commit 2e8e602: https://60cbedfb.kogg-presenter.pages.dev/. Canonical landing HTML, CSS, JavaScript and service worker matched the deployment archive byte-for-byte. Fresh release browser showed all three cards and their live GitHub destinations; screenshot work/downloads-v126-live.png. Public release downloads all returned HTTP 200. GitHub latest endpoint confirms v125 is published and stable; OBS 0.1.0 remains a prerelease. Links: https://github.com/ukeme02/kogg-presenter/releases/tag/v125 and https://github.com/ukeme02/kogg-presenter/releases/tag/kogg-connect-v0.1.0-preview. Temporary DNS fallbacks used publicly resolved addresses with normal TLS hostname verification and no system configuration change. Untracked data/hymns-basic.json remains untouched and unpublished.

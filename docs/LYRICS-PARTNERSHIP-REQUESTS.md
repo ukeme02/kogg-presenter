@@ -1,6 +1,6 @@
 # KOGG lyric access requests — ready for review, not sent
 
-Prepared 10 November 2026. Intended reply contact: koggpresenter@gmail.com. The connected Gmail account is different; confirm the sender before sending externally. No agreement, fee or legal status is asserted by these drafts.
+Prepared 10 November 2026. The project owner chose to send these from KOGG directly. Reply contact: koggpresenter@gmail.com. No messages have been sent by the assistant. No agreement, fee or legal status is asserted by these drafts.
 
 ## Sovereign Grace Music
 

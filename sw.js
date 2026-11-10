@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v130';
+const CACHE = 'kogg-presenter-v131';
 const ASSETS = [
   './wifi-remote/index.html', './wifi-remote/sw.js', './css/remote.css', './css/wifi-remote.css', './js/wifi-transport.js', './js/wifi-pairing.js', './js/wifi-remote.js', './js/wifi-remote-operator.js', './js/vendor/qrcode.js', './js/vendor/jsqr.js',
   './js/media-sync.js', './js/service-media.js', './js/media.js', './js/media-deck.js', './js/media-display.js',
@@ -29,13 +29,13 @@ const ASSET_HASHES = {
   "./js/media.js": "e6ee2ab9c19eb553a91bc736c42d095554d67b32550f5638f94b2caae758d0cb",
   "./js/media-deck.js": "f66a3bb4ac806f1a2f44fe3c475c20032fe63914a6bfe16a9587ce75f1ab947d",
   "./js/media-display.js": "967ca42aa916c9f03b5672975f2e051377dd2da3b8e2086b5ba4162be93d9ca0",
-  "./": "d615b210aae177023c7fe4d47ad9b451f5a477f56f8f0109b910ba4f581d29f8",
-  "./index.html": "d615b210aae177023c7fe4d47ad9b451f5a477f56f8f0109b910ba4f581d29f8",
+  "./": "9c4f559c66267ff012b08571a7d4e1bcff2e8cbac35e72d090aac5b0b6819171",
+  "./index.html": "9c4f559c66267ff012b08571a7d4e1bcff2e8cbac35e72d090aac5b0b6819171",
   "./display.html": "d670ba104fe9d491126a947c701c1e6d774253f4e472b0f6ef3d7c0096702f48",
   "./landing.html": "2fcd5363dfdc201fce8050fa895eb9063f4a08f9d002b32025cc8fd7dd0f4514",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
-  "./css/app.css": "7958404887634ac31abd538e8df0a4c60000a47662336b65fa04217e7f1ae3e1",
+  "./css/app.css": "37282c75db3c050503aed2b438cadcc8b3f52e6153794e7dcaa86ab031fc844e",
   "./css/display.css": "f7fde52d8a7a9e18cbb75099e4270c4978a95786d8561018a5a97b69bc942c81",
   "./css/landing.css": "050661cb16be3fb6671b0b164223999bb2c492ca535a981d630a86c1fdcf819a",
   "./js/landing.js": "94363bf462c6b6609865e987b06893dadd40d59213fc9cec79846772a206bb29",

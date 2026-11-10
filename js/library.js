@@ -48,6 +48,7 @@
       if (settings.paneHeights !== undefined && (!settings.paneHeights || typeof settings.paneHeights !== 'object' || Array.isArray(settings.paneHeights) || !Object.values(settings.paneHeights).every(n => Number.isFinite(n) && n > 0))) fail('Invalid pane heights');
       if (d.settings.customVersions !== undefined && (!Array.isArray(d.settings.customVersions) || !d.settings.customVersions.every(v => v && text(v.name) && text(v.assetId)))) fail('Invalid custom versions');
     }
+    if(d.mediaAssets!==undefined){if(!d.mediaAssets||typeof d.mediaAssets!=='object'||Array.isArray(d.mediaAssets)||Object.keys(d.mediaAssets).length>2000)fail('Invalid cloud media');for(const [id,m] of Object.entries(d.mediaAssets))if(!/^media-[a-z0-9-]+$/i.test(id)||!m||typeof m.sha256!=='string'||!/^[0-9a-f]{64}$/.test(m.sha256)||typeof m.path!=='string'||!new RegExp('^[0-9a-f-]{36}/'+m.sha256+'$').test(m.path)||!Number.isInteger(m.size)||m.size<1||m.size>52428800||!['image/png','image/jpeg','image/webp','image/gif','video/mp4','video/webm','video/ogg'].includes(m.type))fail('Invalid cloud media file');}
     if (d.assets !== undefined && (!d.assets || typeof d.assets !== 'object' || Array.isArray(d.assets) || !Object.values(d.assets).every(text))) fail('Invalid backup assets');
     if (!['songs','themes','service','plans'].some(k => d[k] !== undefined)) fail('No library records found');
     return d;
@@ -81,7 +82,9 @@
       const r = new Map((remote[key] || []).map(v => [v.id,v]));
       return [...new Set([...b.keys(),...l.keys(),...r.keys()])].map(id => choose(b.get(id),l.get(id),r.get(id),key + '/' + id)).filter(Boolean);
     }
-    const plans = {}, settings = {};
+    const plans = {}, settings = {}, mediaAssets={};
+    for(const id of new Set([...Object.keys(base.mediaAssets||{}),...Object.keys(local.mediaAssets||{}),...Object.keys(remote.mediaAssets||{})])){const value=choose(base.mediaAssets?.[id],local.mediaAssets?.[id],remote.mediaAssets?.[id],'media/'+id);if(value!==undefined)mediaAssets[id]=value;}
+
     for (const key of new Set([...Object.keys(base.plans || {}),...Object.keys(local.plans || {}),...Object.keys(remote.plans || {})])) {
       const v = choose(base.plans?.[key],local.plans?.[key],remote.plans?.[key],'plan/' + key);
       if (v !== undefined) plans[key] = v;
@@ -91,7 +94,7 @@
       if (v !== undefined) settings[key] = v;
     }
     const service=choose(base.service || [],local.service || [],remote.service === undefined ? (base.service || []) : remote.service,'current service');
-    return {songs:byId('songs'),themes:byId('themes'),service,plans,settings,assets:{...(remote.assets || {}),...(local.assets || {})}};
+    return {songs:byId('songs'),themes:byId('themes'),service,plans,settings,mediaAssets,assets:{...(remote.assets || {}),...(local.assets || {})}};
   }
   const api = { validate, assetIds, mergeRecords, portableSettings, merge };
   if (typeof module !== 'undefined') module.exports = api;

@@ -22,6 +22,10 @@
       .catch(err => { ready = null; throw err; });
     return ready;
   }
+  let mediaReady=null;
+  async function mediaClient(client){if(!window.KOGGMediaSync){if(!mediaReady)mediaReady=loadScript('js/media-sync.js').catch(error=>{mediaReady=null;throw error;});await mediaReady;}return window.KOGGMediaSync.create({client,baseURL:cfg.url,assets:window.KOGGAssets,store:localStorage});}
+  function hasMedia(data){return [...(data.service||[]),...Object.values(data.plans||{}).flat()].some(item=>item.slides?.some(s=>s.media));}
+  async function prepareMedia(data,options={}){checkpoint(options);const client=await getClient(),user=await currentUser();checkpoint(options);if(!user)throw Error('Sign in to prepare cloud media.');verifyOwner(user.id);if(!hasMedia({service:data.service}))return {ready:0,total:0};return (await mediaClient(client)).prepare(window.KOGGLibrary.validate(data),user,options);}
   async function currentUser() {
     const client = await getClient();
     if(client.auth.getSession){const session = await client.auth.getSession();if(session.error)throw session.error;if(!session.data?.session)return null;}
@@ -46,13 +50,19 @@
   }
   function baseKey(id) { return 'cp_sync_base_' + id; }
   function base(id) { return read(baseKey(id),null); }
+  function mergeBase(id,local,remote) {
+    const saved=base(id);if(saved)return portable(saved.data);
+    // A newly opened device has factory themes, not independent user edits.
+    // Use those seeds only for first contact with an existing cloud theme library.
+    return remote?.themes ? {themes:(window.KOGG_DEFAULT_THEMES||[]).filter(t=>local.themes?.some(x=>x.id===t.id))} : {};
+  }
   function remember(id,row) {
     const data = {...(row?.data || {})}; delete data.assets;
     localStorage.setItem(baseKey(id),JSON.stringify({data,revision:row?.updated_at || null}));
   }
   // The merge base advances only after the operator accepts this exact result.
   const pendingResults = new WeakMap();
-  function checkpoint(options={}) { if(options.isCurrent && !options.isCurrent()) { const error=new Error('Sync operation cancelled');error.name='AbortError';throw error; } }
+  function checkpoint(options={}) { if(options.signal?.aborted || options.isCurrent && !options.isCurrent()) { const error=new Error('Sync operation cancelled');error.name='AbortError';throw error; } }
   function prepared(data,id,row,options) { pendingResults.set(data,{id,row,options});return data; }
   function accept(data) { const pending=pendingResults.get(data);if(!pending)return false;checkpoint(pending.options);if(localStorage.getItem('cp_libraryOwner')!==pending.id)return false;remember(pending.id,pending.row);pendingResults.delete(data);return true; }
   // True when a realtime update echoes this device's own last write.
@@ -77,7 +87,7 @@
     libraryChannel = null;
   }
   async function libraryPayload() {
-    const payload = {songs:read('cp_songs',[]),service:read('cp_service',[]),themes:read('cp_themes',[]),plans:read('cp_plans',{}),settings:window.KOGGLibrary.portableSettings(read('cp_settings',{})),assets:{}};
+    const payload = {songs:read('cp_songs',[]),service:read('cp_service',[]),themes:read('cp_themes',[]),plans:read('cp_plans',{}),settings:window.KOGGLibrary.portableSettings(read('cp_settings',{})),mediaAssets:read('cp_media_cloud',{}),assets:{}};
     for (const id of window.KOGGLibrary.assetIds(payload,false)) {
       const value = await window.KOGGAssets?.get(id);
       if (!value) throw new Error('Missing library image: ' + id + '. Re-add the image before syncing.');
@@ -102,7 +112,8 @@
     verifyOwner(user.id);
     const row = await readRow(client,user);checkpoint(options);
     const local = await libraryPayload();checkpoint(options);
-    const merged = window.KOGGLibrary.merge(portable(base(user.id)?.data),local,portable(row?.data));
+    const remote=portable(row?.data);
+    const merged = window.KOGGLibrary.merge(mergeBase(user.id,local,remote),local,remote);
     return prepared(merged,user.id,row,options);
   }
   async function push(options={}) {
@@ -114,7 +125,9 @@
     verifyOwner(user.id);
       const row = await readRow(client,user);checkpoint(options);
       const local = await libraryPayload();checkpoint(options);
-      const merged = window.KOGGLibrary.merge(portable(base(user.id)?.data),local,portable(row?.data));
+      const remote=portable(row?.data);
+      let merged = window.KOGGLibrary.merge(mergeBase(user.id,local,remote),local,remote);
+      if(hasMedia(merged)){merged=await (await mediaClient(client)).publish(merged,user,options);checkpoint(options);}
       const stamp = new Date().toISOString();
       let response;
       if (row) response = await client.from('libraries').update({data:merged,updated_at:stamp}).eq('user_id',user.id).eq('updated_at',row.updated_at).select('updated_at').maybeSingle();
@@ -126,5 +139,5 @@
       return prepared(merged,user.id,{data:merged,updated_at:response.data.updated_at},options);
     } finally { writing = false; }
   }
-  window.KOGGSync = {configured,getClient,currentUser,signUp,signIn,signOut,resetPassword,updatePassword,push,pull,libraryPayload,subscribe,unsubscribe,isOwnWrite,accept};
+  window.KOGGSync = {configured,getClient,currentUser,signUp,signIn,signOut,resetPassword,updatePassword,push,pull,prepareMedia,libraryPayload,subscribe,unsubscribe,isOwnWrite,accept};
 })();

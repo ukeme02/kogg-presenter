@@ -68,6 +68,7 @@ const DEFAULT_THEMES = [
   { id: 't3', name: 'Deep Blue',   bg: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)', bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, fontScale:1, margin:4, lineHeight:1.18, align: 'center', weight: '700' },
   { id: 't4', name: 'Emerald',     bg: 'linear-gradient(135deg,#134e5e,#71b280)',          bgImage: '', textColor: '#ffffff', font: "'Nunito Sans Expanded', Georgia, serif", fontSize: 15, fillScreen:true, fontScale:1, margin:4, lineHeight:1.18, align: 'center', weight: '700' },
 ];
+window.KOGG_DEFAULT_THEMES=JSON.parse(JSON.stringify(DEFAULT_THEMES));
 if (!themes || !themes.length) { themes = DEFAULT_THEMES; LS.set(K.themes, themes); }
 // migrate older saved themes to the new default scripture font (only untouched defaults)
 const DEFAULT_FONT = "'Nunito Sans Expanded', Georgia, serif";
@@ -1799,6 +1800,7 @@ function renderService() {
       <button data-act="del" class="danger">✕</button>
     </li>`).join('') || '<li><span class="item-meta">Service is empty — add Scripture, lyrics, slides or media.</span></li>';
   window.KOGGServiceMedia?.checkFiles();
+  window.KOGGServiceMedia?.queuePrepare();
   window.KOGGServiceMedia?.renderLive();
 }
 $('serviceList').addEventListener('click', e => {
@@ -2190,7 +2192,7 @@ function scheduleSync() {
   refreshSyncBadge();
 }
 let syncInFlight = false, cloudGeneration=0, authRequestGeneration=0, activeCloudTask=null;
-function invalidateCloudWork(){cloudGeneration++;authRequestGeneration++;activeCloudTask=null;syncInFlight=false;clearTimeout(syncTimer);stopLibraryRealtime();}
+function invalidateCloudWork(){activeCloudTask?.controller?.abort();window.KOGGServiceMedia?.cancelTransfer();cloudGeneration++;authRequestGeneration++;activeCloudTask=null;syncInFlight=false;clearTimeout(syncTimer);stopLibraryRealtime();}
 function cloudTicket(){const generation=cloudGeneration,id=window._koggUser?.id;return ()=>cloudEnabled()&&generation===cloudGeneration&&window._koggUser?.id===id;}
 let syncError = '';
 async function autoSync(){if(!cloudEnabled()||!window._koggUser||!navigator.onLine||!syncDirty()||syncInFlight){refreshSyncBadge();return;}return runCloud('push',true);}
@@ -2314,7 +2316,7 @@ async function applyCloudLibrary(raw, revision, isCurrent=()=>true) {
   const settings = Object.assign({}, LS.get(K.settings, {}), window.KOGGLibrary.portableSettings(data.settings || {}));
   const temporaryQueue=service.filter(item=>item.sessionOnly);
   const writes = {[K.songs]:data.songs || songs, [K.service]:(data.service || service).filter(item=>!item.sessionOnly), [K.themes]:data.themes?.length ? data.themes : themes,
-    [K.plans]:data.plans || LS.get(K.plans, {}), [K.settings]:settings};
+    [K.plans]:data.plans || LS.get(K.plans, {}), cp_media_cloud:data.mediaAssets||{}, [K.settings]:settings};
   const before = Object.fromEntries(Object.keys(writes).map(k => [k, localStorage.getItem(k)]));
   try { for (const [key,value] of Object.entries(writes)) localStorage.setItem(key, JSON.stringify(value)); }
   catch (err) {
@@ -2330,14 +2332,14 @@ async function applyCloudLibrary(raw, revision, isCurrent=()=>true) {
 }
 async function runCloud(direction,silent=false){
  if(!cloudEnabled()||!window._koggUser||syncInFlight||!navigator.onLine)return false;
- const ticket=cloudTicket(),job={};activeCloudTask=job;syncInFlight=true;
+ const ticket=cloudTicket(),job={controller:new AbortController()};activeCloudTask=job;syncInFlight=true;
  const current=()=>activeCloudTask===job&&ticket();const revision=LS.get(K.settings,{}).libraryRevision||0;
- try{const data=await window.KOGGSync[direction]({isCurrent:current});if(!current())return false;
+ try{const data=await window.KOGGSync[direction]({isCurrent:current,signal:job.controller.signal,onProgress:event=>{if(current())window.KOGGServiceMedia?.progress(event);}});if(!current())return false;
   if(!await applyCloudLibrary(data,revision,current)){if(current()&&syncDirty())scheduleSync();return false;}
   if(!current())return false;window.KOGGSync.accept?.(data);
-  if(direction==='push')clearDirty(revision);else if(syncDirty())scheduleSync();syncError='';
+  if(direction==='push')clearDirty(revision);else if(syncDirty())scheduleSync();syncError='';window.KOGGServiceMedia?.prepare();
   if(!silent)flash($(direction==='push'?'btnPushCloud':'btnPullCloud'),direction==='push'?'Pushed ✓':'Pulled ✓');return true;
- }catch(error){if(!current()||error.name==='AbortError')return false;syncError=error.message;if(!silent)alert((direction==='push'?'Push':'Pull')+' failed: '+error.message);return false;}
+ }catch(error){if(!current()||error.name==='AbortError')return false;syncError=error.message;if($('serviceCloudStatus'))$('serviceCloudStatus').textContent='Sync needs attention: '+error.message;if(!silent)alert((direction==='push'?'Push':'Pull')+' failed: '+error.message);return false;}
  finally{if(activeCloudTask===job){activeCloudTask=null;syncInFlight=false;refreshSyncBadge();}}
 }
 async function pushCloud(){return runCloud('push');}
@@ -3214,7 +3216,7 @@ $('extraBiblePanel').addEventListener('click',async event=>{
 $('btnExport').addEventListener('click', async () => {
   try {
     const data = { version: 2, exported: new Date().toISOString(), songs, themes, service:service.filter(s=>!s.sessionOnly),
-      plans: LS.get(K.plans, {}), settings: LS.get(K.settings, {}), assets: {} };
+      plans: LS.get(K.plans, {}), mediaAssets:LS.get('cp_media_cloud',{}), settings: LS.get(K.settings, {}), assets: {} };
     delete data.settings.dirtyLibrary;
     delete data.settings.libraryRevision;
     for (const id of window.KOGGLibrary.assetIds(data)) {
@@ -3248,6 +3250,7 @@ $('importFile').addEventListener('change', async () => {
       [K.themes]: d.themes?.length ? lib.mergeRecords(themes, d.themes) : themes,
       [K.service]: d.service || service,
       [K.plans]: Object.assign({}, LS.get(K.plans, {}), d.plans || {}),
+      cp_media_cloud:Object.assign({},LS.get('cp_media_cloud',{}),d.mediaAssets||{}),
       [K.settings]: Object.assign({}, LS.get(K.settings, {}), d.settings || {}, { dirtyLibrary: true }),
     };
     const before = Object.fromEntries(Object.keys(restored).map(k => [k, localStorage.getItem(k)]));

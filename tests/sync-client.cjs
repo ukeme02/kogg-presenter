@@ -13,7 +13,7 @@ function setup({remote=null,local=[],base=null,owner=null,loseRace=false}={}) {
     const q={select(){return q;},eq(k,v){filters[k]=v;return q;},update(value){action='update';data=value;return q;},insert(value){action='insert';data=value;return q;},async maybeSingle(){if(action==='read')return {data:state.remote};if(loseRace)return {data:null};assert.equal(filters.updated_at,state.remote.updated_at);state.writes++;state.last=data;state.remote={data:data.data,updated_at:data.updated_at};return {data:{updated_at:data.updated_at}};},async single(){assert.equal(action,'insert');assert.equal(state.remote,null);state.writes++;state.last=data;state.remote={data:data.data,updated_at:data.updated_at};return {data:{updated_at:data.updated_at}};}};return q;
   }};
   const c=vm.createContext({window:{KOGG_SUPABASE:{url:'https://test.invalid',anonKey:'public-test'},KOGGLibrary:lib,supabase:{createClient:()=>client}},location:{href:'http://127.0.0.1/index.html'},URL,setTimeout:()=>1,clearTimeout(){},document:{createElement:()=>({remove(){}}),head:{appendChild(script){state.scriptCount++;queueMicrotask(()=>state.failSDK?script.onerror():script.onload());}}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)}});
-  vm.runInContext(source,c);return {api:c.window.KOGGSync,state,storage};
+  vm.runInContext(source,c);return {api:c.window.KOGGSync,state,storage,context:c};
 }
 test('first empty-cloud sync creates a library, and a later pull works',async()=>{const {api,state}=setup({local:[song('Local')]});const result=await api.push();assert.equal(state.writes,1);assert.equal(result.songs[0].title,'Local');assert.equal((await api.pull()).songs[0].title,'Local');});
 test('actual client merges a remote edit over an unchanged local item',async()=>{const {api}=setup({local:[song('Old')],base:payload([song('Old')]),remote:{data:payload([song('Remote')]),updated_at:'new'}});assert.equal((await api.pull()).songs[0].title,'Remote');});
@@ -40,3 +40,28 @@ test('realtime subscription registers, delivers updates, and own-write stamps de
 test('unaccepted pull never advances baseline or overwrites an independent remote edit',async()=>{const oldA=song('Old A'),newA=song('Remote A'),oldB={id:'b',title:'Old B',lyrics:'b'},newB={...oldB,title:'Local B'};const {api,state,storage}=setup({local:[oldA,newB],base:payload([oldA,oldB]),remote:{data:payload([newA,oldB]),updated_at:'remote'}});const merged=await api.pull();assert.equal(merged.songs[0].title,'Remote A');assert.equal(JSON.parse(storage.get('cp_sync_base_user')).revision,'old');const retried=await api.push();assert.equal(retried.songs.find(s=>s.id==='a').title,'Remote A');assert.equal(retried.songs.find(s=>s.id==='b').title,'Local B');assert.equal(api.accept(retried),true);assert.equal(JSON.parse(storage.get('cp_sync_base_user')).data.songs[0].title,'Remote A');assert.equal(api.accept(retried),false);});
 test('cancelled sync cannot write cloud data or accept a stale result',async()=>{const {api,state,storage}=setup({local:[song('Local')]});let active=true;const pending=api.push({isCurrent:()=>active});active=false;await assert.rejects(pending,/cancelled/);assert.equal(state.writes,0);active=true;const data=await api.push({isCurrent:()=>active});active=false;assert.throws(()=>api.accept(data),/cancelled/);assert.equal(storage.has('cp_sync_base_user'),false);});
 test('unsubscribe also cancels a subscription still waiting for authentication',async()=>{const {api,state}=setup();const pending=api.subscribe(()=>{});api.unsubscribe();await pending;assert.notEqual(state.subscribed,true);});
+
+test('the library is committed only after scheduled media uploads succeed',async()=>{
+ const {api,state,storage,context}=setup();storage.set('cp_service',JSON.stringify([{id:'m',type:'media',title:'Video',slides:[{text:'',label:'Video',media:{id:'media-a',kind:'video',fit:'contain',dim:0,muted:true,loop:false}}]}]));
+ let fail=true,uploads=0;context.window.KOGGMediaSync={create:()=>({publish:async data=>{uploads++;if(fail)throw Error('storage offline');return {...data,mediaAssets:{}};}})};
+ await assert.rejects(api.push(),/storage offline/);assert.equal(state.writes,0);assert.equal(storage.has('cp_sync_stamp_user'),false);fail=false;await api.push();assert.equal(state.writes,1);assert.equal(uploads,2);
+});
+test('media preparation is lazy and cannot operate under a different library owner',async()=>{
+ const {api,state,context}=setup();let called=0;context.window.KOGGMediaSync={create:()=>({prepare:async()=>{called++;return {ready:1,total:1};}})};
+ assert.deepEqual(JSON.parse(JSON.stringify(await api.prepareMedia({service:[]}))),{ready:0,total:0});assert.equal(called,0);
+ const wrong=setup({owner:'different'});await assert.rejects(wrong.api.prepareMedia({service:[]}),/different account/);
+});
+
+test('first sign-in replaces untouched factory themes with the saved cloud theme',async()=>{
+ const remote={...payload([]),themes:[{...theme,name:'Church blue',bg:'#123456'}]};
+ const {api,context,state}=setup({remote:{data:remote,updated_at:'saved'}});
+ context.window.KOGG_DEFAULT_THEMES=[theme];
+ const merged=await api.pull();assert.equal(merged.themes[0].name,'Church blue');assert.equal(state.writes,0);
+});
+test('first sign-in still protects local theme edits and seeds themes for an empty cloud',async()=>{
+ const remote={...payload([]),themes:[{...theme,name:'Remote edit'}]};
+ const f=setup({remote:{data:remote,updated_at:'saved'}});f.context.window.KOGG_DEFAULT_THEMES=[theme];
+ f.storage.set('cp_themes',JSON.stringify([{...theme,name:'Local edit'}]));
+ await assert.rejects(f.api.push(),/conflict in themes/);assert.equal(f.state.writes,0);
+ const fresh=setup();fresh.context.window.KOGG_DEFAULT_THEMES=[theme];assert.equal((await fresh.api.push()).themes[0].name,'Black');
+});

@@ -428,4 +428,6 @@ Production v127: https://88d0698e.kogg-presenter.pages.dev/. Canonical index, la
 - [x] Correct the Windows app’s advanced OBS URL: its private host at port 8768 is not the OBS bridge at port 8766.
 - [x] No new libraries, services or startup network requests. Existing QR loading remains on demand.
 - [x] 312/312 automated checks passed. Real anonymous remote generated a QR, survived switching Broadcast/Phone tabs, and was stopped/revoked. No account or user library touched. Document widths fit 1280, 390 and 820 px.
-- [ ] Publish and verify the browser update. Windows preview 0.1.0 remains the previously verified v127 package; this UI pass does not replace its binary.
+- [x] Publish and verify the browser update. Windows preview 0.1.0 remains the previously verified v127 package; this UI pass does not replace its binary.
+
+Published f026ae4 to https://df34c79f.kogg-presenter.pages.dev/. All five changed production assets matched the committed archive byte-for-byte; archive integrity verified 85 hashes. Screenshot: work/stream-v128-simple.png. Progress and current phone instructions committed. No new dependency or binary download added.

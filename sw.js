@@ -1,5 +1,5 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v127';
+const CACHE = 'kogg-presenter-v128';
 const ASSETS = [
   './wifi-remote/index.html', './wifi-remote/sw.js', './css/remote.css', './css/wifi-remote.css', './js/wifi-transport.js', './js/wifi-pairing.js', './js/wifi-remote.js', './js/wifi-remote-operator.js', './js/vendor/qrcode.js', './js/vendor/jsqr.js',
   './js/media-sync.js', './js/service-media.js', './js/media.js', './js/media-deck.js', './js/media-display.js',
@@ -29,13 +29,13 @@ const ASSET_HASHES = {
   "./js/media.js": "e6ee2ab9c19eb553a91bc736c42d095554d67b32550f5638f94b2caae758d0cb",
   "./js/media-deck.js": "f66a3bb4ac806f1a2f44fe3c475c20032fe63914a6bfe16a9587ce75f1ab947d",
   "./js/media-display.js": "967ca42aa916c9f03b5672975f2e051377dd2da3b8e2086b5ba4162be93d9ca0",
-  "./": "4b3beada42aa660ed48c187ff574fd90fa5af48fde6599bee05aa6f37e12dc8d",
-  "./index.html": "4b3beada42aa660ed48c187ff574fd90fa5af48fde6599bee05aa6f37e12dc8d",
+  "./": "5797985e30410c22c3919d0f84580d928251825f5eac41de346fcc467f2eb757",
+  "./index.html": "5797985e30410c22c3919d0f84580d928251825f5eac41de346fcc467f2eb757",
   "./display.html": "d670ba104fe9d491126a947c701c1e6d774253f4e472b0f6ef3d7c0096702f48",
   "./landing.html": "abe36aa7d0349c169a2852199d79012e74d2ead5fa51245bed8c11f6cf7c5599",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
-  "./css/app.css": "431cd74c37439d2286bd8d208b7b5ef464c906058f008debb03eb36d310cf444",
+  "./css/app.css": "09630e6565a39a1309db6f3878a36fea4b7bf47ad0f782b8fb79e0727f4689e8",
   "./css/display.css": "f7fde52d8a7a9e18cbb75099e4270c4978a95786d8561018a5a97b69bc942c81",
   "./css/landing.css": "050661cb16be3fb6671b0b164223999bb2c492ca535a981d630a86c1fdcf819a",
   "./js/landing.js": "94363bf462c6b6609865e987b06893dadd40d59213fc9cec79846772a206bb29",
@@ -58,11 +58,11 @@ const ASSET_HASHES = {
   "./js/slides.js": "218bfe920a1fd4e17b7616bf1752bf3374438f04f3f27fe85254482de20dbdce",
   "./js/slides-deck.js": "fe7effe5577335e0e531d260e0acff27c2a871b63114fb0935d2fbcef698db62",
   "./js/stream.js": "bd17d6bc117706b39eaca9d6f9e5b2c43acd196ca9ad106cc6173de03aa01db8",
-  "./js/stream-deck.js": "163baf4889ec6b29c14fe47cda7336612d80af8f596687a6872b9f25e394a77f",
+  "./js/stream-deck.js": "a61d6507ca86e0569755f5f43d24b41eb3ac9451eed0f2aeda8f76f2bf545950",
   "./js/remote-operator.js": "1861a92a04a2bb92259724cc82056b1affb27771ea25aac1b787c498cc395d68",
   "./js/cloud-transport.js": "ba27c50efd060f604adb61d3467abf80dab6ce0b99fa49fd5f86b8b31cef2350",
   "./js/cloud-remote-session.js": "605cc2afdc44f2692cb00df4963cf83d8c96a3b6d6c8f17ae092e5d23cd0dd47",
-  "./js/cloud-remote-operator.js": "369e921cb2e7307ccfede505e6fcdec1e77ad450806fab942c3e583083e2c756",
+  "./js/cloud-remote-operator.js": "2cb9712de517586c9774d52dae65248d4b8ba1d0fa426fdb8b9cd6135500f6f5",
   "./js/rehearsal.js": "0f977495ef65cca8d006560be6735ea49037a0f212738ea6233f23b1a44c1657",
   "./js/rehearsal-deck.js": "9ded76d2a063babe8e36819058cc57b595ae965df3627b47379b6208111bb2c7",
   "./js/lyrics.js": "19f0c3cab06e856736d2d139f06c45bf90d1d3836a4457e0e4190e3fbeed802a",

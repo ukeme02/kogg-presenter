@@ -10,7 +10,7 @@
  function themeChoices(){const select=$('streamTheme'),value=select.value;select.innerHTML='<option value="">Use room theme</option>'+themes.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.name)+'</option>').join('');select.value=themes.some(t=>t.id===value)?value:'';}
  function connection(){
   const browser=state.method==='browser';$('streamBrowser').hidden=!browser;$('streamPlugin').hidden=state.method!=='plugin';
-  const local=location.hostname==='127.0.0.1'&&location.protocol==='http:';
+  const local=location.hostname==='127.0.0.1'&&location.protocol==='http:'&&location.port!=='8768';
   $('obsUrl').value=M.outputUrl(local?location.href:'http://127.0.0.1:8766/',state.feed);
   const instructions={obs:'Open Output, then add Window Capture in OBS and select that window. On macOS, use macOS Screen Capture. Keep the output visible and check the scene preview.',youtube:'Use OBS or another encoder to send your broadcast to YouTube. Capture the KOGG Output window in the encoder, then start streaming there.',facebook:'Use your streaming software to broadcast to Facebook Live. Capture KOGG Output as a source and check your scene before going live.',streamyard:'Open Output, then choose Present → Share screen in StreamYard. Select the Output window and add the shared screen to your broadcast.',other:'Share or capture the KOGG Output window using your platform’s screen-sharing controls. Browser Sources require a compatible broadcasting application.'};
   $('streamInstructions').textContent=state.method==='plugin'?'Pair this browser with the KOGG source in OBS. No separate bridge process is needed.':browser?'For software that accepts a Browser Source: start the optional local bridge, open its KOGG operator, then add the URL below.':instructions[state.platform];
@@ -30,6 +30,7 @@
  $('streamOpenOutput').addEventListener('click',()=>openDisplayWindow());
  $('streamCheck').addEventListener('click',async()=>{const b=$('streamCheck');b.disabled=true;$('streamConnection').textContent='Checking…';try{await window.KOGGRelay?.check?.();connection();}finally{b.disabled=false;}});
  $('btnCopyObs').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('obsUrl').value);$('streamStatus').textContent='Source URL copied.';}catch{$('obsUrl').focus();$('obsUrl').select();$('streamStatus').textContent='Select and copy the source URL above.';}});
+ document.querySelectorAll('[data-stream-connection]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-stream-connection]').forEach(x=>{const selected=x===b;x.setAttribute('aria-pressed',String(selected));$('streamConnect-'+x.dataset.streamConnection).hidden=!selected;});}));
  document.querySelectorAll('[data-stream-pane]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-stream-pane]').forEach(x=>{const selected=x===b;x.setAttribute('aria-pressed',String(selected));$('streamPane-'+x.dataset.streamPane).hidden=!selected;});}));
  document.querySelectorAll('[data-tools-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tools-page]').forEach(x=>{const selected=x===b;x.setAttribute('aria-pressed',String(selected));$('tools-'+x.dataset.toolsPage).hidden=!selected;});}));
  window.KOGGStreamDeck={load,renderLive};load();

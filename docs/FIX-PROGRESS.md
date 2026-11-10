@@ -418,3 +418,14 @@ Release gate found 15 manifest mismatches in the first Git archive caused by Win
 Final v127 acceptance: 311/311 automated checks passed. The extracted Git web archive verified all 85 offline asset hashes; native staging passed its core hash gate. Rebuilt installer passed offline host checks plus installation, upgrade and uninstall with byte-for-byte payload verification. Windows preview published at https://github.com/ukeme02/kogg-presenter/releases/tag/desktop-v0.1.0-preview targeting 9b6104450de02b395738dcd15a43364a69228553. Installer: 6,204,287 bytes; SHA-256 39951bfbc36b00b5223c524a1f30f14388680016bdfae57394970dd28816f29c. All three uploaded assets matched GitHub digests; a fresh public EXE download matched the tested build.
 
 Production v127: https://88d0698e.kogg-presenter.pages.dev/. Canonical index, landing, service worker, app, landing scripts/styles and cloud remote (nine files) matched the committed archive exactly. Fresh production browser showed the Windows download card and correct release link, and Enable motion applied motion-enabled. Desktop width 1265/1265 showed no document overflow. Phone/tablet checks previously passed at 390/820. Screenshot: work/downloads-v127-live.png. Test online pairing was stopped/revoked; browser test tabs and temporary local servers were cleaned up. Pre-existing data/hymns-basic.json remains untouched and unpublished. The Windows installer remains an unsigned preview pending clean-PC, physical phone/projector and OBS rehearsal; no blanket bug-free or fully offline one-scan phone claim is made.
+
+
+## 10 November 2026 — Simpler connections (v128)
+- [x] Separate Stream setup into Broadcast and Phone remote, keeping one task visible at a time.
+- [x] Make Connect phone the primary action; hide empty pairing controls and place link-sharing behind Can’t scan? Send a link.
+- [x] Keep experimental direct Wi-Fi and bridge setup within Other connection options. Internet requirements remain explicit.
+- [x] Preserve active pairing when switching views; clear QR/link controls after disconnecting.
+- [x] Correct the Windows app’s advanced OBS URL: its private host at port 8768 is not the OBS bridge at port 8766.
+- [x] No new libraries, services or startup network requests. Existing QR loading remains on demand.
+- [x] 312/312 automated checks passed. Real anonymous remote generated a QR, survived switching Broadcast/Phone tabs, and was stopped/revoked. No account or user library touched. Document widths fit 1280, 390 and 820 px.
+- [ ] Publish and verify the browser update. Windows preview 0.1.0 remains the previously verified v127 package; this UI pass does not replace its binary.

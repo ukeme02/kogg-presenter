@@ -371,3 +371,12 @@ test('paired remote Next crosses into and out of scheduled video using shared pl
  await vm.runInContext("window.KOGGRemoteOperator.execute('next')",context);assert.equal(JSON.parse(storage.get('cp_live')).mediaControl.playing,true);
  await vm.runInContext("window.KOGGRemoteOperator.execute('next')",context);assert.equal(JSON.parse(storage.get('cp_live')).mediaControl,null);assert.equal(JSON.parse(storage.get('cp_live')).index,2);
 });
+
+
+test('Windows presenter never advertises its private host as an OBS bridge',async()=>{
+ const {context,elements}=boot();await new Promise(resolve=>setImmediate(resolve));
+ Object.assign(context.location,{hostname:'127.0.0.1',protocol:'http:',port:'8768',href:'http://127.0.0.1:8768/index.html'});
+ context.window.KOGGStreamDeck.load();assert.match(elements.get('obsUrl').value,/^http:\/\/127\.0\.0\.1:8766\//);
+ Object.assign(context.location,{port:'8766',href:'http://127.0.0.1:8766/index.html'});
+ context.window.KOGGStreamDeck.load();assert.match(elements.get('obsUrl').value,/^http:\/\/127\.0\.0\.1:8766\//);
+});

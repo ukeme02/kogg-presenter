@@ -1,6 +1,6 @@
 /* Public, local-only demonstrations. Never connects to a presenter, phone or OBS. */
 (()=>{'use strict';
- const $=id=>document.getElementById(id),reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ const $=id=>document.getElementById(id),reduced=matchMedia('(prefers-reduced-motion: reduce)'),motionBlocked=()=>document.body.classList.contains('motion-paused');
  const moments=[
   {deck:'Slides',label:'Opening prayers',text:'Let us draw near.',note:'Choose a service slide. Give the room a clear beginning.',detail:'Opening prayers',kind:'title'},
   {deck:'Lyrics',label:'Praise & worship',text:'Amazing grace, how sweet the sound\nThat saved a wretch like me',note:'Paste a song. Empty lines become slides. Tap the next verse.',detail:'Amazing Grace · verse 1',kind:'lyrics'},
@@ -10,17 +10,17 @@
  ];
  function paintText(node,text){node.replaceChildren();if(Array.isArray(text)){const list=document.createElement('ul');for(const line of text){const li=document.createElement('li');li.textContent=line;list.appendChild(li);}node.appendChild(list);}else node.textContent=text;}
  const motions=new WeakMap();
- function arrival(node){if(reduced.matches||!node?.animate)return;motions.get(node)?.cancel();motions.set(node,node.animate([{opacity:.3,transform:'translateY(9px)'},{opacity:1,transform:'translateY(0)'}],{duration:420,easing:'cubic-bezier(.2,.7,.2,1)'}));}
- function pulse(node){if(reduced.matches||!node?.animate)return;node.animate([{opacity:0,transform:'scaleX(.1)'},{opacity:1,transform:'scaleX(1)'},{opacity:0,transform:'scaleX(1)'}],{duration:650,easing:'ease-out'});}
+ function arrival(node){if(motionBlocked()||!node?.animate)return;motions.get(node)?.cancel();motions.set(node,node.animate([{opacity:.3,transform:'translateY(9px)'},{opacity:1,transform:'translateY(0)'}],{duration:420,easing:'cubic-bezier(.2,.7,.2,1)'}));}
+ function pulse(node){if(motionBlocked()||!node?.animate)return;node.animate([{opacity:0,transform:'scaleX(.1)'},{opacity:1,transform:'scaleX(1)'},{opacity:0,transform:'scaleX(1)'}],{duration:650,easing:'ease-out'});}
  function choices(selector,attribute,index){document.querySelectorAll(selector).forEach((button,i)=>button.setAttribute(attribute,String(i===index)));}
  let current=0,timer=null,visible=false,hover=false;
  const service=$('service-story'),storyButtons=[...document.querySelectorAll('[data-service-step]')];
  function drawStory(announce=false){const item=moments[current];paintText($('storyText'),item.text);$('storyLabel').textContent=item.detail;$('storyDeck').textContent=item.deck;$('storyNote').textContent=item.note;$('storyCount').textContent=String(current+1).padStart(2,'0')+' / 05';$('storyScreen').dataset.kind=item.kind;choices('[data-service-step]','aria-pressed',current);if(announce)$('storyAnnounce').textContent=item.label+' · '+item.deck+' preview';arrival($('storyContent'));pulse($('storySignal'));}
- function schedule(){clearTimeout(timer);if(!visible||hover||document.hidden||service.contains(document.activeElement)||reduced.matches)return;timer=setTimeout(()=>{current=(current+1)%moments.length;drawStory();schedule();},6000);}
+ function schedule(){clearTimeout(timer);if(!visible||hover||document.hidden||service.contains(document.activeElement)||motionBlocked())return;timer=setTimeout(()=>{current=(current+1)%moments.length;drawStory();schedule();},6000);}
  storyButtons.forEach((button,i)=>{button.addEventListener('click',()=>{current=i;drawStory(true);schedule();});button.addEventListener('keydown',event=>{let n;if(event.key==='ArrowDown'||event.key==='ArrowRight')n=(i+1)%moments.length;if(event.key==='ArrowUp'||event.key==='ArrowLeft')n=(i+moments.length-1)%moments.length;if(event.key==='Home')n=0;if(event.key==='End')n=moments.length-1;if(n!==undefined){event.preventDefault();storyButtons[n].focus();storyButtons[n].click();}});});
  service.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'){hover=true;schedule();}});service.addEventListener('pointerleave',()=>{hover=false;schedule();});service.addEventListener('focusin',schedule);service.addEventListener('focusout',()=>setTimeout(schedule,0));
  if(typeof IntersectionObserver!=='undefined'){new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;schedule();},{threshold:.2}).observe(service);}else{visible=true;schedule();}
- document.addEventListener('visibilitychange',schedule);reduced.addEventListener?.('change',schedule);drawStory();
+ document.addEventListener('visibilitychange',schedule);reduced.addEventListener?.('change',schedule);window.addEventListener('kogg-motion-change',schedule);drawStory();
 
  // The phone buttons and both screens share this one miniature presentation state.
  let remoteIndex=0,blank=false,feed='lower';

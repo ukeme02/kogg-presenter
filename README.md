@@ -8,7 +8,8 @@ Native Android/iOS apps remain planned; compatible desktop and mobile browsers w
 ## Official releases and downloads
 
 - **[Open KOGG Presenter](https://kogg-presenter.pages.dev/index.html)** — start without an account; optionally install through your browser.
-- **[Downloads and device setup](https://kogg-presenter.pages.dev/landing#downloads)** — choose the browser app, Windows OBS plugin or self-hosting package.
+- **[Windows presenter 0.1.0 preview](https://github.com/ukeme02/kogg-presenter/releases/tag/desktop-v0.1.0-preview)** — about 6.2 MB, with KJV, BSB, KJV Strong’s and 300 hymns included. Windows 10/11 x64 and installed Edge required; no Node or server setup. Unsigned preview. [Build and acceptance](desktop/windows/BUILD.md).
+- **[Downloads and device setup](https://kogg-presenter.pages.dev/landing#downloads)** — choose the Windows presenter, browser app, Windows OBS plugin or self-hosting package.
 - **[KOGG Presenter v125](https://github.com/ukeme02/kogg-presenter/releases/tag/v125)** — private service media Sync, web ZIP, source and checksums. Scheduled images/videos sync up to 50 MiB per file; prepare the destination online before going offline.
 - **[KOGG Connect 0.1.0 Windows preview](https://github.com/ukeme02/kogg-presenter/releases/tag/kogg-connect-v0.1.0-preview)** — optional OBS 32.x plugin, installer and manual/source ZIP. Unsigned preview; real-device acceptance is still in progress.
 - **[All releases](https://github.com/ukeme02/kogg-presenter/releases)** — version history and release notes.

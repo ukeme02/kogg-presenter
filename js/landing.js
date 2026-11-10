@@ -41,11 +41,15 @@
  document.querySelectorAll('[data-device]').forEach(b=>b.addEventListener('click',()=>{const device=devices[b.dataset.device];$('deviceLabel').textContent=device.label;$('installSteps').replaceChildren(...device.steps.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));document.querySelectorAll('[data-device]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));}));
  // Decorative motion never drives app state, network requests or presentation output.
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
- // KOGG's decorative motion is enabled by default; no extra Play step.
+ // Full motion starts automatically unless the visitor requests reduced motion.
  const paused=false;let frame=0;
- function motionBlocked(){return reduced.matches;}
- document.body.classList.remove('motion-paused');
- document.body.classList.add('motion-enabled');
+ let motionChoice=null;try{motionChoice=localStorage.getItem('kogg-landing-motion');}catch{}
+ function motionBlocked(){return motionChoice==='reduced'||(motionChoice!=='full'&&reduced.matches);}
+ const motionPreference=$('motionPreference');
+ function applyMotion(){const blocked=motionBlocked();document.body.classList.toggle('motion-paused',blocked);document.body.classList.toggle('motion-enabled',!blocked);motionPreference.textContent=blocked?'Enable animations':'Use reduced motion';motionPreference.setAttribute('aria-pressed',String(!blocked));$('motionHint').hidden=!blocked;window.dispatchEvent(new Event('kogg-motion-change'));}
+ motionPreference.addEventListener('click',()=>{motionChoice=motionBlocked()?'full':'reduced';try{localStorage.setItem('kogg-landing-motion',motionChoice);}catch{}applyMotion();});
+ $('motionQuick').addEventListener('click',()=>{motionChoice='full';try{localStorage.setItem('kogg-landing-motion',motionChoice);}catch{}applyMotion();});
+ reduced.addEventListener?.('change',applyMotion);applyMotion();
  const revealTargets=document.querySelectorAll('.section-heading,.tour-panel,.mode-explorer,.library-card,.update-grid article,.install-card,.faq-list,.closing,.facts,.service-flow,.display-grid article,.roadmap-rows article,.download-card');
  if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});revealTargets.forEach((el,i)=>{el.classList.add('reveal-ready');el.style.setProperty('--reveal-delay',(el.matches('.library-card,.update-grid article')?i%3*80:el.matches('.display-grid article,.roadmap-rows article')?i%4*70:0)+'ms');observer.observe(el);});}
  function progress(){frame=0;const range=document.documentElement.scrollHeight-innerHeight;document.querySelector('.reading-progress i').style.transform='scaleX('+(range>0?Math.min(1,Math.max(0,scrollY/range)):0)+')';}
@@ -99,7 +103,7 @@
  stage.addEventListener('input',scheduleHero);document.addEventListener('visibilitychange',scheduleHero);
  heroButtons.forEach((button,i)=>button.addEventListener('click',()=>{scene=i?2:0;updateDots();animatePreview($(button.getAttribute('aria-controls')).querySelector('.hero-screen'));scheduleHero();}));
  document.querySelectorAll('[data-hero-verse], [data-sample-ref]').forEach(button=>button.addEventListener('click',()=>{animatePreview(button.closest('[role="tabpanel"]').querySelector('.hero-screen'));scheduleHero();}));
- updateDots();reduced.addEventListener?.('change',scheduleHero);
+ updateDots();reduced.addEventListener?.('change',scheduleHero);window.addEventListener('kogg-motion-change',scheduleHero);
  $('copyObsGuide').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('obsGuideUrl').textContent);$('obsCopyStatus').textContent='OBS URL copied. Paste it into the Browser Source properties.';}catch{$('obsCopyStatus').textContent='Select and copy the URL above.';}});
  // Floating watch-style navigation: draggable, bounded and keyboard accessible.
  const widget=$('watchWidget'),launcher=$('watchLauncher'),apps=$('watchApps');

@@ -2418,11 +2418,12 @@ function showLocalPanel() {
   $('gateLocal').hidden = false;
   const pl = detectPlatform();
   $('localDeviceName').textContent = pl.name;
-  const installed = window.matchMedia('(display-mode: standalone)').matches;
+  const installed = window.matchMedia('(display-mode: standalone)').matches ||
+    (location.hostname === '127.0.0.1' && location.port === '8768');
   $('localDetect').innerHTML = installed
     ? `✓ Already running as an installed app on <b>${pl.name}</b>. Everything you do here saves on this device — Bibles, songs, schedules, lyrics, themes. No account needed, ever.`
     : `Running on <b>${pl.name}</b>. Local Mode works right away right here in the browser — the step below just makes it feel like a real app with a home-screen icon and full-screen launch.`;
-  if (installEvent) {
+  if (installEvent && !installed) {
     $('installNative').hidden = false;
     $('installManual').hidden = true;
   } else if (!installed) {

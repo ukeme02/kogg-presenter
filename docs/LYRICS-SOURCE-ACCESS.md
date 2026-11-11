@@ -56,7 +56,7 @@ For the proposed shared resource library, [BSB](https://berean.bible/terms.htm) 
 
 ## Additional Bible and hymn access research — 10 November 2026
 
-These are verified access routes and outreach candidates, not new active KOGG integrations. Only the three requests listed above have been sent. No new accounts, subscriptions or agreements were created during this research.
+These are verified access routes and outreach candidates, not new active KOGG integrations. Update 11 November: the owner authorised contacting all ten additional candidates. API.Bible, Bible Society of Nigeria and eBible.org requests were sent and verified in Gmail Sent. Seven other requests are prepared locally; sending awaits recovery of the browser-control connection. See LYRICS-PARTNERSHIP-REQUESTS.md for exact messages and statuses. No new accounts, subscriptions or agreements were created during this research.
 
 ### Bible priorities
 

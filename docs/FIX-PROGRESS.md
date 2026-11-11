@@ -1,11 +1,20 @@
 # Repair progress - 3 November 2026
 
+## Additional provider outreach — 11 November 2026
+
+- [x] Owner authorised writing to all ten additional Bible/hymn candidates.
+- [x] Sent tailored requests from koggpresenter@gmail.com to API.Bible, Bible Society of Nigeria and eBible.org. All three appeared in Gmail Sent at approximately 08:47 WAT. Do not resend.
+- [x] Prepared the other seven requests and preserved their full text, verified contacts and statuses in LYRICS-PARTNERSHIP-REQUESTS.md.
+- [ ] Send Bible Brain, Open Hymnal, Singing the Faith Plus, Praise Trust, YouVersion Platform, AO Lab and Biblica/Open.Bible requests. These are local prepared messages, not Gmail drafts.
+
+Blocker: after intermittent timeouts, the browser-control service closed its connection. KOGG remained signed in in the fresh visible Gmail tab. The Gmail connector is authenticated to conrichcommunity@gmail.com, so it was not used to send KOGG mail. Resume through the KOGG mailbox without requesting sending permission again. No runtime changes or new provider agreements.
+
 ## Provider outreach — 10 November 2026
 
 - [x] Sent the three owner-approved requests to Sovereign Grace Music, Worship Start and hymnal.net from koggpresenter@gmail.com; verified all three in Gmail Sent (approximately 20:18 WAT). Evidence: work/kogg-partnership-sent.png.
 - [x] Expanded LYRICS-SOURCE-ACCESS.md with Bible and hymn organisations, official contacts, free-access conditions and next steps. Identified an openly licensed Efik New Testament separately from the full BSN Efik Bible, and the current API.Bible free Starter offering.
 - [ ] Receive and review partner replies; no permission has yet been granted by these enquiries.
-- [ ] Select and contact additional candidates; no new candidate emails sent in this research step.
+- [x] Select additional candidates; see the 11 November outreach section for sent and remaining requests.
 - [ ] Review exact text editions/licences and integration requirements before importing or activating new content.
 
 Documentation/outreach only; browser release remains v132. Existing untracked data/hymns-basic.json remains untouched.

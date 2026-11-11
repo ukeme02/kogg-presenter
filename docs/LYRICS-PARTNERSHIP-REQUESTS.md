@@ -86,3 +86,277 @@ KOGG MEDIA (Africa)
 - Hymnary: https://www.hymnary.org/info/email.html?to=feedback — request a supported public-domain text export/feed, automated request limits, attribution and offline caching terms. Hymnary cannot grant rights owned by other publishers.
 - CCLI/SongSelect: ask whether new developer integrations are currently accepted, whether a no-fee pilot is possible, what church entitlements are required, and which offline/storage/reporting conditions apply. Do not purchase a church subscription on the assumption it grants developer API access.
 - LRCLIB: optional application registration at https://lrclib.net/developers. Anonymous API access already works; higher limits are an enhancement, not a prerequisite for this release.
+
+
+## Additional outreach — 11 November 2026
+
+The owner authorised writing to all additional candidates. Three new messages were sent from koggpresenter@gmail.com and visually verified in Gmail Sent at approximately 08:47 WAT: API.Bible, Bible Society of Nigeria and eBible.org. The browser-control connection then closed. The other seven messages below are prepared locally, not sent and not saved as Gmail drafts. Do not resend the three confirmed messages. Sending does not establish delivery or permission; no agreement or payment was accepted.
+
+| Organisation | Recipient | Status |
+| --- | --- | --- |
+| API.Bible | support@api.bible | sent |
+| Bible Society of Nigeria | info@biblesociety-nigeria.org | sent |
+| eBible.org | Michael@eBible.org | sent |
+| Bible Brain | support@digitalbibleplatform.com | prepared |
+| Open Hymnal | brian.j.dumont@gmail.com | prepared |
+| Singing the Faith Plus | stfplus@methodistchurch.org.uk | prepared |
+| Praise Trust | copyright@praise.org.uk | prepared |
+| YouVersion Platform | help@youversion.com | prepared |
+| AO Lab | hello@helloao.org | prepared |
+| Biblica / Open.Bible | rightspermissions@biblica.com | prepared |
+
+Additional contact verification: eBible founder contact https://mljohnson.org/contact/ (linked from eBible About); AO Lab https://helloao.org/contact.html; YouVersion general support https://www.bible.com/privacy (request routing to Platform); Biblica rights mailbox https://biblica.com/wp-content/uploads/Guidelines_2021_Digital.pdf (older official publication, delivery untested). Other contacts are documented in LYRICS-SOURCE-ACCESS.md. No guessed addresses were used.
+
+### API.Bible
+
+To: support@api.bible
+
+Subject: KOGG Presenter — free Scripture access and church projection enquiry
+
+Status: sent
+
+Hello API.Bible team,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+We would like guidance on a no-fee integration, initially prioritising NIV, NLT and NKJV, with NASB, Amplified and The Message as possible additions. Could you confirm eligibility under your Starter plan, which editions are available, and the correct route to activate them?
+
+Our use includes church projection, a separate live-output window, OBS capture, passage search and private service schedules. Please clarify copyright placement, usage reporting, caching/refresh rules, offline presentation and private sync between a user’s devices. Is there a ministry allowance if the shared application exceeds the free request quota?
+
+KOGG has voice input for finding passages and is considering a future AI service-planning/reference assistant. We also invite voluntary project support. Please advise how these affect eligibility; we are not requesting AI training rights or assuming an existing licence covers future features. This is an enquiry, not an order for a paid plan.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### Bible Society of Nigeria
+
+To: info@biblesociety-nigeria.org
+
+Subject: Efik and Nigerian-language Bible partnership — KOGG Presenter
+
+Status: sent
+
+Hello Bible Society of Nigeria team,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+We would value a no-fee ministry partnership to make the full Efik Bible available for church presentation. Please advise which current edition you can authorise and whether you can supply maintained USFM, USX, XML, JSON or other machine-readable text. We are also interested in Yoruba, Igbo, Hausa and other Nigerian languages as optional packs.
+
+We seek permission to search and project the unchanged text, show passages through OBS, offer offline use in the browser and Windows app, and privately sync service readings across a user’s devices. Please specify required credits, territories, distribution restrictions, updates and any fees or church-level requirements.
+
+Public sharing of complete Bible packs would be a separate permission. We would appreciate a referral to the appropriate digital publishing or licensing team if needed.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### eBible.org
+
+To: Michael@eBible.org
+
+Subject: Lightweight offline Bible packs for churches — KOGG Presenter
+
+Status: sent
+
+Hello Michael,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+Thank you for making freely distributable Scripture available. We would appreciate guidance on using your current machine-readable texts for optional, text-only offline Bible packs, particularly African and Nigerian languages. Could you recommend suitable editions and the best supported source/update feed?
+
+Our use is passage search, church projection, OBS output and private service-library sync. We will retain each edition’s notices and distinguish public-domain, openly licensed and restricted texts. We are not asking for blanket permission over translations whose rights you do not control.
+
+Please advise on attribution, redistribution of optional packs, integrity checks, corrections and download practices that keep load low. A maintained export is sufficient; no audio or custom development is needed.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### Bible Brain
+
+To: support@digitalbibleplatform.com
+
+Subject: Text-only Bible Brain partnership enquiry — KOGG Presenter
+
+Status: prepared
+
+Hello Bible Brain team,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+We are exploring a no-fee, text-only connection for Scripture presentation, especially African and Nigerian-language editions. Could you advise on the appropriate application/key process and the available texts for this use?
+
+We need to clarify church projection, passage search, OBS capture and private service-schedule sync. Offline presentation matters for churches with unreliable internet: please identify texts eligible through your download endpoint and any separate permission needed for browser/Windows storage or use on another signed-in device.
+
+Please include attribution, usage limits, publisher approvals and any reporting requirements. We do not need audio/video content and would not redistribute an unrestricted public catalogue or expose your API key. We are seeking guidance before accepting an agreement or implementing access.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### Open Hymnal
+
+To: brian.j.dumont@gmail.com
+
+Subject: Open Hymnal text-pack collaboration — KOGG Presenter
+
+Status: prepared
+
+Hello Brian,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+We found your contact in the Open Hymnal and would like to use a reviewed selection of its hymn texts as a small optional offline pack. Could you point us to the current maintained source archive and any corrections or updated permissions?
+
+Our use would include search, church projection, splitting unchanged words into slides, offline saving and private library sync. We would retain author/translator credits and each applicable notice. Please advise on any text-specific restrictions, international use, and whether a publicly downloadable KOGG pack is suitable under the relevant terms.
+
+We only need hymn words and metadata, not recordings or scores. If possible, we would welcome a no-fee collaboration to help churches access accurate traditional hymns with minimal setup.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### Singing the Faith Plus
+
+To: stfplus@methodistchurch.org.uk
+
+Subject: Hymn-text partnership enquiry — KOGG Presenter
+
+Status: prepared
+
+Hello Singing the Faith Plus team,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+Your provision of hymns for church use is encouraging. Could we discuss a no-fee pilot using a defined selection of texts in KOGG? A maintained text or spreadsheet export would be enough.
+
+We would like to search and project the unchanged words, split them into slides, preserve writer/publisher credits, save them offline and privately sync a user’s library. Could you confirm whether these application uses are permitted beyond direct use of your website, and identify any writer or publisher approvals required?
+
+Please advise separately whether an optional publicly downloadable pack is allowed, and specify church-licence, territory, attribution, correction and removal requirements. We do not assume this covers every item in the printed Singing the Faith hymnbook.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### Praise Trust
+
+To: copyright@praise.org.uk
+
+Subject: No-fee hymn-pack pilot for KOGG Presenter
+
+Status: prepared
+
+Hello Praise Trust team,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+Could we discuss a no-fee partnership or small pilot for a selection of hymn texts that Praise Trust controls? Your traditional and contemporary hymn resources could help churches find accurate words quickly. A public-domain subset or another explicitly authorised selection would be a useful starting point.
+
+We seek a text-only export for search, church projection, slide splitting without rewriting, offline storage and private cross-device sync, retaining all credits. Please clarify any CCLI/church entitlements, territory and reporting requirements, and whether an optional public pack would need separate permission.
+
+We have not assumed that a website subscription or a church licence grants KOGG catalogue redistribution rights. Please advise the appropriate route, any fees, and how corrections or removals should be handled.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### YouVersion Platform
+
+To: help@youversion.com
+
+Subject: Please route to Platform team — KOGG Presenter Scripture integration
+
+Status: prepared
+
+Hello YouVersion team,
+
+Please route this enquiry to the YouVersion Platform team.
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+We are exploring a no-fee Bible text integration for church projection, passage search, OBS output and private service schedules. Could you advise on registration, available editions (including popular English and Nigerian-language Bibles), publisher approvals and the simplest supported integration?
+
+Please clarify offline browser/Windows storage, caching limits, attribution and private sync between a user’s devices. We will not assume that consumer-app downloads allow third-party redistribution.
+
+KOGG currently has voice input and may later add an AI service-planning/reference assistant; it also invites voluntary project support. Please advise how these affect eligibility and whether separate permissions would be required. This is a request for guidance, not acceptance of terms or a paid service.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### AO Lab
+
+To: hello@helloao.org
+
+Subject: KOGG Presenter — open Bible packs and ministry collaboration
+
+Status: prepared
+
+Hello AO Lab team,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+Thank you for providing the Free Use Bible API. We would like to introduce KOGG and ask for guidance on a lightweight integration using optional text-only Bible packs, especially African and Nigerian languages.
+
+Our use includes passage search, church projection, OBS output, offline storage and private service-library sync. We understand that individual translations retain their own notices and licence conditions. Could you recommend a suitable open-licence shortlist, the current bulk-download/update route and best practices for keeping requests low and Scripture accurate?
+
+We would welcome a no-fee ministry collaboration and can credit the source appropriately. We do not need audio, custom development or a new account merely to use already-open resources. Please let us know the best technical contact and how to report corrections.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+
+### Biblica / Open.Bible
+
+To: rightspermissions@biblica.com
+
+Subject: Open Efik text and Scripture presentation guidance — KOGG Presenter
+
+Status: prepared
+
+Hello Biblica Rights and Permissions team,
+
+We are developing KOGG Presenter through KOGG MEDIA (Africa), with the vision “Worship without Limits.” It is a lightweight browser and Windows church presentation tool, designed to help churches project Scripture and worship content with minimal technical setup.
+
+We found the Biblica Open Efik Living New Testament 1995 on Open.Bible under CC BY-SA. Could you point us to the current authoritative text files and confirm the required copyright, trademark and attribution wording when formatting the unchanged text into an optional offline KOGG pack? We would also welcome recommendations for other openly licensed Nigerian-language editions.
+
+Our use is passage search, church projection, OBS output and private service-schedule sync. Please clarify whether any additional permission is needed beyond the published open licence, particularly for distributing the pack and keeping it updated.
+
+Separately, we are asking API.Bible about NIV access. KOGG has voice input and is considering a future AI service-planning/reference assistant; we also invite voluntary project support. Please advise how these affect the appropriate NIV licensing route. We are not requesting AI training rights or assuming that open Efik terms apply to NIV.
+
+We seek no-fee access or a ministry pilot. This is an enquiry, not acceptance of a licence or paid service. If this mailbox is no longer the correct route, please direct us to the relevant team.
+
+Project: https://kogg-presenter.pages.dev/
+Reply contact: koggpresenter@gmail.com
+
+Thank you,
+KOGG Presenter team
+KOGG MEDIA (Africa)

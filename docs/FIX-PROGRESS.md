@@ -8,7 +8,7 @@
 - [x] Update pending-edition wording: full Efik has been located but permission/text delivery is pending. Preserve the separate existing NLT online connection label; this is not a new API.Bible activation or offline NLT pack.
 - [x] Keep every optional Bible out of Base preparation. No new text packs, third-party dependencies, audio or provider requests added. New storage helper is under 2 KB before compression. No accounts, payments or licences activated.
 - [x] Validate: 356 app tests passed after rerunning the full suite with loopback access for the OBS test (initial sandbox-only run blocked that test). Fresh browser verified Efik download, cache-backed status, selected-edition removal protection, switching to KJV and removal. Final browser layout keeps feedback visible; screenshot `work/bible-downloads-v135.png`. Focused final catalogue checks and packaged hash verification are recorded with release completion below.
-- [ ] Commit, publish and verify canonical live files.
+- [x] Committed and pushed `835aa09`; published v135 at https://a428e429.kogg-presenter.pages.dev/. All 92 packaged offline asset hashes passed; all six changed canonical production files matched the archive byte-for-byte. Final focused checks passed 110/110 (including the added all-pack size/Base-exclusion regression). Evidence: `work/bible-v135-full-tests.txt`, `work/bible-v135-final-tests.txt`, `work/v135-live-verification.json`. Temporary preview servers stopped.
 
 Full Efik and new licensed editions still await provider responses. Windows preview installer remains v127. User's untracked `data/hymns-basic.json` remains untouched.
 

@@ -1,0 +1,22 @@
+{
+  "id": "efi-elnt-1995",
+  "short": "ELNT",
+  "title": "Efik Living New Testament (1995)",
+  "language": "Efik",
+  "scope": "NT",
+  "file": "data/efik-nt.json",
+  "source": "https://open.bible/bibles/biblica-open-efik-living-new-testament-1995",
+  "download": "https://api.open.bible/artifactContent/c0426aa4-c548-41f4-bc4b-ea76d8505c4c",
+  "revision": 4,
+  "sourceUpdated": "2025-09-23",
+  "retrieved": "2026-11-12",
+  "archiveSha256": "7caa47a5e134ad3877d263f3e467a34262cbbf4694591a0a7f54d202f1636e6b",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "copyright": "Copyright © 1995 by Biblica, Inc.",
+  "originalTitle": "Biblica® Open Efik Living New Testament™",
+  "attribution": "The original work by Biblica, Inc. is available for free at www.biblica.com and open.bible.",
+  "changes": "USX converted to compact KOGG JSON. Headings and formatting markup omitted; whitespace normalized. Verse wording, Unicode and numbering preserved. English canonical book names used for navigation; original local names retained as metadata. This edition contains only the 27 New Testament books. Old Testament slots contain no text and are unavailable, preserving canonical reference indices without substituting another language.",
+  "contributions": "KOGG text-pack formatting contributions are available under CC BY-SA 4.0. KOGG adaptations are not endorsed by the original licensor.",
+  "trademark": "Biblica is a registered trademark of Biblica, Inc. The original title identifies the source; the adapted KOGG pack does not use that trademark as its title."
+}

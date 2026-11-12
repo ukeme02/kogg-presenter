@@ -5,7 +5,7 @@ test('offline output works at both redirected and canonical page addresses',asyn
 test('cached Bible reopening performs no network download',async()=>{const w=worker();await w.install();const count=w.calls.length;const response=await w.fetch('data/kjv.json');assert.equal(response.status,200);assert.equal(w.calls.length,count);});
 
 test('eBible packs stay out of Base and each selected pack reopens offline',async()=>{
- const w=worker();await w.install();const packs=['yoruba','hausa','igbo','msb'];
+ const w=worker();await w.install();const packs=['yoruba','hausa','igbo','msb','efik-nt'];
  for(const p of packs)assert.ok(!w.calls.some(u=>u.endsWith('/data/'+p+'.json')));
  for(const p of packs)assert.equal((await w.fetch('data/'+p+'.json')).status,200);
  w.setOffline();const before=w.calls.length;
@@ -15,10 +15,10 @@ test('eBible packs stay out of Base and each selected pack reopens offline',asyn
 
 test('release upgrades preserve optional eBible packs already downloaded',async()=>{
  const w=worker(),old=await w.caches.open('kogg-presenter-v132');
- for(const p of ['yoruba','hausa','igbo','msb'])await old.put('https://example.test/app/data/'+p+'.json',new Response('saved '+p));
+ for(const p of ['yoruba','hausa','igbo','msb','efik-nt'])await old.put('https://example.test/app/data/'+p+'.json',new Response('saved '+p));
  await old.put('https://example.test/app/__asset_hashes__',new Response(JSON.stringify(w.hashes)));
  await w.install();w.setOffline();
- for(const p of ['yoruba','hausa','igbo','msb'])assert.equal(await(await w.fetch('data/'+p+'.json')).text(),'saved '+p);
+ for(const p of ['yoruba','hausa','igbo','msb','efik-nt'])assert.equal(await(await w.fetch('data/'+p+'.json')).text(),'saved '+p);
 });
 test('incomplete initial preparation never reports ready',async()=>{const w=worker();w.setOffline();await assert.rejects(w.install());assert(w.messages.every(m=>m.ready===false));assert(w.messages.some(m=>m.error));});
 

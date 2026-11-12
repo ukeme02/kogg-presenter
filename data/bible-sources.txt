@@ -1,4 +1,4 @@
-KOGG Presenter — optional eBible text packs
+KOGG Presenter — optional Bible text packs
 Reviewed and downloaded 12 November 2026.
 These packs download only when selected. The Base core remains KJV, BSB and KJV Strong’s.
 Source titles below identify the original editions; they do not imply endorsement of KOGG.
@@ -59,6 +59,20 @@ USFX converted to compact KOGG JSON for projection. Headings, footnotes, cross-r
 
 
 
-The CC BY-SA terms apply to these three Bible text packs and their formatting contributions. They do not relicense unrelated KOGG code or other Bible editions.
+The CC BY-SA terms apply to the four identified Bible text packs and their formatting contributions. They do not relicense unrelated KOGG code or other Bible editions.
 Other installed Bible editions retain their own supplied notices.
 Source archive hashes and reproducible import records: tools/ebible-sources.json and docs/ebible-import-receipts.json in the KOGG repository.
+
+Efik Living New Testament (ELNT, 1995) — NEW TESTAMENT ONLY
+https://open.bible/bibles/biblica-open-efik-living-new-testament-1995
+Source archive: https://api.open.bible/artifactContent/c0426aa4-c548-41f4-bc4b-ea76d8505c4c
+Revision 4; updated 23 September 2025; retrieved 12 November 2026.
+Licence: CC BY-SA 4.0
+https://creativecommons.org/licenses/by-sa/4.0/
+Biblica® Open Efik Living New Testament™
+Copyright © 1995 by Biblica, Inc.
+The original work by Biblica, Inc. is available for free at www.biblica.com and open.bible.
+USX converted to compact KOGG JSON. Headings and formatting markup omitted; whitespace normalized. Verse wording, Unicode and numbering preserved. English canonical book names used for navigation; original local names retained as metadata. This edition contains only the 27 New Testament books. Old Testament slots contain no text and are unavailable, preserving canonical reference indices without substituting another language.
+KOGG text-pack formatting contributions are available under CC BY-SA 4.0. KOGG adaptations are not endorsed by the original licensor.
+Biblica is a registered trademark of Biblica, Inc. The original title identifies the source; the adapted KOGG pack does not use that trademark as its title.
+Import records: tools/efik-source.json and docs/efik-import-receipt.json in the KOGG repository.

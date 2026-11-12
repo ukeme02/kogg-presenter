@@ -1,6 +1,23 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('js/app.js','utf8');
 
+test('Efik optional NT starts at Matthew, searches Efik text, and keeps OT projection intact',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ await vm.runInContext('goLiveScripture({bookIdx:18,ch:23,vFrom:1,vTo:1})',context);const old=storage.get('cp_live');
+ assert.equal(await vm.runInContext("loadBible('data/efik-nt.json')",context),true);
+ assert.equal(elements.get('bookSelect').value,'39');assert.equal(elements.get('bookSelect').options.length,27);
+ assert.doesNotMatch(elements.get('bookChips').innerHTML,/Old Testament|title="Genesis"/);
+ assert.equal(await vm.runInContext('goLiveScripture({bookIdx:18,ch:23,vFrom:1,vTo:1})',context),false);
+ assert.equal(storage.get('cp_live'),old);assert.match(elements.get('modeHint').textContent,/New Testament only/);
+ elements.get('btnPrevChapter').handlers.click[0]();vm.runInContext('stepVerse(-1)',context);assert.equal(elements.get('bookSelect').value,'39');
+ assert.equal(vm.runInContext("suggestBook('gen').length",context),0);
+ vm.runInContext("commitJump('John 3:16')",context);const live=JSON.parse(storage.get('cp_live'));assert.equal(live.slides[0].label,'John 3:16');assert.match(live.slides[0].text,/Abasi/);
+ assert.equal(live.scripture.translation,'data/efik-nt.json');assert.ok(vm.runInContext("searchBible('Abasi',5).every(h=>h.bi>=39)",context));
+ const reopened=boot({saved:new Map([['cp_settings',storage.get('cp_settings')]])});await new Promise(r=>setImmediate(r));
+ assert.equal(reopened.elements.get('translationSelect').value,'data/efik-nt.json');assert.equal(reopened.elements.get('bookSelect').value,'39');
+ await vm.runInContext("loadBible('data/kjv.json')",context);assert.equal(elements.get('bookSelect').options.length,66);
+});
+
 test('downloaded Bibles remain selectable after restart and project the original Unicode',async()=>{
  const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
  assert.equal(await vm.runInContext("loadBible('data/yoruba.json')",context),true);

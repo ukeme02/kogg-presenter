@@ -3,6 +3,16 @@
   'use strict';
   const valid = r => r && [r.bookIdx,r.ch,r.vFrom,r.vTo].every(Number.isInteger) && r.bookIdx >= 0 && r.ch > 0 && r.vFrom > 0 && r.vTo >= r.vFrom;
   const same = (a,b) => valid(a?.r) && valid(b?.r) && a.translation === b.translation && ['bookIdx','ch','vFrom','vTo'].every(k => a.r[k] === b.r[k]);
+  function bibleData(data) {
+    return !!data && Array.isArray(data.books) && data.books.length === 66 && data.books.every((b,i) =>
+      b && typeof b.name === 'string' && Array.isArray(b.chapters) &&
+      (data.metadata?.scope === 'NT' && i < 39 ? b.chapters.length === 0 : b.chapters.length > 0 && b.chapters.every(c => Array.isArray(c) && c.length && c.every(v => typeof v === 'string'))));
+  }
+  function nextBook(books,index,dir) {
+    if(![1,-1].includes(dir))return -1;
+    for(let i=index+dir;i>=0&&i<books.length;i+=dir)if(books[i]?.chapters?.length)return i;
+    return -1;
+  }
   function remember(history,entry,limit=100) {
     const items = Array.isArray(history) ? history.filter(e => valid(e?.r) && typeof e.translation === 'string') : [];
     return [entry,...items.filter(e => !same(e,entry))].slice(0,limit);
@@ -16,8 +26,8 @@
     let b=r.bookIdx,c=r.ch,v=dir>0?r.vTo:r.vFrom;
     for(let guard=0;guard<400;guard++) {
       v+=dir;
-      if (v<1) { c--; if(c<1){b--;if(b<0)return null;c=books[b].chapters.length;}v=books[b].chapters[c-1].length; }
-      if(v>books[b].chapters[c-1].length){c++;v=1;if(c>books[b].chapters.length){b++;c=1;if(b>=books.length)return null;}}
+      if (v<1) { c--; if(c<1){b=nextBook(books,b,-1);if(b<0)return null;c=books[b].chapters.length;}v=books[b].chapters[c-1].length; }
+      if(v>books[b].chapters[c-1].length){c++;v=1;if(c>books[b].chapters.length){b=nextBook(books,b,1);c=1;if(b<0)return null;}}
       if(books[b].chapters[c-1][v-1]?.trim())return {bookIdx:b,ch:c,vFrom:v,vTo:v};
     }
     return null;
@@ -30,6 +40,6 @@
     for(let v=r.vFrom;v<=Math.min(r.vTo,chapter.length);v++)if(chapter[v-1]?.trim())lines.push(v+' '+chapter[v-1]);
     return lines.join('\n');
   }
-  const api={valid,same,remember,forget,adjacent,passage};
+  const api={valid,same,remember,forget,adjacent,passage,bibleData,nextBook};
   if(typeof module!=='undefined')module.exports=api;else scope.KOGGScripture=api;
 })(typeof window!=='undefined'?window:globalThis);

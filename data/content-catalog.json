@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "hymnPacks": [
     {
       "id": "traditional-basic-v1",
@@ -21,6 +21,15 @@
     }
   ],
   "bibles": [
+    {
+      "name": "ELNT",
+      "short": "ELNT — Efik Living New Testament (1995)",
+      "file": "data/efik-nt.json",
+      "language": "Efik · New Testament only",
+      "license": "CC BY-SA 4.0",
+      "source": "https://open.bible/bibles/biblica-open-efik-living-new-testament-1995",
+      "bytes": 1234078
+    },
     {
       "name": "OYCB",
       "short": "OYCB — Yoruba Contemporary Bible",
@@ -135,7 +144,7 @@
     },
     {
       "name": "Efik",
-      "status": "Open Efik New Testament identified; a complete Bible pack is not connected yet"
+      "status": "New Testament available above. Full Efik Bible still awaits a distributable source."
     }
   ]
 }

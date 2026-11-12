@@ -1,5 +1,15 @@
 # Repair progress - 3 November 2026
 
+## Optional Efik New Testament — 12 November 2026 (v134)
+
+- [x] Confirm the official [Open.Bible Efik Living New Testament 1995](https://open.bible/bibles/biblica-open-efik-living-new-testament-1995), revision 4, is CC BY-SA 4.0. Download its USX archive and pin its SHA-256. Retain copyright, attribution, source revision and adaptation notices. This does not authorise the separate full Bible Society of Nigeria edition.
+- [x] Convert all 27 New Testament books, 260 chapters and 7,958 verses into a 1,234,078-byte optional text pack. Preserve Unicode and verse numbers. Retain canonical book indices with explicitly unavailable, text-free Old Testament slots; no translated, generated or substituted passages. Include reproducible converter and receipt.
+- [x] Add ELNT — Efik Living New Testament (1995) to More Bibles with scope, size and licence. Persist the picker choice, cache only after selection, and carry the cached pack through release upgrades. Base remains the existing three Bibles; no runtime dependency or startup text download added.
+- [x] Restrict book navigation and Quick Jump suggestions to available books. Stop safely at Matthew/Revelation; search only actual text. If an Old Testament passage is live during selection, keep its original output and explicitly explain that Efik contains the New Testament only. Remove premature “On screen” success feedback on version chips.
+- [x] Update landing library copy and offline-readable Bible credits. Full Efik remains tracked separately as awaiting an approved distributable source. Existing Windows preview installer is unchanged.
+- [x] Validate every verse for replacement/control characters and preserve the source checksum. 349 app regression tests and 8 converter tests passed. Initial full-suite OBS tests hit sandbox localhost restrictions; the authorised rerun passed completely. Browser verified selecting Efik while KJV Psalm 23:1 remained live, then presenting Efik John 3:16. With the local server stopped, reload restored ELNT and a new Output window displayed the Efik passage. Evidence: `work/efik-full-tests.txt`, `work/efik-offline-output.jpg`.
+- [ ] Commit, publish v134 and verify live release files.
+
 ## Optional eBible packs — 12 November 2026 (v133)
 
 - [x] Review each edition's published redistribution terms on eBible.org. Add complete Yoruba Contemporary (OYCB), Hausa Contemporary (BSRK), Igbo Contemporary (BIUO), and Majority Standard Bible (MSB). The first three are CC BY-SA 4.0; MSB is public domain. Nigerian Pidgin is excluded because its listed edition is all rights reserved. Efik remains a separate incomplete integration; correct the stale claim that only scans exist.

@@ -1,0 +1,12 @@
+{
+  "file": "data/efik-nt.json",
+  "source": "https://open.bible/bibles/biblica-open-efik-living-new-testament-1995",
+  "archiveSha256": "7caa47a5e134ad3877d263f3e467a34262cbbf4694591a0a7f54d202f1636e6b",
+  "sha256": "f951955a668469704910bebb9ee568ff196df6c6ae70fc978a6c8f51249a016b",
+  "bytes": 1234078,
+  "scope": "NT",
+  "populatedBooks": 27,
+  "chapters": 260,
+  "verses": 7958,
+  "absentVerses": []
+}

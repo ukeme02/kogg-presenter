@@ -43,6 +43,7 @@ function songToSlides(song) {
 function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
   const book = books[bookIdx];
   const slides = [];
+  if (!book?.chapters[chFrom - 1]) return slides;
   for (let v = vFrom; v <= vTo; v++) {
     const text = book.chapters[chFrom - 1][v - 1];
     if (text == null) continue;  // skip missing verses instead of breaking
@@ -206,7 +207,7 @@ function rebuildDownloadedOptions() {
 function rememberDownloadedBible(file, data) {
   if (!/^data\/[a-z0-9-]+\.json$/.test(file) || [...$('translationSelect').options].some(o => o.value === file)) return;
   const list = downloadedBibles().filter(v => v.file !== file);
-  list.push({file, name: data.metadata?.language ? `${data.translation} — ${data.metadata.language}` : String(data.translation || file.split('/').pop().replace('.json', ''))});
+  list.push({file, name: data.metadata?.language ? `${data.translation} — ${data.metadata.language}${data.metadata.scope==='NT'?' · New Testament':''}` : String(data.translation || file.split('/').pop().replace('.json', ''))});
   LS.set(K.settings, Object.assign(LS.get(K.settings, {}), {downloadedBibles: list}));
   rebuildDownloadedOptions();
 }
@@ -238,7 +239,7 @@ async function loadBible(file) {
     data = await res.json();
   }
   if (token !== bibleLoadToken) return false;
-  if (!data || !Array.isArray(data.books) || data.books.length !== 66 || !data.books.every(b => typeof b.name === 'string' && Array.isArray(b.chapters) && b.chapters.length && b.chapters.every(c => Array.isArray(c) && c.length && c.every(v => typeof v === 'string')))) throw new Error('Bible file has an invalid format');
+  if (!window.KOGGScripture.bibleData(data)) throw new Error('Bible file has an invalid format');
   rememberDownloadedBible(file, data);
   bible = data;
   loadedBibleFile = file;
@@ -250,13 +251,15 @@ async function loadBible(file) {
     if (t.trim()) searchIndex.push({ bi, ci, vi, s: stripStrongs(t).toLowerCase() });
   })));
   const bookSel = $('bookSelect');
-  bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${esc(b.name)}</option>`).join('');
+  bookSel.innerHTML = bible.books.map((b, i) => b.chapters.length ? `<option value="${i}">${esc(b.name)}</option>` : '').join('');
   fillChapters();
   renderVersionChips();
+  renderBookGhost();
   return true;
   } catch (err) {
     if (token !== bibleLoadToken) return false;
     if (loadedBibleFile) $('translationSelect').value = loadedBibleFile;
+    renderVersionChips();
     $('modeHint').textContent = err.message + ' — select a translation to retry.';
     return false;
   }
@@ -608,7 +611,6 @@ $('versionChips').addEventListener('click', e => {
   b.classList.add('loaded');   // immediate feedback while the fetch lands
   b.textContent = b.textContent + ' …';
   $('translationSelect').dispatchEvent(new Event('change'));
-  flash(b, 'On screen ✓');
 });
 
 /* Scripture docks — Books / Chapters / Verses / Memory on one page */
@@ -642,6 +644,7 @@ function renderBookChips(filter) {
     const chips = [];
     for (const g of groups) {
       for (let i = g.from; i <= g.to && i < bible.books.length; i++) {
+        if (!bible.books[i].chapters.length) continue;
         if (!matches(i)) continue;
         total++;
         chips.push(`<button data-i="${i}" class="book-chip g-${g.key}${i === +$('bookSelect').value ? ' selected' : ''}" title="${esc(bible.books[i].name)}">${BOOK_ABBS[i] || esc(bible.books[i].name)}</button>`);
@@ -652,7 +655,7 @@ function renderBookChips(filter) {
   sect('Old Testament', BOOK_GROUPS_OT);
   sect('New Testament', BOOK_GROUPS_NT);
   box.innerHTML = html;
-  $('bookCount').textContent = f ? `${total} match${total === 1 ? '' : 'es'}` : 'OT · NT — tap a book';
+  $('bookCount').textContent = f ? `${total} match${total === 1 ? '' : 'es'}` : bible.metadata?.scope==='NT' ? 'New Testament only — tap a book' : 'OT · NT — tap a book';
 }
 function renderChapterChips() {
   if (!bible) return;
@@ -664,6 +667,7 @@ function renderChapterChips() {
 }
 function chapterLive(bi, ch, expectedLive=null) {
   const book = bible.books[bi];
+  if (!book?.chapters[ch - 1]) return false;
   return goLiveScripture({ bookIdx: bi, ch, vFrom: 1, vTo: book.chapters[ch - 1].length },expectedLive);
 }
 $('bookChips').addEventListener('click', e => {
@@ -685,12 +689,13 @@ $('chapterChips').addEventListener('click', e => {
 });
 $('btnPrevChapter').addEventListener('click', () => {
   if (!bible) return;
+  const previous = window.KOGGScripture.nextBook(bible.books,+$('bookSelect').value,-1);
   const cur = +$('chapterSelect').value;
   if (cur > 1) {
     $('chapterSelect').value = cur - 1;
     fillVerses(); renderChapterChips();
-  } else if ($('bookSelect').value > 0) {
-    $('bookSelect').value = $('bookSelect').value - 0 - 1;
+  } else if (previous >= 0) {
+    $('bookSelect').value = previous;
     fillChapters();
     $('chapterSelect').value = bible.books[+$('bookSelect').value].chapters.length;
     fillVerses(); renderChapterChips();
@@ -699,13 +704,14 @@ $('btnPrevChapter').addEventListener('click', () => {
 });
 $('btnNextChapter').addEventListener('click', () => {
   if (!bible) return;
+  const next = window.KOGGScripture.nextBook(bible.books,+$('bookSelect').value,1);
   const cur = +$('chapterSelect').value;
   const total = bible.books[+$('bookSelect').value].chapters.length;
   if (cur < total) {
     $('chapterSelect').value = cur + 1;
     fillVerses(); renderChapterChips();
-  } else if ($('bookSelect').value < bible.books.length - 1) {
-    $('bookSelect').value = +$('bookSelect').value + 1;
+  } else if (next >= 0) {
+    $('bookSelect').value = next;
     fillChapters();
   }
   if (verseMode === 'chapter') chapterLive(+$('bookSelect').value, +$('chapterSelect').value);
@@ -724,7 +730,7 @@ function stepVerse(dir, expectedLive=null) {
   if (verseMode === 'chapter') {
     const target = ch + dir;
     if (target >= 1 && target <= book.chapters.length) { return chapterLive(bi, target,expectedLive); return; }
-    const nb = bi + dir;
+    const nb = window.KOGGScripture.nextBook(bible.books,bi,dir);
     if (nb < 0 || nb >= bible.books.length) return;
     return chapterLive(nb, dir > 0 ? 1 : bible.books[nb].chapters.length,expectedLive);
     return;
@@ -734,15 +740,16 @@ function stepVerse(dir, expectedLive=null) {
     if (ch > 1) {
       const pc = book.chapters[ch - 2].length;
       return goLiveScripture({ bookIdx: bi, ch: ch - 1, vFrom: pc, vTo: pc },expectedLive);
-    } else if (bi > 0) {
-      const pb = bible.books[bi - 1], pc2 = pb.chapters.length, pl = pb.chapters[pc2 - 1].length;
-      return goLiveScripture({ bookIdx: bi - 1, ch: pc2, vFrom: pl, vTo: pl },expectedLive);
+    } else {
+      const previous=window.KOGGScripture.nextBook(bible.books,bi,-1);if(previous<0)return;
+      const pb = bible.books[previous], pc2 = pb.chapters.length, pl = pb.chapters[pc2 - 1].length;
+      return goLiveScripture({ bookIdx: previous, ch: pc2, vFrom: pl, vTo: pl },expectedLive);
     }
     return;
   }
   if (v > count) {   // forward into the next chapter / book
     if (ch < book.chapters.length) return goLiveScripture({ bookIdx: bi, ch: ch + 1, vFrom: 1, vTo: 1 },expectedLive);
-    else if (bi < bible.books.length - 1) return goLiveScripture({ bookIdx: bi + 1, ch: 1, vFrom: 1, vTo: 1 },expectedLive);
+    else { const next=window.KOGGScripture.nextBook(bible.books,bi,1);if(next>=0)return goLiveScripture({ bookIdx: next, ch: 1, vFrom: 1, vTo: 1 },expectedLive); }
     return;
   }
   if (verseMode === 'range' && sameRef) {
@@ -827,13 +834,13 @@ function suggestBook(q) {
   if (!bible) return [];
   const key = normKey(q.toLowerCase().replace(/[^a-z0-9. ]/g, ''));
   if (!key) return [];
-  const exact = bible.books.findIndex(b => normKey(b.name) === key || normKey(b.name) === normKey(BOOK_ABBR[key] || ''));
+  const exact = bible.books.findIndex(b => b.chapters.length && (normKey(b.name) === key || normKey(b.name) === normKey(BOOK_ABBR[key] || '')));
   if (exact >= 0) return [exact];
-  const names=bible.books.map((b,i)=>({i,k:normKey(b.name)}));
+  const names=bible.books.map((b,i)=>({i,k:normKey(b.name)})).filter(o=>bible.books[o.i].chapters.length);
   const prefixes=names.filter(o=>o.k.startsWith(key));
   const out=(prefixes.length ? prefixes : names.filter(o=>o.k.includes(key))).map(o=>o.i);
   if (!out.length && BOOK_ABBR[key] !== undefined) {
-    const idx = bible.books.findIndex(b => normKey(b.name) === normKey(BOOK_ABBR[key]));
+    const idx = bible.books.findIndex(b => b.chapters.length && normKey(b.name) === normKey(BOOK_ABBR[key]));
     if (idx >= 0) out.push(idx);
   }
   return out.slice(0, 6);
@@ -844,7 +851,7 @@ function commitJump(q) {
   const lm = s.match(/^[1-3]?\s*[a-z.\- ]+/);
   const letters = lm ? lm[0] : '';
   const cands = suggestBook(letters.trim() || s);
-  if (!cands.length) return;
+  if (!cands.length) { if(bible?.metadata?.scope==='NT')$('jumpHint').textContent='This Efik edition includes the New Testament only. Choose another Bible for the Old Testament.'; return; }
   const bi = cands[0];
   // "3", "3:16", "3 16", "3.16", "3:16-18"
   const dm = s.slice(letters.length).trim().match(/^(\d+)\s*[:.]?\s*(?:(\d+)\s*(?:-\s*(\d+))?)?$/);
@@ -891,6 +898,7 @@ function renderBookGhost() {
   sug.hidden=!(choosing && cands.length>1);
   if(!sug.hidden)sug.innerHTML=cands.map(i=>`<button data-s="${i}">📖 ${esc(bible.books[i].name)}</button>`).join('');
   let hint='Start typing a book anywhere in Scripture. Chapter → verse, then Enter.';
+  if(bible?.metadata?.scope==='NT')hint='Efik · New Testament only. Type Matthew to Revelation; use another Bible for the Old Testament.';
   if(cands.length===1){
     const book=bible.books[cands[0]];
     if(choosing)hint=`${book.name} • chapters 1–${book.chapters.length}. Type a chapter; → moves to verse.`;
@@ -2106,6 +2114,10 @@ $('btnBookmarkScripture').addEventListener('click',()=>{
 function goLiveScripture(r, expectedLive=null) {
   if(expectedLive && live!==expectedLive)return false;
   if (!bible) return false;
+  if (bible.metadata?.scope==='NT' && r?.bookIdx < 39) {
+    $('modeHint').textContent='Efik · New Testament only. Choose another Bible for the Old Testament. Current output kept.';
+    return false;
+  }
   if (bible.provider && window.KOGGBibles && !(bible.books[r.bookIdx]?.chapters[r.ch - 1] || []).length) {
     // connected version — stream the chapter in, then stage as usual
     return window.KOGGBibles.ensureChapter(bible, r.bookIdx, r.ch)
@@ -3289,10 +3301,11 @@ $('extraBiblePanel').addEventListener('click',async event=>{
   $('extraBibleStatus').textContent='Loading Bible… Please keep this window open.';
   try{
     if(await loadBible(button.dataset.bibleFile)){
-      await goLiveScripture(reference);
+      const displayed=await goLiveScripture(reference);
       let cached=false;
       try{cached=!!(await window.caches?.match(new URL(button.dataset.bibleFile,location.href).href));}catch{}
       $('extraBibleStatus').textContent=cached?'Ready. Saved on this browser for offline use.':'Ready to use. Offline saving is not confirmed yet — finish offline setup, then reopen this version while connected.';
+      if(bible.metadata?.scope==='NT')$('extraBibleStatus').textContent+=' New Testament only: Matthew–Revelation.'+(!displayed?' Current output kept.':'');
       const badge=button.querySelector('.bible-menu-badge');if(badge)badge.textContent='Open';
     }else $('extraBibleStatus').textContent='Could not load this version. Reconnect and retry; your current display has been kept.';
   }

@@ -72,7 +72,7 @@ function boot({recognition,session=new Map(),saved=new Map()}={}){
  for(const id of groups){const group=elements.get(id),descriptor=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');Object.defineProperty(group,'innerHTML',{get(){return descriptor.get.call(this);},set(value){this.options=[];descriptor.set.call(this,value);elements.get('translationSelect').options=[...baseOptions,...groups.flatMap(key=>elements.get(key).options)];}});}
  const storage=new Map([['cp_settings',JSON.stringify({mode:'local',starterSeeded:true,hymnPackVersion:'traditional-basic-v1'})],...saved]);
  const document={getElementById:id=>elements.get(id)||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new Element(),addEventListener(){},removeEventListener(){},body:new Element(),head:new Element()};
- const context=vm.createContext({console,document,window:{matchMedia:()=>({matches:false}),SpeechRecognition:recognition,innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGMedia:require('../js/media.js'),KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),KOGGNotes:require('../js/notes.js'),KOGGSlides:require('../js/slides.js'),KOGGStream:require('../js/stream.js'),KOGGLyrics:require('../js/lyrics.js'),KOGGLyricsSources:require('../js/lyrics-sources.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},sessionStorage:{getItem:k=>session.get(k)||null,setItem:(k,v)=>session.set(k,v),removeItem:k=>session.delete(k)},AbortController,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});
+ const context=vm.createContext({console,document,window:{matchMedia:()=>({matches:false}),SpeechRecognition:recognition,innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGMedia:require('../js/media.js'),KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),KOGGBibleDownloads:require('../js/bible-downloads.js'),KOGGNotes:require('../js/notes.js'),KOGGSlides:require('../js/slides.js'),KOGGStream:require('../js/stream.js'),KOGGLyrics:require('../js/lyrics.js'),KOGGLyricsSources:require('../js/lyrics-sources.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},sessionStorage:{getItem:k=>session.get(k)||null,setItem:(k,v)=>session.set(k,v),removeItem:k=>session.delete(k)},AbortController,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});
  const sources=require('../js/lyrics-sources.js');context.window.KOGGLyricsSources={...sources,search:(q,o)=>sources.search(q,{...o,fetcher:(...a)=>context.fetch(...a)}),lookup:(song,o)=>sources.lookup(song,{...o,fetcher:(...a)=>context.fetch(...a)}),importLink:(raw,o)=>sources.importLink(raw,{...o,fetcher:(...a)=>context.fetch(...a)})};
  vm.runInContext(app,context);vm.runInContext(fs.readFileSync('js/slides-deck.js','utf8'),context);vm.runInContext(fs.readFileSync('js/stream-deck.js','utf8'),context);return {context,elements,storage,session};
 }
@@ -463,4 +463,47 @@ test('Base scripture additions are temporary and excluded from saved service sto
 
 test('Base reading history is temporary and switching back restores Local history',async()=>{
  const {context,storage,session}=boot();await new Promise(r=>setImmediate(r));vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:16})',context);const saved=storage.get('cp_scripture_history');vm.runInContext("setWorkMode('base');goLiveScripture({bookIdx:18,ch:23,vFrom:1,vTo:1})",context);assert.equal(storage.get('cp_scripture_history'),saved);assert.ok(session.has('cp_scripture_history_session'));vm.runInContext("setWorkMode('local')",context);assert.equal(vm.runInContext('memory[0].r.bookIdx',context),42);
+});
+
+
+test('Bible menu inspects cache without fetching optional text and reports cleared downloads honestly',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ const calls=[],fetch=context.fetch;context.fetch=async file=>{calls.push(file);return fetch(file);};
+ context.window.caches={keys:async()=>[]};
+ vm.runInContext("LS.set(K.settings,{...LS.get(K.settings,{}),downloadedBibles:[{file:'data/efik-nt.json',name:'ELNT'}]})",context);
+ elements.get('extraBiblePanel').hidden=true;await elements.get('btnMoreBibles').handlers.click[0]();
+ assert.deepEqual(calls,['data/content-catalog.json']);
+ assert.match(elements.get('extraBibleButtons').innerHTML,/Not saved on this device/);
+ assert.doesNotMatch(elements.get('extraBibleButtons').innerHTML,/Saved offline/);
+ assert.match(elements.get('extraBibleButtons').innerHTML,/Full Bible located/);
+});
+
+test('optional removal preserves the live output and refuses the Bible currently in use',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ await vm.runInContext("loadBible('data/efik-nt.json');",context);
+ await vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:16})',context);const live=storage.get('cp_live');
+ const removed=[];context.window.KOGGBibleDownloads={create:()=>({status:async()=>new Map([['data/efik-nt.json',true]]),remove:async file=>removed.push(file)})};
+ elements.get('extraBiblePanel').hidden=true;await elements.get('btnMoreBibles').handlers.click[0]();
+ const event={target:{closest:selector=>selector.includes('bible-remove')?{dataset:{bibleRemove:'data/efik-nt.json'}}:null}};
+ await elements.get('extraBiblePanel').handlers.click[0](event);assert.equal(removed.length,0);
+ await vm.runInContext("loadBible('data/kjv.json')",context);
+ await elements.get('extraBiblePanel').handlers.click[0](event);
+ assert.deepEqual(removed,['data/efik-nt.json']);assert.equal(storage.get('cp_live'),live);
+ assert.ok(!JSON.parse(storage.get('cp_settings')).downloadedBibles.some(b=>b.file==='data/efik-nt.json'));
+ assert.equal(elements.get('extraBibleProgress').hidden,true);
+});
+
+test('failed optional download releases loading controls and preserves current projection',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ context.window.caches={keys:async()=>[]};elements.get('extraBiblePanel').hidden=true;await elements.get('btnMoreBibles').handlers.click[0]();
+ const live=storage.get('cp_live');let fail;
+ context.fetch=()=>new Promise((resolve,reject)=>{fail=reject;});
+ const button={dataset:{bibleFile:'data/efik-nt.json'}};
+ const event={target:{closest:selector=>selector.includes('bible-file')?button:null}};
+ const loading=elements.get('extraBiblePanel').handlers.click[0](event);
+ assert.equal(elements.get('extraBibleProgress').hidden,false);
+ await elements.get('extraBiblePanel').handlers.click[0](event); // duplicate is ignored
+ fail(Error('Connection lost'));await loading;
+ assert.equal(elements.get('extraBibleProgress').hidden,true);assert.equal(storage.get('cp_live'),live);
+ assert.match(elements.get('extraBibleStatus').textContent,/Could not load/);
 });

@@ -1936,3 +1936,8 @@ dialog::backdrop{background:#030913a8;backdrop-filter:blur(3px)}
 .lyrics-packs input:not([type=checkbox]),.lyrics-packs textarea{width:100%;max-width:100%;box-sizing:border-box}
 .lyrics-packs>.lyrics-pack-confirm{display:flex;align-items:flex-start;gap:8px}
 .lyrics-pack-confirm input[type=checkbox]{width:auto;flex:none;margin-top:3px}
+
+/* Optional Bible downloads: compact controls, truthful local-storage status. */
+.bible-download-item{min-width:0}.bible-download-remove{display:block;margin:3px 4px 7px auto;font-size:11px;padding:5px 8px;min-height:32px}.bible-download-note{font-size:11px;line-height:1.5;color:var(--muted);margin:0 2px 6px}#extraBibleProgress{width:100%;height:5px;margin-top:10px;accent-color:var(--accent)}#extraBibleButtons .bible-menu-row{gap:8px}#extraBibleButtons .bible-menu-badge{white-space:normal;text-align:center;max-width:72px}
+
+#extraBiblePanel:not([hidden]){display:flex;flex-direction:column;overflow:hidden}#extraBiblePanel #extraBibleButtons{min-height:0;overflow-y:auto;overscroll-behavior:contain;flex:1}#extraBibleStatus,#extraBibleProgress{flex:none}

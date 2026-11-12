@@ -1,5 +1,17 @@
 # Repair progress - 3 November 2026
 
+## Lightweight optional Bible management — 12 November 2026 (v135)
+
+- [x] Show actual cache-backed offline status in More Bibles, rather than treating a remembered picker entry as proof of a stored text. Distinguish unavailable browser storage from a saved download. Opening the menu inspects storage without fetching any Bible text.
+- [x] Show the actual uncompressed file size for all 15 optional Bible packs. Add a small native loading indicator and keep status visible beneath the scrolling list. Prevent duplicate menu actions while a download/removal is running; failed downloads retain current projection.
+- [x] Add Remove download for cached optional editions. Protect the currently selected edition and the Base Bible/lexicon/hymn files. Remove only the exact optional file from KOGG release caches and its remembered picker entry, leaving schedules and projection intact. Delay removal while a service-worker update is installing/waiting to avoid copying the file back during migration.
+- [x] Update pending-edition wording: full Efik has been located but permission/text delivery is pending. Preserve the separate existing NLT online connection label; this is not a new API.Bible activation or offline NLT pack.
+- [x] Keep every optional Bible out of Base preparation. No new text packs, third-party dependencies, audio or provider requests added. New storage helper is under 2 KB before compression. No accounts, payments or licences activated.
+- [x] Validate: 356 app tests passed after rerunning the full suite with loopback access for the OBS test (initial sandbox-only run blocked that test). Fresh browser verified Efik download, cache-backed status, selected-edition removal protection, switching to KJV and removal. Final browser layout keeps feedback visible; screenshot `work/bible-downloads-v135.png`. Focused final catalogue checks and packaged hash verification are recorded with release completion below.
+- [ ] Commit, publish and verify canonical live files.
+
+Full Efik and new licensed editions still await provider responses. Windows preview installer remains v127. User's untracked `data/hymns-basic.json` remains untouched.
+
 ## Full Efik and provider reply review — 12 November 2026
 
 - [x] Verify full Efik ENA, including Old Testament, on YouVersion and the Digital Bible Society catalogue. Identify BSN as publisher and distinguish DBL text entry `f8930f5c215d1607` from the full audio entry. No openly licensed full text verified; optional ELNT remains NT-only.

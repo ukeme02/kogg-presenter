@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "hymnPacks": [
     {
       "id": "traditional-basic-v1",
@@ -69,70 +69,81 @@
     {
       "name": "WEB",
       "short": "WEB — World English Bible",
-      "file": "data/web.json"
+      "file": "data/web.json",
+      "bytes": 4106841
     },
     {
       "name": "ASV",
       "short": "ASV — American Standard 1901",
-      "file": "data/asv.json"
+      "file": "data/asv.json",
+      "bytes": 4214155
     },
     {
       "name": "YLT",
       "short": "YLT — Young's Literal 1898",
-      "file": "data/ylt.json"
+      "file": "data/ylt.json",
+      "bytes": 4199745
     },
     {
       "name": "Darby",
       "short": "Darby — 1885 revision",
-      "file": "data/darby.json"
+      "file": "data/darby.json",
+      "bytes": 4175553
     },
     {
       "name": "AKJV",
       "short": "AKJV — American King James",
-      "file": "data/akjv.json"
+      "file": "data/akjv.json",
+      "bytes": 4178803
     },
     {
       "name": "Webster",
       "short": "Webster — Noah Webster 1833",
-      "file": "data/webster.json"
+      "file": "data/webster.json",
+      "bytes": 4222014
     },
     {
       "name": "Geneva1599",
       "short": "Geneva — 1599 edition",
-      "file": "data/geneva1599.json"
+      "file": "data/geneva1599.json",
+      "bytes": 4252220
     },
     {
       "name": "LSV",
       "short": "LSV — Literal Standard 2020 (public domain)",
-      "file": "data/lsv.json"
+      "file": "data/lsv.json",
+      "bytes": 4226338
     },
     {
       "name": "BBE",
       "short": "BBE — Basic English 1949 (widely redistributed)",
-      "file": "data/bbe.json"
+      "file": "data/bbe.json",
+      "bytes": 4243286
     },
     {
       "name": "ERV",
       "short": "ERV — English Revised 1885 (public domain)",
-      "file": "data/erv.json"
+      "file": "data/erv.json",
+      "bytes": 4222375
     }
   ],
   "requestedBibles": [
     {
       "name": "NIV",
-      "status": "No free source — publisher licence required"
+      "status": "Licence activation pending — not connected yet"
     },
     {
       "name": "NLT",
-      "status": "No free source — publisher licence required"
+      "status": "Online connection in the translation picker; offline download not available.",
+      "badge": "Online only"
     },
     {
       "name": "NKJV",
-      "status": "No free source — publisher licence required"
+      "status": "Licence activation pending — not connected yet"
     },
     {
       "name": "Amplified",
-      "status": "No free source — publisher licence required"
+      "status": "Licence activation pending — not connected yet"
     },
     {
       "name": "ASB (edition to confirm)",
@@ -140,11 +151,11 @@
     },
     {
       "name": "The Message",
-      "status": "No free source — publisher licence required"
+      "status": "Licence activation pending — not connected yet"
     },
     {
       "name": "Efik",
-      "status": "New Testament available above. Full Efik Bible still awaits a distributable source."
+      "status": "Full Bible located; publisher permission and text files pending. New Testament available above."
     }
   ]
 }

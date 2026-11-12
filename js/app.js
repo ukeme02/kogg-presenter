@@ -3169,7 +3169,7 @@ function updateAddVersionsGate() {
   const m = workMode();
   const note = $('addVersionsModeNote');
   if (!note) return;
-  if (m === 'base') note.textContent = 'Base includes KJV, BSB and Strong’s. WEB/ASV download when selected online; compatible Bible files can be added locally.';
+  if (m === 'base') note.textContent = 'Base includes KJV, BSB and Strong’s. More Bibles downloads extra editions only when you choose them; compatible Bible files can also be added locally.';
   else if (m === 'sync') note.textContent = 'Added versions stay on this device (the cloud library keeps songs/themes/plans).';
   else note.textContent = 'Added versions stay on this device.';
   const btn = $('btnAddBible');
@@ -3281,35 +3281,73 @@ function positionExtraBiblePanel(){
 window.addEventListener('resize',positionExtraBiblePanel);
 window.addEventListener('scroll',event=>{if(!$('extraBiblePanel').contains?.(event.target))positionExtraBiblePanel();},true);
 document.addEventListener('click',event=>{if(!event.target.closest?.('#extraBiblePanel, #btnMoreBibles'))$('extraBiblePanel').hidden=true;});
+let extraBibleCatalogue=null,extraBibleBusy=false,extraBibleRenderToken=0;
+function bibleDownloadStore(){
+  let cacheStorage;try{cacheStorage=window.caches;}catch{}
+  return window.KOGGBibleDownloads.create({caches:cacheStorage,href:location.href,files:(extraBibleCatalogue?.bibles || []).map(b=>b.file)});
+}
+function setBibleDownloadBusy(busy){
+  extraBibleBusy=busy;
+  $('extraBiblePanel').setAttribute('aria-busy',String(busy));
+  $('extraBibleProgress').hidden=!busy;
+  $('extraBibleButtons').querySelectorAll('button').forEach(button=>button.disabled=busy||button.dataset.bibleRemove===loadedBibleFile);
+}
+async function renderExtraBibles(){
+  if(!extraBibleCatalogue)return;
+  const token=++extraBibleRenderToken,status=await bibleDownloadStore().status();
+  if(token!==extraBibleRenderToken)return;
+  const buttons=extraBibleCatalogue.bibles.map(b=>{
+    const saved=status.get(b.file),active=b.file===loadedBibleFile;
+    const details=[b.language || b.name,b.bytes ? (b.bytes/1000000).toFixed(1)+' MB' : '',saved===true?'Saved offline':saved===null?'Offline storage unavailable':'Not saved on this device',b.license || ''].filter(Boolean).join(' · ');
+    return `<div class="bible-download-item"><button class="bible-menu-row" data-bible-file="${esc(b.file)}" ${extraBibleBusy?'disabled':''}><span class="bible-menu-copy"><b>${esc(b.short || b.name)}</b><small>${esc(details)}</small></span><span class="bible-menu-badge">${saved===true?'Open':'Download ↓'}</span></button>${saved===true?`<button class="bible-download-remove" data-bible-remove="${esc(b.file)}" ${extraBibleBusy||active?'disabled':''} aria-label="Remove ${esc(b.name)} download" title="${active?'Switch to another Bible before removing this download':'Remove from this browser; saved schedules and current projection stay unchanged'}">${active?'In use':'Remove download'}</button>`:''}</div>`;
+  }).join('');
+  const requested=(extraBibleCatalogue.requestedBibles || []).map(b=>`<div class="bible-menu-row bible-menu-pending"><span class="bible-menu-copy"><b>${esc(b.name)}</b><small>${esc(b.status || 'Access enquiry pending')}</small></span><span class="bible-menu-badge">${esc(b.badge || 'Pending')}</span></div>`).join('');
+  $('extraBibleButtons').innerHTML='<h3 class="bible-menu-heading">Optional Bible downloads</h3><p class="bible-download-note">Only the versions you choose use extra storage. Removing a download means reconnecting to use that edition again.</p>'+buttons+'<p><a href="data/bible-sources.txt" target="_blank" rel="noopener">Bible sources &amp; licences ↗</a></p><h3 class="bible-menu-heading">Other editions</h3>'+requested;
+  positionExtraBiblePanel();
+}
 $('btnMoreBibles').addEventListener('click',async()=>{
   const panel=$('extraBiblePanel');panel.hidden=!panel.hidden;if(panel.hidden)return;document.body.appendChild(panel);positionExtraBiblePanel();
   try {
-    const response=await fetch('data/content-catalog.json');if(!response.ok)throw new Error('Connect to load the Bible catalogue');
-    const catalogue=await response.json();
-    const buttons=(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))
-      .map(b=>`<button class="bible-menu-row" data-bible-file="${esc(b.file)}"><span class="bible-menu-copy"><b>${esc(b.short || b.name)}</b><small>${esc([b.language || b.name,b.bytes ? (b.bytes/1000000).toFixed(1)+' MB' : '',b.license || ''].filter(Boolean).join(' · '))}</small></span><span class="bible-menu-badge">${downloadedBibles().some(v=>v.file===b.file)?'Open':'Download ↓'}</span></button>`).join('');
-    const requested=(catalogue.requestedBibles || []).map(b=>`<div class="bible-menu-row bible-menu-pending" title="${esc(b.status || 'Approved distributable text is not connected yet')}"><span class="bible-menu-copy"><b>${esc(b.name)}</b><small>${esc(b.status || 'Digital source needed')}</small></span><span class="bible-menu-badge">Source needed</span></div>`).join('');
-    $('extraBibleButtons').innerHTML='<h3 class="bible-menu-heading">Available downloads</h3>'+buttons+'<p><a href="data/bible-sources.txt" target="_blank" rel="noopener">Bible sources &amp; licences ↗</a></p><h3 class="bible-menu-heading">Requested translations</h3>'+requested;
-    $('extraBibleStatus').textContent='Requested versions need a licensed or digital text source (shown on each button). Available downloads work offline after downloading. Use Tools → Import Bible for a permitted Bible file.';positionExtraBiblePanel();
+    if(!extraBibleCatalogue){
+      const response=await fetch('data/content-catalog.json');if(!response.ok)throw new Error('Connect to load the Bible catalogue');
+      const catalogue=await response.json();
+      extraBibleCatalogue={...catalogue,bibles:(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))};
+    }
+    await renderExtraBibles();
+    if(!extraBibleBusy)$('extraBibleStatus').textContent='KJV, BSB and KJV Strong’s are included in Base. Extra downloads stay on this device, in any work mode.';
   }catch(err){$('extraBibleStatus').textContent=err.message;}
 });
 $('extraBiblePanel').addEventListener('click',async event=>{
+  if(extraBibleBusy)return;
+  const remove=event.target.closest('button[data-bible-remove]');
+  if(remove){
+    const file=remove.dataset.bibleRemove;if(file===loadedBibleFile)return;
+    setBibleDownloadBusy(true);
+    try{
+      const registration=await navigator.serviceWorker?.getRegistration?.();
+      if(registration?.installing||registration?.waiting)throw new Error('An app update is being prepared. Close and reopen KOGG after service, then remove this download.');
+      await bibleDownloadStore().remove(file);
+      const settings=LS.get(K.settings,{});settings.downloadedBibles=downloadedBibles().filter(v=>v.file!==file);LS.set(K.settings,settings);
+      rebuildDownloadedOptions();renderVersionChips();
+      $('extraBibleStatus').textContent='Download removed from this browser. Your schedules and current output are unchanged.';
+    }catch(err){$('extraBibleStatus').textContent=err.message;}
+    finally{setBibleDownloadBusy(false);await renderExtraBibles();}
+    return;
+  }
   const button=event.target.closest('button[data-bible-file]');if(!button)return;
   const reference=currentLiveReference() || currentScriptureRange();
-  button.disabled=true;
-  $('extraBiblePanel').setAttribute('aria-busy','true');
-  $('extraBibleStatus').textContent='Loading Bible… Please keep this window open.';
+  setBibleDownloadBusy(true);
+  $('extraBibleStatus').textContent='Loading Bible… Your current output stays visible while this loads.';
   try{
     if(await loadBible(button.dataset.bibleFile)){
       const displayed=await goLiveScripture(reference);
-      let cached=false;
-      try{cached=!!(await window.caches?.match(new URL(button.dataset.bibleFile,location.href).href));}catch{}
+      const cached=(await bibleDownloadStore().status()).get(button.dataset.bibleFile)===true;
       $('extraBibleStatus').textContent=cached?'Ready. Saved on this browser for offline use.':'Ready to use. Offline saving is not confirmed yet — finish offline setup, then reopen this version while connected.';
       if(bible.metadata?.scope==='NT')$('extraBibleStatus').textContent+=' New Testament only: Matthew–Revelation.'+(!displayed?' Current output kept.':'');
-      const badge=button.querySelector('.bible-menu-badge');if(badge)badge.textContent='Open';
     }else $('extraBibleStatus').textContent='Could not load this version. Reconnect and retry; your current display has been kept.';
   }
-  finally{button.disabled=false;$('extraBiblePanel').setAttribute('aria-busy','false');}
+  catch(err){$('extraBibleStatus').textContent='Could not complete this download. Reconnect and retry.';}
+  finally{setBibleDownloadBusy(false);await renderExtraBibles();}
 });
 
 /* Backup / restore */

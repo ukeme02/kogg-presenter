@@ -68,7 +68,7 @@
         </select>
         <span id="offlineStatus" class="status-note" role="status" aria-live="polite">Preparing offline…</span>
         <button id="btnRetryOffline" hidden>Retry offline setup</button>
-        <div class="more-wrap"><button id="btnMoreBibles">More Bibles</button><div id="extraBiblePanel" class="more-menu" hidden><div id="extraBibleButtons" class="bible-menu-list"></div><p id="extraBibleStatus" role="status">Download a version once while online, then it works offline in every work mode.</p></div></div>
+        <div class="more-wrap"><button id="btnMoreBibles">More Bibles</button><div id="extraBiblePanel" class="more-menu" hidden><div id="extraBibleButtons" class="bible-menu-list"></div><progress id="extraBibleProgress" aria-label="Loading Bible" hidden></progress><p id="extraBibleStatus" role="status">Download a version once while online, then it works offline in every work mode.</p></div></div>
         <span id="liveRef" class="livedot" hidden></span>
         <div class="more-wrap">
           <button id="btnDocks" title="Choose which docks are on screen">🧩 Docks</button>
@@ -620,6 +620,7 @@
 <script src="js/offline.js"></script>
 <script src="js/scripture-tools.js"></script>
 <script src="js/bible-providers.js"></script>
+<script src="js/bible-downloads.js"></script>
 <script src="js/content.js"></script>
 <script src="js/lyrics.js"></script>
 <script src="js/lyrics-sources.js"></script>

@@ -8,7 +8,7 @@
 - [x] Restrict book navigation and Quick Jump suggestions to available books. Stop safely at Matthew/Revelation; search only actual text. If an Old Testament passage is live during selection, keep its original output and explicitly explain that Efik contains the New Testament only. Remove premature “On screen” success feedback on version chips.
 - [x] Update landing library copy and offline-readable Bible credits. Full Efik remains tracked separately as awaiting an approved distributable source. Existing Windows preview installer is unchanged.
 - [x] Validate every verse for replacement/control characters and preserve the source checksum. 349 app regression tests and 8 converter tests passed. Initial full-suite OBS tests hit sandbox localhost restrictions; the authorised rerun passed completely. Browser verified selecting Efik while KJV Psalm 23:1 remained live, then presenting Efik John 3:16. With the local server stopped, reload restored ELNT and a new Output window displayed the Efik passage. Evidence: `work/efik-full-tests.txt`, `work/efik-offline-output.jpg`.
-- [ ] Commit, publish v134 and verify live release files.
+- [x] Committed and pushed `09e7664`; published v134 at https://8505a321.kogg-presenter.pages.dev/. All 91 packaged offline hashes passed. The seven changed canonical production files, including the complete Efik pack and landing page, matched the committed archive byte-for-byte. Final operator/pack/offline checks passed 106/106 after restoring version-chip labels on failed loads. Evidence: `work/v134-live-verification.json`, `work/efik-release-tests.txt`. Preview servers stopped; unrelated untracked `data/hymns-basic.json` remains untouched and unpublished.
 
 ## Optional eBible packs — 12 November 2026 (v133)
 

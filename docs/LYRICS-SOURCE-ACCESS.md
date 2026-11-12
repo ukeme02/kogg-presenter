@@ -1,6 +1,8 @@
 # Free lyrics and community resource access
 
-Research checked 10 November 2026. This is an access plan, not an announcement of new integrations. No provider account, paid plan or partnership has been created. KOGG currently has adapters for LRCLIB, lyrics.ovh, Hymnary and hymnal.net.
+Initial research checked 10 November 2026; Bible provider replies and full-Efik sources rechecked 12 November. This is an access plan, not an announcement of new integrations. No provider account, paid plan or partnership has been created. KOGG currently has adapters for LRCLIB, lyrics.ovh, Hymnary and hymnal.net.
+
+Latest Bible update: a full Efik edition, ENA, is available to read through [YouVersion](https://www.bible.com/versions/2570-ena-edisana-nwed-abasi-ibom), published by Bible Society of Nigeria. Its KOGG redistribution permission and authoritative text export remain pending; the shipped ELNT pack covers the New Testament only. API.Bible has now sent substantive conditional guidance, superseding its earlier acknowledgement. A clarification reply asks about one KOGG-managed connection, offline-view reporting and full-Efik access. Bible Brain and Biblica have acknowledged enquiries automatically; BSN, YouVersion and AO Lab have not replied as of this review. See the dated review in LYRICS-PARTNERSHIP-REQUESTS.md for evidence and next steps.
 
 ## Recommended order
 

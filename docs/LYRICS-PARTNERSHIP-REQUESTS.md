@@ -8,7 +8,7 @@ Prepared 10 November 2026. After reviewing the three saved drafts, the project o
 | Worship Start | hello@worshipstart.com | Sent; awaiting reply |
 | hymnal.net | contact@hymnal.net | Sent; awaiting reply |
 
-Sent-folder evidence: `work/kogg-partnership-sent.png`. The additional Bible and hymn candidates in LYRICS-SOURCE-ACCESS.md have been researched, not contacted.
+Sent-folder evidence: `work/kogg-partnership-sent.png`. All ten additional Bible and hymn candidates were subsequently contacted on 11–12 November; see the ledger below.
 
 ## Sovereign Grace Music
 
@@ -108,11 +108,34 @@ The owner authorised writing to all additional candidates. Three new messages we
 ### Reply review — 12 November 2026
 
 - eBible: Michael recommended USFX ZIP imports from the translation finder, only for editions whose licences fit the intended use. Missing or incompatible licences require direct permission from the copyright owner. Thank-you sent in the same thread; reply message ID `1a1d0464c0755dfe`.
-- API.Bible: automated acknowledgement only; no substantive approval. Existing empty reply draft was left untouched.
+- API.Bible: substantive guidance received 12 November at 19:12 WAT; see the later review below. This supersedes the earlier automated acknowledgement. Existing empty reply draft was left untouched.
 - Biblica: automated acknowledgement received; minimum 15 business days for review, with no duplicate follow-ups requested. No licence granted.
 - All seven remaining sends and the eBible reply were independently confirmed in Gmail Sent. Local send receipts are in `work/outreach-2026-11-12-results.json`. Original six requests were not duplicated.
 
 Additional contact verification: eBible founder contact https://mljohnson.org/contact/ (linked from eBible About); AO Lab https://helloao.org/contact.html; YouVersion general support https://www.bible.com/privacy (request routing to Platform); Biblica rights mailbox https://biblica.com/wp-content/uploads/Guidelines_2021_Digital.pdf (older official publication, delivery untested). Other contacts are documented in LYRICS-SOURCE-ACCESS.md. No guessed addresses were used.
+
+### Later reply review and full Efik route — 12 November 2026
+
+Checked the verified koggpresenter@gmail.com account, including incoming mail outside Inbox and a targeted Bible Society of Nigeria / YouVersion / AO Lab search.
+
+| Provider | Verified status | Next step |
+| --- | --- | --- |
+| API.Bible | DJ Chuang sent substantive, explicitly non-binding guidance. Incoming message `1a1d0f61f1891080`, thread `1a1c9931be474f0c`. | Clarification reply sent in the same thread, message `1a1d11bd9ba9e9f4`, returned SENT. Await single-application licensing, offline reporting and full-Efik availability answers before activation. |
+| eBible.org | Human reply recommends USFX and checking each edition's licence; thank-you already sent. | Continue per-edition review. This is not blanket permission for the BSN Efik Bible. |
+| Bible Society of Nigeria | Full-Efik request sent 11 November; no reply found. | Await approved machine-readable full text and distribution terms. Do not duplicate yesterday's request. |
+| Bible Brain | Automated acknowledgement, ticket 101779, message `1a1d047dd4b8eebf`. | Await text availability, offline-download and publisher-permission guidance. |
+| Biblica | Automated acknowledgement only; minimum 15 business days, with a request not to send duplicate follow-ups. | Allow their stated review period. Open Efik NT licence remains distinct from any NIV or full-Efik permission. |
+| YouVersion Platform / AO Lab | No reply found. | Await responses to 12 November enquiries. |
+
+API.Bible's reply describes Starter as conditional on a free non-commercial application, up to three eligible copyrighted editions selected in its dashboard and 5,000 monthly API calls. It flags NKJV's 5,000 monthly-user limit on non-commercial plans. A minor non-intrusive donation link may qualify for an exemption; paid features, ads or sponsorships change eligibility. Confirm KOGG's circumstances before accepting terms.
+
+Their guidance permits projection with required attribution and FUMS reporting, requires cached text to refresh at least every 30 days, and says to lock an edition on a device after that period without refresh. Sync references and users' notes; obtain licensed text independently on each device rather than syncing verse-text files. Keep keys server-side. User speech may locate passages, but licensed text must not be sent to recognition services or used as recognition hints; copyrighted text must not enter AI prompts. See the [current terms](https://api.bible/terms-and-conditions) and [cache policy](https://care.api.bible/article/401-caching-content). These constraints are not retroactively applied to independently obtained open-licence packs.
+
+The clarification reply asks whether one KOGG-held server-side account can serve churches, rather than each church needing a developer account; whether per-device passage caches with expiry and reference-only schedule sync fit the intended use; how offline views should be reported; and whether full Efik ENA is available, with its Bible ID and approval route. No paid plan or agreement was accepted.
+
+Full Efik source: [ENA on YouVersion](https://www.bible.com/versions/2570-ena-edisana-nwed-abasi-ibom) lists both testaments and names Bible Society of Nigeria. [DBS catalogue EFIBSN](https://arc.dbs.org/data/scripture/EFIBSN/index.html) lists the full canon and BSN copyright. The related DBL **text** entry is `f8930f5c215d1607`; the separately linked `52eb3449599a4f08` is an **audio** entry and is not a lightweight text source. Public availability establishes that a full edition exists, not permission for KOGG to distribute a pack. No openly licensed complete Efik text was verified in this review.
+
+To ship full Efik: obtain the approved edition's USFM/USX/XML/JSON plus terms covering optional download distribution, offline projection, OBS, private schedule use, attribution, territories and updates; validate all books/chapters/verses and Efik characters; then add a separate on-demand pack. Do not merge a different edition's Old Testament into ELNT or describe the existing NT pack as complete.
 
 ### API.Bible
 

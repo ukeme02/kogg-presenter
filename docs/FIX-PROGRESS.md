@@ -1,5 +1,15 @@
 # Repair progress - 3 November 2026
 
+## Full Efik and provider reply review — 12 November 2026
+
+- [x] Verify full Efik ENA, including Old Testament, on YouVersion and the Digital Bible Society catalogue. Identify BSN as publisher and distinguish DBL text entry `f8930f5c215d1607` from the full audio entry. No openly licensed full text verified; optional ELNT remains NT-only.
+- [x] Check KOGG Gmail: substantive API.Bible and eBible replies; automated Biblica and Bible Brain acknowledgements; no BSN, YouVersion or AO Lab reply found. Record evidence and next actions in LYRICS-PARTNERSHIP-REQUESTS.md.
+- [x] Reply to API.Bible under the owner's existing outreach authorisation, asking about one centrally managed KOGG account, per-device offline caches/reporting and full Efik availability. Sent message `1a1d11bd9ba9e9f4`; no account, contract or paid plan activated.
+- [ ] Obtain BSN permission and approved full-Efik machine-readable text, including optional offline-pack distribution terms. Original request sent 11 November; avoid a duplicate immediate follow-up.
+- [ ] After approval, validate the complete edition and add it as a separate optional text-only download. Preserve the lightweight Base download and distinguish editions accurately.
+
+Research/outreach documentation only. Browser release remains v134; no runtime files changed and no additional deployment required. User's untracked hymn file remains untouched.
+
 ## Optional Efik New Testament — 12 November 2026 (v134)
 
 - [x] Confirm the official [Open.Bible Efik Living New Testament 1995](https://open.bible/bibles/biblica-open-efik-living-new-testament-1995), revision 4, is CC BY-SA 4.0. Download its USX archive and pin its SHA-256. Retain copyright, attribution, source revision and adaptation notices. This does not authorise the separate full Bible Society of Nigeria edition.

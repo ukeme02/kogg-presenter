@@ -90,20 +90,27 @@ KOGG MEDIA (Africa)
 
 ## Additional outreach — 11 November 2026
 
-The owner authorised writing to all additional candidates. Three new messages were sent from koggpresenter@gmail.com and visually verified in Gmail Sent at approximately 08:47 WAT: API.Bible, Bible Society of Nigeria and eBible.org. The browser-control connection then closed. The other seven messages below are prepared locally, not sent and not saved as Gmail drafts. Do not resend the three confirmed messages. Sending does not establish delivery or permission; no agreement or payment was accepted.
+The owner authorised writing to all additional candidates. Three new messages were sent from koggpresenter@gmail.com and visually verified in Gmail Sent at approximately 08:47 WAT: API.Bible, Bible Society of Nigeria and eBible.org. The browser-control connection then closed. Update 12 November: all seven remaining messages below were sent through the verified KOGG Gmail connection; each returned a SENT label. All ten additional requests are now sent. Do not resend the three confirmed messages. Sending does not establish delivery or permission; no agreement or payment was accepted.
 
 | Organisation | Recipient | Status |
 | --- | --- | --- |
 | API.Bible | support@api.bible | sent |
 | Bible Society of Nigeria | info@biblesociety-nigeria.org | sent |
 | eBible.org | Michael@eBible.org | sent |
-| Bible Brain | support@digitalbibleplatform.com | prepared |
-| Open Hymnal | brian.j.dumont@gmail.com | prepared |
-| Singing the Faith Plus | stfplus@methodistchurch.org.uk | prepared |
-| Praise Trust | copyright@praise.org.uk | prepared |
-| YouVersion Platform | help@youversion.com | prepared |
-| AO Lab | hello@helloao.org | prepared |
-| Biblica / Open.Bible | rightspermissions@biblica.com | prepared |
+| Bible Brain | support@digitalbibleplatform.com | sent 12 Nov |
+| Open Hymnal | brian.j.dumont@gmail.com | sent 12 Nov |
+| Singing the Faith Plus | stfplus@methodistchurch.org.uk | sent 12 Nov |
+| Praise Trust | copyright@praise.org.uk | sent 12 Nov |
+| YouVersion Platform | help@youversion.com | sent 12 Nov |
+| AO Lab | hello@helloao.org | sent 12 Nov |
+| Biblica / Open.Bible | rightspermissions@biblica.com | sent 12 Nov |
+
+### Reply review — 12 November 2026
+
+- eBible: Michael recommended USFX ZIP imports from the translation finder, only for editions whose licences fit the intended use. Missing or incompatible licences require direct permission from the copyright owner. Thank-you sent in the same thread; reply message ID `1a1d0464c0755dfe`.
+- API.Bible: automated acknowledgement only; no substantive approval. Existing empty reply draft was left untouched.
+- Biblica: automated acknowledgement received; minimum 15 business days for review, with no duplicate follow-ups requested. No licence granted.
+- All seven remaining sends and the eBible reply were independently confirmed in Gmail Sent. Local send receipts are in `work/outreach-2026-11-12-results.json`. Original six requests were not duplicated.
 
 Additional contact verification: eBible founder contact https://mljohnson.org/contact/ (linked from eBible About); AO Lab https://helloao.org/contact.html; YouVersion general support https://www.bible.com/privacy (request routing to Platform); Biblica rights mailbox https://biblica.com/wp-content/uploads/Guidelines_2021_Digital.pdf (older official publication, delivery untested). Other contacts are documented in LYRICS-SOURCE-ACCESS.md. No guessed addresses were used.
 
@@ -188,7 +195,7 @@ To: support@digitalbibleplatform.com
 
 Subject: Text-only Bible Brain partnership enquiry — KOGG Presenter
 
-Status: prepared
+Status: sent 12 November 2026
 
 Hello Bible Brain team,
 
@@ -213,7 +220,7 @@ To: brian.j.dumont@gmail.com
 
 Subject: Open Hymnal text-pack collaboration — KOGG Presenter
 
-Status: prepared
+Status: sent 12 November 2026
 
 Hello Brian,
 
@@ -238,7 +245,7 @@ To: stfplus@methodistchurch.org.uk
 
 Subject: Hymn-text partnership enquiry — KOGG Presenter
 
-Status: prepared
+Status: sent 12 November 2026
 
 Hello Singing the Faith Plus team,
 
@@ -263,7 +270,7 @@ To: copyright@praise.org.uk
 
 Subject: No-fee hymn-pack pilot for KOGG Presenter
 
-Status: prepared
+Status: sent 12 November 2026
 
 Hello Praise Trust team,
 
@@ -288,7 +295,7 @@ To: help@youversion.com
 
 Subject: Please route to Platform team — KOGG Presenter Scripture integration
 
-Status: prepared
+Status: sent 12 November 2026
 
 Hello YouVersion team,
 
@@ -315,7 +322,7 @@ To: hello@helloao.org
 
 Subject: KOGG Presenter — open Bible packs and ministry collaboration
 
-Status: prepared
+Status: sent 12 November 2026
 
 Hello AO Lab team,
 
@@ -340,7 +347,7 @@ To: rightspermissions@biblica.com
 
 Subject: Open Efik text and Scripture presentation guidance — KOGG Presenter
 
-Status: prepared
+Status: sent 12 November 2026
 
 Hello Biblica Rights and Permissions team,
 

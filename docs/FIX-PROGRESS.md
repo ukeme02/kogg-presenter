@@ -1,13 +1,24 @@
 # Repair progress - 3 November 2026
 
-## Additional provider outreach — 11 November 2026
+## Outreach completed and replies reviewed — 12 November 2026
+
+- [x] Verified the Gmail connector's Koog account is koggpresenter@gmail.com and checked Sent before sending; the six earlier requests were not duplicated.
+- [x] Sent the seven remaining requests: Bible Brain, Open Hymnal, Singing the Faith Plus, Praise Trust, YouVersion Platform, AO Lab and Biblica/Open.Bible. Each send returned a Gmail message ID and SENT label. All 13 initial enquiries have now been sent; delivery and permissions are not implied.
+- [x] Read eBible's reply: Michael recommends USFX ZIP imports from the translation finder, subject to each edition's compatible licence; absent/incompatible licences require contacting the copyright owner. Sent a thank-you reply in the same thread (message 1a1d0464c0755dfe).
+- [x] Read API.Bible's automated receipt. No substantive approval yet; no reply to the automated notice was needed.
+- [x] Read Biblica's automated acknowledgement after sending: allow at least 15 business days; avoid duplicate follow-ups. No content licence granted. All seven new requests plus the eBible reply were independently verified in Sent.
+- [ ] Review future provider responses and exact edition permissions before activating additional content.
+
+The earlier connection blocker is resolved by explicitly selecting the Koog Gmail account. No runtime changes, agreements or payments.
+
+## Additional provider outreach — 11 November 2026 (historical)
 
 - [x] Owner authorised writing to all ten additional Bible/hymn candidates.
 - [x] Sent tailored requests from koggpresenter@gmail.com to API.Bible, Bible Society of Nigeria and eBible.org. All three appeared in Gmail Sent at approximately 08:47 WAT. Do not resend.
 - [x] Prepared the other seven requests and preserved their full text, verified contacts and statuses in LYRICS-PARTNERSHIP-REQUESTS.md.
-- [ ] Send Bible Brain, Open Hymnal, Singing the Faith Plus, Praise Trust, YouVersion Platform, AO Lab and Biblica/Open.Bible requests. These are local prepared messages, not Gmail drafts.
+- [x] Send Bible Brain, Open Hymnal, Singing the Faith Plus, Praise Trust, YouVersion Platform, AO Lab and Biblica/Open.Bible requests. Completed 12 November; see above.
 
-Blocker: after intermittent timeouts, the browser-control service closed its connection. KOGG remained signed in in the fresh visible Gmail tab. The Gmail connector is authenticated to conrichcommunity@gmail.com, so it was not used to send KOGG mail. Resume through the KOGG mailbox without requesting sending permission again. No runtime changes or new provider agreements.
+Former blocker: browser control disconnected and the connector initially exposed only the other mailbox. Resolved 12 November through the explicit Koog account selection; no need to reconnect or resend earlier requests.
 
 ## Provider outreach — 10 November 2026
 

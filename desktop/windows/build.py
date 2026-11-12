@@ -15,7 +15,7 @@ parser.add_argument('--zig', default=str(ROOT / 'work/obs-build/zig-x86_64-windo
 args = parser.parse_args()
 PACKAGE.mkdir(parents=True, exist_ok=True)
 tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
-core = {'kjv.json', 'bsb.json', 'kjvs.json', 'strongs.json', 'hymns.json', 'content-catalog.json', 'hymnary-sources.txt'}
+core = {'kjv.json', 'bsb.json', 'kjvs.json', 'strongs.json', 'hymns.json', 'content-catalog.json', 'hymnary-sources.txt', 'bible-sources.txt'}
 top = {'index.html', 'display.html', 'landing.html', 'remote.html', 'cloud-remote.html', 'sw.js', 'manifest.webmanifest'}
 names = [n for n in tracked if n in top or n.startswith(('js/', 'css/', 'fonts/', 'icons/', 'wifi-remote/')) or n.startswith('data/') and Path(n).name in core]
 # A fresh versioned staging directory prevents obsolete files from entering releases.

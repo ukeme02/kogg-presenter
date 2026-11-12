@@ -1,5 +1,17 @@
 # Repair progress - 3 November 2026
 
+## Optional eBible packs — 12 November 2026 (v133)
+
+- [x] Review each edition's published redistribution terms on eBible.org. Add complete Yoruba Contemporary (OYCB), Hausa Contemporary (BSRK), Igbo Contemporary (BIUO), and Majority Standard Bible (MSB). The first three are CC BY-SA 4.0; MSB is public domain. Nigerian Pidgin is excluded because its listed edition is all rights reserved. Efik remains a separate incomplete integration; correct the stale claim that only scans exist.
+- [x] Keep all four packs optional. Base still downloads exactly KJV, BSB and KJV Strong’s plus its lexicon and the existing 300 hymns. No new browser dependency, audio, image or remote request at startup. Text pack sizes: Yoruba 5.39 MB, Hausa 4.00 MB, Igbo 5.11 MB, MSB 3.96 MB, before HTTP compression.
+- [x] Add a reproducible Python standard-library USFX converter, pinned archive hashes, source manifest, and import receipts. Preserve 66 canonical books and 1,189 chapters in every pack. Preserve Unicode and verse-number gaps; omit headings/footnotes/lexical markup. Numbered Habakkuk 3:1 is retained even though the source wraps it in a heading. Empty MSB milestones are preserved rather than renumbered.
+- [x] Include copyright, original edition names, source links, changes and CC BY-SA attribution in each JSON and an offline-readable credits file linked from More Bibles and the landing page. Adapted pack titles do not use the Biblica trademark; source titles identify the originals. Formatting contributions to the three CC packs use the same licence.
+- [x] Show language, size and licence in More Bibles. Retain successfully loaded optional versions in the picker and restore the last selected version after reopening. Loading status confirms offline storage only after a cached copy is found; failure preserves the prior projection. Absent verse buttons are disabled; blank verses do not become search results or shift references.
+- [x] Verify all text for replacement/control characters, complete chapters, exact sample wording, expected numbering gaps and source/output hashes. Full app regression suite: 344 passed. Converter tests: 5 passed. Browser verified all four downloads, Yoruba John 3:16, saved selection after reload, and Igbo John 3:16 in a separate Output window with the local server stopped. Evidence: `work/ebible-full-tests.txt`, `work/ebible-offline-output.jpg`.
+- [ ] Commit, deploy v133 and verify canonical production bytes.
+
+Sources and exact edition licences: [Yoruba](https://ebible.org/find/details.php?id=yor), [Hausa](https://ebible.org/find/details.php?id=hausa), [Igbo](https://ebible.org/find/details.php?id=ibo), [MSB](https://ebible.org/find/details.php?id=engmsb). This is a tested first batch, not a claim that every eBible edition can be redistributed. The existing Windows preview installer remains v127; its next build will include the updated catalogue and download allowlist while excluding these optional texts from the installer payload. Pre-existing untracked `data/hymns-basic.json` remains untouched and unpublished.
+
 ## Outreach completed and replies reviewed — 12 November 2026
 
 - [x] Verified the Gmail connector's Koog account is koggpresenter@gmail.com and checked Sent before sending; the six earlier requests were not duplicated.

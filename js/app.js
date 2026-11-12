@@ -192,6 +192,24 @@ document.addEventListener('click', e => {
 ========================================================= */
 let bibleLoadToken = 0;
 let loadedBibleFile = '';
+function downloadedBibles() {
+  const list = LS.get(K.settings, {}).downloadedBibles;
+  return Array.isArray(list) ? list.filter(v => v && /^data\/[a-z0-9-]+\.json$/.test(v.file) && typeof v.name === 'string').slice(0, 100) : [];
+}
+function rebuildDownloadedOptions() {
+  const select = $('translationSelect'), selected = select.value, list = downloadedBibles();
+  const group = $('downloadedVersionsGroup');
+  group.hidden = !list.length;
+  group.innerHTML = list.map(v => `<option value="${esc(v.file)}">${esc(v.name)}</option>`).join('');
+  select.value = selected;
+}
+function rememberDownloadedBible(file, data) {
+  if (!/^data\/[a-z0-9-]+\.json$/.test(file) || [...$('translationSelect').options].some(o => o.value === file)) return;
+  const list = downloadedBibles().filter(v => v.file !== file);
+  list.push({file, name: data.metadata?.language ? `${data.translation} — ${data.metadata.language}` : String(data.translation || file.split('/').pop().replace('.json', ''))});
+  LS.set(K.settings, Object.assign(LS.get(K.settings, {}), {downloadedBibles: list}));
+  rebuildDownloadedOptions();
+}
 async function loadBible(file) {
   const token = ++bibleLoadToken;
   try {
@@ -221,6 +239,7 @@ async function loadBible(file) {
   }
   if (token !== bibleLoadToken) return false;
   if (!data || !Array.isArray(data.books) || data.books.length !== 66 || !data.books.every(b => typeof b.name === 'string' && Array.isArray(b.chapters) && b.chapters.length && b.chapters.every(c => Array.isArray(c) && c.length && c.every(v => typeof v === 'string')))) throw new Error('Bible file has an invalid format');
+  rememberDownloadedBible(file, data);
   bible = data;
   loadedBibleFile = file;
   $('translationSelect').value = file;
@@ -228,7 +247,7 @@ async function loadBible(file) {
   // flat index of plain-verse text for fast full-text search (all 66 books)
   searchIndex = [];
   bible.books.forEach((b, bi) => b.chapters.forEach((ch, ci) => ch.forEach((t, vi) => {
-    searchIndex.push({ bi, ci, vi, s: stripStrongs(t).toLowerCase() });
+    if (t.trim()) searchIndex.push({ bi, ci, vi, s: stripStrongs(t).toLowerCase() });
   })));
   const bookSel = $('bookSelect');
   bookSel.innerHTML = bible.books.map((b, i) => `<option value="${i}">${esc(b.name)}</option>`).join('');
@@ -292,11 +311,11 @@ function renderVerseDots() {
   const ch = +$('chapterSelect').value;
   const dots = $('verseDots');
   if (verseMode === 'chapter') { dots.innerHTML = ''; return; }
-  dots.innerHTML = book.chapters[ch - 1].map((_, i) => {
+  dots.innerHTML = book.chapters[ch - 1].map((text, i) => {
     const v = i + 1;
     const liveHere = liveRef && liveRef.bookIdx === +$('bookSelect').value &&
                      liveRef.ch === ch && v >= liveRef.vFrom && v <= liveRef.vTo;
-    return `<button class="dot-dot${liveHere ? ' live' : ''}" data-v="${v}" title="Go live — verse ${v}">${v}</button>`;
+    return `<button class="dot-dot${liveHere ? ' live' : ''}" data-v="${v}" ${text.trim() ? '' : 'disabled'} title="${text.trim() ? 'Go live — verse ' + v : 'Verse ' + v + ' is not included in this edition'}">${v}</button>`;
   }).join('');
   renderLiveText();
 }
@@ -3256,9 +3275,9 @@ $('btnMoreBibles').addEventListener('click',async()=>{
     const response=await fetch('data/content-catalog.json');if(!response.ok)throw new Error('Connect to load the Bible catalogue');
     const catalogue=await response.json();
     const buttons=(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))
-      .map(b=>`<button class="bible-menu-row" data-bible-file="${esc(b.file)}"><span class="bible-menu-copy"><b>${esc(b.short || b.name)}</b><small>${esc(b.name)}</small></span><span class="bible-menu-badge">Download ↓</span></button>`).join('');
+      .map(b=>`<button class="bible-menu-row" data-bible-file="${esc(b.file)}"><span class="bible-menu-copy"><b>${esc(b.short || b.name)}</b><small>${esc([b.language || b.name,b.bytes ? (b.bytes/1000000).toFixed(1)+' MB' : '',b.license || ''].filter(Boolean).join(' · '))}</small></span><span class="bible-menu-badge">${downloadedBibles().some(v=>v.file===b.file)?'Open':'Download ↓'}</span></button>`).join('');
     const requested=(catalogue.requestedBibles || []).map(b=>`<div class="bible-menu-row bible-menu-pending" title="${esc(b.status || 'Approved distributable text is not connected yet')}"><span class="bible-menu-copy"><b>${esc(b.name)}</b><small>${esc(b.status || 'Digital source needed')}</small></span><span class="bible-menu-badge">Source needed</span></div>`).join('');
-    $('extraBibleButtons').innerHTML='<h3 class="bible-menu-heading">Available downloads</h3>'+buttons+'<h3 class="bible-menu-heading">Requested translations</h3>'+requested;
+    $('extraBibleButtons').innerHTML='<h3 class="bible-menu-heading">Available downloads</h3>'+buttons+'<p><a href="data/bible-sources.txt" target="_blank" rel="noopener">Bible sources &amp; licences ↗</a></p><h3 class="bible-menu-heading">Requested translations</h3>'+requested;
     $('extraBibleStatus').textContent='Requested versions need a licensed or digital text source (shown on each button). Available downloads work offline after downloading. Use Tools → Import Bible for a permitted Bible file.';positionExtraBiblePanel();
   }catch(err){$('extraBibleStatus').textContent=err.message;}
 });
@@ -3266,8 +3285,18 @@ $('extraBiblePanel').addEventListener('click',async event=>{
   const button=event.target.closest('button[data-bible-file]');if(!button)return;
   const reference=currentLiveReference() || currentScriptureRange();
   button.disabled=true;
-  try{if(await loadBible(button.dataset.bibleFile)){goLiveScripture(reference);$('extraBibleStatus').textContent='Downloaded. This version is now available offline.';}else $('extraBibleStatus').textContent='Not downloaded yet. Reconnect and retry.';}
-  finally{button.disabled=false;}
+  $('extraBiblePanel').setAttribute('aria-busy','true');
+  $('extraBibleStatus').textContent='Loading Bible… Please keep this window open.';
+  try{
+    if(await loadBible(button.dataset.bibleFile)){
+      await goLiveScripture(reference);
+      let cached=false;
+      try{cached=!!(await window.caches?.match(new URL(button.dataset.bibleFile,location.href).href));}catch{}
+      $('extraBibleStatus').textContent=cached?'Ready. Saved on this browser for offline use.':'Ready to use. Offline saving is not confirmed yet — finish offline setup, then reopen this version while connected.';
+      const badge=button.querySelector('.bible-menu-badge');if(badge)badge.textContent='Open';
+    }else $('extraBibleStatus').textContent='Could not load this version. Reconnect and retry; your current display has been kept.';
+  }
+  finally{button.disabled=false;$('extraBiblePanel').setAttribute('aria-busy','false');}
 });
 
 /* Backup / restore */
@@ -3352,6 +3381,7 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
   }
 })();
 const savedSettings = LS.get(K.settings, {});
+rebuildDownloadedOptions();  // optional downloads remain selectable after reopening
 rebuildCustomOptions();      // custom versions must exist in the select before restore
 rebuildConnectedOptions();   // licensed connected versions (NLT key-free; API.Bible with key)
 renderLicensedControls();

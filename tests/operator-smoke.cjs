@@ -1,5 +1,29 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('js/app.js','utf8');
+
+test('downloaded Bibles remain selectable after restart and project the original Unicode',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ assert.equal(await vm.runInContext("loadBible('data/yoruba.json')",context),true);
+ assert.equal(elements.get('translationSelect').value,'data/yoruba.json');
+ assert.ok(elements.get('translationSelect').options.some(o=>o.value==='data/yoruba.json'));
+ await vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:16})',context);
+ assert.match(JSON.parse(storage.get('cp_live')).slides[0].text,/Ọlọ́run/);
+ const saved=new Map([['cp_settings',storage.get('cp_settings')]]),reopened=boot({saved});await new Promise(r=>setImmediate(r));
+ assert.equal(reopened.elements.get('translationSelect').value,'data/yoruba.json');
+ assert.equal(vm.runInContext('bible.translation',reopened.context),'OYCB');
+ assert.equal(JSON.parse(storage.get('cp_settings')).downloadedBibles.length,1);
+});
+
+test('absent translation verses never replace the projector or shift the next reference',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ await vm.runInContext("loadBible('data/hausa.json')",context);
+ await vm.runInContext('goLiveScripture({bookIdx:39,ch:17,vFrom:20,vTo:20})',context);const prior=storage.get('cp_live');
+ assert.equal(await vm.runInContext('goLiveScripture({bookIdx:39,ch:17,vFrom:21,vTo:21})',context),false);
+ assert.equal(storage.get('cp_live'),prior);
+ await vm.runInContext('goLiveScripture({bookIdx:39,ch:17,vFrom:22,vTo:22})',context);
+ assert.equal(JSON.parse(storage.get('cp_live')).slides[0].label,'Matthew 17:22');
+ assert.match(elements.get('verseDots').innerHTML,/data-v="21" disabled/);
+});
 test('progressive results keep their buttons and selection stable while slower results arrive',async()=>{
  const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));context.navigator.onLine=true;elements.get('songSearch').value='Example';let update,finish;
  context.window.KOGGLyricsSources.search=async(q,options)=>{update=options.onUpdate;return new Promise(r=>finish=r);};
@@ -26,6 +50,9 @@ class Element {
 function boot({recognition,session=new Map(),saved=new Map()}={}){
  const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],new Element(m[1])]));
  for(const m of html.matchAll(/<select[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g))elements.get(m[1]).innerHTML=m[2];
+ // Model the native select's flattened options when a dynamic optgroup changes.
+ const baseOptions=[...elements.get('translationSelect').options],groups=['downloadedVersionsGroup','customVersionsGroup','connectedVersionsGroup'];
+ for(const id of groups){const group=elements.get(id),descriptor=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');Object.defineProperty(group,'innerHTML',{get(){return descriptor.get.call(this);},set(value){this.options=[];descriptor.set.call(this,value);elements.get('translationSelect').options=[...baseOptions,...groups.flatMap(key=>elements.get(key).options)];}});}
  const storage=new Map([['cp_settings',JSON.stringify({mode:'local',starterSeeded:true,hymnPackVersion:'traditional-basic-v1'})],...saved]);
  const document={getElementById:id=>elements.get(id)||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new Element(),addEventListener(){},removeEventListener(){},body:new Element(),head:new Element()};
  const context=vm.createContext({console,document,window:{matchMedia:()=>({matches:false}),SpeechRecognition:recognition,innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGMedia:require('../js/media.js'),KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),KOGGNotes:require('../js/notes.js'),KOGGSlides:require('../js/slides.js'),KOGGStream:require('../js/stream.js'),KOGGLyrics:require('../js/lyrics.js'),KOGGLyricsSources:require('../js/lyrics-sources.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},sessionStorage:{getItem:k=>session.get(k)||null,setItem:(k,v)=>session.set(k,v),removeItem:k=>session.delete(k)},AbortController,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});

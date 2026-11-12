@@ -35,5 +35,5 @@ test('content-catalog registers the free downloads and honest requested statuses
   for (const requested of catalogue.requestedBibles) {
     assert.ok(typeof requested.status === 'string' && requested.status.length > 3, `${requested.name} has a status`);
   }
-  assert.match(catalogue.requestedBibles.find(b => b.name === 'Efik').status, /scans/);
+  assert.match(catalogue.requestedBibles.find(b => b.name === 'Efik').status, /New Testament/);
 });

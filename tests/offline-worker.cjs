@@ -3,6 +3,23 @@ function worker(){const handlers={},stores=new Map(),calls=[],messages=[];let of
 test('Base prepares exactly the three specified Bibles and the Strong’s lexicon',async()=>{const w=worker();await w.install();for(const file of ['kjv.json','bsb.json','kjvs.json','strongs.json','hymns.json'])assert(w.calls.some(u=>u.endsWith('/data/'+file)),file);for(const file of ['asv.json','web.json'])assert(!w.calls.some(u=>u.endsWith(file)),file);assert(w.messages.at(-1).ready);});
 test('offline output works at both redirected and canonical page addresses',async()=>{const w=worker();await w.install();w.setOffline();for(const path of ['display.html','display']){const response=await w.fetch(path);assert.equal(response.status,200);assert.equal(response.redirected,false);assert.match(await response.text(),/display.html/);}});
 test('cached Bible reopening performs no network download',async()=>{const w=worker();await w.install();const count=w.calls.length;const response=await w.fetch('data/kjv.json');assert.equal(response.status,200);assert.equal(w.calls.length,count);});
+
+test('eBible packs stay out of Base and each selected pack reopens offline',async()=>{
+ const w=worker();await w.install();const packs=['yoruba','hausa','igbo','msb'];
+ for(const p of packs)assert.ok(!w.calls.some(u=>u.endsWith('/data/'+p+'.json')));
+ for(const p of packs)assert.equal((await w.fetch('data/'+p+'.json')).status,200);
+ w.setOffline();const before=w.calls.length;
+ for(const p of packs)assert.equal((await w.fetch('data/'+p+'.json')).status,200);
+ assert.equal(w.calls.length,before);
+});
+
+test('release upgrades preserve optional eBible packs already downloaded',async()=>{
+ const w=worker(),old=await w.caches.open('kogg-presenter-v132');
+ for(const p of ['yoruba','hausa','igbo','msb'])await old.put('https://example.test/app/data/'+p+'.json',new Response('saved '+p));
+ await old.put('https://example.test/app/__asset_hashes__',new Response(JSON.stringify(w.hashes)));
+ await w.install();w.setOffline();
+ for(const p of ['yoruba','hausa','igbo','msb'])assert.equal(await(await w.fetch('data/'+p+'.json')).text(),'saved '+p);
+});
 test('incomplete initial preparation never reports ready',async()=>{const w=worker();w.setOffline();await assert.rejects(w.install());assert(w.messages.every(m=>m.ready===false));assert(w.messages.some(m=>m.error));});
 
 test('a cache upgrade retains a downloaded hymn expansion for offline use',async()=>{

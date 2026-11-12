@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "hymnPacks": [
     {
       "id": "traditional-basic-v1",
@@ -21,6 +21,42 @@
     }
   ],
   "bibles": [
+    {
+      "name": "OYCB",
+      "short": "OYCB — Yoruba Contemporary Bible",
+      "file": "data/yoruba.json",
+      "language": "Yoruba",
+      "license": "CC BY-SA 4.0",
+      "source": "https://ebible.org/find/details.php?id=yor",
+      "bytes": 5390339
+    },
+    {
+      "name": "BSRK",
+      "short": "BSRK — Hausa Contemporary Bible",
+      "file": "data/hausa.json",
+      "language": "Hausa",
+      "license": "CC BY-SA 4.0",
+      "source": "https://ebible.org/find/details.php?id=hausa",
+      "bytes": 4000668
+    },
+    {
+      "name": "BIUO",
+      "short": "BIUO — Igbo Contemporary Bible",
+      "file": "data/igbo.json",
+      "language": "Igbo",
+      "license": "CC BY-SA 4.0",
+      "source": "https://ebible.org/find/details.php?id=ibo",
+      "bytes": 5107537
+    },
+    {
+      "name": "MSB",
+      "short": "MSB — Majority Standard Bible",
+      "file": "data/msb.json",
+      "language": "English",
+      "license": "Public domain",
+      "source": "https://ebible.org/find/details.php?id=engmsb",
+      "bytes": 3959857
+    },
     {
       "name": "WEB",
       "short": "WEB — World English Bible",
@@ -99,7 +135,7 @@
     },
     {
       "name": "Efik",
-      "status": "1868 public-domain text exists as scans only — digital text needed"
+      "status": "Open Efik New Testament identified; a complete Bible pack is not connected yet"
     }
   ]
 }

@@ -1,0 +1,85 @@
+[
+  {
+    "id": "yor",
+    "file": "data/yoruba.json",
+    "bytes": 5390339,
+    "books": 66,
+    "chapters": 1189,
+    "verses": 31087,
+    "absentVerses": [
+      "Matthew 17:21",
+      "Matthew 18:11",
+      "Matthew 23:14",
+      "Mark 7:16",
+      "Mark 9:44",
+      "Mark 9:46",
+      "Mark 11:26",
+      "Mark 15:28",
+      "Luke 17:36",
+      "Luke 23:17",
+      "John 5:4",
+      "Acts 8:37",
+      "Acts 15:34",
+      "Acts 24:7",
+      "Acts 28:29",
+      "Romans 16:24"
+    ],
+    "archiveSha256": "c8b927ac30ce79f89d0a5b88b96b834cb26a58764b025c8d7284159cf67d8e2f",
+    "sha256": "34eea9f1af0542e27b69b61f3ec760393729d203d24f730180ac4b2516f1702a"
+  },
+  {
+    "id": "hausa",
+    "file": "data/hausa.json",
+    "bytes": 4000668,
+    "books": 66,
+    "chapters": 1189,
+    "verses": 31087,
+    "absentVerses": [
+      "Matthew 17:21",
+      "Matthew 18:11",
+      "Matthew 23:14",
+      "Mark 7:16",
+      "Mark 9:44",
+      "Mark 9:46",
+      "Mark 11:26",
+      "Mark 15:28",
+      "Luke 17:36",
+      "Luke 23:17",
+      "John 5:4",
+      "Acts 8:37",
+      "Acts 15:34",
+      "Acts 24:7",
+      "Acts 28:29",
+      "Romans 16:24"
+    ],
+    "archiveSha256": "2b15b621f53f9ec29db168766fafbe7b5970e19bf9a5755eb813aeac327c0a16",
+    "sha256": "d308aa99151cf9f06b294143ba4fda7438a7cbcfb54fa27282c3e756a18cdd9b"
+  },
+  {
+    "id": "ibo",
+    "file": "data/igbo.json",
+    "bytes": 5107537,
+    "books": 66,
+    "chapters": 1189,
+    "verses": 31103,
+    "absentVerses": [],
+    "archiveSha256": "8c3d4bd43e713ea5e915300179b90cb9c09b50382416240d400d49c420f17b4c",
+    "sha256": "a6fb9efa1d89b9dd71118bca78c4eb7b34bdce06e419c667b322ec6d5718110d"
+  },
+  {
+    "id": "engmsb",
+    "file": "data/msb.json",
+    "bytes": 3959857,
+    "books": 66,
+    "chapters": 1189,
+    "verses": 31098,
+    "absentVerses": [
+      "Luke 17:36",
+      "Acts 8:37",
+      "Acts 15:34",
+      "Acts 24:7"
+    ],
+    "archiveSha256": "b082f29839a40019e71a82c233948ed6c14f15cbf431b0e7b855990434a252e2",
+    "sha256": "a018c8f5df245d77193c2a78e043d730cea12e4336d0f544ba562a0e7cd47c87"
+  }
+]

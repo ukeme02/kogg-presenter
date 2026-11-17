@@ -8,7 +8,9 @@
 - [x] Per the owner's updated requirement, include Ibibio as the fourth Base Bible. Cache during initial offline setup, protect it from optional removal, expose it in the picker/version chips and keep KJV as the initial selection. Other editions remain optional. Only the selected Bible is indexed in memory; no runtime dependency/audio added.
 - [x] Update landing, offline readiness copy, product requirements and next Windows build's core-file allowlist. Published Windows preview remains v127; it is not rebuilt or replaced by this browser release.
 - [x] Validate 359 app regression tests, 11 converter tests, 93 offline asset hashes, and 112 focused operator/cache tests. Real browser verified Ibibio Genesis projection, Ready offline, then both operator and output reload after the local server was stopped. Evidence: work/ibibio-v136-full-tests.txt, work/ibibio-focused-tests.txt, work/ibibio-v136-browser.png, work/ibibio-v136-offline-output.png.
-- [ ] Commit, publish and verify production bytes.
+- [x] Commit and push implementation `1c141bd` to main. Verify all 93 offline hashes in the clean Git archive; user's untracked hymn file excluded.
+- [ ] Publish production: blocked by Cloudflare account mismatch. Current CLI OAuth and browser both expose only thekoggmedia@gmail.com's account (`69a29a79ce290a0dbe78e51542c37e4c`); the existing project belongs to recorded account `ee2d895f323e34cfb43ac02dfb0ab4ae`. Default deployment returned project not found; explicit correct-account deployment returned authentication failure. Browser account switcher confirmed only the other account and the KOGG project page denied access. Do not create a replacement project or claim this release live.
+- [x] Check production after the GitHub push: all eight changed runtime files still differ from v136; the Ibibio path falls back to HTML rather than Bible JSON. Evidence: work/v136-live-verification.json. Ready-to-deploy clean package: work/publish-v136. Resume deployment after the owner reconnects the Cloudflare login that can access the existing project.
 
 
 ## Lightweight optional Bible management — 12 November 2026 (v135)

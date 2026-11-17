@@ -3169,7 +3169,7 @@ function updateAddVersionsGate() {
   const m = workMode();
   const note = $('addVersionsModeNote');
   if (!note) return;
-  if (m === 'base') note.textContent = 'Base includes KJV, BSB and Strong’s. More Bibles downloads extra editions only when you choose them; compatible Bible files can also be added locally.';
+  if (m === 'base') note.textContent = 'Base includes KJV, BSB, KJV Strong’s and the full Ibibio Bible. More Bibles downloads extra editions only when you choose them; compatible Bible files can also be added locally.';
   else if (m === 'sync') note.textContent = 'Added versions stay on this device (the cloud library keeps songs/themes/plans).';
   else note.textContent = 'Added versions stay on this device.';
   const btn = $('btnAddBible');
@@ -3314,7 +3314,7 @@ $('btnMoreBibles').addEventListener('click',async()=>{
       extraBibleCatalogue={...catalogue,bibles:(catalogue.bibles || []).filter(b=>typeof b.name==='string'&&/^data\/[a-z0-9-]+\.json$/.test(b.file))};
     }
     await renderExtraBibles();
-    if(!extraBibleBusy)$('extraBibleStatus').textContent='KJV, BSB and KJV Strong’s are included in Base. Extra downloads stay on this device, in any work mode.';
+    if(!extraBibleBusy)$('extraBibleStatus').textContent='KJV, BSB, KJV Strong’s and Ibibio are included in Base. Extra downloads stay on this device, in any work mode.';
   }catch(err){$('extraBibleStatus').textContent=err.message;}
 });
 $('extraBiblePanel').addEventListener('click',async event=>{

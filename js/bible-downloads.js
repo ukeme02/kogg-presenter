@@ -1,7 +1,7 @@
 /* Inspect/remove optional downloads without fetching text or changing projection. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.KOGGBibleDownloads=api;})(typeof window==='object'?window:globalThis,function(){
   'use strict';
-  const core=new Set(['data/kjv.json','data/bsb.json','data/kjvs.json','data/strongs.json','data/hymns.json']);
+  const core=new Set(['data/kjv.json','data/bsb.json','data/kjvs.json','data/ibibio.json','data/strongs.json','data/hymns.json']);
   function create({caches,href,files}){
     const allowed=new Set(files.filter(file=>/^data\/[a-z0-9-]+\.json$/.test(file)&&!core.has(file)));
     const url=file=>new URL(file,href).href;

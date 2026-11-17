@@ -1,0 +1,11 @@
+{
+  "file": "data/ibibio.json",
+  "source": "https://open.bible/bibles/biblica-open-ibibio-contemporary-bible-2025",
+  "archiveSha256": "a2731650d982319c2228187942905e51a51d11f32ac37a49c963cc480e89327e",
+  "sha256": "213b0ff60c771ba2de1871d36c0add24afc532a3a756a69f89eb2d8a31fcf387",
+  "bytes": 4541097,
+  "books": 66,
+  "chapters": 1189,
+  "verses": 31103,
+  "absentVerses": []
+}

@@ -21,7 +21,7 @@ installs only the OBS plugin. Follow each release's setup instructions and compa
 
 | Feature | Details |
 |---|---|
-| Scripture display | **Five available Bibles** — KJV, BSB (Berean Standard), **KJV with Strong's numbers**, WEB and ASV. KJV, BSB and KJV with Strong’s are prepared with the offline core, including the Strong’s lexicon. WEB and ASV cache when selected. Licensed translations (NIV, ESV…) can be imported per device in Sync/Local mode. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
+| Scripture display | **Four core Bibles** — KJV, BSB (Berean Standard), **KJV with Strong’s numbers**, and the complete **Open Ibibio Contemporary Bible (2025)**, prepared offline with the Strong’s lexicon. Additional editions download only when chosen. Licensed translations (NIV, ESV…) can be imported per device in Sync/Local mode. One-page dock layout: Books, Chapters, Verses and Memory on screen at once — tap numbers to go live instantly, with prev/next verse buttons that walk the Bible book by book |
 | Add versions | Tools tab → **Scripture versions**: import your own Bible JSON in Sync/Local Mode; it is stored in the device (IndexedDB) and appears in the translation list everywhere |
 | Strong's tap-to-define | In the KJV Strong's Bible, word numbers appear in the **"On the projector" preview only** — the congregation never sees them. Tap a number and the word's Hebrew/Greek meaning (original word, transliteration, definition, KJV usage) takes the projector screen; tap the same number again to flip back to the verse. Toggle off in Tools → Strong's numbers |
 | Quick jump | Its own resizable dock: type `jn 3:16` / `jn 3 16` / `1sam 2` — a unique book completes after three letters, then Right Arrow/Tab advances chapter to verse; Enter displays |
@@ -253,11 +253,11 @@ See `REPAIR_PROGRESS.md` for the current repair status and remaining validation.
 
 | Mode | Account | Where work lives | Offline preparation |
 |---|---|---|---|
-| Base | None | This browser/device | Open once online and wait for **Ready offline • 3 Bibles + starter hymns**. No installation is needed. |
+| Base | None | This browser/device | Open once online and wait for **Ready offline • 4 Bibles + basic hymnary**. No installation is needed. |
 | Sync | Required for cloud transfer | Local copy plus the account’s songs, named plans, themes and logo | Pull the required library and prepare this browser before disconnecting. Conflicts remain explicit. |
 | Local | None | This device | Same offline browser core, with an optional installed app icon. A new laptop with no prior internet still needs a separately transferred offline distribution. |
 
-The initial core downloads exactly three Bibles (KJV, BSB and KJV with Strong’s), the Strong’s lexicon, the operator/output pages, scripts, font and the existing 34 starter hymns. WEB and ASV cache only when selected. The complete basic hymnary is awaiting selection of a collection/edition. Reopening a cached Bible does not re-download it in the background. Older cached optional Bible data from v28 is preserved during this update.
+The initial browser core downloads four Bibles (KJV, BSB, KJV with Strong’s and full Ibibio), the Strong’s lexicon, the operator/output pages, scripts, font and 300 hymns. Other Bible editions and the 262-hymn expansion download only when selected. Ibibio adds 4.54 MB of uncompressed text; only the selected Bible is indexed in memory. The published Windows preview remains v127 with its original three Bibles; the next installer build includes Ibibio. Reopening a cached Bible does not re-download it in the background. Older cached optional Bible data from v28 is preserved during this update.
 
 Output opens its page before asking for Window Management permission. On a compatible Chrome/Edge browser, allow the request to place the output on an extended screen. If permission is denied, the browser lacks the API, or no second screen is detected, the output stays usable and the operator gives a manual-placement instruction. The congregation’s screen can intentionally be black while Blank is active; the operator’s **Output connected** status distinguishes this from a page that never loaded.
 

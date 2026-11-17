@@ -27,6 +27,7 @@ test('removal clears only the chosen optional pack across releases, preserving c
  for(const name of ['kogg-presenter-v134','kogg-presenter-v135']){assert.ok(!stores.get(name).has(url));assert.ok(stores.get(name).has(core));}
  assert.ok(stores.get('other-app').has(url));
  await assert.rejects(manager.remove('data/kjv.json'),/Only optional/);
+ await assert.rejects(manager.remove('data/ibibio.json'),/Only optional/);
  await assert.rejects(manager.remove('../data/efik-nt.json'),/Only optional/);
  await assert.rejects(manager.remove('data/unknown.json'),/Only optional/);
 });

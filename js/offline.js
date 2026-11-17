@@ -27,7 +27,7 @@
       const data = event.data;
       if (data?.type !== 'offline-status') return;
       readyState=data.ready===true;listeners.forEach(fn=>fn());
-      if (data.ready) show(registration?.waiting?'Update ready — close app and Output, then reopen after service':'Ready offline • 3 Bibles + basic hymnary');
+      if (data.ready) show(registration?.waiting?'Update ready — close app and Output, then reopen after service':'Ready offline • 4 Bibles + basic hymnary');
       else if (data.error) show('Offline setup incomplete — retry while online', true);
       else show(`Preparing offline… ${data.done}/${data.total}`);
     });

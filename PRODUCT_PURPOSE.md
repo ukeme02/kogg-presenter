@@ -42,4 +42,4 @@ The offline-first startup now prepares KJV and the operator/output core first an
 
 ## Base content clarified — 30 October 2026
 
-Base Mode must prepare exactly three Bibles: KJV, BSB, and KJV with Strong’s. Include the Strong’s lexicon so word meanings work offline. A complete basic church hymnary must also be available offline; the current 34 starter hymns are not to be labelled a complete hymnary. The hymnbook/edition or collection definition must be chosen before this content requirement can be completed.
+Base Mode prepares four Bibles: KJV, BSB, KJV with Strong’s, and the full Open Ibibio Contemporary Bible (2025). The owner requested Ibibio in Base on 17 November 2026, superseding the original three-Bible limit. Include the Strong’s lexicon and the 300-hymn basic collection offline. All other Bible and hymn expansions remain optional downloads.

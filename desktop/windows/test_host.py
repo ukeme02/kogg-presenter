@@ -17,7 +17,7 @@ try:
             assert request('/desktop-status')[0]==200
             break
         except OSError:time.sleep(.1)
-    names=['index.html','display.html','data/kjv.json','data/bsb.json','data/kjvs.json','data/strongs.json','data/hymns.json','fonts/NunitoSans-Variable.woff2']
+    names=['index.html','display.html','data/kjv.json','data/bsb.json','data/kjvs.json','data/ibibio.json','data/strongs.json','data/hymns.json','fonts/NunitoSans-Variable.woff2']
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
         results=list(pool.map(lambda n:request('/'+n),names))
     for name,(status,body) in zip(names,results):

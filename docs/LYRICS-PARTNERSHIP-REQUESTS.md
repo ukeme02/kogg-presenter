@@ -1,5 +1,54 @@
 # KOGG lyric access requests — sent 10 November 2026
 
+
+### Provider follow-ups — 17 November 2026
+
+Reviewed the KOGG mailbox, including mail outside Inbox, for incoming messages after 12 November. Two substantive new provider replies were found (both received 13 November): API.Bible and Bible Brain. No new full-Efik approval or lyric-provider grant was found in that check.
+
+- API.Bible confirmed that a KOGG-managed server-side connection may serve multiple devices under applicable Starter eligibility/quotas, with per-device refresh-controlled caches. FUMS offline queue/replay details still need clarification. Their Digital Bible Library route requires the relevant organisational eligibility and publisher agreement; it is not a full-Efik licence grant.
+- Bible Brain supplied its Nigerian downloadable-text catalogue and application route, copyright endpoint and rate limit. The catalogue lists full Open Ibibio Contemporary Bible 2025 (IBBDPI, IBBDPIO_ET / IBBDPIN_ET); Efik was not listed. The catalogue's copyright preview alone was not treated as bundling permission.
+- Separately verified Biblica's official Open.Bible edition and downloaded revision 2. Its archive metadata explicitly supplies CC BY-SA 4.0. This independently sourced open pack can be implemented with attribution without activating a Bible Brain account. Full Efik remains a separate pending edition.
+- Owner authorised sending the two prepared replies in voice. Sent from koggpresenter@gmail.com via the Gmail plugin; both returned SENT. No account, paid plan, contract or licence agreement was activated.
+
+| Recipient | Sent message | Thread |
+| --- | --- | --- |
+| support@api.bible | `1a1e8ed8b579ba21` | `1a1c9931be474f0c` |
+| support@biblebrain.com | `1a1e8edbd75aa1ed` | `1a1d045ec894f96f` |
+
+#### API.Bible reply sent
+
+Hello DJ,
+
+Thank you for confirming that one KOGG-managed, server-side connection can serve multiple devices under the applicable Starter terms, and for clarifying per-device caching.
+
+We reviewed the FUMS guide. Could you confirm the supported handling of Scripture views made without internet: may we save anonymous view events locally and report them once connectivity returns, and are there any reporting deadlines or duplicate-handling rules?
+
+Thank you also for the Digital Bible Library route for full Efik. We will review the organisational application requirements and obtain the relevant publisher agreement before activation.
+
+Kind regards,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+Worship without Limits
+
+#### Bible Brain reply sent
+
+Hello Jonathan,
+
+Thank you for the Nigerian text catalogue, application route and copyright guidance.
+
+We would like to prioritise the full Open Ibibio Contemporary Bible 2025, including both Old and New Testaments (IBBDPI; filesets IBBDPIO_ET and IBBDPIN_ET). Could you point us to the authoritative text download and complete licence for this edition, and confirm whether it may be included in the default offline Bible bundle of our free browser and Windows app?
+
+We would preserve the wording, retain the required copyright and attribution, and use text only. Our intended uses include church projection, OBS capture and private service schedules across users' devices. Please distinguish any publisher permission required for bundled redistribution from ordinary API access.
+
+We could not find Efik in the attached list. Is the full Edisana Nwed Abasi Ibom available through another fileset, or should we pursue it directly through the publisher and Digital Bible Library?
+
+Kind regards,
+KOGG Presenter team
+KOGG MEDIA (Africa)
+KOGG Presenter
+Worship without Limits
+
+
 Prepared 10 November 2026. After reviewing the three saved drafts, the project owner authorised the assistant to send all three. Sent from koggpresenter@gmail.com on 10 November 2026 at approximately 20:18 WAT. Gmail's Sent folder showed all three requests; this confirms sending, not delivery or acceptance. No agreement, fee or legal status is asserted by these enquiries. Replies and access approvals remain pending.
 
 | Organisation | Recipient | Status |

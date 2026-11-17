@@ -76,3 +76,19 @@ USX converted to compact KOGG JSON. Headings and formatting markup omitted; whit
 KOGG text-pack formatting contributions are available under CC BY-SA 4.0. KOGG adaptations are not endorsed by the original licensor.
 Biblica is a registered trademark of Biblica, Inc. The original title identifies the source; the adapted KOGG pack does not use that trademark as its title.
 Import records: tools/efik-source.json and docs/efik-import-receipt.json in the KOGG repository.
+
+
+Open Ibibio Contemporary Bible (OICB, 2025) — COMPLETE OLD AND NEW TESTAMENT
+https://open.bible/bibles/biblica-open-ibibio-contemporary-bible-2025
+Source archive: https://api.open.bible/artifactContent/d78e7bf6-4a9e-4c4a-aca9-69a863d39ce4
+Revision 2; updated 16 September 2025; retrieved 17 November 2026.
+Licence: CC BY-SA 4.0
+https://creativecommons.org/licenses/by-sa/4.0/
+Biblica® Open Adisana Ñwed Abasi ke Ikọ Ibibio Ayio Mfịn™
+Biblica® Open Ibibio Contemporary Bible™
+Copyright © 2020, 2025 by Biblica, Inc.
+The original work by Biblica, Inc. is available for free at www.biblica.com and open.bible.
+USX converted to compact KOGG JSON. Editorial headings, footnotes, cross-references and formatting markup omitted; whitespace normalized. Verse wording, Unicode and numbering preserved. English canonical book names used for navigation; original local names retained as metadata. All 66 Old and New Testament books included.
+KOGG text-pack formatting contributions are available under CC BY-SA 4.0. KOGG adaptations are not endorsed by the original licensor.
+Biblica is a registered trademark of Biblica, Inc. The original title identifies the source; the adapted KOGG pack does not use that trademark as its title.
+Import records: tools/ibibio-source.json and docs/ibibio-import-receipt.json in the KOGG repository.

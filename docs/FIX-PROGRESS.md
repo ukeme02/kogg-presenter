@@ -1,5 +1,16 @@
 # Repair progress - 3 November 2026
 
+## Full Ibibio in Base and provider replies — 17 November 2026 (v136)
+
+- [x] Send authorised replies from KOGG Gmail to API.Bible (offline view reporting) and Bible Brain (full Ibibio bundling/download terms and full Efik route). Sent receipts and exact message bodies are recorded in LYRICS-PARTNERSHIP-REQUESTS.md. No provider account or paid agreement activated.
+- [x] Verify official Biblica Open Ibibio Contemporary Bible 2025, revision 2, including its archive's explicit CC BY-SA 4.0 licence. Pin archive hash, retain original licence, source metadata, attribution and adaptation notice. Full Efik remains separate and pending.
+- [x] Import all 66 books, 1,189 chapters and 31,103 verses. Validate Unicode and verse numbering; no replacement/control characters or absent verse slots. Text is 4,541,097 bytes, 1,250,090 bytes with local gzip compression (not a measured network transfer).
+- [x] Per the owner's updated requirement, include Ibibio as the fourth Base Bible. Cache during initial offline setup, protect it from optional removal, expose it in the picker/version chips and keep KJV as the initial selection. Other editions remain optional. Only the selected Bible is indexed in memory; no runtime dependency/audio added.
+- [x] Update landing, offline readiness copy, product requirements and next Windows build's core-file allowlist. Published Windows preview remains v127; it is not rebuilt or replaced by this browser release.
+- [x] Validate 359 app regression tests, 11 converter tests, 93 offline asset hashes, and 112 focused operator/cache tests. Real browser verified Ibibio Genesis projection, Ready offline, then both operator and output reload after the local server was stopped. Evidence: work/ibibio-v136-full-tests.txt, work/ibibio-focused-tests.txt, work/ibibio-v136-browser.png, work/ibibio-v136-offline-output.png.
+- [ ] Commit, publish and verify production bytes.
+
+
 ## Lightweight optional Bible management — 12 November 2026 (v135)
 
 - [x] Show actual cache-backed offline status in More Bibles, rather than treating a remembered picker entry as proof of a stored text. Distinguish unavailable browser storage from a saved download. Opening the menu inspects storage without fetching any Bible text.

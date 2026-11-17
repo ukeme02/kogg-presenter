@@ -1,0 +1,23 @@
+{
+  "id": "ibb-oicb-2025",
+  "short": "OICB",
+  "title": "Open Ibibio Contemporary Bible (2025)",
+  "language": "Ibibio",
+  "scope": "OT/NT",
+  "file": "data/ibibio.json",
+  "source": "https://open.bible/bibles/biblica-open-ibibio-contemporary-bible-2025",
+  "download": "https://api.open.bible/artifactContent/d78e7bf6-4a9e-4c4a-aca9-69a863d39ce4",
+  "revision": 2,
+  "sourceUpdated": "2025-09-16",
+  "retrieved": "2026-11-17",
+  "archiveSha256": "a2731650d982319c2228187942905e51a51d11f32ac37a49c963cc480e89327e",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "copyright": "Copyright © 2020, 2025 by Biblica, Inc.",
+  "originalTitle": "Biblica® Open Ibibio Contemporary Bible™",
+  "attribution": "The original work by Biblica, Inc. is available for free at www.biblica.com and open.bible.",
+  "changes": "USX converted to compact KOGG JSON. Editorial headings, footnotes, cross-references and formatting markup omitted; whitespace normalized. Verse wording, Unicode and numbering preserved. English canonical book names used for navigation; original local names retained as metadata. All 66 Old and New Testament books included.",
+  "contributions": "KOGG text-pack formatting contributions are available under CC BY-SA 4.0. KOGG adaptations are not endorsed by the original licensor.",
+  "trademark": "Biblica is a registered trademark of Biblica, Inc. The original title identifies the source; the adapted KOGG pack does not use that trademark as its title.",
+  "originalLocalTitle": "Biblica® Open Adisana Ñwed Abasi ke Ikọ Ibibio Ayio Mfịn™"
+}

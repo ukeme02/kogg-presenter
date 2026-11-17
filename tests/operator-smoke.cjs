@@ -1,6 +1,24 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('js/app.js','utf8');
 
+test('Base Ibibio selects, searches, projects both testaments and reopens without an optional registration',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ assert.ok(elements.get('translationSelect').options.some(o=>o.value==='data/ibibio.json'));
+ assert.equal(await vm.runInContext("loadBible('data/ibibio.json')",context),true);
+ assert.equal(elements.get('bookSelect').options.length,66);
+ const data=JSON.parse(fs.readFileSync('data/ibibio.json','utf8'));
+ for(const bi of [0,42]){
+  await vm.runInContext(`goLiveScripture({bookIdx:${bi},ch:1,vFrom:1,vTo:1})`,context);
+  const live=JSON.parse(storage.get('cp_live'));
+  assert.equal(live.slides[0].text,data.books[bi].chapters[0][0]);
+  assert.equal(live.scripture.translation,'data/ibibio.json');
+ }
+ assert.ok(vm.runInContext("searchBible('Abasi',5).length",context));
+ assert.ok(!(JSON.parse(storage.get('cp_settings')).downloadedBibles||[]).some(b=>b.file==='data/ibibio.json'));
+ const reopened=boot({saved:new Map([['cp_settings',storage.get('cp_settings')]])});await new Promise(r=>setImmediate(r));
+ assert.equal(reopened.elements.get('translationSelect').value,'data/ibibio.json');
+});
+
 test('Efik optional NT starts at Matthew, searches Efik text, and keeps OT projection intact',async()=>{
  const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
  await vm.runInContext('goLiveScripture({bookIdx:18,ch:23,vFrom:1,vTo:1})',context);const old=storage.get('cp_live');

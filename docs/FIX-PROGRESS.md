@@ -3,12 +3,12 @@
 ## Lightweight installer refresh and NLT migration — 20 November 2026 (v138)
 
 - [x] Locate the NLT replacement route in API.Bible's official catalogue and send the authorised edition/projection/Windows licensing follow-up from KOGG Gmail. Receipt and exact body are in LYRICS-PARTNERSHIP-REQUESTS.md.
-- [x] Fill KOGG's signup organization and email on the $0 Starter flow. Owner handles password, CAPTCHA and terms. Account verification is in progress; no managed API key is installed and replacement NLT is not active.
+- [x] Fill KOGG's signup organization and email on the $0 Starter flow. Owner handled password/CAPTCHA; verification code retrieved on request. Remaining application configuration is pending; no managed API key is installed and replacement NLT is not active.
 - [x] Fix OBS packaging omissions for media.js and media-display.js; fail builds with missing renderer dependencies. Refresh package/version metadata to 0.1.1-preview.
 - [x] Refresh Windows installer metadata, current-release checksum selection and installer acceptance script. Include the full Ibibio Base Bible, keep other Bible packs optional and preserve the existing upgrade identity/profile. No new runtime dependencies.
 - [x] Add an NLT retirement guard and actionable notice. Keep connected text out of installer packs. Track server key handling, FUMS, attribution, cache expiry and schedule/export requirements in NLT-MIGRATION.md.
 - [x] Finish native builds, full tests, host and installer acceptance: 365 Node checks passed, no skips. Real native offline host, install, upgrade and uninstall checks passed. OBS compiled transport/renderer subset passed 3/3. An initial UI-test failure from an unguarded provider reference was corrected before release.
-- [ ] Publish verified Windows/OBS/web assets, commit/push and deploy v138 landing links. Do not treat the prepared URLs as published until verified below.
+- [x] Commit/push implementation 85bd640. Publish desktop-v0.1.1-preview, kogg-connect-v0.1.1-preview and v138 on GitHub; each uploaded asset matched size and SHA-256. Deploy the clean archive to https://21675253.kogg-presenter.pages.dev. All 13 canonical live comparisons passed, including landing markup/style/motion, 4K and responsive artwork, operator/provider code and Ibibio. Evidence: work/v138-github-releases-published.json and work/v138-live-verification.json.
 
 Physical projector/phone/OBS acceptance remains separate from automated verification. The user's untracked data/hymns-basic.json is excluded.
 
@@ -19,6 +19,7 @@ Physical projector/phone/OBS acceptance remains separate from automated verifica
 - [x] Replace major demo/navigation glyphs with consistent SVG line icons. Remove the Enable motion prompt and footer toggle; motion begins automatically, respecting OS reduced-motion and existing focus/offscreen protections.
 - [x] Real isolated Edge checks passed at widths 360, 390, 768, 1024 and 1440 without page overflow. All eight deck tabs, service bullet projection, light/dark themes and automatic/reduced motion passed; no script or HTTP resource errors. Evidence: work/landing-v138-browser.json and work/landing-v138-{desktop,phone,dark,service}.png.
 - [x] Rebuild Windows package with artwork and current runtime: 8,409,016 bytes; native upgrade identity and saved profile retained. Full checksum is in the release manifest. OBS setup is 574,464 bytes.
+- [x] Fresh 390px/2x phone check also passed with the full Scripture tour open and no horizontal overflow; browser selected the 39 KB 1280px hero image instead of the 4K file. Final local verification uses isolated headless Edge, not the owner's signed-in browser/profile.
 - [ ] Fill remaining API.Bible application fields when the owner brings that tab to the front. The visible desktop is on an unrelated chat; no unrelated account fields changed.
 
 ## Full functionality audit — 20 November 2026 (v137)

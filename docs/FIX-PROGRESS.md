@@ -7,9 +7,9 @@
 - [x] Initialize the connected provider; prevent stale request takeover and redundant chapter-one fetching. Preserve current output when a request fails.
 - [x] Display publisher attribution, reject expired output/search text, and report actual views anonymously with signed receipts and a bounded persistent retry queue.
 - [x] Save references in services, named plans, backups and Sync. Load licensed words when presented; identify online NLT items in rehearsal.
-- [x] Pass 375 automated checks with zero skips. Real isolated Edge checks cover Quick Jump, output sizing/credit, reload/replay, expiry and acknowledged reporting at phone/tablet/desktop widths. Real Psalm 119 parses all 176 verses.
+- [x] Pass 376 automated checks with zero failures/skips, including Cloudflare redirect compatibility. Real isolated Edge checks cover Quick Jump, output sizing/credit, reload/replay, expiry and acknowledged reporting at phone/tablet/desktop widths. Real Psalm 119 parses all 176 verses.
 - [x] Refresh Windows and OBS packages to 0.1.2-preview; native host and isolated installer checks pass. Physical projector/OBS acceptance remains separate.
-- [ ] Publish verified downloads, deploy v139 and verify production NLT/reporting and asset integrity.
+- [x] Publish verified Windows/OBS 0.1.2-preview downloads and v139 web release. Deploy implementation `668802f` plus server compatibility fix `c25f3be` to https://324363bf.kogg-presenter.pages.dev. Public-site check: 12 matching assets, NLT chapter requests 200, Quick Jump/projector attribution correct, two reporting acknowledgements 204, desktop CORS allowed, unrelated origin rejected, zero browser errors. Evidence: `verification/v139-production.json`.
 
 ## Lightweight installer refresh and NLT migration — 20 November 2026 (v138)
 

@@ -1,0 +1,108 @@
+{
+  "deployment": "https://324363bf.kogg-presenter.pages.dev",
+  "assets": [
+    {
+      "file": "index.html",
+      "bytes": 69966,
+      "sha256": "d3dfe4d66d77e53fb4e939e2f08629cc6a61350e58e08e176d5ca2bf4e1e7d62"
+    },
+    {
+      "file": "landing.html",
+      "bytes": 97710,
+      "sha256": "71c8c56f9271517b569a0e140963297432b76b5dc0e6f3714bab2b7fcb997e89"
+    },
+    {
+      "file": "js/app.js",
+      "bytes": 230243,
+      "sha256": "5e51868a58b1736a3f7b000b758288db057029395f940b998cd76bd78884aa6f"
+    },
+    {
+      "file": "js/bible-providers.js",
+      "bytes": 13606,
+      "sha256": "54aaa529bb9d9266135707877535877b52e82f14174461518d16e12c25af5293"
+    },
+    {
+      "file": "js/licensed-scripture.js",
+      "bytes": 3355,
+      "sha256": "f816a8db94fb10346e9635b0007785d98c1ec00de233f8122fcb064521df23b4"
+    },
+    {
+      "file": "js/display.js",
+      "bytes": 22811,
+      "sha256": "f83149648912823d9f3529f71800dc344a8c12e94ffaff134919c5b0e53cefad"
+    },
+    {
+      "file": "js/library.js",
+      "bytes": 9099,
+      "sha256": "25745a2fff0b8e4de1e026f54777c612d4b97116dc0124c086b8aed3c123a2a1"
+    },
+    {
+      "file": "js/rehearsal.js",
+      "bytes": 1724,
+      "sha256": "f45695d33762d3d037c5992219b6500e7679d645c665c51360f77f181ef49c12"
+    },
+    {
+      "file": "css/display.css",
+      "bytes": 11228,
+      "sha256": "e21a63d114e474c1d2cd3a540e28c6b7fb1b7cb6e583ed46688b4779fe781ce4"
+    },
+    {
+      "file": "sw.js",
+      "bytes": 16300,
+      "sha256": "41faa76ba678b0c3cdd3ebfeb61d92fcb8eec0422a9dc28c9e2ad8a1e8a6ff1a"
+    },
+    {
+      "file": "display.html",
+      "bytes": 2005,
+      "sha256": "a6e29cdf066ba796d5b64ccf1856ee2592baec7d715ba5201d2a3abb11c0971f"
+    },
+    {
+      "file": "downloads/kogg-connect-release.json",
+      "bytes": 478,
+      "sha256": "b6d8051a4d1c8ff8ac1baaac0d85d87111ef4e27532727c04fc04eb8cac7d7e6"
+    }
+  ],
+  "desktopCors": true,
+  "unrelatedOriginBlocked": true,
+  "nltQuickJump": true,
+  "projectorAttribution": true,
+  "usageReporting": true,
+  "browserContainsApiKey": false,
+  "responses": [
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "status": 204
+    }
+  ],
+  "errors": [],
+  "sourceCommit": "c25f3bedd7e9fd1f49dd3616341c0769f2ce8075",
+  "automatedTests": {
+    "passed": 376,
+    "failed": 0,
+    "skipped": 0
+  },
+  "webReleaseAssets": [
+    {
+      "name": "kogg-presenter-v139-web.zip",
+      "size": 26460757,
+      "digest": "sha256:c27c9b2dd100d96cdab04194f9601d4e671b02771c705b5550eb2a8079fae84d"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 95,
+      "digest": "sha256:f1fcebb4d55f5870ef7bc63e33a7b33012e7f787257360bdf2c5aabf6a020d06"
+    }
+  ]
+}

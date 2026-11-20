@@ -1,5 +1,16 @@
 # Repair progress - 3 November 2026
 
+## Secure NLT connection — 20 November 2026 (v139)
+
+- [x] Finalize API.Bible setup, confirm standard NLT on the free plan, and provision the key only as a Cloudflare production secret.
+- [x] Add a fixed-edition chapter gateway, response/time bounds, origin checks, per-instance request limits and a 14-day edge cache. No new runtime dependencies or offline Bible packs.
+- [x] Initialize the connected provider; prevent stale request takeover and redundant chapter-one fetching. Preserve current output when a request fails.
+- [x] Display publisher attribution, reject expired output/search text, and report actual views anonymously with signed receipts and a bounded persistent retry queue.
+- [x] Save references in services, named plans, backups and Sync. Load licensed words when presented; identify online NLT items in rehearsal.
+- [x] Pass 375 automated checks with zero skips. Real isolated Edge checks cover Quick Jump, output sizing/credit, reload/replay, expiry and acknowledged reporting at phone/tablet/desktop widths. Real Psalm 119 parses all 176 verses.
+- [x] Refresh Windows and OBS packages to 0.1.2-preview; native host and isolated installer checks pass. Physical projector/OBS acceptance remains separate.
+- [ ] Publish verified downloads, deploy v139 and verify production NLT/reporting and asset integrity.
+
 ## Lightweight installer refresh and NLT migration — 20 November 2026 (v138)
 
 - [x] Locate the NLT replacement route in API.Bible's official catalogue and send the authorised edition/projection/Windows licensing follow-up from KOGG Gmail. Receipt and exact body are in LYRICS-PARTNERSHIP-REQUESTS.md.

@@ -7,7 +7,7 @@ from pathlib import Path
 import argparse, hashlib, json, re, shutil, struct, subprocess, zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
-VERSION = '0.1.1-preview'
+VERSION = '0.1.2-preview'
 WORK = ROOT / 'work/desktop-build'
 PACKAGE = WORK / 'package'
 parser = argparse.ArgumentParser()
@@ -31,7 +31,7 @@ for n in names:
     dest = stage / n
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / n, dest)
-optional = re.search(r'const OPTIONAL_ASSETS = \[([\s\S]*?)\];', (ROOT/'sw.js').read_text()).group(1)
+optional = re.search(r'const OPTIONAL_ASSETS = \[([\s\S]*?)\];', (ROOT/'sw.js').read_text(encoding='utf-8')).group(1)
 extra = [s.removeprefix('./') for s in re.findall(r"'([^']+)'", optional)]
 (stage/'files.txt').write_text('\n'.join(sorted(set(names+extra)))+'\n', encoding='utf-8')
 subprocess.run(['node',str(ROOT/'scripts/verify-release.cjs'),str(stage),'--core'],cwd=ROOT,check=True)
@@ -39,7 +39,7 @@ subprocess.run(['node',str(ROOT/'scripts/verify-release.cjs'),str(stage),'--core
 png = (ROOT/'icons/icon-192.png').read_bytes()
 ico = struct.pack('<HHH',0,1,1)+struct.pack('<BBBBHHII',192,192,0,0,1,32,len(png),22)+png
 (PACKAGE/'kogg.ico').write_bytes(ico)
-manifest = '<?xml version="1.0"?><assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"><assemblyIdentity version="0.1.1.0" processorArchitecture="amd64" name="KOGG.Presenter" type="win32"/><trustInfo xmlns="urn:schemas-microsoft-com:asm.v3"><security><requestedPrivileges><requestedExecutionLevel level="asInvoker" uiAccess="false"/></requestedPrivileges></security></trustInfo></assembly>'
+manifest = '<?xml version="1.0"?><assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"><assemblyIdentity version="0.1.2.0" processorArchitecture="amd64" name="KOGG.Presenter" type="win32"/><trustInfo xmlns="urn:schemas-microsoft-com:asm.v3"><security><requestedPrivileges><requestedExecutionLevel level="asInvoker" uiAccess="false"/></requestedPrivileges></security></trustInfo></assembly>'
 (WORK/'app.manifest').write_text(manifest)
 (WORK/'app.rc').write_text('1 ICON "'+(PACKAGE/'kogg.ico').as_posix()+'"\n1 24 "'+(WORK/'app.manifest').as_posix()+'"\n')
 def run(*cmd):

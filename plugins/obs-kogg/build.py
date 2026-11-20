@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / 'work/obs-build'
 WORK.mkdir(parents=True, exist_ok=True)
 SOURCES = ROOT / 'plugins/obs-kogg/src'
-VERSION = '0.1.1-preview'
+VERSION = '0.1.2-preview'
 
 def download(name, url, digest):
     dest = WORK / name
@@ -50,7 +50,7 @@ package = WORK / ('package-' + VERSION)
 plugin = package / 'kogg-connect'
 renderer = plugin / 'data/renderer'
 renderer.mkdir(parents=True, exist_ok=True)
-files = ['display.html', 'css/display.css', 'js/display.js', 'js/obs-receiver.js', 'js/stream.js', 'js/media.js', 'js/media-display.js', 'fonts/NunitoSans-Variable.woff2']
+files = ['display.html', 'css/display.css', 'js/display.js', 'js/licensed-scripture.js', 'js/obs-receiver.js', 'js/stream.js', 'js/media.js', 'js/media-display.js', 'fonts/NunitoSans-Variable.woff2']
 files += [p.relative_to(ROOT).as_posix() for p in (ROOT/'icons').glob('*.svg')]
 for name in files:
     target = renderer / name

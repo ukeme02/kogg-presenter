@@ -115,6 +115,9 @@ function boot({recognition,session=new Map(),saved=new Map()}={}){
  const document={getElementById:id=>elements.get(id)||null,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new Element(),addEventListener(){},removeEventListener(){},body:new Element(),head:new Element()};
  const context=vm.createContext({console,document,window:{matchMedia:()=>({matches:false}),SpeechRecognition:recognition,innerWidth:1280,innerHeight:720,KOGGSync:{configured:false},KOGGMedia:require('../js/media.js'),KOGGLibrary:require('../js/library.js'),KOGGScripture:require('../js/scripture-tools.js'),KOGGContent:require('../js/content.js'),KOGGBibleDownloads:require('../js/bible-downloads.js'),KOGGNotes:require('../js/notes.js'),KOGGSlides:require('../js/slides.js'),KOGGStream:require('../js/stream.js'),KOGGLyrics:require('../js/lyrics.js'),KOGGLyricsSources:require('../js/lyrics-sources.js'),addEventListener(){}},navigator:{onLine:false,userAgent:'Audit',platform:'',maxTouchPoints:0},location:{href:'http://127.0.0.1/index.html',protocol:'http:',pathname:'/index.html',search:'',hash:''},sessionStorage:{getItem:k=>session.get(k)||null,setItem:(k,v)=>session.set(k,v),removeItem:k=>session.delete(k)},AbortController,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,Blob,requestAnimationFrame(){},getComputedStyle:()=>({}),alert(){},confirm:()=>true,Event:class{constructor(type){this.type=type;}},fetch:async file=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(file,'utf8'))})});
  const sources=require('../js/lyrics-sources.js');context.window.KOGGLyricsSources={...sources,search:(q,o)=>sources.search(q,{...o,fetcher:(...a)=>context.fetch(...a)}),lookup:(song,o)=>sources.lookup(song,{...o,fetcher:(...a)=>context.fetch(...a)}),importLink:(raw,o)=>sources.importLink(raw,{...o,fetcher:(...a)=>context.fetch(...a)})};
+ context.window.fetch=(...args)=>context.fetch(...args);context.window.crypto=require('node:crypto').webcrypto;
+ Object.defineProperty(context.localStorage,'length',{get:()=>storage.size});context.localStorage.key=i=>[...storage.keys()][i];
+ vm.runInContext(fs.readFileSync('js/licensed-scripture.js','utf8'),context);vm.runInContext(fs.readFileSync('js/bible-providers.js','utf8'),context);
  vm.runInContext(app,context);vm.runInContext(fs.readFileSync('js/slides-deck.js','utf8'),context);vm.runInContext(fs.readFileSync('js/stream-deck.js','utf8'),context);return {context,elements,storage,session};
 }
 
@@ -436,11 +439,36 @@ test('service rehearsal advances a private snapshot without writing live state',
 
 test('remote navigation waits for a connected chapter and cannot overwrite a newer live selection',async()=>{
  const {context,storage}=boot();await new Promise(r=>setImmediate(r));
- let resolve;context.window.KOGGBibles={ensureChapter:()=>new Promise(r=>resolve=r)};
+ let resolve;context.window.KOGGBibles={...context.window.KOGGBibles,ensureChapter:()=>new Promise(r=>resolve=r)};
  vm.runInContext("bible.provider='test';bible.books[42].chapters[3]=[];goLiveScripture({bookIdx:42,ch:3,vFrom:36,vTo:36});",context);
  const before=storage.get('cp_live');const pending=vm.runInContext('next()',context);assert.equal(typeof pending.then,'function');assert.equal(storage.get('cp_live'),before);
  vm.runInContext("pushLive({mode:'normal',title:'Newer message',slides:[{text:'Keep this message',label:'New'}],index:0,scripture:null});bible.books[42].chapters[3]=['Next chapter'];",context);
  resolve();await pending;assert.equal(JSON.parse(storage.get('cp_live')).title,'Newer message');
+});
+
+test('NLT uses the managed connection, adds reference-only service items and rehydrates them on another device',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));const calls=[];
+ const response={data:{content:[{name:'verse',attrs:{number:'1'}},{text:'Fixture NLT words'}],copyright:'Publisher credit'},expiresAt:Date.now()+86400000,report:{token:'view-fixture',expiresAt:Date.now()+86400000,signature:'fixture'}};
+ context.fetch=async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>response};};
+ await vm.runInContext("loadBible('nlt:NLT')",context);await new Promise(r=>setImmediate(r));
+ assert.equal(await vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:1,vTo:1})',context),true);
+ let live=JSON.parse(storage.get('cp_live'));assert.equal(live.slides[0].text,'Fixture NLT words');assert.equal(live.slides[0].license.copyright,'Publisher credit');assert.ok(calls.some(c=>c.url.endsWith('?chapter=JHN.3')));assert.ok(calls.every(c=>!c.options?.headers?.['api-key']));
+ elements.get('btnAddVerseService').click();const saved=JSON.parse(storage.get('cp_service'));assert.equal(saved[0].slides[0].text,'');assert.equal(saved[0].slides[0].license,undefined);
+ vm.runInContext("service=JSON.parse(localStorage.getItem('cp_service'));pushLive({mode:'blank'});presentServiceItems(service);",context);await new Promise(r=>setImmediate(r));
+ live=JSON.parse(storage.get('cp_live'));assert.equal(live.slides[0].text,'Fixture NLT words');assert.ok(live.slides[0].license.report.token);
+  elements.get('bibleSearch').value='Fixture';vm.runInContext('renderBibleSearch()',context);assert.match(elements.get('bibleResults').innerHTML,/Publisher credit.*API.Bible/);
+  assert.equal(await vm.runInContext('goLiveScripture({bookIdx:999,ch:3,vFrom:1,vTo:1})',context),false);
+  vm.runInContext("bible.licenses['42:3'].expiresAt=Date.now()-1;renderBibleSearch()",context);assert.doesNotMatch(elements.get('bibleResults').innerHTML,/John 3:1/);assert.match(elements.get('bibleResults').innerHTML,/Genesis 1:1/);
+});
+
+test('a slow NLT request cannot replace a later deck selection',async()=>{
+ const {context,storage}=boot();await new Promise(r=>setImmediate(r));let resolve;
+ context.fetch=()=>new Promise(r=>resolve=r);
+ await vm.runInContext("loadBible('nlt:NLT')",context);
+ const pending=vm.runInContext('goLiveScripture({bookIdx:0,ch:1,vFrom:1,vTo:1})',context);
+ vm.runInContext("pushLive({mode:'normal',slides:[{text:'New announcement',label:'Notice'}],index:0})",context);
+ resolve({ok:true,json:async()=>({data:{content:[{name:'verse',attrs:{number:'1'}},{text:'Late verse'}],copyright:'Publisher'},expiresAt:Date.now()+10000,report:{token:'fixture'}})});
+ assert.equal(await pending,false);assert.equal(JSON.parse(storage.get('cp_live')).slides[0].text,'New announcement');
 });
 
 test('search and account forms prevent page navigation without triggering an extra sign-in',()=>{

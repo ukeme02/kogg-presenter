@@ -8,6 +8,7 @@
 }
 
 html, body { height: 100%; margin: 0; background: #000; overflow: hidden; }
+#scriptureCredit { position:absolute; bottom:1vh; left:4vw; right:4vw; z-index:4; font:clamp(10px,1.35vh,20px)/1.3 'Nunito Sans Expanded',sans-serif; text-align:center; color:inherit; text-shadow:0 1px 4px #000; pointer-events:none; }
 html.overlay { background: transparent !important; }
 body.overlay { background: transparent !important; }
 body.overlay #screen { background: transparent !important; }

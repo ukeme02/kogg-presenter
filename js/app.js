@@ -8,6 +8,7 @@ const LS = {
     catch { return fallback; }
   },
   set(key, value) {
+    if(key===K.service||key===K.plans)value=window.KOGGLicensed?.portable(value)||value;
     if(key===K.service && Array.isArray(value)){
       if(window.__lyricsReady){lyricSession.service=value.filter(item=>item.sessionOnly);saveLyricSession();}
       value=value.filter(item=>!item.sessionOnly);
@@ -48,7 +49,11 @@ function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
     const text = book.chapters[chFrom - 1][v - 1];
     if (text == null) continue;  // skip missing verses instead of breaking
     if (!text.trim()) continue;
-    slides.push({ text, label: `${book.name} ${chFrom}:${v}` });
+    const licensed = typeof bible!=='undefined' && bible?.provider==='nlt' && books===bible.books;
+    slides.push({ text, label: `${book.name} ${chFrom}:${v}`, ...(licensed?{
+      scriptureRef:{translation:'nlt:NLT',bookIdx,ch:chFrom,vFrom:v,vTo:v},
+      license:window.KOGGBibles.chapterLicense(bible,bookIdx,chFrom)
+    }:{}) });
   }
   return slides;
 }
@@ -60,6 +65,7 @@ let songs = LS.get(K.songs, []);
 let themes = LS.get(K.themes, null);
 let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
 let live = LS.get(K.live, { mode: 'blank', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });   // plain black screen until you pick something
+if(live.scripture?.translation==='nlt:NLT'&&!window.KOGGLicensed.current(live.slides?.[live.index])){live={...live,mode:'blank',slides:[]};LS.set(K.live,live);}
 let outputIsConnected = false;
 let editingSongId = null;
 
@@ -130,7 +136,25 @@ function themeSave() { LS.set(K.themes, themes); }
 
 /* ---------- sync to display ---------- */
 const channel = ('BroadcastChannel' in window) ? new BroadcastChannel('kogg-presenter') : null;
+let presentationRequest=0;
+const licensedReporter=window.KOGGLicensed?.create({storage:localStorage,fetch:window.fetch.bind(window),url:window.KOGGLicensed.endpoint(location),crypto:window.crypto,locks:navigator.locks,onError:message=>{if($('modeHint'))$('modeHint').textContent=message;}});
+const licensedSearchReporter=window.KOGGLicensed?.create({storage:localStorage,fetch:window.fetch.bind(window),url:window.KOGGLicensed.endpoint(location),crypto:window.crypto,locks:navigator.locks});
+licensedReporter?.flush();
+window.addEventListener('online',()=>licensedReporter?.flush());
 function pushLive(patch = {}) {
+  const ticket=(patch.slides!==undefined||patch.index!==undefined||patch.mode!==undefined)?++presentationRequest:presentationRequest;
+  const next={...live,...patch},pendingSlide=next.slides?.[next.index];
+  if(next.mode==='normal'&&pendingSlide?.scriptureRef?.translation==='nlt:NLT'&&!window.KOGGLicensed.current(pendingSlide)){
+    const r=pendingSlide.scriptureRef,target=window.KOGGBibles.skeleton('nlt:NLT');
+    $('modeHint').textContent='Loading NLT for this service item…';
+    return window.KOGGBibles.ensureChapter(target,r.bookIdx,r.ch).then(()=>{
+      if(ticket!==presentationRequest)return false;
+      const text=target.books[r.bookIdx].chapters[r.ch-1][r.vFrom-1];
+      if(!text)throw new Error('This verse is not included in NLT.');
+      const slides=next.slides.slice();slides[next.index]={...pendingSlide,text,license:window.KOGGBibles.chapterLicense(target,r.bookIdx,r.ch)};
+      pushLive({...patch,slides,index:next.index,scripture:next.scripture,serviceFrames:next.serviceFrames});return true;
+    }).catch(error=>{if(ticket===presentationRequest)$('modeHint').textContent=error.message+' Current output kept.';return false;});
+  }
   if(patch.slides!==undefined && window.__lyricsReady)lyricsLoadToken++;
   Object.assign(patch,window.KOGGMedia.transition(live,patch,Date.now(),uid()));
   if(patch.slides){const item=service.find(s=>s.sessionOnly && s.slides===patch.slides);patch.lyricsSession=patch.lyricsSession||item?.lyricsSession||null;patch.lyricsKey=patch.lyricsKey||null;}
@@ -149,6 +173,7 @@ function pushLive(patch = {}) {
   renderPreview();
   renderLiveText();
   renderFloatPreview();
+  licensedReporter?.view(live);
 }
 
 /* ---------- live indicator ---------- */
@@ -264,9 +289,10 @@ async function loadBible(file) {
     return false;
   }
 }
-function fillChapters() {
+function fillChapters(preferred=1) {
   const book = bible.books[+$('bookSelect').value];
   $('chapterSelect').innerHTML = book.chapters.map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('');
+  $('chapterSelect').value=Number.isInteger(preferred)&&preferred>=1&&preferred<=book.chapters.length?preferred:1;
   fillVerses();
   renderBookChips($('bookSearch').value);
   renderChapterChips();
@@ -277,11 +303,12 @@ function fillVerses() {
   const book = bible.books[bookIdx];
   const ch = +$('chapterSelect').value;
   let count = book.chapters[ch - 1].length;
-  if (!count && bible.provider && window.KOGGBibles) {
+  if (bible.provider && window.KOGGBibles && !window.KOGGBibles.chapterReady(bible,bookIdx,ch)) {
     // connected version — the chapter streams in, then the dock rerenders with real text
-    window.KOGGBibles.ensureChapter(bible, bookIdx, ch)
-      .then(() => { fillVerses(); renderVerseDots(); indexConnectedChapter(bookIdx, ch - 1); })
-      .catch(err => { $('modeHint').textContent = err.message + ' — select the chapter again to retry.'; });
+    const requestedBible=bible;
+    window.KOGGBibles.ensureChapter(requestedBible, bookIdx, ch)
+      .then(() => { if(bible!==requestedBible||+$('bookSelect').value!==bookIdx||+$('chapterSelect').value!==ch)return;fillVerses(); renderVerseDots(); indexConnectedChapter(bookIdx, ch - 1); })
+      .catch(err => { if(bible===requestedBible&&+$('bookSelect').value===bookIdx&&+$('chapterSelect').value===ch)$('modeHint').textContent = err.message + ' — select the chapter again to retry.'; });
     count = 1;   // placeholder bounds while the chapter streams in
   }
   $('verseFrom').innerHTML = opts(count);
@@ -293,6 +320,7 @@ function fillVerses() {
 /* whole-Bible search on connected versions covers the chapters streamed this session */
 function indexConnectedChapter(bookIdx, ci) {
   const book = bible.books[bookIdx];
+  searchIndex=searchIndex.filter(row=>row.bi!==bookIdx||row.ci!==ci);
   book.chapters[ci].forEach((t, vi) => {
     searchIndex.push({ bi: bookIdx, ci, vi, s: stripStrongs(t).toLowerCase() });
   });
@@ -330,7 +358,7 @@ function renderLiveText() {
   const prefix = currentBook ? `${currentBook.name} ${liveRef.ch}:` : '';
   const projectedVerse = prefix && slide.label?.startsWith(prefix) ? Number(slide.label.slice(prefix.length)) : 0;
   if (!projectedVerse || !liveRef || projectedVerse < liveRef.vFrom || projectedVerse > liveRef.vTo) {
-    box.innerHTML = `<div class="live-ref">${esc(slide.label || '')}</div><div style="white-space:pre-wrap">${esc(stripStrongs(slide.text))}</div>`;
+    box.innerHTML = `<div class="live-ref">${esc(slide.label || '')}</div><div style="white-space:pre-wrap">${esc(stripStrongs(slide.text))}</div>${slide.license?'<small>'+esc(slide.license.copyright)+'</small>':''}`;
     return;
   }
   const previewRef = {...liveRef, vFrom:projectedVerse, vTo:projectedVerse};
@@ -361,7 +389,7 @@ function renderLiveText() {
   }
   const ref = book.name + ' ' + previewRef.ch + (previewRef.vTo > previewRef.vFrom ? ':' + previewRef.vFrom + '-' + previewRef.vTo : ':' + previewRef.vFrom);
   const liveOnProjector = live.strongsShowing && live.strongsCard ? '<span class="lt-note">word meaning on screen — tap the number again to flip back</span>' : '';
-  box.innerHTML = `<div class="live-ref">${esc(ref)}${nums ? '<span class="lt-tip">tap a word number → its meaning takes the screen</span>' : ''}${liveOnProjector}</div>${parts.join(' ')}`;
+  box.innerHTML = `<div class="live-ref">${esc(ref)}${nums ? '<span class="lt-tip">tap a word number → its meaning takes the screen</span>' : ''}${liveOnProjector}</div>${parts.join(' ')}${slide.license?'<small>'+esc(slide.license.copyright)+'</small>':''}`;
   refreshBookmarkButton();
 }
 
@@ -1380,6 +1408,7 @@ function searchBible(q, limit = 60) {
   const out = [];
   for (let i = 0; i < searchIndex.length; i++) {
     const it = searchIndex[i];
+    if(bible.provider==='nlt'&&!window.KOGGBibles.chapterReady(bible,it.bi,it.ci+1))continue;
     if (words.every(w => it.s.includes(w))) {
       out.push(it);
       if (out.length >= limit) break;
@@ -1390,12 +1419,19 @@ function searchBible(q, limit = 60) {
 function searchSelect(bi, ci, vi) {
   // sync the main picker with a search hit, then show the verse in context
   $('bookSelect').value = bi;
-  fillChapters();
+  fillChapters(ci+1);
   $('chapterSelect').value = ci + 1;
   fillVerses();
   $('verseFrom').value = vi + 1;
   $('verseTo').value = vi + 1;
   renderVerseDots();
+}
+function reportNltResults(refs,box){
+  if(bible?.provider!=='nlt')return;
+  const groups=new Map(),credits=new Set();
+  for(const r of refs){const license=window.KOGGBibles.chapterLicense(bible,r.bookIdx,r.ch);if(!license||license.expiresAt<=Date.now())continue;const key=r.bookIdx+':'+r.ch;const group=groups.get(key)||{license,verses:[]};group.verses.push(r.vFrom);groups.set(key,group);credits.add(license.copyright);}
+  for(const [label,g] of groups)licensedSearchReporter?.view({mode:'normal',index:0,slides:[{label,text:g.verses.join(','),license:g.license}]});
+  if(credits.size)box.innerHTML+='<small class="hint">'+esc([...credits].join(' ')+' • Scripture via API.Bible')+'</small>';
 }
 function renderBibleSearch() {
   const q = $('bibleSearch').value;
@@ -1414,6 +1450,7 @@ function renderBibleSearch() {
       }).join('') + (hits.length === 60 ? '<div class="search-none">Showing the first 60 matches — add a word to narrow it.</div>' : '')
     : `<div class="search-none">No verses match “${esc(q)}” in ${esc(bible.translation)}. ${bible.provider ? 'Connected versions search only the chapters streamed this session — present the passages you need, or type the reference above.' : 'Try fewer or different words.'}</div>`;
   box.hidden = false;
+  reportNltResults(hits.map(h=>({bookIdx:h.bi,ch:h.ci+1,vFrom:h.vi+1})),box);
 }
 $('bibleSearchForm').addEventListener('submit',e=>{e.preventDefault();});
 $('bibleSearch').addEventListener('input', () => {
@@ -2114,18 +2151,22 @@ $('btnBookmarkScripture').addEventListener('click',()=>{
   LS.set('cp_scripture_bookmarks',bookmarks);renderMemory();refreshBookmarkButton();
   flash($('btnBookmarkScripture'),exists?'Removed ☆':'Saved ★');
 });
-function goLiveScripture(r, expectedLive=null) {
+function goLiveScripture(r, expectedLive=null, requestTicket=null) {
+  const ticket=requestTicket??++presentationRequest;
+  if(ticket!==presentationRequest)return false;
   if(expectedLive && live!==expectedLive)return false;
   if (!bible) return false;
   if (bible.metadata?.scope==='NT' && r?.bookIdx < 39) {
     $('modeHint').textContent='Efik · New Testament only. Choose another Bible for the Old Testament. Current output kept.';
     return false;
   }
-  if (bible.provider && window.KOGGBibles && !(bible.books[r.bookIdx]?.chapters[r.ch - 1] || []).length) {
+  if(!r||!Number.isInteger(r.bookIdx)||!Number.isInteger(r.ch)||!Array.isArray(bible.books[r.bookIdx]?.chapters[r.ch-1]))return false;
+  if (bible.provider && window.KOGGBibles && !window.KOGGBibles.chapterReady(bible,r.bookIdx,r.ch)) {
     // connected version — stream the chapter in, then stage as usual
-    return window.KOGGBibles.ensureChapter(bible, r.bookIdx, r.ch)
-      .then(() => { indexConnectedChapter(r.bookIdx, r.ch - 1); return goLiveScripture(r,expectedLive); })
-      .catch(err => { flash($('quickGo'), err.message); return false; });
+    const requestedBible=bible;
+    return window.KOGGBibles.ensureChapter(requestedBible, r.bookIdx, r.ch)
+      .then(() => { if(bible!==requestedBible||ticket!==presentationRequest)return false;indexConnectedChapter(r.bookIdx, r.ch - 1); return goLiveScripture(r,expectedLive,ticket); })
+      .catch(err => { if(ticket===presentationRequest)flash($('quickGo'), err.message); return false; });
   }
   if (!validScriptureRef(r)) { flash($('quickGo'), 'Invalid scripture reference'); return false; }
   if (!scriptureToSlides(bible.books, r.bookIdx, r.ch, r.vFrom, r.vTo).length) {
@@ -2138,7 +2179,7 @@ function goLiveScripture(r, expectedLive=null) {
   renderPreview();
   // keep the scripture tab in sync so the operator sees what's live
   $('bookSelect').value = r.bookIdx;
-  fillChapters();
+  fillChapters(r.ch);
   $('chapterSelect').value = r.ch;
   fillVerses();
   $('verseFrom').value = r.vFrom;
@@ -2178,7 +2219,7 @@ function quickSearch(q) {
     out.push({
       type: 'scripture', icon: '📖',
       label: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`,
-      snippet: stripStrongs(book.chapters[r.ch - 1][r.vFrom - 1] || '').slice(0, 80),
+      snippet: bible.provider==='nlt'&&!window.KOGGBibles.chapterReady(bible,r.bookIdx,r.ch)?'':stripStrongs(book.chapters[r.ch - 1][r.vFrom - 1] || '').slice(0, 80),
       ref,
     });
   }
@@ -2217,6 +2258,7 @@ function renderQuickResults() {
   box._items = items;
   box._selected = 0;
   box.querySelector('.quickgo-item')?.classList.add('selected');
+  reportNltResults(items.filter(it=>it.type==='scripture'&&it.snippet).map(it=>it.ref),box);
 }
 let quickGoTimer = null;
 $('quickGo').addEventListener('input', () => {   // debounce: full-Bible search must not run on every keystroke
@@ -3132,7 +3174,7 @@ function renderLicensedControls() {
   const status = $('licensedStatus');
   if (status) status.textContent = cfg.versions.length
     ? `${cfg.versions.length} API.Bible version(s) connected: ${cfg.versions.join(', ')}. ${cfg.versions.length >= 3 ? 'That is the Starter-plan maximum.' : 'You can add up to three.'}`
-    : ((window.KOGGBibles?.legacyNltAvailable?.() ?? Date.now() < Date.UTC(2027, 0, 1)) ? 'NLT’s current online connection ends on 1 January 2027; its replacement is pending activation. ' : 'NLT’s previous connection has closed; its replacement is pending activation. ') + 'API.Bible editions require a key and approved access.';
+    : 'NLT connects through KOGG while online—no personal API key needed. Other API.Bible editions use your own approved key. NLT service plans save references and load the words when presented.';
 }
 $('btnSaveApiBible')?.addEventListener('click', () => {
   saveApiBibleKey($('apiBibleKey').value);
@@ -3366,7 +3408,7 @@ $('btnExport').addEventListener('click', async () => {
       if (!asset) throw new Error('Missing asset: ' + id + '. Re-add it before making a full backup.');
       data.assets[id] = asset;
     }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(window.KOGGLicensed.portable(data), null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'kogg-presenter-backup.json'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
@@ -3461,6 +3503,7 @@ fitDockContents();
 window.__koggBoot = true;
 refreshSyncBadge();
 window.KOGGOffline?.start();
+window.KOGGBibles.configure({fetchImpl:window.fetch.bind(window),getSettings:()=>LS.get(K.settings,{}),managedNlt:true,managedEndpoint:window.KOGGLicensed.endpoint(location)});
 loadBible($('translationSelect').value);
 setVerseMode(savedSettings.verseMode || 'verse');
 applyDocks();

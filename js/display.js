@@ -12,6 +12,10 @@ const OVERLAY = new URLSearchParams(location.search).has('overlay'); // OBS tran
 const BROADCAST = new URLSearchParams(location.search).get('feed')==='broadcast';
 const OVERLAYS_ONLY = OVERLAY && new URLSearchParams(location.search).get('layers')==='overlays';
 let publishedThemes=null;
+let licenseExpiryTimer=null;
+const usageReporter=window.KOGGLicensed?.create({storage:localStorage,fetch:window.fetch.bind(window),url:window.KOGGLicensed.endpoint(location),crypto:window.crypto,locks:navigator.locks});
+usageReporter?.flush();
+window.addEventListener('online',()=>usageReporter?.flush());
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function plain(s) { return String(s).replace(/\[(?:G|H)\d{1,5}]/g, '').replace(/ {2,}/g, ' '); }
@@ -104,6 +108,14 @@ function fitText(enlargeScripture = false, fillScreen = true, scale = 1) {
 }
 
 function render(state) {
+  if(typeof window!=='undefined'&&window.KOGGLicensed){
+    clearTimeout(licenseExpiryTimer);
+    const slide=state.slides?.[state.index];
+    if(slide?.scriptureRef?.translation==='nlt:NLT'){
+      if(!window.KOGGLicensed.current(slide))state={...state,mode:'blank',slides:[]};
+      else if(state.mode==='normal')licenseExpiryTimer=setTimeout(()=>render(state),Math.min(2147483647,Math.max(1,slide.license.expiresAt-Date.now()+50)));
+    }
+  }
   const broadcast=typeof BROADCAST!=='undefined'&&BROADCAST;
   if(typeof window!=='undefined'&&window.KOGGStream?.route)state=window.KOGGStream.route(state,broadcast);
   if(typeof document!=='undefined')document.body.classList.toggle('broadcast-lower',broadcast&&state.broadcast?.layout==='lower'&&state.mode==='normal');
@@ -115,6 +127,8 @@ function render(state) {
   $('blankScreen').classList.toggle('on', blankOn);
   const mediaOn=typeof window!=='undefined'&&window.KOGGMediaDisplay?.render(state,{overlaysOnly:OVERLAYS_ONLY})||false;
   const showSlide = !mediaOn && !OVERLAYS_ONLY && state.mode === 'normal' && state.slides.length > 0;
+  const credit=typeof document!=='undefined'&&document.getElementById('scriptureCredit');
+  if(credit){const licence=state.slides?.[state.index]?.license;credit.hidden=!showSlide||!licence||!!state.strongsShowing;credit.textContent=credit.hidden?'':licence.copyright+' • Scripture via API.Bible';textEl.style.height=credit.hidden?'':'80vh';}
   const card = !OVERLAYS_ONLY && state.mode === 'normal' && state.strongsShowing && state.strongsCard ? state.strongsCard : null;
   $('strongsCard').classList.toggle('on', !!card);
   textEl.style.display = showSlide && !card ? '' : 'none';
@@ -127,13 +141,14 @@ function render(state) {
       const slide = state.slides[state.index] || { text: '', label: '' };
       contentEl.innerHTML = renderSlideText(slide, state);
       if(slide.bullets)textEl.style.textAlign='left';   // always clean text — numbers live only in the operator preview
-      labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : '');
+      labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : slide.scriptureRef?.translation==='nlt:NLT'?' • NLT':'');
       textEl.style.fontSize = t.fontSize + 'vh';
       fitText(false,t.fillScreen!==false,displayNumber(t.fontScale,1,.2,1));
     }
   } else if (!OVERLAY) {
     applyBackdrops(state);
   }
+  if(typeof usageReporter!=='undefined')usageReporter?.view(showSlide&&!card?state:{mode:'blank'});
 }
 
 

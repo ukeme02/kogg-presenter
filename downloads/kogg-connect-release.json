@@ -1,16 +1,16 @@
 {
-  "version": "0.1.1-preview",
+  "version": "0.1.2-preview",
   "platform": "Windows x64",
   "obs": "32.x",
   "status": "preview; hardware acceptance pending",
   "files": {
-    "kogg-connect-0.1.1-preview-windows-x64.exe": {
-      "bytes": 574464,
-      "sha256": "fb3143c768a63533c17c8a9df97f8caae250ebe64741d45e4f87eed3b11d1b65"
+    "kogg-connect-0.1.2-preview-windows-x64.exe": {
+      "bytes": 579584,
+      "sha256": "3070f25992628c6a6ce96c7f8cba1a41a2b900f57780fce3828d809e9bb5df14"
     },
-    "kogg-connect-0.1.1-preview-windows-x64.zip": {
-      "bytes": 227241,
-      "sha256": "55b7c948d837a139899bc1f5468c92ac9a871e38de05c7151ab13dd26ec6e580"
+    "kogg-connect-0.1.2-preview-windows-x64.zip": {
+      "bytes": 229563,
+      "sha256": "d44d7eacb1dcedbc1989771b4567609362fb130228d80f214f68e3c8560edc6d"
     }
   }
 }

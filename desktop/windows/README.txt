@@ -1,4 +1,4 @@
-KOGG Presenter for Windows - 0.1.2 preview
+KOGG Presenter for Windows - 0.1.3 preview
 Worship without Limits
 
 Install, open KOGG, choose Local, and start presenting. No account, Node,
@@ -24,8 +24,8 @@ The direct Wi-Fi browser option is experimental and needs a return pairing
 exchange. It is not a one-scan, six-digit offline connection.
 
 Online lyrics search and additional Bible downloads require internet.
-Optional Bible packs are not bundled. NLT connects online through KOGG without a personal API key. Only requested
-chapters are loaded; NLT is not part of the offline Bible bundle. Service
+Optional Bible packs are not bundled. NLT and NIV connect online through KOGG without a personal API key. Only requested
+chapters are loaded; NLT and NIV are not part of the offline Bible bundle. Service
 plans save references and fetch licensed text when presented. Anonymous
 usage reporting retries when the connection returns.
 Speech recognition availability and connectivity depend on Edge.

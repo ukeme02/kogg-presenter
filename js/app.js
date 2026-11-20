@@ -49,9 +49,9 @@ function scriptureToSlides(books, bookIdx, chFrom, vFrom, vTo) {
     const text = book.chapters[chFrom - 1][v - 1];
     if (text == null) continue;  // skip missing verses instead of breaking
     if (!text.trim()) continue;
-    const licensed = typeof bible!=='undefined' && bible?.provider==='nlt' && books===bible.books;
+    const licensed = typeof bible!=='undefined' && typeof window!=='undefined' && window.KOGGBibles?.managedEdition(bible) && books===bible.books;
     slides.push({ text, label: `${book.name} ${chFrom}:${v}`, ...(licensed?{
-      scriptureRef:{translation:'nlt:NLT',bookIdx,ch:chFrom,vFrom:v,vTo:v},
+      scriptureRef:{translation:bible.provider==='nlt'?'nlt:NLT':'api:NIV',bookIdx,ch:chFrom,vFrom:v,vTo:v},
       license:window.KOGGBibles.chapterLicense(bible,bookIdx,chFrom)
     }:{}) });
   }
@@ -65,7 +65,7 @@ let songs = LS.get(K.songs, []);
 let themes = LS.get(K.themes, null);
 let service = LS.get(K.service, []);   // [{id,type,title,slides:[{text,label}]}]
 let live = LS.get(K.live, { mode: 'blank', slides: [], index: 0, lowerThird: { on: false, l1: '', l2: '' } });   // plain black screen until you pick something
-if(live.scripture?.translation==='nlt:NLT'&&!window.KOGGLicensed.current(live.slides?.[live.index])){live={...live,mode:'blank',slides:[]};LS.set(K.live,live);}
+if(window.KOGGLicensed.edition(live.slides?.[live.index]?.scriptureRef?.translation||live.scripture?.translation)&&!window.KOGGLicensed.current(live.slides?.[live.index])){live={...live,mode:'blank',slides:[]};LS.set(K.live,live);}
 let outputIsConnected = false;
 let editingSongId = null;
 
@@ -144,13 +144,13 @@ window.addEventListener('online',()=>licensedReporter?.flush());
 function pushLive(patch = {}) {
   const ticket=(patch.slides!==undefined||patch.index!==undefined||patch.mode!==undefined)?++presentationRequest:presentationRequest;
   const next={...live,...patch},pendingSlide=next.slides?.[next.index];
-  if(next.mode==='normal'&&pendingSlide?.scriptureRef?.translation==='nlt:NLT'&&!window.KOGGLicensed.current(pendingSlide)){
-    const r=pendingSlide.scriptureRef,target=window.KOGGBibles.skeleton('nlt:NLT');
-    $('modeHint').textContent='Loading NLT for this service item…';
+  if(next.mode==='normal'&&window.KOGGLicensed.edition(pendingSlide?.scriptureRef?.translation)&&!window.KOGGLicensed.current(pendingSlide)){
+    const r=pendingSlide.scriptureRef,target=window.KOGGBibles.skeleton(r.translation);
+    $('modeHint').textContent='Loading '+target.translation+' for this service item…';
     return window.KOGGBibles.ensureChapter(target,r.bookIdx,r.ch).then(()=>{
       if(ticket!==presentationRequest)return false;
       const text=target.books[r.bookIdx].chapters[r.ch-1][r.vFrom-1];
-      if(!text)throw new Error('This verse is not included in NLT.');
+      if(!text)throw new Error('This verse is not included in '+target.translation+'.');
       const slides=next.slides.slice();slides[next.index]={...pendingSlide,text,license:window.KOGGBibles.chapterLicense(target,r.bookIdx,r.ch)};
       pushLive({...patch,slides,index:next.index,scripture:next.scripture,serviceFrames:next.serviceFrames});return true;
     }).catch(error=>{if(ticket===presentationRequest)$('modeHint').textContent=error.message+' Current output kept.';return false;});
@@ -1408,7 +1408,7 @@ function searchBible(q, limit = 60) {
   const out = [];
   for (let i = 0; i < searchIndex.length; i++) {
     const it = searchIndex[i];
-    if(bible.provider==='nlt'&&!window.KOGGBibles.chapterReady(bible,it.bi,it.ci+1))continue;
+    if(window.KOGGBibles.managedEdition(bible)&&!window.KOGGBibles.chapterReady(bible,it.bi,it.ci+1))continue;
     if (words.every(w => it.s.includes(w))) {
       out.push(it);
       if (out.length >= limit) break;
@@ -1426,8 +1426,8 @@ function searchSelect(bi, ci, vi) {
   $('verseTo').value = vi + 1;
   renderVerseDots();
 }
-function reportNltResults(refs,box){
-  if(bible?.provider!=='nlt')return;
+function reportLicensedResults(refs,box){
+  if(!window.KOGGBibles.managedEdition(bible))return;
   const groups=new Map(),credits=new Set();
   for(const r of refs){const license=window.KOGGBibles.chapterLicense(bible,r.bookIdx,r.ch);if(!license||license.expiresAt<=Date.now())continue;const key=r.bookIdx+':'+r.ch;const group=groups.get(key)||{license,verses:[]};group.verses.push(r.vFrom);groups.set(key,group);credits.add(license.copyright);}
   for(const [label,g] of groups)licensedSearchReporter?.view({mode:'normal',index:0,slides:[{label,text:g.verses.join(','),license:g.license}]});
@@ -1450,7 +1450,7 @@ function renderBibleSearch() {
       }).join('') + (hits.length === 60 ? '<div class="search-none">Showing the first 60 matches — add a word to narrow it.</div>' : '')
     : `<div class="search-none">No verses match “${esc(q)}” in ${esc(bible.translation)}. ${bible.provider ? 'Connected versions search only the chapters streamed this session — present the passages you need, or type the reference above.' : 'Try fewer or different words.'}</div>`;
   box.hidden = false;
-  reportNltResults(hits.map(h=>({bookIdx:h.bi,ch:h.ci+1,vFrom:h.vi+1})),box);
+  reportLicensedResults(hits.map(h=>({bookIdx:h.bi,ch:h.ci+1,vFrom:h.vi+1})),box);
 }
 $('bibleSearchForm').addEventListener('submit',e=>{e.preventDefault();});
 $('bibleSearch').addEventListener('input', () => {
@@ -2219,7 +2219,7 @@ function quickSearch(q) {
     out.push({
       type: 'scripture', icon: '📖',
       label: `${book.name} ${r.ch}:${r.vFrom}${r.vTo > r.vFrom ? '-' + r.vTo : ''}`,
-      snippet: bible.provider==='nlt'&&!window.KOGGBibles.chapterReady(bible,r.bookIdx,r.ch)?'':stripStrongs(book.chapters[r.ch - 1][r.vFrom - 1] || '').slice(0, 80),
+      snippet: window.KOGGBibles.managedEdition(bible)&&!window.KOGGBibles.chapterReady(bible,r.bookIdx,r.ch)?'':stripStrongs(book.chapters[r.ch - 1][r.vFrom - 1] || '').slice(0, 80),
       ref,
     });
   }
@@ -2258,7 +2258,7 @@ function renderQuickResults() {
   box._items = items;
   box._selected = 0;
   box.querySelector('.quickgo-item')?.classList.add('selected');
-  reportNltResults(items.filter(it=>it.type==='scripture'&&it.snippet).map(it=>it.ref),box);
+  reportLicensedResults(items.filter(it=>it.type==='scripture'&&it.snippet).map(it=>it.ref),box);
 }
 let quickGoTimer = null;
 $('quickGo').addEventListener('input', () => {   // debounce: full-Bible search must not run on every keystroke
@@ -3139,13 +3139,14 @@ $('btnStrongs').addEventListener('click', () => {
 refreshStrongsBtn();
 
 /* ---------- licensed versions connected live (Providers) ---------- */
-const API_BIBLE_LABELS = { NIV: 'New International Version', NKJV: 'New King James Version', NASB: 'New American Standard Bible', CSB: 'Christian Standard Bible', AMP: 'Amplified Bible', MSG: 'The Message' };
-function apiBibleConfig() { const s = LS.get(K.settings, {}); return { key: s.apiBibleKey || '', versions: s.apiBibleVersions || [] }; }
+const API_BIBLE_LABELS = { NKJV: 'New King James Version', NASB: 'New American Standard Bible', CSB: 'Christian Standard Bible', AMP: 'Amplified Bible', MSG: 'The Message' };
+function apiBibleConfig() { const s = LS.get(K.settings, {}); return { key: s.apiBibleKey || '', versions: (s.apiBibleVersions || []).filter(a=>API_BIBLE_LABELS[a]) }; }
 function rebuildConnectedOptions() {
   const group = $('connectedVersionsGroup');
   const cfg = apiBibleConfig();
   const rows = [];
   rows.push({ value: 'nlt:NLT', text: 'NLT — New Living Translation (connected, online)' });
+  rows.push({ value: 'api:NIV', text: 'NIV — New International Version (connected, online)' });
   cfg.versions.forEach(abbr => { if (API_BIBLE_LABELS[abbr]) rows.push({ value: 'api:' + abbr, text: `${abbr} — ${API_BIBLE_LABELS[abbr]} (connected, your key)` }); });
   group.hidden = !rows.length;
   group.innerHTML = rows.map(o => `<option value="${o.value}">${esc(o.text)}</option>`).join('');
@@ -3174,7 +3175,7 @@ function renderLicensedControls() {
   const status = $('licensedStatus');
   if (status) status.textContent = cfg.versions.length
     ? `${cfg.versions.length} API.Bible version(s) connected: ${cfg.versions.join(', ')}. ${cfg.versions.length >= 3 ? 'That is the Starter-plan maximum.' : 'You can add up to three.'}`
-    : 'NLT connects through KOGG while online—no personal API key needed. Other API.Bible editions use your own approved key. NLT service plans save references and load the words when presented.';
+    : 'NLT and NIV connect through KOGG while online—no personal API key needed. Other API.Bible editions use your own approved key. NLT/NIV service plans save references and load the words when presented.';
 }
 $('btnSaveApiBible')?.addEventListener('click', () => {
   saveApiBibleKey($('apiBibleKey').value);
@@ -3480,7 +3481,7 @@ window.__koggBoot = false;   // mutation watcher (auto-sync) engages after boot
 const savedSettings = LS.get(K.settings, {});
 rebuildDownloadedOptions();  // optional downloads remain selectable after reopening
 rebuildCustomOptions();      // custom versions must exist in the select before restore
-rebuildConnectedOptions();   // licensed connected versions (NLT key-free; API.Bible with key)
+rebuildConnectedOptions();   // licensed connected versions (NLT/NIV managed; other API.Bible editions with your key)
 renderLicensedControls();
 if (savedSettings.currentTranslation && [...$('translationSelect').options].some(o => o.value === savedSettings.currentTranslation)) $('translationSelect').value = savedSettings.currentTranslation;
 if (savedSettings.light) applyOperatorTheme(true);
@@ -3503,7 +3504,7 @@ fitDockContents();
 window.__koggBoot = true;
 refreshSyncBadge();
 window.KOGGOffline?.start();
-window.KOGGBibles.configure({fetchImpl:window.fetch.bind(window),getSettings:()=>LS.get(K.settings,{}),managedNlt:true,managedEndpoint:window.KOGGLicensed.endpoint(location)});
+window.KOGGBibles.configure({fetchImpl:window.fetch.bind(window),getSettings:()=>LS.get(K.settings,{}),managedNlt:true,managedNiv:true,managedEndpoint:window.KOGGLicensed.endpoint(location)});
 loadBible($('translationSelect').value);
 setVerseMode(savedSettings.verseMode || 'verse');
 applyDocks();

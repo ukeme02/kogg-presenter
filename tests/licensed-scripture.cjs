@@ -68,3 +68,29 @@ test('rehearsal keeps licensed references visible without copying text or labell
  const R=require('../js/rehearsal.js'),result=R.prepare([{id:'nlt',title:'John 3',type:'scripture',slides:[slide()]}],[{id:'t1'}],'t1');
  assert.equal(result.frames.length,1);assert.match(result.frames[0].slide.text,/loads online/);assert.doesNotMatch(JSON.stringify(result),/Licensed words/);assert.match(result.issues.join(' '),/online access/);assert.doesNotMatch(result.issues.join(' '),/empty/);
 });
+
+test('NIV uses a fixed authorized edition and never shares cached chapters with NLT',async()=>{
+ const {handle,NIV_ID,NLT_ID}=await backend,c=cache(),calls=[];
+ const fetch=async(url,init)=>{calls.push(url);assert.equal(init.headers['api-key'],env.API_BIBLE_KEY);const edition=url.includes(NIV_ID)?'NIV':'NLT';return json({...source,data:{...source.data,copyright:edition+' publisher'}});};
+ for(const edition of ['NLT','NIV','NLT','NIV']){
+  const response=await handle({request:req('?chapter=JHN.3&edition='+edition),env},{fetch,cache:c});
+  assert.equal(response.status,200);const body=await response.json();assert.equal(body.data.bibleId,edition==='NIV'?NIV_ID:NLT_ID);assert.equal(body.data.copyright,edition+' publisher');assert(body.report.signature);
+ }
+ assert.equal(calls.length,2);
+ for(const query of ['?chapter=JHN.3&edition=MSG','?chapter=JHN.3&edition=__proto__','?chapter=JHN.3&edition=NIV&edition=NLT','?chapter=JHN.3&chapter=GEN.1&edition=NIV'])assert.equal((await handle({request:req(query),env},{fetch})).status,400);
+ assert.equal(calls.length,2);
+});
+
+test('managed NIV bypasses personal keys, deduplicates fetches and refreshes expired chapters',async()=>{
+ const context=vm.createContext({AbortController,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync('js/bible-providers.js','utf8'),context);const P=context.KOGGBibles;let time=NOW,calls=0;
+ P.configure({managedNiv:true,managedNlt:true,managedEndpoint:'/api/scripture',getSettings:()=>({apiBibleKey:'must-not-be-used'}),now:()=>time,fetchImpl:async(url,options)=>{calls++;assert.equal(url,'/api/scripture?chapter=NAM.3&edition=NIV');assert.equal(options.headers,undefined);return json({...source,expiresAt:time+1000,report:{token:'fixture-niv'}});}});
+ const b=P.skeleton('api:NIV');await Promise.all([P.ensureChapter(b,33,3),P.ensureChapter(b,33,3)]);assert.equal(calls,1);assert.equal(P.managedEdition(b),'NIV');assert.equal(P.managedEdition(P.skeleton('api:AMP')),null);
+ assert.deepEqual(Array.from(b.books[33].chapters[2]),['First verse.','','Third verse.']);time+=1001;assert.equal(P.chapterReady(b,33,3),false);await P.ensureChapter(b,33,3);assert.equal(calls,2);
+});
+
+test('NIV references survive Sync and rehearsal while licensed text and tokens stay out',()=>{
+ const s=slide();s.scriptureRef.translation='api:NIV';assert.equal(L.edition(s.scriptureRef.translation),'NIV');assert.equal(L.edition('api:MSG'),null);
+ const data={service:[{id:'niv',title:'John 3',type:'scripture',slides:[s]}],plans:{Sunday:[{id:'niv',title:'John',type:'scripture',slides:[s]}]}};
+ for(const out of [L.portable(data),Library.validate(data)]){assert.equal(out.service[0].slides[0].text,'');assert.equal(out.service[0].slides[0].scriptureRef.translation,'api:NIV');assert.doesNotMatch(JSON.stringify(out),/Licensed words|fixture|signature/);}
+ const result=require('../js/rehearsal.js').prepare(data.service,[{id:'t1'}],'t1');assert.match(result.frames[0].slide.text,/NIV passage loads online/);assert.doesNotMatch(JSON.stringify(result),/Licensed words/);
+});

@@ -2,7 +2,7 @@
    Tyndale public NLT access ends 1 January 2027: https://api.nlt.to/.
    API.Bible access depends on the editions licensed for the supplied key.
    Chapter caches here are session-only; schedule persistence is handled elsewhere.
-   Managed NLT fetches use KOGG's server; no account secret is shipped to clients.
+   Managed NLT/NIV fetches use KOGG's server; no account secret is shipped to clients.
    The bundled open Bibles remain available independently. */
 (function (global) {
   'use strict';
@@ -29,8 +29,13 @@
   let config = { fetchImpl: null, getSettings: () => ({}), saveSettings: () => {}, now: () => Date.now() };
   function configure(options) { config = Object.assign(config, options || {}); }
   function chapterLicense(bible,bi,ch) { return bible.licenses?.[`${bi}:${ch}`] || null; }
+  function managedEdition(bible) {
+    if(bible?.provider==='nlt'&&config.managedNlt)return 'NLT';
+    if(bible?.provider==='api-bible'&&bible.translation==='NIV'&&config.managedNiv)return 'NIV';
+    return null;
+  }
   function chapterReady(bible,bi,ch) {
-    if(bible.provider==='nlt'&&config.managedNlt){const meta=chapterLicense(bible,bi,ch);if(!meta||meta.expiresAt<=config.now()){if(bible.books[bi]?.chapters[ch-1])bible.books[bi].chapters[ch-1]=[];return false;}}
+    if(managedEdition(bible)){const meta=chapterLicense(bible,bi,ch);if(!meta||!Number.isFinite(meta.expiresAt)||meta.expiresAt<=config.now()){if(bible.books[bi]?.chapters[ch-1])bible.books[bi].chapters[ch-1]=[];return false;}}
     return !!bible.books[bi]?.chapters[ch-1]?.length;
   }
   function legacyNltAvailable() { return config.now() < Date.UTC(2027, 0, 1); }
@@ -196,19 +201,20 @@
 
   async function fetchChapter(bible, bookIdx, ch) {
     if (!config.fetchImpl) throw new Error('Connected versions are unavailable in this build');
-    if (bible.provider === 'nlt') {
-      if(config.managedNlt){
+    const edition=managedEdition(bible);
+    if(edition){
         const chapter=(USFM[bookIdx]==='NAH'?'NAM':USFM[bookIdx])+'.'+ch;
         const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
         try{
-          const res=await config.fetchImpl(config.managedEndpoint+'?chapter='+chapter,{cache:'no-store',credentials:'omit',signal:controller.signal});
-          const data=await res.json();if(!res.ok)throw new Error(data.error||'NLT is unavailable. Please retry online.');
-          if(data.expiresAt<=config.now()||data.expiresAt>config.now()+30*86400000||!data.report?.token||!data.data?.copyright)throw new Error('NLT licence details need refreshing. Retry online.');
+          const res=await config.fetchImpl(config.managedEndpoint+'?chapter='+chapter+(edition==='NLT'?'':'&edition='+edition),{cache:'no-store',credentials:'omit',signal:controller.signal});
+          const data=await res.json();if(!res.ok)throw new Error(data.error||edition+' is unavailable. Please retry online.');
+          if(!Number.isFinite(data.expiresAt)||data.expiresAt<=config.now()||data.expiresAt>config.now()+30*86400000||!data.report?.token||!data.data?.copyright)throw new Error(edition+' licence details need refreshing. Retry online.');
           const verses=parseApiChapter(data);
           bible.licenses ||= {};bible.licenses[`${bookIdx}:${ch}`]={expiresAt:data.expiresAt,copyright:cleanNltFragment(data.data.copyright),report:data.report};
           return verses;
         }finally{clearTimeout(timeout);}
-      }
+    }
+    if (bible.provider === 'nlt') {
       if (!legacyNltAvailable()) throw new Error('Tyndale’s NLT connection has closed. The replacement is pending activation. Choose another Bible to continue.');
       const settings = config.getSettings() || {};
       const key = settings.nltKey || 'TEST';
@@ -252,7 +258,7 @@
 
   global.KOGGBibles = {
     NAMES, USFM, CHAPTERS,
-    configure, providerOf, skeleton, ensureChapter, legacyNltAvailable, chapterLicense, chapterReady,
+    configure, providerOf, skeleton, ensureChapter, legacyNltAvailable, chapterLicense, chapterReady, managedEdition,
     parseNltHtml, parseApiChapter, nltRefRanges, cleanNltFragment,
     _skeletons: skeletons,
   };

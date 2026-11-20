@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / 'work/obs-build'
 WORK.mkdir(parents=True, exist_ok=True)
 SOURCES = ROOT / 'plugins/obs-kogg/src'
-VERSION = '0.1.2-preview'
+VERSION = '0.1.3-preview'
 
 def download(name, url, digest):
     dest = WORK / name

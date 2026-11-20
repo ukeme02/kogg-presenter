@@ -111,7 +111,7 @@ function render(state) {
   if(typeof window!=='undefined'&&window.KOGGLicensed){
     clearTimeout(licenseExpiryTimer);
     const slide=state.slides?.[state.index];
-    if(slide?.scriptureRef?.translation==='nlt:NLT'){
+    if(window.KOGGLicensed.edition(slide?.scriptureRef?.translation)){
       if(!window.KOGGLicensed.current(slide))state={...state,mode:'blank',slides:[]};
       else if(state.mode==='normal')licenseExpiryTimer=setTimeout(()=>render(state),Math.min(2147483647,Math.max(1,slide.license.expiresAt-Date.now()+50)));
     }
@@ -141,7 +141,8 @@ function render(state) {
       const slide = state.slides[state.index] || { text: '', label: '' };
       contentEl.innerHTML = renderSlideText(slide, state);
       if(slide.bullets)textEl.style.textAlign='left';   // always clean text — numbers live only in the operator preview
-      labelEl.textContent = plain(slide.label) + (state.scripture?.versionName ? ' • ' + state.scripture.versionName : slide.scriptureRef?.translation==='nlt:NLT'?' • NLT':'');
+      const versionName=state.scripture?.versionName||(['nlt:NLT','api:NIV'].includes(slide.scriptureRef?.translation)?slide.scriptureRef.translation.split(':')[1]:'');
+      labelEl.textContent = plain(slide.label) + (versionName?' • '+versionName:'');
       textEl.style.fontSize = t.fontSize + 'vh';
       fitText(false,t.fillScreen!==false,displayNumber(t.fontScale,1,.2,1));
     }

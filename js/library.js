@@ -10,8 +10,8 @@
         if (forbidden.has(key)) throw new Error('Unsafe key in library data');
         result[key] = clean(item);
       }
-      // Library backups and Sync carry NLT references, never reusable licensed text.
-      if(result.scriptureRef?.translation==='nlt:NLT'){result.text='';delete result.license;}
+      // Library backups and Sync carry managed NLT/NIV references, never reusable licensed text.
+      if(['nlt:NLT','api:NIV'].includes(result.scriptureRef?.translation)){result.text='';delete result.license;}
       return result;
     }
     return value;

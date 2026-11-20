@@ -471,6 +471,31 @@ test('a slow NLT request cannot replace a later deck selection',async()=>{
  assert.equal(await pending,false);assert.equal(JSON.parse(storage.get('cp_live')).slides[0].text,'New announcement');
 });
 
+test('NIV uses the managed connection, adds reference-only service items and rehydrates them on another device',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));const calls=[];
+ const response={data:{content:[{name:'verse',attrs:{number:'1'}},{text:'Fixture NIV words'}],copyright:'Publisher credit'},expiresAt:Date.now()+86400000,report:{token:'view-fixture',expiresAt:Date.now()+86400000,signature:'fixture'}};
+ context.fetch=async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>response};};
+ await vm.runInContext("loadBible('api:NIV')",context);await new Promise(r=>setImmediate(r));
+ assert.equal(await vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:1,vTo:1})',context),true);
+ let live=JSON.parse(storage.get('cp_live'));assert.equal(live.slides[0].text,'Fixture NIV words');assert.equal(live.slides[0].license.copyright,'Publisher credit');assert.ok(calls.some(c=>c.url.endsWith('?chapter=JHN.3&edition=NIV')));assert.ok(calls.every(c=>!c.options?.headers?.['api-key']));
+ elements.get('btnAddVerseService').click();const saved=JSON.parse(storage.get('cp_service'));assert.equal(saved[0].slides[0].text,'');assert.equal(saved[0].slides[0].license,undefined);
+ vm.runInContext("service=JSON.parse(localStorage.getItem('cp_service'));pushLive({mode:'blank'});presentServiceItems(service);",context);await new Promise(r=>setImmediate(r));
+ live=JSON.parse(storage.get('cp_live'));assert.equal(live.slides[0].text,'Fixture NIV words');assert.ok(live.slides[0].license.report.token);
+  elements.get('bibleSearch').value='Fixture';vm.runInContext('renderBibleSearch()',context);assert.match(elements.get('bibleResults').innerHTML,/Publisher credit.*API.Bible/);
+  assert.equal(await vm.runInContext('goLiveScripture({bookIdx:999,ch:3,vFrom:1,vTo:1})',context),false);
+  vm.runInContext("bible.licenses['42:3'].expiresAt=Date.now()-1;renderBibleSearch()",context);assert.doesNotMatch(elements.get('bibleResults').innerHTML,/John 3:1/);assert.match(elements.get('bibleResults').innerHTML,/Genesis 1:1/);
+});
+
+test('a slow NIV request cannot replace a later deck selection',async()=>{
+ const {context,storage}=boot();await new Promise(r=>setImmediate(r));let resolve;
+ context.fetch=()=>new Promise(r=>resolve=r);
+ await vm.runInContext("loadBible('api:NIV')",context);
+ const pending=vm.runInContext('goLiveScripture({bookIdx:0,ch:1,vFrom:1,vTo:1})',context);
+ vm.runInContext("pushLive({mode:'normal',slides:[{text:'New announcement',label:'Notice'}],index:0})",context);
+ resolve({ok:true,json:async()=>({data:{content:[{name:'verse',attrs:{number:'1'}},{text:'Late verse'}],copyright:'Publisher'},expiresAt:Date.now()+10000,report:{token:'fixture'}})});
+ assert.equal(await pending,false);assert.equal(JSON.parse(storage.get('cp_live')).slides[0].text,'New announcement');
+});
+
 test('search and account forms prevent page navigation without triggering an extra sign-in',()=>{
  const {elements}=boot();let prevented=0,signins=0;elements.get('btnSignIn').click=()=>signins++;
  for(const id of ['quickGoForm','quickJumpForm'])elements.get(id).handlers.submit[0]({preventDefault(){prevented++;}});

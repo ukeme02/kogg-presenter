@@ -1,0 +1,11 @@
+# NIV activation — prepared, not live
+
+20 November 2026. User authorized the secure NIV connection, testing and publication. Current API.Bible account uses all three free Starter slots: NLT, AMP, MSG. NIV 2011 (`78a9f6124f344018-01`) returns HTTP 403 through the existing app key. The owner has been asked which unused KOGG connection to replace; no selection has been removed. Only NLT is currently enabled in the published KOGG managed gateway.
+
+Implementation is ready in v140: NIV uses `api:NIV` so saved translation preferences continue to work. The server accepts only NLT/NIV, validates chapter bounds, partitions caches by edition and keeps API_BIBLE_KEY server-side. Reporting uses the existing signed receipt queue; its old local-storage prefix intentionally remains unchanged so pending reports survive the upgrade. NLT's request URL remains compatible with already-installed clients.
+
+NIV is online and chapter-at-a-time. Offline core files are unchanged. Service/plan/export/Sync data retain references, not reusable licensed text. Output and search show publisher attribution and reject expired content. Windows and OBS clients include the same support.
+
+Verification: 381 Node tests passed with no failures/skips (work/v140-tests.txt); native host and isolated install/upgrade/uninstall passed. Real NLT browser test passed Quick Jump, readable projection, attribution, reference-only persistence, reload/replay, expiry blanking and reporting acknowledgements at 390/768/1440 widths. Evidence: work/v140-nlt-browser.json. NIV tests currently use fixture content; do not describe NIV as activated or live until the provider returns actual text and the public-site test succeeds.
+
+Next: after the owner's edition choice, use the saved API.Bible browser profile to exchange that edition for NIV without changing the free plan or NLT. Re-read the catalogue and fetch NIV John 3 plus Psalm 119 using the existing secret held privately in memory. Run work/verify-managed-bible-browser.cjs for NIV; confirm copyright and anonymous reporting. Prepare clean tracked-source v140 web and 0.1.3-preview packages, publish verified GitHub assets, deploy to the existing Cloudflare Pages project, and check both editions through the canonical site. No app key is committed or bundled.

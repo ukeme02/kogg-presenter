@@ -1,5 +1,15 @@
 # Repair progress - 3 November 2026
 
+## NIV through the shared connection — 20 November 2026 (v140, prepared)
+
+- [x] Inspect the current API.Bible account and catalogue: free Starter now selects NLT, AMP and MSG. NIV11 edition ID is `78a9f6124f344018-01`; an actual authenticated chapter request returns 403 until an edition slot changes.
+- [x] Extend the secure fixed-edition gateway to NIV, isolate edition caches, reuse signed anonymous reporting and preserve NLT's existing URLs. No new dependencies or offline packs.
+- [x] Add NIV to the default connected picker without a personal-key prompt or duplicate saved option. Apply attribution, expiry, reference-only Sync/backups and on-demand service replay to both editions.
+- [x] Pass 381 automated checks, including NIV cache separation, fetch deduplication, search attribution, service replay, expiry and delayed-request protection. Real NLT browser regression passes; live NIV testing is still pending account access.
+- [x] Build 0.1.3-preview Windows/OBS packages; native host and isolated installer checks pass. Windows setup stays approximately 8.4 MB.
+- [ ] Owner chooses which currently selected, unused KOGG edition NIV should replace: The Message (recommended) or Amplified. Keep NLT and the free plan. Question is pending; no account changes or paid upgrades made.
+- [ ] Activate the chosen free-plan swap, verify real NIV text/copyright/reporting, publish packages and deploy v140. Production remains on verified v139 until then.
+
 ## Secure NLT connection — 20 November 2026 (v139)
 
 - [x] Finalize API.Bible setup, confirm standard NLT on the free plan, and provision the key only as a Cloudflare production secret.

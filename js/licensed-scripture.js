@@ -1,13 +1,14 @@
-/* NLT display metadata and a small anonymous, durable view-report queue. No SDK. */
+/* Managed Scripture metadata and a small anonymous, durable view-report queue. No SDK. */
 (function(scope){'use strict';
  const PREFIX='cp_nlt_view:',LIMIT=500;
+ function edition(translation){return translation==='nlt:NLT'?'NLT':translation==='api:NIV'?'NIV':null;}
  function endpoint(location){return location?.protocol==='https:'&&/^(?:[a-z0-9-]+\.)?kogg-presenter\.pages\.dev$/.test(location.hostname)?'/api/scripture':'https://kogg-presenter.pages.dev/api/scripture';}
  function current(slide,now=Date.now()){return !!slide?.license&&Number.isFinite(slide.license.expiresAt)&&slide.license.expiresAt>now&&slide.license.expiresAt<=now+30*86400000&&!!slide.license.report&&!!slide.license.copyright;}
  function portable(value){
   if(Array.isArray(value))return value.map(portable);
   if(!value||typeof value!=='object')return value;
   const out=Object.fromEntries(Object.entries(value).map(([k,v])=>[k,portable(v)]));
-  if(out.scriptureRef?.translation==='nlt:NLT'){out.text='';delete out.license;}
+  if(edition(out.scriptureRef?.translation)){out.text='';delete out.license;}
   return out;
  }
  function create({storage,fetch,url,crypto,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,locks,onError=()=>{}}){
@@ -25,17 +26,17 @@
     }catch{break;}finally{clearTimer(timeout);}
    }
   }
-  function flush(){if(stopped||busy)return busy;clearTimer(timer);busy=(async()=>{try{if(locks?.request)await locks.request('kogg-nlt-reports',drain);else await drain();}catch{onError('NLT usage reporting could not access storage.');}})().finally(()=>{busy=null;try{if(!stopped&&entries().length)timer=setTimer(flush,60000);}catch{}});return busy;}
+  function flush(){if(stopped||busy)return busy;clearTimer(timer);busy=(async()=>{try{if(locks?.request)await locks.request('kogg-nlt-reports',drain);else await drain();}catch{onError('Scripture usage reporting could not access storage.');}})().finally(()=>{busy=null;try{if(!stopped&&entries().length)timer=setTimer(flush,60000);}catch{}});return busy;}
   function view(state){
    const slide=state?.mode==='normal'&&!state.strongsShowing?state.slides?.[state.index]:null;
    if(!current(slide,now())){last='';return false;}
    const identity=JSON.stringify([slide.license.report.token,slide.label,slide.text]);
    if(identity===last)return false;last=identity;
    try{if(entries().length>=LIMIT)throw Error('queue full');const id=uuid();storage.setItem(PREFIX+id,JSON.stringify({...slide.license.report,id,device,session}));flush();return true;}
-   catch{last='';onError('NLT usage reporting needs available device storage. Reconnect or free storage.');return false;}
+   catch{last='';onError('Scripture usage reporting needs available device storage. Reconnect or free storage.');return false;}
   }
   return {view,flush,stop(){stopped=true;clearTimer(timer);},pending:()=>entries().length};
  }
- const api={endpoint,current,portable,create};
+ const api={endpoint,current,portable,create,edition};
  if(typeof module!=='undefined')module.exports=api;else scope.KOGGLicensed=api;
 })(typeof window!=='undefined'?window:globalThis);

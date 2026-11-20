@@ -7,8 +7,8 @@
 - [x] Correct remaining three-Bible landing copy and provider access claims; add the official NLT retirement date (1 January 2027). Keep blue styling, fonts and motion intact; no new runtime dependencies or mandatory downloads. Fix the reduced-motion prompt covering header navigation. Final landing/worker checks: 34 passed.
 - [x] Validate 364 Node tests (zero failures/skips), 11 converter tests and 93 offline hashes. Real browser checks include hymn projection, Notes bullets/splitting, title slides into Service and running landing motion. Compiled OBS transport test passed.
 - [x] Record scope, evidence, open findings and recommended next steps in AUDIT-2026-11-20.md. Check three new provider replies; no outbound mail this audit.
-- [ ] Restore KOGG Supabase access/reachability: configured host returns DNS name does not exist; live guest remote could not connect. Current dashboard exposes only another organisation/project. Real remote and media Sync remain unverified.
-- [ ] Publish v137 after reconnecting Cloudflare access to the existing KOGG Pages project. Production remains v135; downloaded Windows/web packages also lag. Do not claim local fixes are live.
+- [x] Restore original KOGG Supabase project: owner signed into ukeme02@gmail.com; dashboard confirmed the project was paused. Resumed it, verified restoration complete and DNS recovery. Hosted remote connected to the Base operator; Next and Blank reached it. Physical-phone and authenticated media Sync rehearsal still pending.
+- [x] Commit/push 67dbeb4. Reconnect the correct Cloudflare owner and refresh Wrangler with limited Pages permissions after owner approval. Deploy clean v137 archive to existing project: https://317d3a59.kogg-presenter.pages.dev. All ten canonical production comparisons passed, including Ibibio. Live lyric endpoint returned 16 ready results for Amazing Grace. Windows/web download packages still lag and need a separate release.
 
 ## Full Ibibio in Base and provider replies — 17 November 2026 (v136)
 

@@ -27,6 +27,17 @@ test('upstream failures and missing licence metadata fail closed without exposin
  const r=await handle({request:req(),env},{fetch:async()=>json({error:'secret '+env.API_BIBLE_KEY},403)});assert.equal(r.status,502);assert.doesNotMatch(await r.text(),/test-server-only-secret/);
  for(const bad of [{data:source.data},{...source,data:{...source.data,copyright:''}}])assert.equal((await handle({request:req(),env},{fetch:async()=>json(bad)})).status,502);
 });
+test('Cloudflare-compatible fetch rejects provider and reporting redirects without following them',async()=>{
+ const {handle}=await backend;
+ const guarded=(body,status=200)=>async(url,init)=>{assert.equal(init.redirect,'manual');return json(body,status);};
+ const chapter=await (await handle({request:req(),env},{fetch:guarded(source),now:()=>NOW})).json();
+ assert(chapter.report);
+ for(const status of [301,302,307,308]){
+  assert.equal((await handle({request:req(),env},{fetch:guarded({},status)})).status,502);
+  const event={...chapter.report,device:crypto.randomUUID(),session:crypto.randomUUID(),id:crypto.randomUUID()};
+  assert.equal((await handle({request:req('',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(event)}),env},{fetch:guarded({},status),now:()=>NOW})).status,502);
+ }
+});
 test('reporting accepts only server-signed tokens, relays anonymous identifiers and acknowledges retries',async()=>{
  const {handle}=await backend;const chapter=await (await handle({request:req(),env},{fetch:async()=>json(source),now:()=>NOW})).json();
  const event={...chapter.report,device:crypto.randomUUID(),session:crypto.randomUUID(),id:crypto.randomUUID()};let reports=0;

@@ -51,7 +51,8 @@ export async function handle({request, env}, deps = {}) {
       for(const [key,until] of reports)if(until<=now())reports.delete(key);
       if(reports.has(id))return reply(null,204);
       const target=new URL('https://fums.api.bible/f3');target.searchParams.set('t',token);target.searchParams.set('dId',device);target.searchParams.set('sId',session);
-      const response=await fetcher(target.href,{signal:controller.signal,redirect:'error'});
+      // Workers supports manual/follow, not error. Reject 3xx below without forwarding tokens.
+      const response=await fetcher(target.href,{signal:controller.signal,redirect:'manual'});
       if(!response.ok)return reply({error:'Usage reporting will retry.'},502);
       if(reports.size>3000)reports.delete(reports.keys().next().value);
       reports.set(id,now()+600000);return reply(null,204);
@@ -65,7 +66,7 @@ export async function handle({request, env}, deps = {}) {
     const cached=await cache?.match(cacheKey);
     if(cached){const data=await cached.json();if(data.expiresAt>now())return reply(data);}
     const target=`https://rest.api.bible/v1/bibles/${NLT_ID}/chapters/${chapter}?content-type=json&include-notes=false&include-titles=false&include-verse-numbers=false`;
-    const response=await fetcher(target,{headers:{'api-key':env.API_BIBLE_KEY},signal:controller.signal,redirect:'error'});
+    const response=await fetcher(target,{headers:{'api-key':env.API_BIBLE_KEY},signal:controller.signal,redirect:'manual'});
     if(!response.ok)return reply({error:response.status===429?'NLT usage limit reached. Choose an offline Bible or try again later.':[401,403].includes(response.status)?'NLT access needs attention. Choose another Bible for now.':'NLT could not be reached. Please retry while online.'},response.status===429?429:502);
     const raw=await response.text();if(raw.length>600000)throw Error('Oversize');
     const source=JSON.parse(raw),token=source.meta?.fumsToken,copyright=source.data?.copyright;

@@ -1,6 +1,7 @@
 /* KOGG Presenter — lightweight offline browser core. */
-const CACHE = 'kogg-presenter-v137';
+const CACHE = 'kogg-presenter-v138';
 const ASSETS = [
+  './css/landing-editorial.css',
   './wifi-remote/index.html', './wifi-remote/sw.js', './css/remote.css', './css/wifi-remote.css', './js/wifi-transport.js', './js/wifi-pairing.js', './js/wifi-remote.js', './js/wifi-remote-operator.js', './js/vendor/qrcode.js', './js/vendor/jsqr.js',
   './js/media-sync.js', './js/service-media.js', './js/media.js', './js/media-deck.js', './js/media-display.js',
   './', './index.html', './display.html', './landing.html',
@@ -10,10 +11,11 @@ const ASSETS = [
   './fonts/NunitoSans-Variable.woff2', './manifest.webmanifest',
   './icons/kogg-symbol.svg', './icons/kogg-symbol-light.svg', './icons/kogg-symbol-white.svg', './icons/kogg-symbol-ink.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './icons/icon.svg', './icons/icon-maskable.svg',
 ];
-// Base prepares exactly KJV, BSB and KJV Strong’s plus its lexicon. Extra translations cache only when used.
+// Base prepares KJV, BSB, KJV Strong’s and Ibibio plus the lexicon. Extra translations cache only when used.
 const OPTIONAL_ASSETS = ['./data/hymns-extra.json','./data/web.json','./data/asv.json','./data/ylt.json','./data/darby.json','./data/akjv.json','./data/webster.json','./data/geneva1599.json','./data/lsv.json','./data/bbe.json','./data/erv.json','./data/yoruba.json','./data/hausa.json','./data/igbo.json','./data/msb.json','./data/efik-nt.json'];
 // BEGIN ASSET HASHES
 const ASSET_HASHES = {
+  "./css/landing-editorial.css": "a2bf45a2deac295d4a42123bf952f764c7c5d5d7ba6b16173b994a95110dc735",
   "./wifi-remote/index.html": "40c42b1e5696c264854f6075897578a1c2c20bd97672e616751c28718b150764",
   "./wifi-remote/sw.js": "edadf9e2bcc6d204dcccacd63ad9a4fbfe89852b169be84ff6d24e2423f1ca09",
   "./css/remote.css": "0f11fc5fcc0762265eecbec39f14db3f1e77255640f393cbfe4a3a631784d3c4",
@@ -32,17 +34,17 @@ const ASSET_HASHES = {
   "./": "10c679380e688930de893dda54c41660b3efd13be59874db76fcf5da914ad97f",
   "./index.html": "10c679380e688930de893dda54c41660b3efd13be59874db76fcf5da914ad97f",
   "./display.html": "d670ba104fe9d491126a947c701c1e6d774253f4e472b0f6ef3d7c0096702f48",
-  "./landing.html": "e55db846238ea28ba19191e9b19f99f00df3c306653c5ada06507e2062ce1042",
+  "./landing.html": "c9eb1e6c8d926c1e69b3056ac043fce7a3e9b60d22900c3ef443f00bcecaca2e",
   "./icons/kogg-wordmark.svg": "783e193881395f9c39477d864d60e66870bdab8898cc88c218972af690dde29a",
   "./icons/kogg-media.webp": "d984963b8679d789f8bc0e08be3071f455810c73ad007eba94c1d8ee9a69e3fd",
   "./css/app.css": "ced88f5261132b5135bb69acbb96285b46aeaa284434242168583c703011cd58",
   "./css/display.css": "f7fde52d8a7a9e18cbb75099e4270c4978a95786d8561018a5a97b69bc942c81",
   "./css/landing.css": "050661cb16be3fb6671b0b164223999bb2c492ca535a981d630a86c1fdcf819a",
-  "./js/landing.js": "199d0de12bbf555ff4bc548452f754291e3566cf8c66ceb15cb755a01942184f",
+  "./js/landing.js": "790c5540818385e96c2f59f4ff619f60e504c2be9007980df4c57e115d4931ab",
   "./js/landing-tour.js": "9d4a74a9c470a38a31b68d9b10893502d461a5428401d72ccb1a0203a65fec3e",
   "./js/landing-experience.js": "69cee2145444bb1cf4f1ac16c7e3be6e6ddae0e5ef66ec3b93f4f89c4fe9a62e",
   "./css/landing-experience.css": "160a8a532061ddbe0211dfc5cbb0eb149d06e2d08a7c9de4214acb2a874cd477",
-  "./js/app.js": "83948b94e4ce18d8b169e3eff0b31d5b8d817b6e0d68ba4910ffbb1815f41625",
+  "./js/app.js": "ee8f22da31f19b916ab177d063491784fb55dd750bfd9650854d2718cee6eceb",
   "./js/theme-studio.js": "34a167a219d0e9d7aee62293d5c2ce2deb26a839acf4907499a9e8d19244bde9",
   "./js/display.js": "67529a06691400468288be2146572adea20a7a249b6e3b760e88b6ef360c69f3",
   "./js/sync.js": "d447cd697db6291039db9f961e2f86b157e54b9073e13cc517aa1311c1c8c083",
@@ -52,7 +54,7 @@ const ASSET_HASHES = {
   "./js/obs-receiver.js": "41a9a876b45b6b077572b8db11aecaa15f52f82383afbd506070b5fd9a6aee43",
   "./js/offline.js": "96466a98f0cc0361a6a344da6db149bc462956c0613cdff629c9e9478c91e7a7",
   "./js/scripture-tools.js": "e5dd211b7edb737ea582f5169c21999164632aca03c81b365af5f31010691c29",
-  "./js/bible-providers.js": "53b101cdb726376e4073384c22ee4e7acd2b128be274be39a4db8d5b338d0395",
+  "./js/bible-providers.js": "81e74dab9aeffd0732379fd8c9f7ba253d4098601dc47195d8647d63ba1be32c",
   "./js/bible-downloads.js": "9ddef20f4a3f6c9e0ba1229bad034ef53595db1336663d19ccb5f619d056a27c",
   "./js/content.js": "369e044f98861642df85fb356cad8b90b1fc0d69a6a19ffd7bc3416548079d40",
   "./js/notes.js": "19a7c289292a2bf363f5467d03ffb5dbd1df4405e945a73fce9e6a568378b305",

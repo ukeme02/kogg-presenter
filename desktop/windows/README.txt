@@ -1,9 +1,9 @@
-KOGG Presenter for Windows - 0.1.0 preview
+KOGG Presenter for Windows - 0.1.1 preview
 Worship without Limits
 
 Install, open KOGG, choose Local, and start presenting. No account, Node,
 terminal command, or server setup is required. KJV, BSB, KJV Strong's,
-the Strong's lexicon and 300 traditional hymns are included in the installer.
+the full Ibibio Bible, the Strong's lexicon and 300 traditional hymns are included in the installer.
 
 Requires Windows 10/11 x64 and Microsoft Edge already installed. Edge is
 the display engine, which keeps this download small. This preview installer
@@ -24,6 +24,8 @@ The direct Wi-Fi browser option is experimental and needs a return pairing
 exchange. It is not a one-scan, six-digit offline connection.
 
 Online lyrics search and additional Bible downloads require internet.
+Optional Bible packs are not bundled. NLT is online only; its Tyndale
+connection ends 1 January 2027 and the replacement awaits activation.
 Speech recognition availability and connectivity depend on Edge.
 
 The small KOGG icon beside the Windows clock keeps local output available.

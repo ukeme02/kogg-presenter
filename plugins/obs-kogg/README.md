@@ -15,7 +15,7 @@ The paired browser remembers the connection and retries after OBS restarts. Only
 
 ## Offline and scope
 
-The plugin serves its bundled HTML, JavaScript, fonts and logos exclusively on `127.0.0.1:8767`. Presentation data and referenced uploaded images are sent from KOGG; Bibles, libraries and account credentials are not copied. Load KOGG's offline essentials before disconnecting from the internet. OBS and the presenter must run on the same computer. The plugin does not implement the separate Wi-Fi phone server; online Sync remote still uses internet and same-Wi-Fi remote still uses the optional LAN bridge.
+The plugin serves its bundled HTML, JavaScript, fonts and logos exclusively on `127.0.0.1:8767`. Presentation data and referenced uploaded images are sent from KOGG; Bibles, libraries and account credentials are not copied. Load KOGG's offline essentials before disconnecting from the internet. OBS and the presenter must run on the same computer. The plugin does not implement the separate Wi-Fi phone server; online phone remote works without a Sync account but requires internet on both devices. Direct browser Wi-Fi pairing is experimental and needs a return exchange; this plugin is not a phone-remote server.
 
 Windows x64 and OBS 32 are the first build target. macOS, Linux, Windows ARM and older OBS versions are not yet supported. The browser's permission/security policy must allow the loopback connection; Window Capture remains the fallback. No claim of hardware acceptance until the manual checklist passes.
 

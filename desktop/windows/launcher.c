@@ -32,7 +32,7 @@ static BOOL allowed(const char *path){wchar_t name[4200];swprintf(name,4200,L"%l
 static void online_get(SOCKET s,const char *path,BOOL head){
  if(test_mode){error(s,503,"Online services are disabled in offline acceptance mode.");return;}
  wchar_t url[2300];if(!MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,path,-1,url,2300)){error(s,400,"Invalid URL");return;}
- HINTERNET session=WinHttpOpen(L"KOGGPresenter/0.1.0",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,NULL,NULL,0),conn=NULL,request=NULL;
+ HINTERNET session=WinHttpOpen(L"KOGGPresenter/0.1.1",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,NULL,NULL,0),conn=NULL,request=NULL;
  char *data=NULL;DWORD total=0,status=502;BOOL ok=FALSE;
  if(session){WinHttpSetTimeouts(session,4000,4000,10000,10000);conn=WinHttpConnect(session,L"kogg-presenter.pages.dev",INTERNET_DEFAULT_HTTPS_PORT,0);}
  if(conn)request=WinHttpOpenRequest(conn,L"GET",url,NULL,WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,WINHTTP_FLAG_SECURE);
@@ -52,7 +52,7 @@ static DWORD WINAPI client(void *param){SOCKET s=(SOCKET)(UINT_PTR)param;char h[
  if(path[0]!='/'||strchr(path,'\\')||strstr(path,"..")||strchr(path,'#')){error(s,403,"Invalid path");goto done;}
  if(!strncmp(path,"/api/lyrics?",12)){online_get(s,path,head);goto done;}
  char *query=strchr(path,'?');if(query)*query=0;
- if(!strcmp(path,"/desktop-status")){const char *body="{\"app\":\"KOGG Presenter\",\"version\":\"0.1.0-preview\",\"bundled\":true}";response(s,200,"application/json",body,strlen(body),head);goto done;}
+ if(!strcmp(path,"/desktop-status")){const char *body="{\"app\":\"KOGG Presenter\",\"version\":\"0.1.1-preview\",\"bundled\":true}";response(s,200,"application/json",body,strlen(body),head);goto done;}
  if(!strcmp(path,"/"))strcpy(path,"/index.html");else if(!strcmp(path,"/display"))strcpy(path,"/display.html");else if(!strcmp(path,"/landing"))strcpy(path,"/landing.html");
  if(!allowed(path+1)){error(s,404,"File not included");goto done;}
  wchar_t rel[2300],full[6500];if(!MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,path+1,-1,rel,2300)){error(s,400,"Invalid path");goto done;}swprintf(full,6500,L"%ls\\www\\%ls",root,rel);

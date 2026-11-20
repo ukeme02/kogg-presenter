@@ -1,5 +1,26 @@
 # Repair progress - 3 November 2026
 
+## Lightweight installer refresh and NLT migration — 20 November 2026 (v138)
+
+- [x] Locate the NLT replacement route in API.Bible's official catalogue and send the authorised edition/projection/Windows licensing follow-up from KOGG Gmail. Receipt and exact body are in LYRICS-PARTNERSHIP-REQUESTS.md.
+- [x] Fill KOGG's signup organization and email on the $0 Starter flow. Owner handles password, CAPTCHA and terms. Account verification is in progress; no managed API key is installed and replacement NLT is not active.
+- [x] Fix OBS packaging omissions for media.js and media-display.js; fail builds with missing renderer dependencies. Refresh package/version metadata to 0.1.1-preview.
+- [x] Refresh Windows installer metadata, current-release checksum selection and installer acceptance script. Include the full Ibibio Base Bible, keep other Bible packs optional and preserve the existing upgrade identity/profile. No new runtime dependencies.
+- [x] Add an NLT retirement guard and actionable notice. Keep connected text out of installer packs. Track server key handling, FUMS, attribution, cache expiry and schedule/export requirements in NLT-MIGRATION.md.
+- [x] Finish native builds, full tests, host and installer acceptance: 365 Node checks passed, no skips. Real native offline host, install, upgrade and uninstall checks passed. OBS compiled transport/renderer subset passed 3/3. An initial UI-test failure from an unguarded provider reference was corrected before release.
+- [ ] Publish verified Windows/OBS/web assets, commit/push and deploy v138 landing links. Do not treat the prepared URLs as published until verified below.
+
+Physical projector/phone/OBS acceptance remains separate from automated verification. The user's untracked data/hymns-basic.json is excluded.
+
+### Landing visual revamp — same release
+
+- [x] Preserve KOGG wordmarks, Nunito Sans Expanded and blue theme; replace the repeated narrow layout with a wide artwork-backed hero, atmospheric service section and clearer visual hierarchy.
+- [x] Generate original sanctuary and blue-light artwork using the built-in image tool. Supply responsive WebP assets and 4K resized exports; document prompts, original resolution and file sizes in LANDING-ART-2026-11.md. Images do not enter mandatory Base precache. No new app runtime dependencies.
+- [x] Replace major demo/navigation glyphs with consistent SVG line icons. Remove the Enable motion prompt and footer toggle; motion begins automatically, respecting OS reduced-motion and existing focus/offscreen protections.
+- [x] Real isolated Edge checks passed at widths 360, 390, 768, 1024 and 1440 without page overflow. All eight deck tabs, service bullet projection, light/dark themes and automatic/reduced motion passed; no script or HTTP resource errors. Evidence: work/landing-v138-browser.json and work/landing-v138-{desktop,phone,dark,service}.png.
+- [x] Rebuild Windows package with artwork and current runtime: 8,409,016 bytes; native upgrade identity and saved profile retained. Full checksum is in the release manifest. OBS setup is 574,464 bytes.
+- [ ] Fill remaining API.Bible application fields when the owner brings that tab to the front. The visible desktop is on an unrelated chat; no unrelated account fields changed.
+
 ## Full functionality audit — 20 November 2026 (v137)
 
 - [x] Read current code, compare production, check KOGG provider replies and audit all eight decks at desktop, phone and tablet viewport sizes.

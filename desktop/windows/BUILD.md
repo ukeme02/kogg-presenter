@@ -15,7 +15,7 @@ python desktop/windows/test_installer.py
 node --test tests/*.cjs
 ```
 
-`build.py` stages only tracked runtime paths and the seven core data files. The optional Bible/hymn packs are whitelisted but fetched only when requested online. It excludes untracked hymn data, development work, credentials, libraries, and downloads. Output is under ignored `work/desktop-build/release/`. The ICO wraps the existing official icon PNG without changing its artwork.
+`build.py` stages only tracked runtime paths and the nine core data files (including the full Ibibio Bible). The optional Bible/hymn packs are whitelisted but fetched only when requested online. It excludes untracked hymn data, development work, credentials, libraries, and downloads. Output is under ignored `work/desktop-build/release/`. The ICO wraps the existing official icon PNG without changing its artwork.
 
 The native host binds **127.0.0.1:8768 only**, with an exclusive socket and one-process mutex. Its static allowlist rejects traversal, unexpected Host/Origin values and request bodies. It supports bounded parallel reads and only proxies GET requests to the fixed production lyrics endpoint or whitelisted optional packs, using normal WinHTTP TLS verification. No cookies, authorization or arbitrary destination URLs are forwarded.
 

@@ -1,5 +1,28 @@
 # KOGG lyric access requests — sent 10 November 2026
 
+### NLT migration follow-up sent — 20 November 2026
+
+Sent from KOGG Gmail to support@api.bible under the owner's outreach approval. Sent receipt `1a1f68107705011a`, thread `1a1c9931be474f0c`, replying to `1a1ec294b2313abd`. No paid plan or new licence agreement accepted. API.Bible signup is in progress; activation requirements are tracked in NLT-MIGRATION.md.
+
+Exact message body:
+
+> Hello DJ,
+>
+> Thank you for confirming that offline Scripture view events may be queued and reported after reconnection.
+>
+> Tyndale now announces that its public NLT API closes on 1 January 2027. We would like to replace that connection with API.Bible in our free KOGG Presenter browser and lightweight Windows app, initially prioritising NLT.
+>
+> Your catalogue lists NLT and your Starter page includes it. Could you confirm that the standard English New Living Translation is available to KOGG under the non-commercial Starter plan, the current text Bible ID, and any edition-specific attribution required for church projection and OBS capture? Does that licence also cover our hybrid Windows edition under the same KOGG-managed server connection?
+>
+> Our intended implementation keeps the API key on our server, fetches chapters only when chosen, reports views through FUMS, and keeps licensed text out of the installer and default offline bundle. We would sync passage references rather than redistribute text, and apply the stated refresh limit to any permitted device cache. Please flag any additional permission needed for that workflow or our existing non-intrusive support links.
+>
+> We are preparing the integration and seeking confirmation before activation. This email does not accept a paid plan or new licence agreement.
+>
+> Kind regards,
+> KOGG Presenter team
+> KOGG MEDIA (Africa)
+> Worship without Limits
+
 ### Replies checked — 20 November 2026
 
 Read incoming KOGG mail after 16 November across folders. No outbound replies sent in this audit; the prior 17 November follow-ups were not duplicated.

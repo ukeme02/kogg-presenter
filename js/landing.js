@@ -43,12 +43,9 @@
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
  // Full motion starts automatically unless the visitor requests reduced motion.
  const paused=false;let frame=0;
- let motionChoice=null;try{motionChoice=localStorage.getItem('kogg-landing-motion');}catch{}
- function motionBlocked(){return motionChoice==='reduced'||(motionChoice!=='full'&&reduced.matches);}
- const motionPreference=$('motionPreference');
- function applyMotion(){const blocked=motionBlocked();document.body.classList.toggle('motion-paused',blocked);document.body.classList.toggle('motion-enabled',!blocked);motionPreference.textContent=blocked?'Enable animations':'Use reduced motion';motionPreference.setAttribute('aria-pressed',String(!blocked));$('motionHint').hidden=!blocked;window.dispatchEvent(new Event('kogg-motion-change'));}
- motionPreference.addEventListener('click',()=>{motionChoice=motionBlocked()?'full':'reduced';try{localStorage.setItem('kogg-landing-motion',motionChoice);}catch{}applyMotion();});
- $('motionQuick').addEventListener('click',()=>{motionChoice='full';try{localStorage.setItem('kogg-landing-motion',motionChoice);}catch{}applyMotion();});
+ // Motion starts without a prompt; accessibility follows the device setting.
+ function motionBlocked(){return reduced.matches;}
+ function applyMotion(){const blocked=motionBlocked();document.body.classList.toggle('motion-paused',blocked);document.body.classList.toggle('motion-enabled',!blocked);window.dispatchEvent(new Event('kogg-motion-change'));}
  reduced.addEventListener?.('change',applyMotion);applyMotion();
  const revealTargets=document.querySelectorAll('.section-heading,.tour-panel,.mode-explorer,.library-card,.update-grid article,.install-card,.faq-list,.closing,.facts,.service-flow,.display-grid article,.roadmap-rows article,.download-card');
  if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});revealTargets.forEach((el,i)=>{el.classList.add('reveal-ready');el.style.setProperty('--reveal-delay',(el.matches('.library-card,.update-grid article')?i%3*80:el.matches('.display-grid article,.roadmap-rows article')?i%4*70:0)+'ms');observer.observe(el);});}

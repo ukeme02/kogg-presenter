@@ -3132,7 +3132,7 @@ function renderLicensedControls() {
   const status = $('licensedStatus');
   if (status) status.textContent = cfg.versions.length
     ? `${cfg.versions.length} API.Bible version(s) connected: ${cfg.versions.join(', ')}. ${cfg.versions.length >= 3 ? 'That is the Starter-plan maximum.' : 'You can add up to three.'}`
-    : 'NLT is ready with no account. Add an API.Bible key, then choose up to three copyrighted versions.';
+    : ((window.KOGGBibles?.legacyNltAvailable?.() ?? Date.now() < Date.UTC(2027, 0, 1)) ? 'NLT’s current online connection ends on 1 January 2027; its replacement is pending activation. ' : 'NLT’s previous connection has closed; its replacement is pending activation. ') + 'API.Bible editions require a key and approved access.';
 }
 $('btnSaveApiBible')?.addEventListener('click', () => {
   saveApiBibleKey($('apiBibleKey').value);

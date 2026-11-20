@@ -1,10 +1,13 @@
 #ifndef PackageDir
   #error PackageDir is required
 #endif
+#ifndef AppRelease
+  #error AppRelease is required
+#endif
 [Setup]
 AppId={{B53D511A-126B-4F4A-91B3-570379846E86}
 AppName=KOGG Presenter
-AppVersion=0.1.0-preview
+AppVersion={#AppRelease}
 AppPublisher=KOGG MEDIA (Africa)
 AppPublisherURL=https://kogg-presenter.pages.dev/landing
 AppSupportURL=https://github.com/ukeme02/kogg-presenter/issues
@@ -15,7 +18,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 OutputDir={#PackageDir}\..\release
-OutputBaseFilename=kogg-presenter-0.1.0-preview-windows-x64-setup
+OutputBaseFilename=kogg-presenter-{#AppRelease}-windows-x64-setup
 SetupIconFile={#PackageDir}\kogg.ico
 UninstallDisplayIcon={app}\KOGG Presenter.exe
 Compression=lzma2/max

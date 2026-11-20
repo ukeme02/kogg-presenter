@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / 'work/obs-build'
 WORK.mkdir(parents=True, exist_ok=True)
 SOURCES = ROOT / 'plugins/obs-kogg/src'
-VERSION = '0.1.0-preview'
+VERSION = '0.1.1-preview'
 
 def download(name, url, digest):
     dest = WORK / name
@@ -50,7 +50,7 @@ package = WORK / ('package-' + VERSION)
 plugin = package / 'kogg-connect'
 renderer = plugin / 'data/renderer'
 renderer.mkdir(parents=True, exist_ok=True)
-files = ['display.html', 'css/display.css', 'js/display.js', 'js/obs-receiver.js', 'js/stream.js', 'fonts/NunitoSans-Variable.woff2']
+files = ['display.html', 'css/display.css', 'js/display.js', 'js/obs-receiver.js', 'js/stream.js', 'js/media.js', 'js/media-display.js', 'fonts/NunitoSans-Variable.woff2']
 files += [p.relative_to(ROOT).as_posix() for p in (ROOT/'icons').glob('*.svg')]
 for name in files:
     target = renderer / name
@@ -61,6 +61,10 @@ html = (renderer/'display.html').read_text(encoding='utf-8')
 html = re.sub(r'<link rel="manifest"[^>]*>\s*', '', html)
 html = re.sub(r'<script src="js/(idb|library|relay)\.js"></script>\s*', '', html)
 (renderer/'display.html').write_text(html, encoding='utf-8')
+# Fail the build if the operator renderer gains a dependency omitted by packaging.
+for ref in re.findall(r'(?:src|href)="([^"]+)"', html):
+    if not ref.startswith(('http:', 'https:', 'data:', '#')):
+        assert (renderer/ref.split('?')[0]).is_file(), 'Missing renderer asset: '+ref
 (renderer/'files.txt').write_text('\n'.join(files)+'\n')
 (plugin/'bin/64bit').mkdir(parents=True, exist_ok=True)
 shutil.copy2(WORK/'kogg-connect.dll', plugin/'bin/64bit/kogg-connect.dll')

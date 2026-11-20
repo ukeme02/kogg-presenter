@@ -6,16 +6,15 @@ const context=vm.createContext({document:doc,window:{IntersectionObserver:true,a
 test('hero advances through local scenes without network access',()=>{const b=boot();assert.equal(b.timers.size,1);b.fire();assert.match(b.els.get('projText').textContent,/shepherd/);b.fire();assert.match(b.els.get('heroLyricText').textContent,/Amazing grace/);assert.equal(b.moves(),2);});
 test('hero starts by default and pauses for keyboard focus, hover and offscreen',()=>{assert.equal(boot({reduce:true}).timers.size,1);assert.equal(boot({focus:true}).timers.size,0);const b=boot();b.stage.handlers.pointerenter[0]();assert.equal(b.timers.size,0);b.stage.handlers.pointerleave[0]();assert.equal(b.timers.size,1);b.observer([{isIntersecting:false}]);assert.equal(b.timers.size,0);});
 
-test('motion preference unifies CSS and preview timers and persists a deliberate override',()=>{
+test('motion starts automatically and follows device accessibility without a prompt or stored opt-in',()=>{
  const start=source.indexOf(' const reduced=window.matchMedia'),end=source.indexOf(' const revealTargets=',start);
  for(const systemReduced of [false,true]){
-  const classes=new Set(),handlers={},saved=new Map();let text='';
-  const button={setAttribute(){},addEventListener:(key,fn)=>handlers[key]=fn,set textContent(value){text=value}};
-  const media={matches:systemReduced,addEventListener(){}};
-  vm.runInNewContext(source.slice(start,end),{window:{matchMedia:()=>media,dispatchEvent(){}},document:{body:{classList:{toggle:(key,on)=>on?classes.add(key):classes.delete(key)}}},localStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)},$:id=>id==='motionPreference'?button:{addEventListener(){}},Event:class{}});
+  const classes=new Set();let changed;
+  const media={matches:systemReduced,addEventListener(type,callback){changed=callback;}};
+  vm.runInNewContext(source.slice(start,end),{window:{matchMedia:()=>media,dispatchEvent(){}},document:{body:{classList:{toggle:(key,on)=>on?classes.add(key):classes.delete(key)}}},localStorage:{getItem(){throw new Error('Motion must not depend on old opt-in');}},Event:class{}});
   assert.equal(classes.has('motion-paused'),systemReduced);
-  handlers.click();assert.equal(classes.has('motion-enabled'),systemReduced);
-  assert.equal(saved.get('kogg-landing-motion'),systemReduced?'full':'reduced');
-  assert.match(text,systemReduced?/reduced/:/Enable/);
+  assert.equal(classes.has('motion-enabled'),!systemReduced);
+  media.matches=!systemReduced;changed();
+  assert.equal(classes.has('motion-enabled'),systemReduced);
  }
 });

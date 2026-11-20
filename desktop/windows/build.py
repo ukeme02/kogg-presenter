@@ -7,6 +7,7 @@ from pathlib import Path
 import argparse, hashlib, json, re, shutil, struct, subprocess, zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
+VERSION = '0.1.1-preview'
 WORK = ROOT / 'work/desktop-build'
 PACKAGE = WORK / 'package'
 parser = argparse.ArgumentParser()
@@ -17,7 +18,7 @@ PACKAGE.mkdir(parents=True, exist_ok=True)
 tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
 core = {'kjv.json', 'bsb.json', 'kjvs.json', 'ibibio.json', 'strongs.json', 'hymns.json', 'content-catalog.json', 'hymnary-sources.txt', 'bible-sources.txt'}
 top = {'index.html', 'display.html', 'landing.html', 'remote.html', 'cloud-remote.html', 'sw.js', 'manifest.webmanifest'}
-names = [n for n in tracked if n in top or n.startswith(('js/', 'css/', 'fonts/', 'icons/', 'wifi-remote/')) or n.startswith('data/') and Path(n).name in core]
+names = [n for n in tracked if n in top or n.startswith(('js/', 'css/', 'fonts/', 'icons/', 'wifi-remote/')) or n.startswith('images/landing/') and n.endswith('.webp') or n.startswith('data/') and Path(n).name in core]
 # A fresh versioned staging directory prevents obsolete files from entering releases.
 stage = PACKAGE / 'www'
 if stage.exists():
@@ -38,7 +39,7 @@ subprocess.run(['node',str(ROOT/'scripts/verify-release.cjs'),str(stage),'--core
 png = (ROOT/'icons/icon-192.png').read_bytes()
 ico = struct.pack('<HHH',0,1,1)+struct.pack('<BBBBHHII',192,192,0,0,1,32,len(png),22)+png
 (PACKAGE/'kogg.ico').write_bytes(ico)
-manifest = '<?xml version="1.0"?><assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"><assemblyIdentity version="0.1.0.0" processorArchitecture="amd64" name="KOGG.Presenter" type="win32"/><trustInfo xmlns="urn:schemas-microsoft-com:asm.v3"><security><requestedPrivileges><requestedExecutionLevel level="asInvoker" uiAccess="false"/></requestedPrivileges></security></trustInfo></assembly>'
+manifest = '<?xml version="1.0"?><assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"><assemblyIdentity version="0.1.1.0" processorArchitecture="amd64" name="KOGG.Presenter" type="win32"/><trustInfo xmlns="urn:schemas-microsoft-com:asm.v3"><security><requestedPrivileges><requestedExecutionLevel level="asInvoker" uiAccess="false"/></requestedPrivileges></security></trustInfo></assembly>'
 (WORK/'app.manifest').write_text(manifest)
 (WORK/'app.rc').write_text('1 ICON "'+(PACKAGE/'kogg.ico').as_posix()+'"\n1 24 "'+(WORK/'app.manifest').as_posix()+'"\n')
 def run(*cmd):
@@ -48,9 +49,10 @@ run(args.zig,'cc','-Os','-Wall','-Wextra','-Werror',ROOT/'desktop/windows/launch
 shutil.copy2(ROOT/'desktop/windows/README.txt',PACKAGE/'README.txt')
 print('Packaged',len(names),'runtime files;',sum(p.stat().st_size for p in PACKAGE.rglob('*') if p.is_file()),'bytes expanded')
 if args.iscc:
-    run(args.iscc,'/DPackageDir='+str(PACKAGE),ROOT/'desktop/windows/setup.iss')
+    run(args.iscc,'/DPackageDir='+str(PACKAGE),'/DAppRelease='+VERSION,ROOT/'desktop/windows/setup.iss')
     release=WORK/'release'
-    files={p.name:{'bytes':p.stat().st_size,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in release.glob('*.exe')}
+    current = release/('kogg-presenter-'+VERSION+'-windows-x64-setup.exe')
+    files={current.name:{'bytes':current.stat().st_size,'sha256':hashlib.sha256(current.read_bytes()).hexdigest()}}
     (release/'SHA256SUMS.txt').write_text(''.join(v['sha256']+'  '+n+'\n' for n,v in files.items()))
-    (release/'desktop-release.json').write_text(json.dumps({'version':'0.1.0-preview','files':files},indent=2)+'\n')
+    (release/'desktop-release.json').write_text(json.dumps({'version':VERSION,'files':files},indent=2)+'\n')
     print(json.dumps(files,indent=2))

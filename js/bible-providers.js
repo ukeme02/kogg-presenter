@@ -26,8 +26,9 @@
     52, 5, 48, 12, 14, 3, 9, 1, 4, 7, 3, 3, 3, 2, 14, 4, 28, 16, 24, 21, 28, 16, 16, 13, 6, 6, 4, 4, 5, 3, 6,
     4, 3, 1, 13, 5, 5, 3, 5, 1, 1, 1, 22];
 
-  let config = { fetchImpl: null, getSettings: () => ({}), saveSettings: () => {} };
+  let config = { fetchImpl: null, getSettings: () => ({}), saveSettings: () => {}, now: () => Date.now() };
   function configure(options) { config = Object.assign(config, options || {}); }
+  function legacyNltAvailable() { return config.now() < Date.UTC(2027, 0, 1); }
 
   /* ---- value vocabulary shared with the translation selector ---- */
   function providerOf(value) {
@@ -190,6 +191,7 @@
   async function fetchChapter(bible, bookIdx, ch) {
     if (!config.fetchImpl) throw new Error('Connected versions are unavailable in this build');
     if (bible.provider === 'nlt') {
+      if (!legacyNltAvailable()) throw new Error('Tyndale’s NLT connection has closed. The replacement is pending activation. Choose another Bible to continue.');
       const settings = config.getSettings() || {};
       const key = settings.nltKey || 'TEST';
       const name = NAMES[bookIdx];
@@ -232,7 +234,7 @@
 
   global.KOGGBibles = {
     NAMES, USFM, CHAPTERS,
-    configure, providerOf, skeleton, ensureChapter,
+    configure, providerOf, skeleton, ensureChapter, legacyNltAvailable,
     parseNltHtml, parseApiChapter, nltRefRanges, cleanNltFragment,
     _skeletons: skeletons,
   };

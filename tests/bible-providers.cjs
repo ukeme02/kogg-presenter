@@ -9,6 +9,21 @@ const src = fs.readFileSync(path.join(__dirname, '..', 'js', 'bible-providers.js
 const sandbox = {};
 vm.runInNewContext(src, sandbox);
 const P = sandbox.KOGGBibles;
+// Keep legacy endpoint tests deterministic after its announced retirement.
+P.configure({ now: () => Date.UTC(2026, 10, 20) });
+
+test('retired NLT endpoint fails clearly without making a request', async () => {
+  const isolated = {};
+  vm.runInNewContext(src, isolated);
+  const provider = isolated.KOGGBibles;
+  let calls = 0;
+  provider.configure({ now: () => Date.UTC(2027, 0, 1), fetchImpl: async () => { calls++; } });
+  assert.equal(provider.legacyNltAvailable(), false);
+  await assert.rejects(provider.ensureChapter(provider.skeleton('nlt:NLT'), 42, 3), /replacement is pending activation/);
+  assert.equal(calls, 0);
+  provider.configure({ now: () => Date.UTC(2027, 0, 1) - 1 });
+  assert.equal(provider.legacyNltAvailable(), true);
+});
 
 const NLT_SAMPLE = [
   '<style>body{}</style><div class="passage">',

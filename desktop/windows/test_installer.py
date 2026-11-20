@@ -2,7 +2,7 @@
 Never touches a pre-existing desktop installation or browser library.
 """
 from pathlib import Path
-import hashlib, subprocess, winreg
+import hashlib, json, subprocess, winreg
 ROOT=Path(__file__).resolve().parents[2]
 work=ROOT/'work/desktop-build'
 target=work/'installed-test'
@@ -13,7 +13,11 @@ def installation():
     except FileNotFoundError:return None
 previous=installation()
 if previous and previous.resolve()!=target.resolve():raise RuntimeError('Existing user installation: do not replace it in acceptance tests')
-setup=work/'release/kogg-presenter-0.1.0-preview-windows-x64-setup.exe'
+release=json.loads((work/'release/desktop-release.json').read_text())
+assert len(release['files'])==1
+filename, metadata=next(iter(release['files'].items()))
+setup=work/'release'/filename
+assert hashlib.sha256(setup.read_bytes()).hexdigest()==metadata['sha256']
 for round in ['install','upgrade']:
     subprocess.run([str(setup),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/NOICONS','/DIR='+str(target),'/LOG='+str(work/('accept-'+round+'.log'))],check=True)
     assert installation().resolve()==target.resolve()

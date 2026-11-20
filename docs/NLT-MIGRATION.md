@@ -1,8 +1,18 @@
 # NLT replacement — activation checklist
 
-Status, 20 November 2026: account setup in progress; replacement NOT activated.
+Status, 20 November 2026: application details finalized and standard NLT confirmed selected on the free Starter plan; replacement NOT connected or tested in KOGG yet.
 
-Tyndale announces retirement on 1 January 2027 at https://api.nlt.to/. API.Bible lists standard NLT under its Starter offering: https://api.bible/bibles and https://api.bible/. The signup form currently shows $0. The owner must finish password/CAPTCHA and accept the account terms.
+Tyndale announces retirement on 1 January 2027 at https://api.nlt.to/. API.Bible lists standard NLT under its Starter offering: https://api.bible/bibles and https://api.bible/. The signed-in plan was verified at $0 with CSB, NIV and standard NLT selected (3 of 3 additional translations). No paid upgrade or new publisher agreement was accepted.
+
+Account setup progress:
+
+- Saved application: KOGG Presenter, KOGG MEDIA (Africa), https://kogg-presenter.pages.dev.
+- Saved types: Website, Desktop App, Cross Platform. Category: Church service/mass use. Audience: Church congregation. Purpose: Education.
+- Standard NLT edition ID observed in the account: `d6e14a625393b4da-01`. Selection persisted after saving the plan. This does not prove the production application can fetch NLT yet.
+- Logo upload remains pending. Use `icons/icon-512.png`; TinyFish's available browser tools could not upload the file. Do not describe the logo as uploaded.
+- The separate DBL API key field says "Not Authorized" and is empty. This is not evidence of a pending API.Bible approval: DBL keys connect content separately licensed through DBL (https://care.library.bible/article/196-api-bible). Ordinary API.Bible authentication still needs verification with the application's API key (https://docs.api.bible/quick-start/authentication/).
+- No API secret was retrieved, stored, committed or deployed during form completion. No end-to-end NLT fetch test has run.
+- Browser verification runs: `edb0ef43-400b-457c-8deb-40c053d3b1e2` (form), `2007f29f-4970-41c2-852f-1b391982b64c` (saved plan).
 
 Implementation gates before activating managed access:
 

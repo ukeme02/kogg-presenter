@@ -1,5 +1,15 @@
 # Repair progress - 3 November 2026
 
+## Full functionality audit — 20 November 2026 (v137)
+
+- [x] Read current code, compare production, check KOGG provider replies and audit all eight decks at desktop, phone and tablet viewport sizes.
+- [x] Repair connected verse numbering, documented API.Bible parsing, incomplete NLT chapter caching, delayed Strong’s overlays and delayed translation changes overwriting newer output.
+- [x] Correct remaining three-Bible landing copy and provider access claims; add the official NLT retirement date (1 January 2027). Keep blue styling, fonts and motion intact; no new runtime dependencies or mandatory downloads. Fix the reduced-motion prompt covering header navigation. Final landing/worker checks: 34 passed.
+- [x] Validate 364 Node tests (zero failures/skips), 11 converter tests and 93 offline hashes. Real browser checks include hymn projection, Notes bullets/splitting, title slides into Service and running landing motion. Compiled OBS transport test passed.
+- [x] Record scope, evidence, open findings and recommended next steps in AUDIT-2026-11-20.md. Check three new provider replies; no outbound mail this audit.
+- [ ] Restore KOGG Supabase access/reachability: configured host returns DNS name does not exist; live guest remote could not connect. Current dashboard exposes only another organisation/project. Real remote and media Sync remain unverified.
+- [ ] Publish v137 after reconnecting Cloudflare access to the existing KOGG Pages project. Production remains v135; downloaded Windows/web packages also lag. Do not claim local fixes are live.
+
 ## Full Ibibio in Base and provider replies — 17 November 2026 (v136)
 
 - [x] Send authorised replies from KOGG Gmail to API.Bible (offline view reporting) and Bible Brain (full Ibibio bundling/download terms and full Efik route). Sent receipts and exact message bodies are recorded in LYRICS-PARTNERSHIP-REQUESTS.md. No provider account or paid agreement activated.

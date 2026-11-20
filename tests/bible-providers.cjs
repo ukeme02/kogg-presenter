@@ -21,9 +21,9 @@ const NLT_SAMPLE = [
   ' the world, but to save the world through him.</verse_export>',
 ].join('');
 
-function makeNltChapter(verseCount) {
+function makeNltChapter(verseCount, start = 1) {
   return Array.from({ length: verseCount }, (_, i) =>
-    `<verse_export vn="${i + 1}"><span class="vn">${i + 1}</span> Verse ${i + 1} text.</verse_export>`).join('');
+    `<verse_export vn="${i + start}"><span class="vn">${i + start}</span> Verse ${i + start} text.</verse_export>`).join('');
 }
 
 test('book tables: 66 books, matching codes and chapter counts', () => {
@@ -62,11 +62,11 @@ test('skeleton: 66 books with right chapter arity, cached per value', () => {
 
 test('cleanNltFragment strips nested footnotes, refs and verse numbers', () => {
   const verses = P.parseNltHtml(NLT_SAMPLE);
-  assert.equal(verses.length, 2);
-  assert.equal(verses[0], 'For God loved the world in this way: He gave his one and only Son, so that everyone who believes in him will not perish but have eternal life.');
-  assert.ok(!/Or\b/.test(verses[0]), 'footnote wording must not leak into the verse');
-  assert.ok(!/3:16|16\b/.test(verses[0].trim().split(' ')[0]), 'verse number must be stripped');
-  assert.equal(verses[1], 'For God did not send his Son into the world to condemn the world, but to save the world through him.');
+  assert.equal(verses.length, 17);
+  assert.equal(verses[15], 'For God loved the world in this way: He gave his one and only Son, so that everyone who believes in him will not perish but have eternal life.');
+  assert.ok(!/Or\b/.test(verses[15]), 'footnote wording must not leak into the verse');
+  assert.ok(!/3:16|16\b/.test(verses[15].trim().split(' ')[0]), 'verse number must be stripped');
+  assert.equal(verses[16], 'For God did not send his Son into the world to condemn the world, but to save the world through him.');
   assert.equal(P.parseNltHtml('<verse_export vn="1"><span class="tn">note never closed</span').length, 0, 'unterminated span must still parse without hanging');
 });
 
@@ -89,7 +89,7 @@ test('parseApiChapter flattens nested content JSON in verse order', () => {
     ],
   };
   const verses = P.parseApiChapter(data);
-  assert.deepEqual(verses, ['For God so loved the world, that he gave…', 'For God did not send']);
+  assert.equal(verses.length,17); assert.equal(verses[15], 'For God so loved the world, that he gave…'); assert.equal(verses[16], 'For God did not send');
   assert.throws(() => P.parseApiChapter({}), /Unexpected API\.Bible reply/);
   assert.throws(() => P.parseApiChapter({ content: [{ type: 'header', content: ['untitled'] }] }), /no verses/);
 });
@@ -103,6 +103,32 @@ function setupProviders(fetchLog) {
   });
   return settings;
 }
+
+test('documented API.Bible envelope preserves gaps, inline words and paragraph boundaries without headings or notes', () => {
+  const marker=n=>({name:'verse',type:'tag',attrs:{number:String(n)},items:[{type:'text',text:String(n)}]});
+  const data={data:{content:[
+    {name:'para',attrs:{style:'s1'},items:[{text:'Heading'}]},
+    {name:'para',attrs:{style:'p'},items:[marker(1),{type:'text',text:'In the ',attrs:{verseId:'GEN.1.1'}},{name:'char',items:[{text:'beginning'}]},{text:'.'},{name:'note',items:[{text:'Hidden note'}]}]},
+    {name:'para',attrs:{style:'p'},items:[{text:'A second paragraph.'},marker(3),{text:'Third verse.',attrs:{verseId:'GEN.1.3'}}]}
+  ]}};
+  assert.deepEqual(P.parseApiChapter(data),['In the beginning. A second paragraph.','','Third verse.']);
+});
+
+test('NLT omitted verses preserve their slots in both the first and subsequent windows', () => {
+  assert.deepEqual(P.parseNltHtml(makeNltChapter(1)+makeNltChapter(1,3)),['Verse 1 text.','','Verse 3 text.']);
+  assert.deepEqual(P.parseNltHtml(makeNltChapter(1,52),51),['','Verse 52 text.']);
+});
+
+test('NLT later-window server failure never caches an incomplete chapter and can retry',async()=>{
+  const log=[];setupProviders(log);const bible=freshSkeleton('nlt:NLT');
+  log._responder=url=>Promise.resolve(decodeURIComponent(url).includes(':1-50')
+    ? {ok:true,status:200,text:async()=>makeNltChapter(50)}
+    : {ok:false,status:503,text:async()=>''});
+  await assert.rejects(P.ensureChapter(bible,18,119),/503/);
+  assert.deepEqual(bible.books[18].chapters[118],[]);
+  log._responder=()=>Promise.resolve({ok:true,status:200,text:async()=>makeNltChapter(2)});
+  assert.equal(await P.ensureChapter(bible,18,119),true);
+});
 function freshSkeleton(value) {
   P._skeletons.delete(value);
   return P.skeleton(value);
@@ -142,7 +168,7 @@ test('ensureChapter (NLT): windows walk past chapters longer than 50 verses', as
     const m = /ref=([^&]+)/.exec(url)[1];
     const low = Number(/:(\d+)-/.exec(decodeURIComponent(m))[1]);
     const high = Math.min(176, low + 49);
-    return Promise.resolve({ ok: true, status: 200, text: async () => makeNltChapter(high - low + 1) });
+    return Promise.resolve({ ok: true, status: 200, text: async () => makeNltChapter(high - low + 1, low) });
   };
   await P.ensureChapter(bible, 18, 119);
   assert.equal(bible.books[18].chapters[118].length, 176);
@@ -173,7 +199,7 @@ test('ensureChapter (API.Bible): needs key, resolves bibleId once, parses chapte
     }) });
   };
   await P.ensureChapter(bible, 42, 3);
-  assert.deepEqual(bible.books[42].chapters[2], ['For God so loved the world that he gave his one and only Son…']);
+  assert.equal(bible.books[42].chapters[2][15], 'For God so loved the world that he gave his one and only Son…'); assert.equal(bible.books[42].chapters[2][0], '');
   assert.equal(log.length, 2);   // list + chapter
   const chapterUrl = log[1];
   assert.ok(/9879dbb7ccc39b6d-01\/chapters\/JHN\.3\?content-type=json/.test(chapterUrl), chapterUrl);

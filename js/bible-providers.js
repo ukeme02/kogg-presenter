@@ -1,13 +1,9 @@
-/* KOGG Presenter — live licensed scripture providers.
-   Two sources, both official and free for non-commercial (church) use:
-     • "nlt:<ab>"   → Tyndale's own NLT API (api.nlt.to). Works anonymously: up to 50
-                      verses per request, 500 requests per day, non-commercial.
-     • "api:<ab>"   → API.Bible (American Bible Society, rest.api.bible). Needs the
-                      operator's own API key entered in Tools → Licensed versions.
-                      Starter plan: any three licensed translations, 5,000 calls a month.
-   Nothing is downloaded to disk and nothing is hosted here: a connected version
-   streams the passages you present, chapter by chapter, into session memory.
-   True offline independence stays with the bundled and downloaded public-domain Bibles. */
+/* KOGG Presenter — connected Scripture providers.
+   Tyndale public NLT access ends 1 January 2027: https://api.nlt.to/.
+   API.Bible access depends on the editions licensed for the supplied key.
+   Chapter caches here are session-only; schedule persistence is handled elsewhere.
+   Managed provider access, FUMS reporting and licensed offline use require a separate
+   integration rollout. The bundled open Bibles remain available independently. */
 (function (global) {
   'use strict';
 
@@ -93,11 +89,16 @@
     for (const cls of ['tn', 'tn-ref', 'vn']) html = stripSpanClass(html, cls);
     return decodeEntities(html.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
   }
-  function parseNltHtml(html) {
+  function parseNltHtml(html, firstVerse = 1) {
     const verses = [];
-    const re = /<verse_export\b[^>]*\bvn="(\d+)"[^>]*>([\s\S]*?)<\/verse_export>/g;
+    const re = /<verse_export\b[^>]*\bvn=["'](\d+)["'][^>]*>([\s\S]*?)<\/verse_export>/gi;
     let match;
-    while ((match = re.exec(html))) verses.push(cleanNltFragment(match[2]));
+    while ((match = re.exec(html))) {
+      const index = Number(match[1]) - firstVerse;
+      if (index < 0 || index >= 200 || index < verses.length) throw new Error('Unexpected NLT verse numbering. Try another passage.');
+      while (verses.length <= index) verses.push('');
+      verses[index] = cleanNltFragment(match[2]);
+    }
     return verses;
   }
   /* One request carries at most 50 verses, so long chapters use consecutive ranges. */
@@ -119,20 +120,37 @@
 
   /* ---- API.Bible parsing: content items carry verse markup as nested JSON ---- */
   function parseApiChapter(data) {
+    data = data?.data || data;
     if (!data || !Array.isArray(data.content)) throw new Error('Unexpected API.Bible reply');
-    const flatten = nodes => nodes.flatMap(node => {
-      if (node == null) return [];
-      if (typeof node === 'string') return [node];
-      if (typeof node === 'object' && typeof node.text === 'string') return [node.text.trim()];
-      if (Array.isArray(node.content)) return flatten(node.content);
-      return [];
-    });
     const verses = [];
-    for (const node of data.content) {
-      if (node && node.type === 'verse') verses.push(flatten([node]).join('').replace(/\s+/g, ' ').trim());
+    let current = 0;
+    function number(raw) {
+      if (!/^[1-9]\d{0,2}$/.test(String(raw)) || Number(raw)>200) throw new Error('Unexpected API.Bible verse numbering');
+      return Number(raw);
     }
-    if (!verses.length) throw new Error('API.Bible returned no verses for this chapter');
-    return verses;
+    function append(n, text) {
+      while (verses.length < n) verses.push('');
+      verses[n-1] += text;
+    }
+    function walk(node) {
+      if (!node || typeof node !== 'object') { if (typeof node === 'string' && current) append(current,node); return; }
+      const style=node.attrs?.style || '';
+      if (node.name==='note' || /^(?:s\d*|ms\d*|mt\d*|r|cl|f|x)$/.test(style)) return;
+      if (node.name==='verse') { current=number(node.attrs?.number); return; }
+      // Support older adapters as well as the documented tag/items structure.
+      if (node.type==='verse') current=number(node.number);
+      if (typeof node.text==='string') {
+        const id=node.attrs?.verseId;
+        const n=id ? number(String(id).split('.').pop()) : current;
+        if (n) { current=n; append(n,node.text); }
+        return;
+      }
+      for (const child of node.items || node.content || []) walk(child);
+      if (node.name==='para' && current) append(current,' ');
+    }
+    data.content.forEach(walk);
+    if (!verses.some(v=>v.trim())) throw new Error('API.Bible returned no verses for this chapter');
+    return verses.map(v=>v.replace(/\s+/g,' ').trim());
   }
 
   /* ---- network access ---- */
@@ -185,10 +203,10 @@
           + '&version=NLT&key=' + encodeURIComponent(key);
         const res = await config.fetchImpl(url);
         if (!res.ok) {
-          if (out.length && low > 1) break;   // window beyond the chapter's end
+          if (out.length && low > 1 && [400,404].includes(res.status)) break;   // window beyond the chapter's end
           throw new Error('NLT is unreachable (' + res.status + '). Try again while online.');
         }
-        const verses = parseNltHtml(await res.text());
+        const verses = parseNltHtml(await res.text(), low);
         if (!verses.length) {
           if (out.length) break;
           throw new Error('NLT returned no verses for this chapter');
@@ -207,7 +225,7 @@
     const id = await resolveApiBibleId(bible.translation, headers);
     const url = `https://rest.api.bible/v1/bibles/${id}/chapters/${USFM[bookIdx]}.${ch}?content-type=json`;
     const res = await config.fetchImpl(url, { headers });
-    if (res.status === 403) throw new Error(`This key is not licensed for ${bible.translation} — choose up to three versions in the API.Bible dashboard`);
+    if (res.status === 403) throw new Error(`This key is not licensed for ${bible.translation} — check the editions enabled in the API.Bible dashboard`);
     if (!res.ok) throw new Error('API.Bible failed (' + res.status + ')');
     return parseApiChapter(await res.json());
   }

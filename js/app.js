@@ -368,7 +368,7 @@ function renderLiveText() {
 /* ---------- Strong's tap-to-define — numbers live in the preview only;
    tapping one shows the Hebrew/Greek word card on the projector, tapping
    again flips back to the verse. Service never has to stop. ---------- */
-let strongsLexicon = null, strongsLoading = null;
+let strongsLexicon = null, strongsLoading = null, strongsLookupToken = 0;
 function ensureLexicon() {
   if (strongsLexicon) return Promise.resolve(strongsLexicon);
   if (strongsLoading) return strongsLoading;
@@ -387,12 +387,14 @@ $('liveText').addEventListener('click', async e => {
   const sup = e.target.closest('sup[data-sn]');
   if (!sup) return;
   const sn = sup.dataset.sn;
+  const lookupToken = ++strongsLookupToken, expectedLive = live;
   if (live.strongsShowing && live.strongsCard && live.strongsCard.sn === sn) {
     pushLive({ strongsShowing: false, strongsCard: null });   // flip back to the verse
     renderLiveText();
     return;
   }
   const lex = await ensureLexicon();
+  if (lookupToken !== strongsLookupToken || live !== expectedLive) return;
   const entry = lex && lex[sn];
   if (!entry) { sup.classList.add('missing'); sup.title = 'Word not in the lexicon'; return; }
   const card = { sn, lang: sn[0] === 'G' ? 'Greek' : 'Hebrew', word: entry.w || '',
@@ -589,7 +591,8 @@ $('chapterSelect').addEventListener('change', fillVerses);
 $('translationSelect').addEventListener('change', () => {
   const file = $('translationSelect').value;
   const ref = currentLiveReference() || liveRef;
-  loadBible(file).then(loaded => { if (loaded && ref) goLiveScripture({...ref}); else if (loaded) renderPreview(); });
+  const expectedLive = live;
+  loadBible(file).then(loaded => { if (loaded && live === expectedLive && ref) goLiveScripture({...ref}); else if (loaded) renderPreview(); });
 });
 
 /* ---------- version chips — switch translation mid-show from the projector dock ---------- */
@@ -3336,11 +3339,12 @@ $('extraBiblePanel').addEventListener('click',async event=>{
   }
   const button=event.target.closest('button[data-bible-file]');if(!button)return;
   const reference=currentLiveReference() || currentScriptureRange();
+  const expectedLive=live;
   setBibleDownloadBusy(true);
   $('extraBibleStatus').textContent='Loading Bible… Your current output stays visible while this loads.';
   try{
     if(await loadBible(button.dataset.bibleFile)){
-      const displayed=await goLiveScripture(reference);
+      const displayed=live===expectedLive && await goLiveScripture(reference);
       const cached=(await bibleDownloadStore().status()).get(button.dataset.bibleFile)===true;
       $('extraBibleStatus').textContent=cached?'Ready. Saved on this browser for offline use.':'Ready to use. Offline saving is not confirmed yet — finish offline setup, then reopen this version while connected.';
       if(bible.metadata?.scope==='NT')$('extraBibleStatus').textContent+=' New Testament only: Matthew–Revelation.'+(!displayed?' Current output kept.':'');

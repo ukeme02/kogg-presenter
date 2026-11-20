@@ -1,6 +1,29 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('js/app.js','utf8');
 
+test('a delayed Strong’s lookup cannot overlay a newer output, and the latest word click wins',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ await vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:16})',context);
+ let resolve;context.fetch=()=>new Promise(r=>resolve=r);
+ const click=sn=>elements.get('liveText').handlers.click[0]({target:{closest:s=>s==='sup[data-sn]'||s==='sup.sn'?{dataset:{sn},classList:{add(){}}}:null}});
+ const stale=click('G1');vm.runInContext("pushLive({slides:[{text:'New announcement',label:'Notice'}],index:0})",context);
+ resolve({ok:true,json:async()=>({G1:{w:'First'},G2:{w:'Second'}})});await stale;
+ assert.equal(JSON.parse(storage.get('cp_live')).strongsShowing,false);
+ const first=click('G1'),second=click('G2');await Promise.all([first,second]);
+ assert.equal(JSON.parse(storage.get('cp_live')).strongsCard.sn,'G2');
+});
+
+test('a translation loading in the background cannot replace a newer announcement',async()=>{
+ const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
+ await vm.runInContext('goLiveScripture({bookIdx:42,ch:3,vFrom:16,vTo:16})',context);
+ let resolve;context.fetch=()=>new Promise(r=>resolve=r);
+ elements.get('translationSelect').value='data/bsb.json';elements.get('translationSelect').handlers.change[0]();
+ vm.runInContext("pushLive({slides:[{text:'Keep this announcement',label:'Notice'}],index:0})",context);
+ resolve({ok:true,json:async()=>JSON.parse(fs.readFileSync('data/bsb.json','utf8'))});
+ await new Promise(r=>setImmediate(r));
+ assert.equal(JSON.parse(storage.get('cp_live')).slides[0].text,'Keep this announcement');
+});
+
 test('Base Ibibio selects, searches, projects both testaments and reopens without an optional registration',async()=>{
  const {context,elements,storage}=boot();await new Promise(r=>setImmediate(r));
  assert.ok(elements.get('translationSelect').options.some(o=>o.value==='data/ibibio.json'));

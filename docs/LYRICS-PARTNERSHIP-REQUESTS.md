@@ -1,5 +1,17 @@
 # KOGG lyric access requests — sent 10 November 2026
 
+### Replies checked — 20 November 2026
+
+Read incoming KOGG mail after 16 November across folders. No outbound replies sent in this audit; the prior 17 November follow-ups were not duplicated.
+
+| Provider | Reply | Confirmed / next step |
+| --- | --- | --- |
+| Bible Brain | 17 Nov; message `1a1ea6bc941a3572`, thread `1a1d045ec894f96f` | Official open Ibibio 2025 can be in the default offline bundle with attribution. Other editions remain separate. Efik is audio-only there; continue publisher/DBL route for full text. |
+| API.Bible | 18 Nov; message `1a1ec294b2313abd`, thread `1a1c9931be474f0c` | May queue offline view events and report them in bulk after reconnection. Implement FUMS with the managed connection; reply does not specify deadlines/deduplication. |
+| YouVersion | 19 Nov; message `1a1f174a40348b75`, thread `1a1d045fb18f42a2` | Register at https://platform.youversion.com for team follow-up. No account created or agreement accepted; this is not a content licence grant. |
+
+No new full-Efik or lyric-catalogue permission was found in this interval. The existing open Ibibio implementation remains valid independently of Bible Brain credentials. See AUDIT-2026-11-20.md for the newly discovered Supabase availability and Tyndale retirement risks.
+
 
 ### Provider follow-ups — 17 November 2026
 
